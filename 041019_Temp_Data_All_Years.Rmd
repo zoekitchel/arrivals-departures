@@ -6,13 +6,86 @@ output: html_notebook
 ```{r setup}
 library(dplyr)
 library(data.table)
-
+library(here)
+library(raster)
+library(ncdf4)
+load("/Users/zoekitchel/Documents/grad school/Rutgers/Coursework/Fall 2018/SDM/hauls_catch_Dec2017 1.RData")
 ```
 
 First, I will make list of GPS points and days/year ranges for which I need temperatures
 
 ```{r}
+latlongyear <- hauls %>%
+  select(lat, lon, year, month)
+  
+
+```
+
+Okay, now getting SODA data
+Where I got the data to match soda in trawlData (following Ryan's readme)
+Soda Data Files
+
+ 1. Go Here: http://iridl.ldeo.columbia.edu/SOURCES/.CARTON-GIESE/.SODA/.v2p1p6/.temp/time/%28Jan%202000%29%28Dec%202008%29RANGEEDGES/lat/%2810.25N%29%2884.75N%29RANGEEDGES/lon/%28179.75W%29%2820.25W%29RANGEEDGES/dataselection.html
+
+ 2. Restrict ranges as follows for SST to match SODA in trawlData
+
+ 	-200E to 20E --> 440 pts
+
+ 	0N to 89.5N --> 179 pts
+
+ 	5.01 to 5.01
+
+ 	Jan 1958 to Dec 2008 --> 612 pts
 
 
+ 3. Stop Selecting
+
+ 4. Click Data Files
+
+ 5. Download NetCDF Format
+
+```{r}
+cp <- nc_open("/Users/zoekitchel/Documents/grad school/Rutgers/LabWork/Colonization_Extinction/CARTON-GIESE_SODA_v2p1p6_sstemp.nc")
+print(cp)
+
+# =========================================
+# = Function to Read in SODA, Grab Surface =
+# =========================================
+get.soda.sst <- function(file){
+
+	soda.info <- nc_open(file)
+	name.soda.sizes <- sapply(soda.info$var$temp$dim, function(x)x$name)
+	soda.sizes <- soda.info$var$temp$size
+	dim.units <- sapply(soda.info$var$temp$dim, function(x)x$units)
+	print(dim.units)
+	stopifnot(grepl("months since ", dim.units[4])) # make sure time is in correct units and in right place
+	names(soda.sizes) <- name.soda.sizes
+	ntime <- soda.sizes["time"]
+	ndepth <- soda.sizes["depth"]
+
+	soda.time0 <- soda.info$var$temp$dim[[4]]$vals
+	ref.date <- as.Date(gsub("months since ", "", dim.units[4]))
+	start.before.ref <- grepl("-", soda.time0[1]) # is the first date before ref.date?
+	n.month.before <- ceiling(abs(soda.time0[1])) + as.integer(start.before.ref)
+	start.increment <- ifelse(start.before.ref, "-1 month", "1 month")
+	time.start <- rev(seq.Date(ref.date, by=start.increment, length.out=n.month.before))[1]
+	soda.time <- seq.Date(time.start, by="1 month", length.out=ntime)
+	
+	soda.sst <- brick(file)
+	names(soda.sst) <- soda.time
+
+		
+	return(soda.sst)
+	
+}
+
+
+## Using Ryan's code
+soda_sst <- get.soda.sst("/Users/zoekitchel/Documents/grad school/Rutgers/LabWork/Colonization_Extinction/CARTON-GIESE_SODA_v2p1p6_sstemp.nc")
+soda_sst
+
+plot(soda_sst[[9]])
+
+saveRDS(soda_sst, "SODA2.1.6_SST.rds")
 ```
 
