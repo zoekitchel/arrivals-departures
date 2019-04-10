@@ -10,6 +10,9 @@ library(here)
 library(raster)
 library(ncdf4)
 library(lubridate)
+library(maptools)
+library(rgdal)
+library(tidyr)
 load("/Users/zoekitchel/Documents/grad school/Rutgers/Coursework/Fall 2018/SDM/hauls_catch_Dec2017 1.RData")
 ```
 
@@ -109,8 +112,19 @@ latlongyearIDonly <- latlongyear %>%
 justlatlong <- latlongyear %>%
   dplyr::select(lat, lon)
 ```
-Now, let's extract values
+SET COORDINATE SYSTEM
 ```{r}
-rasValue <- extract(soda_sst, justlatlong)
+locations <- SpatialPoints(cbind(latlongyear$lon, latlongyear$lat), 
+                            proj4string=CRS("+proj=longlat +datum=WGS84 +ellps=WGS84 +towgs84=0,0,0"))
+cord.UTM <- spTransform(locations, crs(soda_sst))
+```
+
+Now, let's extract values
+
+```{r}
+temp_values <- extract(soda_sst, cord.UTM)
+df <- cbind(justlatlong, temp_values)
+head(df, rows=10, cols=10)
+df_long <- gather(df, key = "ID", value = "temp", 3:614 )
 ```
 
