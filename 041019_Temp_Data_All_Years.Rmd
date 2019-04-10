@@ -1,0 +1,18 @@
+---
+title: "Temp_Data_All_Years"
+output: html_notebook
+---
+
+```{r setup}
+library(dplyr)
+library(data.table)
+
+```
+
+First, I will make list of GPS points and days/year ranges for which I need temperatures
+
+```{r}
+
+
+```
+
