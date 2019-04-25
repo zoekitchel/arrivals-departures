@@ -50,6 +50,7 @@ Soda Data Files
  4. Click Data Files
 
  5. Download NetCDF Format
+ 6. File is too big for GitHub, so compress, mine compressed to 95mb using Keka to 7zip
 
 ```{r}
 cp <- nc_open("/Users/zoekitchel/Documents/grad school/Rutgers/LabWork/Colonization_Extinction/CARTON-GIESE_SODA_v2p1p6_sstemp.nc")
