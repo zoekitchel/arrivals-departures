@@ -22,6 +22,7 @@ First, I will make list of GPS points and days/year ranges for which I need temp
 ```{r}
 latlongyear <- hauls %>%
   dplyr::select(lat, lon, year, month)
+
   
 
 ```
