@@ -24,15 +24,13 @@ First, I will make list of GPS points and days/year ranges for which I need temp
 latlongyear <- hauls %>%
   dplyr::select(lat, lon, year, month)
 
-  
-
 ```
 
 Okay, now getting SODA data
 Where I got the data to match soda in trawlData (following Ryan's readme)
 Soda Data Files
 
- 1. Go Here: http://iridl.ldeo.columbia.edu/SOURCES/.CARTON-GIESE/.SODA/.v2p1p6/.temp/time/%28Jan%202000%29%28Dec%202008%29RANGEEDGES/lat/%2810.25N%29%2884.75N%29RANGEEDGES/lon/%28179.75W%29%2820.25W%29RANGEEDGES/dataselection.html
+ 1. Go Here: http://iridl.ldeo.columbia.edu/SOURCES/.CARTON-GIESE/.SODA/.v2p1p6/.temp/time/%28Jan%201958%29%28Dec%202008%29RANGEEDGES/lat/%280N%29%2889.5N%29RANGEEDGES/lon/%28-200E%29%2820E%29RANGEEDGES/time/%28Jan%201958%29%28Dec%202008%29RANGEEDGES/depth/%285.01%29%285.01%29RANGEEDGES/lat/%280N%29%2889.5N%29RANGEEDGES/lon/%28-200E%29%2820E%29RANGEEDGES/datafiles.html
 
  2. Restrict ranges as follows for SST to match SODA in trawlData
 
@@ -183,6 +181,8 @@ date_temp_reg_avg <- date_temp_reg_month_avg %>%
   mutate(region_year_seas_sst = region_year_max_sst - region_year_min_sst)
 head(date_temp_reg_avg)
 
+save(date_temp_reg_avg, date_temp_reg_month_avg, file = "date_ssttemp_avg_SODA.Rdata") #save this so i can start here!
+
 ggplot(data=date_temp_reg_avg, aes(x=year, y=region_year_mean_sst)) +
   geom_point() +
   facet_wrap(~region)
@@ -194,11 +194,24 @@ I now have the predictor values I need, yearly min and max for entire region per
 Next, I need to link to regional yearly species data
 
 ```{r}
-load.csv("/Users/zoekitchel/Documents/zjk desktop/grad school/Rutgers/LabWork/Col-Ext/R/col_ext_organized/rawdata/spp_master.RData")
+load("spp_master.RData")
 #compare temps I calculated to temperatures already there
+#match region names
+date_temp_reg_avg$region <- as.factor(date_temp_reg_avg$region)
+levels(date_temp_reg_avg$region)[levels(date_temp_reg_avg$region)=="AFSC_Aleutians"] <- "ai"
+levels(date_temp_reg_avg$region)[levels(date_temp_reg_avg$region)=="AFSC_EBS"] <- "ebs"
+levels(date_temp_reg_avg$region)[levels(date_temp_reg_avg$region)=="AFSC_GOA"] <- "goa"
+levels(date_temp_reg_avg$region)[levels(date_temp_reg_avg$region)=="AFSC_WCTri"] <- "wctri"
+levels(date_temp_reg_avg$region)[levels(date_temp_reg_avg$region)=="DFO_Newfoundland"] <- "newf"
+levels(date_temp_reg_avg$region)[levels(date_temp_reg_avg$region)=="DFO_ScotianShelf"] <- "shelf"
+levels(date_temp_reg_avg$region)[levels(date_temp_reg_avg$region)=="NEFSC_NEUS"] <- "neus"
+levels(date_temp_reg_avg$region)[levels(date_temp_reg_avg$region)=="SCDNR_SEUS"] <- "se"
+levels(date_temp_reg_avg$region)[levels(date_temp_reg_avg$region)=="SEFSC_GOMex"] <- "gmex"
+
 spp_master_ztemp <- left_join(spp_master, date_temp_reg_avg, by = c("region", "year"))
 spp_master$temp_dif <- spp_master_ztemp$temp-spp_master_ztemp$ztemps
 #hopefully they match up!
+head(date_temp_reg_avg)
 ```
 Next step is to calculate change in temp from previous year to now, luckily I can farm this code from 27_acf_timeseries_analysis_covariates.R
 
