@@ -241,18 +241,112 @@ $(document).ready(function () {
 <!-- rnb-text-begin -->
 <!-- rnb-text-end -->
 <!-- rnb-chunk-begin -->
-<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxubGlicmFyeShkcGx5cilcbmxpYnJhcnkoZGF0YS50YWJsZSlcbmxpYnJhcnkoaGVyZSlcbmxpYnJhcnkocmFzdGVyKVxubGlicmFyeShuY2RmNClcbmxpYnJhcnkobHVicmlkYXRlKVxubGlicmFyeShtYXB0b29scylcbmxpYnJhcnkocmdkYWwpXG5saWJyYXJ5KHRpZHlyKVxubGlicmFyeShnZ3Bsb3QyKVxuXG5sb2FkKFwiL1VzZXJzL3pvZWtpdGNoZWwvRG9jdW1lbnRzL2dyYWQgc2Nob29sL1J1dGdlcnMvQ291cnNld29yay9GYWxsIDIwMTgvU0RNL2hhdWxzX2NhdGNoX0RlYzIwMTcgMS5SRGF0YVwiKVxuYGBgIn0= -->
-<pre class="r"><code>library(dplyr)
-library(data.table)
-library(here)
-library(raster)
-library(ncdf4)
-library(lubridate)
-library(maptools)
-library(rgdal)
-library(tidyr)
-library(ggplot2)
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxubGlicmFyeShkcGx5cilcbmBgYCJ9 -->
+<pre class="r"><code>library(dplyr)</code></pre>
+<!-- rnb-source-end -->
+<!-- rnb-output-begin eyJkYXRhIjoiXG5BdHRhY2hpbmcgcGFja2FnZTog4oCYZHBseXLigJlcblxuVGhlIGZvbGxvd2luZyBvYmplY3RzIGFyZSBtYXNrZWQgZnJvbSDigJhwYWNrYWdlOnN0YXRz4oCZOlxuXG4gICAgZmlsdGVyLCBsYWdcblxuVGhlIGZvbGxvd2luZyBvYmplY3RzIGFyZSBtYXNrZWQgZnJvbSDigJhwYWNrYWdlOmJhc2XigJk6XG5cbiAgICBpbnRlcnNlY3QsIHNldGRpZmYsIHNldGVxdWFsLCB1bmlvblxuIn0= -->
+<pre><code>
+Attaching package: ‘dplyr’
 
+The following objects are masked from ‘package:stats’:
+
+    filter, lag
+
+The following objects are masked from ‘package:base’:
+
+    intersect, setdiff, setequal, union</code></pre>
+<!-- rnb-output-end -->
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxubGlicmFyeShkYXRhLnRhYmxlKVxuYGBgIn0= -->
+<pre class="r"><code>library(data.table)</code></pre>
+<!-- rnb-source-end -->
+<!-- rnb-output-begin eyJkYXRhIjoicGFja2FnZSDigJhkYXRhLnRhYmxl4oCZIHdhcyBidWlsdCB1bmRlciBSIHZlcnNpb24gMy41LjJkYXRhLnRhYmxlIDEuMTIuMCAgTGF0ZXN0IG5ld3M6IHItZGF0YXRhYmxlLmNvbVxuXG5BdHRhY2hpbmcgcGFja2FnZTog4oCYZGF0YS50YWJsZeKAmVxuXG5UaGUgZm9sbG93aW5nIG9iamVjdHMgYXJlIG1hc2tlZCBmcm9tIOKAmHBhY2thZ2U6ZHBseXLigJk6XG5cbiAgICBiZXR3ZWVuLCBmaXJzdCwgbGFzdFxuIn0= -->
+<pre><code>package ‘data.table’ was built under R version 3.5.2data.table 1.12.0  Latest news: r-datatable.com
+
+Attaching package: ‘data.table’
+
+The following objects are masked from ‘package:dplyr’:
+
+    between, first, last</code></pre>
+<!-- rnb-output-end -->
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxubGlicmFyeShoZXJlKVxuYGBgIn0= -->
+<pre class="r"><code>library(here)</code></pre>
+<!-- rnb-source-end -->
+<!-- rnb-output-begin eyJkYXRhIjoiaGVyZSgpIHN0YXJ0cyBhdCAvVXNlcnMvem9la2l0Y2hlbC9Eb2N1bWVudHMvZ3JhZCBzY2hvb2wvUnV0Z2Vycy9MYWJXb3JrL0NvbG9uaXphdGlvbl9FeHRpbmN0aW9uXG4ifQ== -->
+<pre><code>here() starts at /Users/zoekitchel/Documents/grad school/Rutgers/LabWork/Colonization_Extinction</code></pre>
+<!-- rnb-output-end -->
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxubGlicmFyeShyYXN0ZXIpXG5gYGAifQ== -->
+<pre class="r"><code>library(raster)</code></pre>
+<!-- rnb-source-end -->
+<!-- rnb-output-begin eyJkYXRhIjoicGFja2FnZSDigJhyYXN0ZXLigJkgd2FzIGJ1aWx0IHVuZGVyIFIgdmVyc2lvbiAzLjUuMkxvYWRpbmcgcmVxdWlyZWQgcGFja2FnZTogc3BcblxuQXR0YWNoaW5nIHBhY2thZ2U6IOKAmHJhc3RlcuKAmVxuXG5UaGUgZm9sbG93aW5nIG9iamVjdCBpcyBtYXNrZWQgZnJvbSDigJhwYWNrYWdlOmRhdGEudGFibGXigJk6XG5cbiAgICBzaGlmdFxuXG5UaGUgZm9sbG93aW5nIG9iamVjdCBpcyBtYXNrZWQgZnJvbSDigJhwYWNrYWdlOmRwbHly4oCZOlxuXG4gICAgc2VsZWN0XG4ifQ== -->
+<pre><code>package ‘raster’ was built under R version 3.5.2Loading required package: sp
+
+Attaching package: ‘raster’
+
+The following object is masked from ‘package:data.table’:
+
+    shift
+
+The following object is masked from ‘package:dplyr’:
+
+    select</code></pre>
+<!-- rnb-output-end -->
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxubGlicmFyeShuY2RmNClcbmBgYCJ9 -->
+<pre class="r"><code>library(ncdf4)</code></pre>
+<!-- rnb-source-end -->
+<!-- rnb-output-begin eyJkYXRhIjoicGFja2FnZSDigJhuY2RmNOKAmSB3YXMgYnVpbHQgdW5kZXIgUiB2ZXJzaW9uIDMuNS4yXG4ifQ== -->
+<pre><code>package ‘ncdf4’ was built under R version 3.5.2</code></pre>
+<!-- rnb-output-end -->
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxubGlicmFyeShsdWJyaWRhdGUpXG5gYGAifQ== -->
+<pre class="r"><code>library(lubridate)</code></pre>
+<!-- rnb-source-end -->
+<!-- rnb-output-begin eyJkYXRhIjoiXG5BdHRhY2hpbmcgcGFja2FnZTog4oCYbHVicmlkYXRl4oCZXG5cblRoZSBmb2xsb3dpbmcgb2JqZWN0IGlzIG1hc2tlZCBmcm9tIOKAmHBhY2thZ2U6aGVyZeKAmTpcblxuICAgIGhlcmVcblxuVGhlIGZvbGxvd2luZyBvYmplY3RzIGFyZSBtYXNrZWQgZnJvbSDigJhwYWNrYWdlOmRhdGEudGFibGXigJk6XG5cbiAgICBob3VyLCBpc293ZWVrLCBtZGF5LCBtaW51dGUsIG1vbnRoLCBxdWFydGVyLCBzZWNvbmQsIHdkYXksIHdlZWssIHlkYXksIHllYXJcblxuVGhlIGZvbGxvd2luZyBvYmplY3QgaXMgbWFza2VkIGZyb20g4oCYcGFja2FnZTpiYXNl4oCZOlxuXG4gICAgZGF0ZVxuIn0= -->
+<pre><code>
+Attaching package: ‘lubridate’
+
+The following object is masked from ‘package:here’:
+
+    here
+
+The following objects are masked from ‘package:data.table’:
+
+    hour, isoweek, mday, minute, month, quarter, second, wday, week, yday, year
+
+The following object is masked from ‘package:base’:
+
+    date</code></pre>
+<!-- rnb-output-end -->
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxubGlicmFyeShtYXB0b29scylcbmBgYCJ9 -->
+<pre class="r"><code>library(maptools)</code></pre>
+<!-- rnb-source-end -->
+<!-- rnb-output-begin eyJkYXRhIjoicGFja2FnZSDigJhtYXB0b29sc+KAmSB3YXMgYnVpbHQgdW5kZXIgUiB2ZXJzaW9uIDMuNS4yQ2hlY2tpbmcgcmdlb3MgYXZhaWxhYmlsaXR5OiBUUlVFXG4ifQ== -->
+<pre><code>package ‘maptools’ was built under R version 3.5.2Checking rgeos availability: TRUE</code></pre>
+<!-- rnb-output-end -->
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxubGlicmFyeShyZ2RhbClcbmBgYCJ9 -->
+<pre class="r"><code>library(rgdal)</code></pre>
+<!-- rnb-source-end -->
+<!-- rnb-output-begin eyJkYXRhIjoicmdkYWw6IHZlcnNpb246IDEuMy02LCAoU1ZOIHJldmlzaW9uIDc3MylcbiBHZW9zcGF0aWFsIERhdGEgQWJzdHJhY3Rpb24gTGlicmFyeSBleHRlbnNpb25zIHRvIFIgc3VjY2Vzc2Z1bGx5IGxvYWRlZFxuIExvYWRlZCBHREFMIHJ1bnRpbWU6IEdEQUwgMi4xLjMsIHJlbGVhc2VkIDIwMTcvMjAvMDFcbiBQYXRoIHRvIEdEQUwgc2hhcmVkIGZpbGVzOiAvTGlicmFyeS9GcmFtZXdvcmtzL1IuZnJhbWV3b3JrL1ZlcnNpb25zLzMuNS9SZXNvdXJjZXMvbGlicmFyeS9yZ2RhbC9nZGFsXG4gR0RBTCBiaW5hcnkgYnVpbHQgd2l0aCBHRU9TOiBGQUxTRSBcbiBMb2FkZWQgUFJPSi40IHJ1bnRpbWU6IFJlbC4gNC45LjMsIDE1IEF1Z3VzdCAyMDE2LCBbUEpfVkVSU0lPTjogNDkzXVxuIFBhdGggdG8gUFJPSi40IHNoYXJlZCBmaWxlczogL0xpYnJhcnkvRnJhbWV3b3Jrcy9SLmZyYW1ld29yay9WZXJzaW9ucy8zLjUvUmVzb3VyY2VzL2xpYnJhcnkvcmdkYWwvcHJvalxuIExpbmtpbmcgdG8gc3AgdmVyc2lvbjogMS4zLTEgXG4ifQ== -->
+<pre><code>rgdal: version: 1.3-6, (SVN revision 773)
+ Geospatial Data Abstraction Library extensions to R successfully loaded
+ Loaded GDAL runtime: GDAL 2.1.3, released 2017/20/01
+ Path to GDAL shared files: /Library/Frameworks/R.framework/Versions/3.5/Resources/library/rgdal/gdal
+ GDAL binary built with GEOS: FALSE 
+ Loaded PROJ.4 runtime: Rel. 4.9.3, 15 August 2016, [PJ_VERSION: 493]
+ Path to PROJ.4 shared files: /Library/Frameworks/R.framework/Versions/3.5/Resources/library/rgdal/proj
+ Linking to sp version: 1.3-1 </code></pre>
+<!-- rnb-output-end -->
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxubGlicmFyeSh0aWR5cilcbmBgYCJ9 -->
+<pre class="r"><code>library(tidyr)</code></pre>
+<!-- rnb-source-end -->
+<!-- rnb-output-begin eyJkYXRhIjoiXG5BdHRhY2hpbmcgcGFja2FnZTog4oCYdGlkeXLigJlcblxuVGhlIGZvbGxvd2luZyBvYmplY3QgaXMgbWFza2VkIGZyb20g4oCYcGFja2FnZTpyYXN0ZXLigJk6XG5cbiAgICBleHRyYWN0XG4ifQ== -->
+<pre><code>
+Attaching package: ‘tidyr’
+
+The following object is masked from ‘package:raster’:
+
+    extract</code></pre>
+<!-- rnb-output-end -->
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxubGlicmFyeShnZ3Bsb3QyKVxubG9hZChcIi9Vc2Vycy96b2VraXRjaGVsL0RvY3VtZW50cy9ncmFkIHNjaG9vbC9SdXRnZXJzL0NvdXJzZXdvcmsvRmFsbCAyMDE4L1NETS9oYXVsc19jYXRjaF9EZWMyMDE3IDEuUkRhdGFcIilcbmBgYCJ9 -->
+<pre class="r"><code>library(ggplot2)
 load(&quot;/Users/zoekitchel/Documents/grad school/Rutgers/Coursework/Fall 2018/SDM/hauls_catch_Dec2017 1.RData&quot;)</code></pre>
 <!-- rnb-source-end -->
 <!-- rnb-chunk-end -->
@@ -260,12 +354,10 @@ load(&quot;/Users/zoekitchel/Documents/grad school/Rutgers/Coursework/Fall 2018/
 <p>First, I will make list of GPS points and days/year ranges for which I need temperatures</p>
 <!-- rnb-text-end -->
 <!-- rnb-chunk-begin -->
-<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxubGF0bG9uZ3llYXIgPC0gaGF1bHMgJT4lXG4gIGRwbHlyOjpzZWxlY3QobGF0LCBsb24sIHllYXIsIG1vbnRoKVxuXG4gIFxuXG5gYGAifQ== -->
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxubGF0bG9uZ3llYXIgPC0gaGF1bHMgJT4lXG4gIGRwbHlyOjpzZWxlY3QobGF0LCBsb24sIHllYXIsIG1vbnRoKVxuICBcbmBgYCJ9 -->
 <pre class="r"><code>latlongyear &lt;- hauls %&gt;%
   dplyr::select(lat, lon, year, month)
-
-  
-</code></pre>
+  </code></pre>
 <!-- rnb-source-end -->
 <!-- rnb-chunk-end -->
 <!-- rnb-text-begin -->
@@ -283,119 +375,41 @@ load(&quot;/Users/zoekitchel/Documents/grad school/Rutgers/Coursework/Fall 2018/
 </ol>
 <!-- rnb-text-end -->
 <!-- rnb-chunk-begin -->
-<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuY3AgPC0gbmNfb3BlbihcIi9Vc2Vycy96b2VraXRjaGVsL0RvY3VtZW50cy9ncmFkIHNjaG9vbC9SdXRnZXJzL0xhYldvcmsvQ29sb25pemF0aW9uX0V4dGluY3Rpb24vQ0FSVE9OLUdJRVNFX1NPREFfdjJwMXA2X3NzdGVtcC5uY1wiKVxucHJpbnQoY3ApXG5cbiMgPT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT1cbiMgPSBGdW5jdGlvbiB0byBSZWFkIGluIFNPREEsIEdyYWIgU3VyZmFjZSA9XG4jID09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09XG5nZXQuc29kYS5zc3QgPC0gZnVuY3Rpb24oZmlsZSl7XG5cblx0c29kYS5pbmZvIDwtIG5jX29wZW4oZmlsZSlcblx0bmFtZS5zb2RhLnNpemVzIDwtIHNhcHBseShzb2RhLmluZm8kdmFyJHRlbXAkZGltLCBmdW5jdGlvbih4KXgkbmFtZSlcblx0c29kYS5zaXplcyA8LSBzb2RhLmluZm8kdmFyJHRlbXAkc2l6ZVxuXHRkaW0udW5pdHMgPC0gc2FwcGx5KHNvZGEuaW5mbyR2YXIkdGVtcCRkaW0sIGZ1bmN0aW9uKHgpeCR1bml0cylcblx0cHJpbnQoZGltLnVuaXRzKVxuXHRzdG9waWZub3QoZ3JlcGwoXCJtb250aHMgc2luY2UgXCIsIGRpbS51bml0c1s0XSkpICMgbWFrZSBzdXJlIHRpbWUgaXMgaW4gY29ycmVjdCB1bml0cyBhbmQgaW4gcmlnaHQgcGxhY2Vcblx0bmFtZXMoc29kYS5zaXplcykgPC0gbmFtZS5zb2RhLnNpemVzXG5cdG50aW1lIDwtIHNvZGEuc2l6ZXNbXCJ0aW1lXCJdXG5cdG5kZXB0aCA8LSBzb2RhLnNpemVzW1wiZGVwdGhcIl1cblxuXHRzb2RhLnRpbWUwIDwtIHNvZGEuaW5mbyR2YXIkdGVtcCRkaW1bWzRdXSR2YWxzXG5cdHJlZi5kYXRlIDwtIGFzLkRhdGUoZ3N1YihcIm1vbnRocyBzaW5jZSBcIiwgXCJcIiwgZGltLnVuaXRzWzRdKSlcblx0c3RhcnQuYmVmb3JlLnJlZiA8LSBncmVwbChcIi1cIiwgc29kYS50aW1lMFsxXSkgIyBpcyB0aGUgZmlyc3QgZGF0ZSBiZWZvcmUgcmVmLmRhdGU/XG5cdG4ubW9udGguYmVmb3JlIDwtIGNlaWxpbmcoYWJzKHNvZGEudGltZTBbMV0pKSArIGFzLmludGVnZXIoc3RhcnQuYmVmb3JlLnJlZilcblx0c3RhcnQuaW5jcmVtZW50IDwtIGlmZWxzZShzdGFydC5iZWZvcmUucmVmLCBcIi0xIG1vbnRoXCIsIFwiMSBtb250aFwiKVxuXHR0aW1lLnN0YXJ0IDwtIHJldihzZXEuRGF0ZShyZWYuZGF0ZSwgYnk9c3RhcnQuaW5jcmVtZW50LCBsZW5ndGgub3V0PW4ubW9udGguYmVmb3JlKSlbMV1cblx0c29kYS50aW1lIDwtIHNlcS5EYXRlKHRpbWUuc3RhcnQsIGJ5PVwiMSBtb250aFwiLCBsZW5ndGgub3V0PW50aW1lKVxuXHRcblx0c29kYS5zc3QgPC0gYnJpY2soZmlsZSlcblx0bmFtZXMoc29kYS5zc3QpIDwtIHNvZGEudGltZVxuXG5cdFx0XG5cdHJldHVybihzb2RhLnNzdClcblx0XG59XG5cblxuIyMgVXNpbmcgUnlhbidzIGNvZGVcbnNvZGFfc3N0IDwtIGdldC5zb2RhLnNzdChcIi9Vc2Vycy96b2VraXRjaGVsL0RvY3VtZW50cy9ncmFkIHNjaG9vbC9SdXRnZXJzL0xhYldvcmsvQ29sb25pemF0aW9uX0V4dGluY3Rpb24vQ0FSVE9OLUdJRVNFX1NPREFfdjJwMXA2X3NzdGVtcC5uY1wiKVxuc29kYV9zc3RcblxucGxvdChzb2RhX3NzdFtbOV1dKVxuXG5zYXZlUkRTKHNvZGFfc3N0LCBcIlNPREEyLjEuNl9TU1QucmRzXCIpXG5gYGAifQ== -->
-<pre class="r"><code>cp &lt;- nc_open(&quot;/Users/zoekitchel/Documents/grad school/Rutgers/LabWork/Colonization_Extinction/CARTON-GIESE_SODA_v2p1p6_sstemp.nc&quot;)
-print(cp)
-
-# =========================================
-# = Function to Read in SODA, Grab Surface =
-# =========================================
-get.soda.sst &lt;- function(file){
-
-    soda.info &lt;- nc_open(file)
-    name.soda.sizes &lt;- sapply(soda.info$var$temp$dim, function(x)x$name)
-    soda.sizes &lt;- soda.info$var$temp$size
-    dim.units &lt;- sapply(soda.info$var$temp$dim, function(x)x$units)
-    print(dim.units)
-    stopifnot(grepl(&quot;months since &quot;, dim.units[4])) # make sure time is in correct units and in right place
-    names(soda.sizes) &lt;- name.soda.sizes
-    ntime &lt;- soda.sizes[&quot;time&quot;]
-    ndepth &lt;- soda.sizes[&quot;depth&quot;]
-
-    soda.time0 &lt;- soda.info$var$temp$dim[[4]]$vals
-    ref.date &lt;- as.Date(gsub(&quot;months since &quot;, &quot;&quot;, dim.units[4]))
-    start.before.ref &lt;- grepl(&quot;-&quot;, soda.time0[1]) # is the first date before ref.date?
-    n.month.before &lt;- ceiling(abs(soda.time0[1])) + as.integer(start.before.ref)
-    start.increment &lt;- ifelse(start.before.ref, &quot;-1 month&quot;, &quot;1 month&quot;)
-    time.start &lt;- rev(seq.Date(ref.date, by=start.increment, length.out=n.month.before))[1]
-    soda.time &lt;- seq.Date(time.start, by=&quot;1 month&quot;, length.out=ntime)
-    
-    soda.sst &lt;- brick(file)
-    names(soda.sst) &lt;- soda.time
-
-        
-    return(soda.sst)
-    
-}
-
-
-## Using Ryan's code
-soda_sst &lt;- get.soda.sst(&quot;/Users/zoekitchel/Documents/grad school/Rutgers/LabWork/Colonization_Extinction/CARTON-GIESE_SODA_v2p1p6_sstemp.nc&quot;)
-soda_sst
-
-plot(soda_sst[[9]])
-
-saveRDS(soda_sst, &quot;SODA2.1.6_SST.rds&quot;)</code></pre>
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuY3AgPC0gbmNfb3BlbihcIi9Vc2Vycy96b2VraXRjaGVsL0RvY3VtZW50cy9ncmFkIHNjaG9vbC9SdXRnZXJzL0xhYldvcmsvQ29sb25pemF0aW9uX0V4dGluY3Rpb24vQ0FSVE9OLUdJRVNFX1NPREFfdjJwMXA2X3NzdGVtcC5uY1wiKVxuYGBgIn0= -->
+<pre class="r"><code>cp &lt;- nc_open(&quot;/Users/zoekitchel/Documents/grad school/Rutgers/LabWork/Colonization_Extinction/CARTON-GIESE_SODA_v2p1p6_sstemp.nc&quot;)</code></pre>
 <!-- rnb-source-end -->
+<!-- rnb-output-begin eyJkYXRhIjoiRXJyb3IgaW4gUl9uYzRfb3BlbjogTm8gc3VjaCBmaWxlIG9yIGRpcmVjdG9yeVxuIn0= -->
+<pre><code>Error in R_nc4_open: No such file or directory</code></pre>
+<!-- rnb-output-end -->
+<!-- rnb-output-begin eyJkYXRhIjoiRXJyb3IgaW4gbmNfb3BlbihcIi9Vc2Vycy96b2VraXRjaGVsL0RvY3VtZW50cy9ncmFkIHNjaG9vbC9SdXRnZXJzL0xhYldvcmsvQ29sb25pemF0aW9uX0V4dGluY3Rpb24vQ0FSVE9OLUdJRVNFX1NPREFfdjJwMXA2X3NzdGVtcC5uY1wiKSA6IFxuICBFcnJvciBpbiBuY19vcGVuIHRyeWluZyB0byBvcGVuIGZpbGUgL1VzZXJzL3pvZWtpdGNoZWwvRG9jdW1lbnRzL2dyYWQgc2Nob29sL1J1dGdlcnMvTGFiV29yay9Db2xvbml6YXRpb25fRXh0aW5jdGlvbi9DQVJUT04tR0lFU0VfU09EQV92MnAxcDZfc3N0ZW1wLm5jXG4ifQ== -->
+<pre><code>Error in nc_open(&quot;/Users/zoekitchel/Documents/grad school/Rutgers/LabWork/Colonization_Extinction/CARTON-GIESE_SODA_v2p1p6_sstemp.nc&quot;) : 
+  Error in nc_open trying to open file /Users/zoekitchel/Documents/grad school/Rutgers/LabWork/Colonization_Extinction/CARTON-GIESE_SODA_v2p1p6_sstemp.nc</code></pre>
+<!-- rnb-output-end -->
 <!-- rnb-chunk-end -->
 <!-- rnb-text-begin -->
 <p>New column in latlongyear with “X1958.01.01” format, looks like I may not need to do this after all…</p>
 <!-- rnb-text-end -->
 <!-- rnb-chunk-begin -->
-<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxubGF0bG9uZ3llYXIkbW9udGhfZGlnaXRzIDwtIE5BXG5mb3IgKGkgaW4gMTpucm93KGxhdGxvbmd5ZWFyKSkge1xuICBpZiAobGF0bG9uZ3llYXIkbW9udGhbW2ldXSA8IDEwKSB7XG4gICAgbGF0bG9uZ3llYXIkbW9udGhfZGlnaXRzW1tpXV0gPC0gcGFzdGUwKFwiMFwiLCBtb250aChsYXRsb25neWVhciRtb250aFtbaV1dKSlcbiAgfSBlbHNlIHtcbiAgICBsYXRsb25neWVhciRtb250aF9kaWdpdHNbW2ldXSA8LSBwYXN0ZTAobW9udGgobGF0bG9uZ3llYXIkbW9udGhbW2ldXSkpXG4gIH1cbn1cbmxhdGxvbmd5ZWFyJGRheSA8LSBwYXN0ZTAoXCIwXCIsIGMoMSkpXG5sYXRsb25neWVhciR5ZWFyX2RpZ2l0cyA8LSBwYXN0ZTAoXCJYXCIsIGxhdGxvbmd5ZWFyJHllYXIpXG5sYXRsb25neWVhciRJRCA8LSBwYXN0ZShsYXRsb25neWVhciR5ZWFyX2RpZ2l0cywgbGF0bG9uZ3llYXIkbW9udGhfZGlnaXRzLCBsYXRsb25neWVhciRkYXksIHNlcD1cIi5cIilcbmxhdGxvbmd5ZWFySURvbmx5IDwtIGxhdGxvbmd5ZWFyICU+JVxuICBkcGx5cjo6c2VsZWN0KElELCBsYXQsIGxvbilcbmp1c3RsYXRsb25nIDwtIGxhdGxvbmd5ZWFyICU+JVxuICBkcGx5cjo6c2VsZWN0KGxhdCwgbG9uKVxuYGBgIn0= -->
-<pre class="r"><code>latlongyear$month_digits &lt;- NA
-for (i in 1:nrow(latlongyear)) {
-  if (latlongyear$month[[i]] &lt; 10) {
-    latlongyear$month_digits[[i]] &lt;- paste0(&quot;0&quot;, month(latlongyear$month[[i]]))
-  } else {
-    latlongyear$month_digits[[i]] &lt;- paste0(month(latlongyear$month[[i]]))
-  }
-}
-latlongyear$day &lt;- paste0(&quot;0&quot;, c(1))
-latlongyear$year_digits &lt;- paste0(&quot;X&quot;, latlongyear$year)
-latlongyear$ID &lt;- paste(latlongyear$year_digits, latlongyear$month_digits, latlongyear$day, sep=&quot;.&quot;)
-latlongyearIDonly &lt;- latlongyear %&gt;%
-  dplyr::select(ID, lat, lon)
-justlatlong &lt;- latlongyear %&gt;%
-  dplyr::select(lat, lon)</code></pre>
-<!-- rnb-source-end -->
 <!-- rnb-chunk-end -->
 <!-- rnb-text-begin -->
 <p>SET COORDINATE SYSTEM</p>
 <!-- rnb-text-end -->
 <!-- rnb-chunk-begin -->
-<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxubG9jYXRpb25zIDwtIFNwYXRpYWxQb2ludHMoY2JpbmQobGF0bG9uZ3llYXIkbG9uLCBsYXRsb25neWVhciRsYXQpLCBcbiAgICAgICAgICAgICAgICAgICAgICAgICAgICBwcm9qNHN0cmluZz1DUlMoXCIrcHJvaj1sb25nbGF0ICtkYXR1bT1XR1M4NCArZWxscHM9V0dTODQgK3Rvd2dzODQ9MCwwLDBcIikpXG5jb3JkLlVUTSA8LSBzcFRyYW5zZm9ybShsb2NhdGlvbnMsIGNycyhzb2RhX3NzdCkpXG5wbG90KGNvcmQuVVRNKVxuYGBgIn0= -->
-<pre class="r"><code>locations &lt;- SpatialPoints(cbind(latlongyear$lon, latlongyear$lat), 
-                            proj4string=CRS(&quot;+proj=longlat +datum=WGS84 +ellps=WGS84 +towgs84=0,0,0&quot;))
-cord.UTM &lt;- spTransform(locations, crs(soda_sst))
-plot(cord.UTM)</code></pre>
-<!-- rnb-source-end -->
 <!-- rnb-chunk-end -->
 <!-- rnb-text-begin -->
 <p>Now, let’s extract values</p>
 <!-- rnb-text-end -->
 <!-- rnb-chunk-begin -->
-<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxudGVtcF92YWx1ZXMgPC0gcmFzdGVyOjpleHRyYWN0KHNvZGFfc3N0LCBjb3JkLlVUTSlcbmRmIDwtIGNiaW5kKGp1c3RsYXRsb25nLCB0ZW1wX3ZhbHVlcylcbnN1YnNldChkZiwgaXMubmEoZGZbLDRdKSkgI2xvb2tpbmcgZm9yIE5BJ3NcbmBgYCJ9 -->
-<pre class="r"><code>temp_values &lt;- raster::extract(soda_sst, cord.UTM)
-df &lt;- cbind(justlatlong, temp_values)
-subset(df, is.na(df[,4])) #looking for NA's</code></pre>
-<!-- rnb-source-end -->
 <!-- rnb-chunk-end -->
 <!-- rnb-text-begin -->
 <p>Let’s look at the problem rows, GOOD NEWS, the problem is that we have a few GPS locations of trawls lacking datapoints, luckily, we can just get rid of these points when averaging!!</p>
 <!-- rnb-text-end -->
 <!-- rnb-chunk-begin -->
-<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuI25vdywgdG8gbWFrZSBteSBsaWZlIGVhc2llciwgSSdtIGp1c3QgZ29ubmEgcmVtb3ZlIE5BJ3MgaGVyZVxuZGZfbmFfcm0gPC0gZGZbY29tcGxldGUuY2FzZXMoZGZbLDRdKSwgXVxuaGVhZChkZl9uYV9ybSwgcm93cz0xMCwgY29scz0xMClcbmRmX2xvbmcgPC0gZ2F0aGVyKGRmX25hX3JtLCBrZXkgPSBcIklEXCIsIHZhbHVlID0gXCJ0ZW1wXCIsIDM6NjE0IClcbmhlYWQoZGZfbG9uZylcbmBgYCJ9 -->
-<pre class="r"><code>#now, to make my life easier, I'm just gonna remove NA's here
-df_na_rm &lt;- df[complete.cases(df[,4]), ]
-head(df_na_rm, rows=10, cols=10)
-df_long &lt;- gather(df_na_rm, key = &quot;ID&quot;, value = &quot;temp&quot;, 3:614 )
-head(df_long)</code></pre>
-<!-- rnb-source-end -->
 <!-- rnb-chunk-end -->
 <!-- rnb-text-begin -->
 <p>We now have to split the date back up unfortunately, and get rid of X</p>
 <!-- rnb-text-end -->
 <!-- rnb-chunk-begin -->
-<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxucm0oZGYsIHNvZGFfc3N0LCBjb3JkLlVUTSwgZGZfbmFfcm0sIGxvY2F0aW9ucywgdGVtcF92YWx1ZXMpI29wZW4gbWVtb3J5XG5kZl9sb25nMiA8LSBkZl9sb25nICU+JVxuICBzZXBhcmF0ZShjb2wgPSBJRCwgaW50byA9IGMoXCJ5ZWFyXCIsIFwibW9udGhcIiwgXCJkYXlcIikpXG5cbmRmX2xvbmcyJHllYXIgPC0gc3Vic3RyKGFzLmNoYXJhY3RlcihkZl9sb25nMiR5ZWFyKSwgMiwgNSlcbmhlYWQoZGZfbG9uZzIsIDMwKVxuc2F2ZShkZl9sb25nMiwgZmlsZSA9IFwiU09EQV9tb250aGx5X2RhdGEuUlwiKVxuYGBgIn0= -->
-<pre class="r"><code>rm(df, soda_sst, cord.UTM, df_na_rm, locations, temp_values)#open memory
-df_long2 &lt;- df_long %&gt;%
-  separate(col = ID, into = c(&quot;year&quot;, &quot;month&quot;, &quot;day&quot;))
-
-df_long2$year &lt;- substr(as.character(df_long2$year), 2, 5)
-head(df_long2, 30)
-save(df_long2, file = &quot;SODA_monthly_data.R&quot;)</code></pre>
-<!-- rnb-source-end -->
 <!-- rnb-chunk-end -->
 <!-- rnb-text-begin -->
 <p>I currently have mean monthly values for a ton of GPS points within a region. For temperature values, I will first take a mean for each month over the whole region, so then I have a mean month/year value. region_<em>month</em>_mean_sst Then, I will take mean of mean month/year of year of trawl to get a YEARLY mean to represent the whole region. region_year_mean_sst For maximum temperature experienced in a year, I will take maximum of mean month/year and for minimum I will take minimum of mean month/year. region_year_max_sst, region_year_min_sst I intend to look at 10 years of possible lags.</p>
@@ -403,11 +417,6 @@ save(df_long2, file = &quot;SODA_monthly_data.R&quot;)</code></pre>
 <p>First, I will make a lat lon region key</p>
 <!-- rnb-text-end -->
 <!-- rnb-chunk-begin -->
-<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxubGF0bG9uZ3JlZyA8LSBoYXVscyAlPiVcbiAgZHBseXI6OnNlbGVjdChsYXQsIGxvbiwgcmVnaW9uKVxuaGVhZChsYXRsb25ncmVnKVxuYGBgIn0= -->
-<pre class="r"><code>latlongreg &lt;- hauls %&gt;%
-  dplyr::select(lat, lon, region)
-head(latlongreg)</code></pre>
-<!-- rnb-source-end -->
 <!-- rnb-chunk-end -->
 <!-- rnb-text-begin -->
 <p>Then I will link data table with GPS and date and temp with regions using above key, and then take appropriate averages</p>
