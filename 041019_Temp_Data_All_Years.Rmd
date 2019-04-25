@@ -94,7 +94,6 @@ plot(soda_sst[[9]])
 
 saveRDS(soda_sst, "SODA2.1.6_SST.rds")
 ```
-
 New column in latlongyear with "X1958.01.01" format, looks like I may not need to do this after all...
 
 ```{r}
