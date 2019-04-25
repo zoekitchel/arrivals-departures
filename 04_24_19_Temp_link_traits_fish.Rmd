@@ -1,0 +1,50 @@
+---
+title: "Modeling individual instances of colonizations and extinctions usings traits"
+output: html_notebook
+---
+Question: do species traits intereact with changes in temperature (current or past) to determine whether or not a given species colonizes a new region in a given year?
+
+binomial regressions:
+
+colonization in a given year? (yes/no) ~ mean temp of year of trawl x traits + max temp of year of trawl x traits + min temp of year of trawl x traits + change in mean temp from last year x traits + lags + traits
+
+extinction in a given year? (yes/no) ~ mean temp of year of trawl x traits + max temp of year of trawl x traits + min temp of year of trawl x traits + change in mean temp from last year x traits + lags + traits
+
+Traits to use?
+  Ideal:
+  generalism
+  dispersal syndrome
+  longevity
+  body size
+  generation time
+  trophic level
+  current range size
+  mobility (fish, yes/no)
+
+What we actually have from Tim: (** = ideal)
+  trophic level:
+    feeding.mode (generalism?)**
+    tl (trophic level)**
+  Reproduction: (probably whichever we have more data for)
+    spawning.type (open_water/substratum, etc. )**
+    egg.size**
+  Growth:
+    Linf (body size)
+    Lmax (body size)*
+    K (growth rate, 1/y)
+    Lm (length at maturity)**
+    Tmax (maximum age)
+    tm (age maturity)**
+
+*NB: I'm noticing that some species have multiple records in Tim's database, and that some stats are not quite matching up with what I find on fishbase.org (ie BSB max size and such)*
+
+```{r setup}
+
+```
+
+For now, we only care about fish so let's go back to earlier code to extract fish only
+
+```{r}
+
+```
+
