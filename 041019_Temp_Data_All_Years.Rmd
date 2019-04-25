@@ -14,6 +14,7 @@ library(maptools)
 library(rgdal)
 library(tidyr)
 library(ggplot2)
+
 load("/Users/zoekitchel/Documents/grad school/Rutgers/Coursework/Fall 2018/SDM/hauls_catch_Dec2017 1.RData")
 ```
 
