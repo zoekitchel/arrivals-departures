@@ -276,314 +276,139 @@ The following object is masked from ‘package:tidyr’:
 <!-- rnb-chunk-end -->
 <!-- rnb-text-begin -->
 <p>First, let’s ignore traits, and just look at temperature as predictors of yes no colonization and yes no extinction Colonization in this year: col Goes extinct in this year (here last year, gone now) : now_ext Mean temp: region year mean sst Max temp:region year max sst Min temp: region year min sst Seasonality: region year seas sst</p>
+<p>Colonization base mod</p>
 <!-- rnb-text-end -->
 <!-- rnb-chunk-begin -->
-<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuc3VtbWFyeShleHRfbW9kKVxuXG5gYGAifQ== -->
-<pre class="r"><code>summary(ext_mod)
-</code></pre>
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuY29sX21vZCA8LSBnbG1lcihjb2wgfiByZWdpb25feWVhcl9tZWFuX3NzdCArIHJlZ2lvbl95ZWFyX21heF9zc3QgKyByZWdpb25feWVhcl9taW5fc3N0ICsgcmVnaW9uX3llYXJfc2Vhc19zc3QgKyAoMXxyZWcpICsgKDF8eWVhciksIGRhdGEgPSBzcHBfbWFzdGVyX3p0ZW1wLCBmYW1pbHkgPSBiaW5vbWlhbClcbnN1bW1hcnkoY29sX21vZClcbmBgYCJ9 -->
+<pre class="r"><code>col_mod &lt;- glmer(col ~ region_year_mean_sst + region_year_max_sst + region_year_min_sst + region_year_seas_sst + (1|reg) + (1|year), data = spp_master_ztemp, family = binomial)
+summary(col_mod)</code></pre>
 <!-- rnb-source-end -->
-<!-- rnb-output-begin eyJkYXRhIjoiR2VuZXJhbGl6ZWQgbGluZWFyIG1peGVkIG1vZGVsIGZpdCBieSBtYXhpbXVtIGxpa2VsaWhvb2QgKExhcGxhY2UgQXBwcm94aW1hdGlvbikgWydnbG1lck1vZCddXG4gRmFtaWx5OiBiaW5vbWlhbCAgKCBsb2dpdCApXG5Gb3JtdWxhOiBub3dfZXh0IH4gcmVnaW9uX3llYXJfbWluX3NzdCArICgxIHwgcmVnKSArICgxIHwgeWVhcilcbiAgIERhdGE6IHNwcF9tYXN0ZXJfenRlbXBcblxuICAgICBBSUMgICAgICBCSUMgICBsb2dMaWsgZGV2aWFuY2UgZGYucmVzaWQgXG4gIDQ3MjYuMCAgIDQ3NTYuMiAgLTIzNTkuMCAgIDQ3MTguMCAgICAxNDE5NSBcblxuU2NhbGVkIHJlc2lkdWFsczogXG4gICAgTWluICAgICAgMVEgIE1lZGlhbiAgICAgIDNRICAgICBNYXggXG4tMC4zODM4IC0wLjIzNTYgLTAuMTcyOSAtMC4xNDIxICA5LjU4OTAgXG5cblJhbmRvbSBlZmZlY3RzOlxuIEdyb3VwcyBOYW1lICAgICAgICBWYXJpYW5jZSBTdGQuRGV2LlxuIHllYXIgICAoSW50ZXJjZXB0KSAwLjIyOTQgICAwLjQ3ODkgIFxuIHJlZyAgICAoSW50ZXJjZXB0KSAwLjMzMDEgICAwLjU3NDYgIFxuTnVtYmVyIG9mIG9iczogMTQxOTksIGdyb3VwczogIHllYXIsIDM5OyByZWcsIDhcblxuRml4ZWQgZWZmZWN0czpcbiAgICAgICAgICAgICAgICAgICAgRXN0aW1hdGUgU3RkLiBFcnJvciB6IHZhbHVlIFByKD58enwpICAgIFxuKEludGVyY2VwdCkgICAgICAgICAtMy4zMTY0OSAgICAwLjMwNjA3IC0xMC44MzYgICA8MmUtMTYgKioqXG5yZWdpb25feWVhcl9taW5fc3N0IC0wLjA0NjExICAgIDAuMDM0MjIgIC0xLjM0OCAgICAwLjE3OCAgICBcbi0tLVxuU2lnbmlmLiBjb2RlczogIDAg4oCYKioq4oCZIDAuMDAxIOKAmCoq4oCZIDAuMDEg4oCYKuKAmSAwLjA1IOKAmC7igJkgMC4xIOKAmCDigJkgMVxuXG5Db3JyZWxhdGlvbiBvZiBGaXhlZCBFZmZlY3RzOlxuICAgICAgICAgICAgKEludHIpXG5yZ25feXJfbW5fcyAtMC42NTRcbiJ9 -->
-<pre><code>Generalized linear mixed model fit by maximum likelihood (Laplace Approximation) ['glmerMod']
- Family: binomial  ( logit )
-Formula: now_ext ~ region_year_min_sst + (1 | reg) + (1 | year)
-   Data: spp_master_ztemp
-
-     AIC      BIC   logLik deviance df.resid 
-  4726.0   4756.2  -2359.0   4718.0    14195 
-
-Scaled residuals: 
-    Min      1Q  Median      3Q     Max 
--0.3838 -0.2356 -0.1729 -0.1421  9.5890 
-
-Random effects:
- Groups Name        Variance Std.Dev.
- year   (Intercept) 0.2294   0.4789  
- reg    (Intercept) 0.3301   0.5746  
-Number of obs: 14199, groups:  year, 39; reg, 8
-
-Fixed effects:
-                    Estimate Std. Error z value Pr(&gt;|z|)    
-(Intercept)         -3.31649    0.30607 -10.836   &lt;2e-16 ***
-region_year_min_sst -0.04611    0.03422  -1.348    0.178    
----
-Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
-
-Correlation of Fixed Effects:
-            (Intr)
-rgn_yr_mn_s -0.654</code></pre>
-<!-- rnb-output-end -->
+<!-- rnb-chunk-end -->
+<!-- rnb-text-begin -->
+<p>Extinction base mod</p>
+<!-- rnb-text-end -->
+<!-- rnb-chunk-begin -->
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuZXh0X21vZCA8LSBnbG1lcihub3dfZXh0IH4gcmVnaW9uX3llYXJfbWVhbl9zc3QgKyByZWdpb25feWVhcl9tYXhfc3N0ICsgcmVnaW9uX3llYXJfbWluX3NzdCArIHJlZ2lvbl95ZWFyX3NlYXNfc3N0ICsgKDF8cmVnKSArICgxfHllYXIpLCBkYXRhID0gc3BwX21hc3Rlcl96dGVtcCwgZmFtaWx5ID0gYmlub21pYWwpXG5zdW1tYXJ5KGV4dF9tb2QpXG5gYGAifQ== -->
+<pre class="r"><code>ext_mod &lt;- glmer(now_ext ~ region_year_mean_sst + region_year_max_sst + region_year_min_sst + region_year_seas_sst + (1|reg) + (1|year), data = spp_master_ztemp, family = binomial)
+summary(ext_mod)</code></pre>
+<!-- rnb-source-end -->
 <!-- rnb-chunk-end -->
 <!-- rnb-text-begin -->
 <p>The above models perform really poorly, but this doesn’t really surprise me. I think change in temperature is a bigger deal, although I am surprised that seasonality doesn’t do anything.</p>
 <p>Let’s now take a look at change only</p>
 <!-- rnb-text-end -->
 <!-- rnb-chunk-begin -->
-<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuZXh0X21vZF9jaGFuZ2UgPC0gZ2xtZXIobm93X2V4dCB+IHNzdF9tZWFuX2NoYW5nZSArIHNzdF9tYXhfY2hhbmdlICsgc3N0X21pbl9jaGFuZ2UgKyBzc3Rfc2Vhc19jaGFuZ2UgKyAoMXxyZWcpICsgKDF8eWVhciksIGRhdGEgPSBzcHBfbWFzdGVyX3p0ZW1wLCBmYW1pbHkgPSBiaW5vbWlhbClcblxuYGBgIn0= -->
-<pre class="r"><code>ext_mod_change &lt;- glmer(now_ext ~ sst_mean_change + sst_max_change + sst_min_change + sst_seas_change + (1|reg) + (1|year), data = spp_master_ztemp, family = binomial)
-</code></pre>
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuY29sX21vZF9jaGFuZ2UgPC0gZ2xtZXIoY29sIH4gc3N0X21lYW5fY2hhbmdlICsgc3N0X21heF9jaGFuZ2UgKyBzc3RfbWluX2NoYW5nZSArIHNzdF9zZWFzX2NoYW5nZSArICgxfHJlZykgKyAoMXx5ZWFyKSwgZGF0YSA9IHNwcF9tYXN0ZXJfenRlbXAsIGZhbWlseSA9IGJpbm9taWFsKVxuc3VtbWFyeShjb2xfbW9kX2NoYW5nZSlcbmV4dF9tb2RfY2hhbmdlIDwtIGdsbWVyKG5vd19leHQgfiBzc3RfbWVhbl9jaGFuZ2UgKyBzc3RfbWF4X2NoYW5nZSArIHNzdF9taW5fY2hhbmdlICsgc3N0X3NlYXNfY2hhbmdlICsgKDF8cmVnKSArICgxfHllYXIpLCBkYXRhID0gc3BwX21hc3Rlcl96dGVtcCwgZmFtaWx5ID0gYmlub21pYWwpXG5zdW1tYXJ5KGV4dF9tb2RfY2hhbmdlKVxuYGBgIn0= -->
+<pre class="r"><code>col_mod_change &lt;- glmer(col ~ sst_mean_change + sst_max_change + sst_min_change + sst_seas_change + (1|reg) + (1|year), data = spp_master_ztemp, family = binomial)
+summary(col_mod_change)
+ext_mod_change &lt;- glmer(now_ext ~ sst_mean_change + sst_max_change + sst_min_change + sst_seas_change + (1|reg) + (1|year), data = spp_master_ztemp, family = binomial)
+summary(ext_mod_change)</code></pre>
 <!-- rnb-source-end -->
-<!-- rnb-output-begin eyJkYXRhIjoiZml4ZWQtZWZmZWN0IG1vZGVsIG1hdHJpeCBpcyByYW5rIGRlZmljaWVudCBzbyBkcm9wcGluZyAxIGNvbHVtbiAvIGNvZWZmaWNpZW50XG4ifQ== -->
-<pre><code>fixed-effect model matrix is rank deficient so dropping 1 column / coefficient</code></pre>
-<!-- rnb-output-end -->
-<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuc3VtbWFyeShleHRfbW9kX2NoYW5nZSlcbmBgYCJ9 -->
-<pre class="r"><code>summary(ext_mod_change)</code></pre>
-<!-- rnb-source-end -->
-<!-- rnb-output-begin eyJkYXRhIjoiR2VuZXJhbGl6ZWQgbGluZWFyIG1peGVkIG1vZGVsIGZpdCBieSBtYXhpbXVtIGxpa2VsaWhvb2QgKExhcGxhY2UgQXBwcm94aW1hdGlvbikgWydnbG1lck1vZCddXG4gRmFtaWx5OiBiaW5vbWlhbCAgKCBsb2dpdCApXG5Gb3JtdWxhOiBub3dfZXh0IH4gc3N0X21lYW5fY2hhbmdlICsgc3N0X21heF9jaGFuZ2UgKyBzc3RfbWluX2NoYW5nZSArICAgICAgc3N0X3NlYXNfY2hhbmdlICsgKDEgfCByZWcpICsgKDEgfCB5ZWFyKVxuICAgRGF0YTogc3BwX21hc3Rlcl96dGVtcFxuXG4gICAgIEFJQyAgICAgIEJJQyAgIGxvZ0xpayBkZXZpYW5jZSBkZi5yZXNpZCBcbiAgNDczMC43ICAgNDc3Ni4wICAtMjM1OS4zICAgNDcxOC43ICAgIDE0MTkzIFxuXG5TY2FsZWQgcmVzaWR1YWxzOiBcbiAgICBNaW4gICAgICAxUSAgTWVkaWFuICAgICAgM1EgICAgIE1heCBcbi0wLjM4NzggLTAuMjMwNyAtMC4xNzA1IC0wLjE0MDUgIDkuOTQxNCBcblxuUmFuZG9tIGVmZmVjdHM6XG4gR3JvdXBzIE5hbWUgICAgICAgIFZhcmlhbmNlIFN0ZC5EZXYuXG4geWVhciAgIChJbnRlcmNlcHQpIDAuMjU1MCAgIDAuNTA1MCAgXG4gcmVnICAgIChJbnRlcmNlcHQpIDAuMzEyNCAgIDAuNTU4OSAgXG5OdW1iZXIgb2Ygb2JzOiAxNDE5OSwgZ3JvdXBzOiAgeWVhciwgMzk7IHJlZywgOFxuXG5GaXhlZCBlZmZlY3RzOlxuICAgICAgICAgICAgICAgICBFc3RpbWF0ZSBTdGQuIEVycm9yIHogdmFsdWUgUHIoPnx6fCkgICAgXG4oSW50ZXJjZXB0KSAgICAgLTMuNTkzMzM5ICAgMC4yMjg1ODcgLTE1LjcyMCAgIDwyZS0xNiAqKipcbnNzdF9tZWFuX2NoYW5nZSAtMC4wOTA4MjAgICAwLjE3OTM4NyAgLTAuNTA2ICAgIDAuNjEzICAgIFxuc3N0X21heF9jaGFuZ2UgICAwLjA5MDAzNCAgIDAuMDg3MzY3ICAgMS4wMzEgICAgMC4zMDMgICAgXG5zc3RfbWluX2NoYW5nZSAgIDAuMDA5Njc4ICAgMC4wODYyODIgICAwLjExMiAgICAwLjkxMSAgICBcbi0tLVxuU2lnbmlmLiBjb2RlczogIDAg4oCYKioq4oCZIDAuMDAxIOKAmCoq4oCZIDAuMDEg4oCYKuKAmSAwLjA1IOKAmC7igJkgMC4xIOKAmCDigJkgMVxuXG5Db3JyZWxhdGlvbiBvZiBGaXhlZCBFZmZlY3RzOlxuICAgICAgICAgICAgIChJbnRyKSBzc3RfbWVuX2Nobmcgc3N0X214X1xuc3N0X21lbl9jaG5nIC0wLjAzNSAgICAgICAgICAgICAgICAgICAgIFxuc3N0X214X2NobmcgICAwLjAxNyAtMC44MDEgICAgICAgICAgICAgIFxuc3N0X21pbl9jaG5nICAwLjAxNiAtMC43ODMgICAgICAgIDAuNTYyIFxuZml0IHdhcm5pbmdzOlxuZml4ZWQtZWZmZWN0IG1vZGVsIG1hdHJpeCBpcyByYW5rIGRlZmljaWVudCBzbyBkcm9wcGluZyAxIGNvbHVtbiAvIGNvZWZmaWNpZW50XG4ifQ== -->
-<pre><code>Generalized linear mixed model fit by maximum likelihood (Laplace Approximation) ['glmerMod']
- Family: binomial  ( logit )
-Formula: now_ext ~ sst_mean_change + sst_max_change + sst_min_change +      sst_seas_change + (1 | reg) + (1 | year)
-   Data: spp_master_ztemp
-
-     AIC      BIC   logLik deviance df.resid 
-  4730.7   4776.0  -2359.3   4718.7    14193 
-
-Scaled residuals: 
-    Min      1Q  Median      3Q     Max 
--0.3878 -0.2307 -0.1705 -0.1405  9.9414 
-
-Random effects:
- Groups Name        Variance Std.Dev.
- year   (Intercept) 0.2550   0.5050  
- reg    (Intercept) 0.3124   0.5589  
-Number of obs: 14199, groups:  year, 39; reg, 8
-
-Fixed effects:
-                 Estimate Std. Error z value Pr(&gt;|z|)    
-(Intercept)     -3.593339   0.228587 -15.720   &lt;2e-16 ***
-sst_mean_change -0.090820   0.179387  -0.506    0.613    
-sst_max_change   0.090034   0.087367   1.031    0.303    
-sst_min_change   0.009678   0.086282   0.112    0.911    
----
-Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
-
-Correlation of Fixed Effects:
-             (Intr) sst_men_chng sst_mx_
-sst_men_chng -0.035                     
-sst_mx_chng   0.017 -0.801              
-sst_min_chng  0.016 -0.783        0.562 
-fit warnings:
-fixed-effect model matrix is rank deficient so dropping 1 column / coefficient</code></pre>
-<!-- rnb-output-end -->
 <!-- rnb-chunk-end -->
 <!-- rnb-text-begin -->
 <p>Let’s now take a look at absolute value of temp change from previous year only</p>
 <!-- rnb-text-end -->
 <!-- rnb-chunk-begin -->
-<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuc3VtbWFyeShjb2xfbW9kX2NoYW5nZV9hYnMpXG5cbmBgYCJ9 -->
-<pre class="r"><code>summary(col_mod_change_abs)
-</code></pre>
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuY29sX21vZF9jaGFuZ2VfYWJzIDwtIGdsbWVyKGNvbCB+IHNzdF9tZWFuX2NoYW5nZV9hYnMgKyBzc3RfbWF4X2NoYW5nZV9hYnMgKyBzc3RfbWluX2NoYW5nZV9hYnMgKyBzc3Rfc2Vhc19jaGFuZ2VfYWJzICsgKDF8cmVnKSArICgxfHllYXIpLCBkYXRhID0gc3BwX21hc3Rlcl96dGVtcCwgZmFtaWx5ID0gYmlub21pYWwpXG5zdW1tYXJ5KGNvbF9tb2RfY2hhbmdlX2FicylcbmBgYCJ9 -->
+<pre class="r"><code>col_mod_change_abs &lt;- glmer(col ~ sst_mean_change_abs + sst_max_change_abs + sst_min_change_abs + sst_seas_change_abs + (1|reg) + (1|year), data = spp_master_ztemp, family = binomial)
+summary(col_mod_change_abs)</code></pre>
 <!-- rnb-source-end -->
-<!-- rnb-output-begin eyJkYXRhIjoiR2VuZXJhbGl6ZWQgbGluZWFyIG1peGVkIG1vZGVsIGZpdCBieSBtYXhpbXVtIGxpa2VsaWhvb2QgKExhcGxhY2UgQXBwcm94aW1hdGlvbikgWydnbG1lck1vZCddXG4gRmFtaWx5OiBiaW5vbWlhbCAgKCBsb2dpdCApXG5Gb3JtdWxhOiBjb2wgfiBzc3RfbWVhbl9jaGFuZ2VfYWJzICsgc3N0X21heF9jaGFuZ2VfYWJzICsgc3N0X21pbl9jaGFuZ2VfYWJzICsgICAgICBzc3Rfc2Vhc19jaGFuZ2VfYWJzICsgKDEgfCByZWcpICsgKDEgfCB5ZWFyKVxuICAgRGF0YTogc3BwX21hc3Rlcl96dGVtcFxuXG4gICAgIEFJQyAgICAgIEJJQyAgIGxvZ0xpayBkZXZpYW5jZSBkZi5yZXNpZCBcbiAgNTQ1Ni4wICAgNTUwOC45ICAtMjcyMS4wICAgNTQ0Mi4wICAgIDE0MTkyIFxuXG5TY2FsZWQgcmVzaWR1YWxzOiBcbiAgICBNaW4gICAgICAxUSAgTWVkaWFuICAgICAgM1EgICAgIE1heCBcbi0wLjM4MjggLTAuMjQxNiAtMC4yMDM5IC0wLjE3NTEgIDguMjcxOSBcblxuUmFuZG9tIGVmZmVjdHM6XG4gR3JvdXBzIE5hbWUgICAgICAgIFZhcmlhbmNlIFN0ZC5EZXYuXG4geWVhciAgIChJbnRlcmNlcHQpIDAuMTQzNSAgIDAuMzc4OCAgXG4gcmVnICAgIChJbnRlcmNlcHQpIDAuMTM4NyAgIDAuMzcyNCAgXG5OdW1iZXIgb2Ygb2JzOiAxNDE5OSwgZ3JvdXBzOiAgeWVhciwgMzk7IHJlZywgOFxuXG5GaXhlZCBlZmZlY3RzOlxuICAgICAgICAgICAgICAgICAgICBFc3RpbWF0ZSBTdGQuIEVycm9yIHogdmFsdWUgUHIoPnx6fCkgICAgXG4oSW50ZXJjZXB0KSAgICAgICAgIC0zLjMzNDg2ICAgIDAuMTc2NzggLTE4Ljg2NCAgPCAyZS0xNiAqKipcbnNzdF9tZWFuX2NoYW5nZV9hYnMgIDAuMzE3NjEgICAgMC4xNjI0OCAgIDEuOTU1ICAwLjA1MDYxIC4gIFxuc3N0X21heF9jaGFuZ2VfYWJzICAtMC4yMDczMiAgICAwLjEwNDY3ICAtMS45ODEgIDAuMDQ3NjMgKiAgXG5zc3RfbWluX2NoYW5nZV9hYnMgIC0wLjEzMzM1ICAgIDAuMTA1NDggIC0xLjI2NCAgMC4yMDYxMiAgICBcbnNzdF9zZWFzX2NoYW5nZV9hYnMgIDAuMjM5NzMgICAgMC4wNzgyNiAgIDMuMDYzICAwLjAwMjE5ICoqIFxuLS0tXG5TaWduaWYuIGNvZGVzOiAgMCDigJgqKirigJkgMC4wMDEg4oCYKirigJkgMC4wMSDigJgq4oCZIDAuMDUg4oCYLuKAmSAwLjEg4oCYIOKAmSAxXG5cbkNvcnJlbGF0aW9uIG9mIEZpeGVkIEVmZmVjdHM6XG4gICAgICAgICAgICAgICAgKEludHIpIHNzdF9tZW5fY2huZ19icyBzc3RfbXhfXyBzc3RfbWluX2NobmdfYnNcbnNzdF9tZW5fY2huZ19icyAtMC4xNDcgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIFxuc3N0X214X2Nobl8gICAgIC0wLjA1MSAtMC42MzMgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgXG5zc3RfbWluX2NobmdfYnMgLTAuMTE2IC0wLjQ3MiAgICAgICAgICAgMC4zNzkgICAgICAgICAgICAgICAgICBcbnNzdF9zc19jaG5fICAgICAtMC4xMzMgIDAuNDQyICAgICAgICAgIC0wLjcwMyAgIC0wLjUwNiAgICAgICAgIFxuIn0= -->
-<pre><code>Generalized linear mixed model fit by maximum likelihood (Laplace Approximation) ['glmerMod']
- Family: binomial  ( logit )
-Formula: col ~ sst_mean_change_abs + sst_max_change_abs + sst_min_change_abs +      sst_seas_change_abs + (1 | reg) + (1 | year)
-   Data: spp_master_ztemp
-
-     AIC      BIC   logLik deviance df.resid 
-  5456.0   5508.9  -2721.0   5442.0    14192 
-
-Scaled residuals: 
-    Min      1Q  Median      3Q     Max 
--0.3828 -0.2416 -0.2039 -0.1751  8.2719 
-
-Random effects:
- Groups Name        Variance Std.Dev.
- year   (Intercept) 0.1435   0.3788  
- reg    (Intercept) 0.1387   0.3724  
-Number of obs: 14199, groups:  year, 39; reg, 8
-
-Fixed effects:
-                    Estimate Std. Error z value Pr(&gt;|z|)    
-(Intercept)         -3.33486    0.17678 -18.864  &lt; 2e-16 ***
-sst_mean_change_abs  0.31761    0.16248   1.955  0.05061 .  
-sst_max_change_abs  -0.20732    0.10467  -1.981  0.04763 *  
-sst_min_change_abs  -0.13335    0.10548  -1.264  0.20612    
-sst_seas_change_abs  0.23973    0.07826   3.063  0.00219 ** 
----
-Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
-
-Correlation of Fixed Effects:
-                (Intr) sst_men_chng_bs sst_mx__ sst_min_chng_bs
-sst_men_chng_bs -0.147                                         
-sst_mx_chn_     -0.051 -0.633                                  
-sst_min_chng_bs -0.116 -0.472           0.379                  
-sst_ss_chn_     -0.133  0.442          -0.703   -0.506         </code></pre>
-<!-- rnb-output-end -->
 <!-- rnb-chunk-end -->
 <!-- rnb-text-begin -->
 <p>This one above actually gives really good results, this is exciting! When absolute change in max yearly temperature INCREASES, likelihood of colonization increase When absolute change in seasonality INCREASES, likelihood of colonizations decreases When absolute change in mean yearly temperature INCREASES, likelihood of colonization increases</p>
+<p>How do we feel about the mixed effects? Let’s compare AIC</p>
 <!-- rnb-text-end -->
 <!-- rnb-chunk-begin -->
-<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuc3VtbWFyeShleHRfbW9kX2NoYW5nZV9hYnMpXG5cbmBgYCJ9 -->
-<pre class="r"><code>summary(ext_mod_change_abs)
-</code></pre>
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxub3B0aW9ucyhuYS5hY3Rpb24gPSBcIm5hLm9taXRcIilcbmNvbF9tb2RfY2hhbmdlX2Fic19yZWdhc3JhbmRvbSA8LSBnbG1lcihjb2wgfiBzc3RfbWVhbl9jaGFuZ2VfYWJzICsgc3N0X21heF9jaGFuZ2VfYWJzICsgc3N0X21pbl9jaGFuZ2VfYWJzICsgc3N0X3NlYXNfY2hhbmdlX2FicyArICgxfHJlZyksIGRhdGEgPSBzcHBfbWFzdGVyX3p0ZW1wLCBmYW1pbHkgPSBiaW5vbWlhbClcbmNvbF9tb2RfY2hhbmdlX2Fic195ZWFyYXNyYW5kb20gPC0gZ2xtZXIoY29sIH4gc3N0X21lYW5fY2hhbmdlX2FicyArIHNzdF9tYXhfY2hhbmdlX2FicyArIHNzdF9taW5fY2hhbmdlX2FicyArIHNzdF9zZWFzX2NoYW5nZV9hYnMgKyAoMXx5ZWFyKSwgZGF0YSA9IHNwcF9tYXN0ZXJfenRlbXAsIGZhbWlseSA9IGJpbm9taWFsKVxuY29sX21vZF9jaGFuZ2VfYWJzX25vcmFuZG9tIDwtIGdsbShjb2wgfiBzc3RfbWVhbl9jaGFuZ2VfYWJzICsgc3N0X21heF9jaGFuZ2VfYWJzICsgc3N0X21pbl9jaGFuZ2VfYWJzICsgc3N0X3NlYXNfY2hhbmdlX2FicywgZGF0YSA9IHNwcF9tYXN0ZXJfenRlbXAsIGZhbWlseSA9IGJpbm9taWFsKVxuQUlDYyhjb2xfbW9kX2NoYW5nZV9hYnMsIGNvbF9tb2RfY2hhbmdlX2Fic19yZWdhc3JhbmRvbSxjb2xfbW9kX2NoYW5nZV9hYnNfeWVhcmFzcmFuZG9tLCBjb2xfbW9kX2NoYW5nZV9hYnNfbm9yYW5kb20pXG5gYGAifQ== -->
+<pre class="r"><code>options(na.action = &quot;na.omit&quot;)
+col_mod_change_abs_regasrandom &lt;- glmer(col ~ sst_mean_change_abs + sst_max_change_abs + sst_min_change_abs + sst_seas_change_abs + (1|reg), data = spp_master_ztemp, family = binomial)
+col_mod_change_abs_yearasrandom &lt;- glmer(col ~ sst_mean_change_abs + sst_max_change_abs + sst_min_change_abs + sst_seas_change_abs + (1|year), data = spp_master_ztemp, family = binomial)
+col_mod_change_abs_norandom &lt;- glm(col ~ sst_mean_change_abs + sst_max_change_abs + sst_min_change_abs + sst_seas_change_abs, data = spp_master_ztemp, family = binomial)
+AICc(col_mod_change_abs, col_mod_change_abs_regasrandom,col_mod_change_abs_yearasrandom, col_mod_change_abs_norandom)</code></pre>
 <!-- rnb-source-end -->
-<!-- rnb-output-begin eyJkYXRhIjoiR2VuZXJhbGl6ZWQgbGluZWFyIG1peGVkIG1vZGVsIGZpdCBieSBtYXhpbXVtIGxpa2VsaWhvb2QgKExhcGxhY2UgQXBwcm94aW1hdGlvbikgWydnbG1lck1vZCddXG4gRmFtaWx5OiBiaW5vbWlhbCAgKCBsb2dpdCApXG5Gb3JtdWxhOiBub3dfZXh0IH4gc3N0X21lYW5fY2hhbmdlX2FicyArIHNzdF9tYXhfY2hhbmdlX2FicyArIHNzdF9taW5fY2hhbmdlX2FicyArICAgICAgc3N0X3NlYXNfY2hhbmdlX2FicyArICgxIHwgcmVnKSArICgxIHwgeWVhcilcbiAgIERhdGE6IHNwcF9tYXN0ZXJfenRlbXBcblxuICAgICBBSUMgICAgICBCSUMgICBsb2dMaWsgZGV2aWFuY2UgZGYucmVzaWQgXG4gIDQ3MjkuMCAgIDQ3ODEuOSAgLTIzNTcuNSAgIDQ3MTUuMCAgICAxNDE5MiBcblxuU2NhbGVkIHJlc2lkdWFsczogXG4gICAgTWluICAgICAgMVEgIE1lZGlhbiAgICAgIDNRICAgICBNYXggXG4tMC4zODkwIC0wLjIyNzAgLTAuMTczNyAtMC4xNDExICA5LjQ4MTIgXG5cblJhbmRvbSBlZmZlY3RzOlxuIEdyb3VwcyBOYW1lICAgICAgICBWYXJpYW5jZSBTdGQuRGV2LlxuIHllYXIgICAoSW50ZXJjZXB0KSAwLjE5MzYgICAwLjQ0MDAgIFxuIHJlZyAgICAoSW50ZXJjZXB0KSAwLjI5NjIgICAwLjU0NDIgIFxuTnVtYmVyIG9mIG9iczogMTQxOTksIGdyb3VwczogIHllYXIsIDM5OyByZWcsIDhcblxuRml4ZWQgZWZmZWN0czpcbiAgICAgICAgICAgICAgICAgICAgRXN0aW1hdGUgU3RkLiBFcnJvciB6IHZhbHVlIFByKD58enwpICAgIFxuKEludGVyY2VwdCkgICAgICAgICAtMy41ODcxNyAgICAwLjIzNjEwIC0xNS4xOTMgICA8MmUtMTYgKioqXG5zc3RfbWVhbl9jaGFuZ2VfYWJzICAwLjM4ODEwICAgIDAuMTgxMDEgICAyLjE0NCAgICAwLjAzMiAqICBcbnNzdF9tYXhfY2hhbmdlX2FicyAgLTAuMTc3MzQgICAgMC4xMTgxOCAgLTEuNTAxICAgIDAuMTMzICAgIFxuc3N0X21pbl9jaGFuZ2VfYWJzICAtMC4wOTcyNyAgICAwLjExMjk5ICAtMC44NjEgICAgMC4zODkgICAgXG5zc3Rfc2Vhc19jaGFuZ2VfYWJzICAwLjAyMjk3ICAgIDAuMDg0MzggICAwLjI3MiAgICAwLjc4NSAgICBcbi0tLVxuU2lnbmlmLiBjb2RlczogIDAg4oCYKioq4oCZIDAuMDAxIOKAmCoq4oCZIDAuMDEg4oCYKuKAmSAwLjA1IOKAmC7igJkgMC4xIOKAmCDigJkgMVxuXG5Db3JyZWxhdGlvbiBvZiBGaXhlZCBFZmZlY3RzOlxuICAgICAgICAgICAgICAgIChJbnRyKSBzc3RfbWVuX2NobmdfYnMgc3N0X214X18gc3N0X21pbl9jaG5nX2JzXG5zc3RfbWVuX2NobmdfYnMgLTAuMDg2ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICBcbnNzdF9teF9jaG5fICAgICAtMC4wNjAgLTAuNjQ5ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIFxuc3N0X21pbl9jaG5nX2JzIC0wLjEzNiAtMC40NTggICAgICAgICAgIDAuMzU3ICAgICAgICAgICAgICAgICAgXG5zc3Rfc3NfY2huXyAgICAgLTAuMTAxICAwLjM2NCAgICAgICAgICAtMC42NDggICAtMC4zOTcgICAgICAgICBcbiJ9 -->
-<pre><code>Generalized linear mixed model fit by maximum likelihood (Laplace Approximation) ['glmerMod']
- Family: binomial  ( logit )
-Formula: now_ext ~ sst_mean_change_abs + sst_max_change_abs + sst_min_change_abs +      sst_seas_change_abs + (1 | reg) + (1 | year)
-   Data: spp_master_ztemp
-
-     AIC      BIC   logLik deviance df.resid 
-  4729.0   4781.9  -2357.5   4715.0    14192 
-
-Scaled residuals: 
-    Min      1Q  Median      3Q     Max 
--0.3890 -0.2270 -0.1737 -0.1411  9.4812 
-
-Random effects:
- Groups Name        Variance Std.Dev.
- year   (Intercept) 0.1936   0.4400  
- reg    (Intercept) 0.2962   0.5442  
-Number of obs: 14199, groups:  year, 39; reg, 8
-
-Fixed effects:
-                    Estimate Std. Error z value Pr(&gt;|z|)    
-(Intercept)         -3.58717    0.23610 -15.193   &lt;2e-16 ***
-sst_mean_change_abs  0.38810    0.18101   2.144    0.032 *  
-sst_max_change_abs  -0.17734    0.11818  -1.501    0.133    
-sst_min_change_abs  -0.09727    0.11299  -0.861    0.389    
-sst_seas_change_abs  0.02297    0.08438   0.272    0.785    
----
-Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
-
-Correlation of Fixed Effects:
-                (Intr) sst_men_chng_bs sst_mx__ sst_min_chng_bs
-sst_men_chng_bs -0.086                                         
-sst_mx_chn_     -0.060 -0.649                                  
-sst_min_chng_bs -0.136 -0.458           0.357                  
-sst_ss_chn_     -0.101  0.364          -0.648   -0.397         </code></pre>
-<!-- rnb-output-end -->
+<!-- rnb-chunk-end -->
+<!-- rnb-text-begin -->
+<p>Best with both random effects!!</p>
+<!-- rnb-text-end -->
+<!-- rnb-chunk-begin -->
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuZXh0X21vZF9jaGFuZ2VfYWJzIDwtIGdsbWVyKG5vd19leHQgfiBzc3RfbWVhbl9jaGFuZ2VfYWJzICsgc3N0X21heF9jaGFuZ2VfYWJzICsgc3N0X21pbl9jaGFuZ2VfYWJzICsgc3N0X3NlYXNfY2hhbmdlX2FicyArICgxfHJlZykgKyAoMXx5ZWFyKSwgZGF0YSA9IHNwcF9tYXN0ZXJfenRlbXAsIGZhbWlseSA9IGJpbm9taWFsKVxuc3VtbWFyeShleHRfbW9kX2NoYW5nZV9hYnMpXG5gYGAifQ== -->
+<pre class="r"><code>ext_mod_change_abs &lt;- glmer(now_ext ~ sst_mean_change_abs + sst_max_change_abs + sst_min_change_abs + sst_seas_change_abs + (1|reg) + (1|year), data = spp_master_ztemp, family = binomial)
+summary(ext_mod_change_abs)</code></pre>
+<!-- rnb-source-end -->
 <!-- rnb-chunk-end -->
 <!-- rnb-text-begin -->
 <p>Not as exciting as colonizations, but not surprised. When absolute change in mean yearly temperature INCREASES, likelihood of extinction ALSO increases</p>
-<p>Now, let’s play around with lags a bit using dredge, this didn’t work because of NA’s, I guess I’ll compare one by one then?? <a href="https://rdrr.io/cran/MuMIn/src/demo/dredge.subset.R" class="uri">https://rdrr.io/cran/MuMIn/src/demo/dredge.subset.R</a></p>
+<p>Again, how do we feel about the mixed effects in our extinction model? Let’s compare AIC</p>
 <!-- rnb-text-end -->
 <!-- rnb-chunk-begin -->
-<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuZGQgPC0gZHJlZGdlKGZtX2NvbClcblxuYGBgIn0= -->
-<pre class="r"><code>dd &lt;- dredge(fm_col)
-</code></pre>
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxub3B0aW9ucyhuYS5hY3Rpb24gPSBcIm5hLm9taXRcIilcbmV4dF9tb2RfY2hhbmdlX2Fic19yZWdhc3JhbmRvbSA8LSBnbG1lcihub3dfZXh0IH4gc3N0X21lYW5fY2hhbmdlX2FicyArIHNzdF9tYXhfY2hhbmdlX2FicyArIHNzdF9taW5fY2hhbmdlX2FicyArIHNzdF9zZWFzX2NoYW5nZV9hYnMgKyAoMXxyZWcpLCBkYXRhID0gc3BwX21hc3Rlcl96dGVtcCwgZmFtaWx5ID0gYmlub21pYWwpXG5leHRfbW9kX2NoYW5nZV9hYnNfeWVhcmFzcmFuZG9tIDwtIGdsbWVyKG5vd19leHQgfiBzc3RfbWVhbl9jaGFuZ2VfYWJzICsgc3N0X21heF9jaGFuZ2VfYWJzICsgc3N0X21pbl9jaGFuZ2VfYWJzICsgc3N0X3NlYXNfY2hhbmdlX2FicyArICgxfHllYXIpLCBkYXRhID0gc3BwX21hc3Rlcl96dGVtcCwgZmFtaWx5ID0gYmlub21pYWwpXG5leHRfbW9kX2NoYW5nZV9hYnNfbm9yYW5kb20gPC0gZ2xtKG5vd19leHQgfiBzc3RfbWVhbl9jaGFuZ2VfYWJzICsgc3N0X21heF9jaGFuZ2VfYWJzICsgc3N0X21pbl9jaGFuZ2VfYWJzICsgc3N0X3NlYXNfY2hhbmdlX2FicywgZGF0YSA9IHNwcF9tYXN0ZXJfenRlbXAsIGZhbWlseSA9IGJpbm9taWFsKVxuQUlDYyhleHRfbW9kX2NoYW5nZV9hYnMsIGV4dF9tb2RfY2hhbmdlX2Fic19yZWdhc3JhbmRvbSxleHRfbW9kX2NoYW5nZV9hYnNfeWVhcmFzcmFuZG9tLCBleHRfbW9kX2NoYW5nZV9hYnNfbm9yYW5kb20pXG5gYGAifQ== -->
+<pre class="r"><code>options(na.action = &quot;na.omit&quot;)
+ext_mod_change_abs_regasrandom &lt;- glmer(now_ext ~ sst_mean_change_abs + sst_max_change_abs + sst_min_change_abs + sst_seas_change_abs + (1|reg), data = spp_master_ztemp, family = binomial)
+ext_mod_change_abs_yearasrandom &lt;- glmer(now_ext ~ sst_mean_change_abs + sst_max_change_abs + sst_min_change_abs + sst_seas_change_abs + (1|year), data = spp_master_ztemp, family = binomial)
+ext_mod_change_abs_norandom &lt;- glm(now_ext ~ sst_mean_change_abs + sst_max_change_abs + sst_min_change_abs + sst_seas_change_abs, data = spp_master_ztemp, family = binomial)
+AICc(ext_mod_change_abs, ext_mod_change_abs_regasrandom,ext_mod_change_abs_yearasrandom, ext_mod_change_abs_norandom)</code></pre>
 <!-- rnb-source-end -->
-<!-- rnb-output-begin eyJkYXRhIjoiRXJyb3IgaW4gZHJlZGdlKGZtX2NvbCkgOiBcbiAgJ2dsb2JhbC5tb2RlbCcncyAnbmEuYWN0aW9uJyBhcmd1bWVudCBpcyBub3Qgc2V0IGFuZCBvcHRpb25zKCduYS5hY3Rpb24nKSBpcyBcIm5hLm9taXRcIlxuIn0= -->
-<pre><code>Error in dredge(fm_col) : 
-  'global.model''s 'na.action' argument is not set and options('na.action') is &quot;na.omit&quot;</code></pre>
-<!-- rnb-output-end -->
-<!-- rnb-chunk-end -->
-<!-- rnb-text-begin -->
-<p>What model performs better? a model with changes in the past year? or a model with changes in the year before last? First, let’s make a model with changes from the year before last</p>
-<!-- rnb-text-end -->
-<!-- rnb-chunk-begin -->
-<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuc3VtbWFyeShjb2xfbW9kX2NoYW5nZV9hYnNfbGFnMSlcblxuYGBgIn0= -->
-<pre class="r"><code>summary(col_mod_change_abs_lag1)
-</code></pre>
-<!-- rnb-source-end -->
-<!-- rnb-output-begin eyJkYXRhIjoiR2VuZXJhbGl6ZWQgbGluZWFyIG1peGVkIG1vZGVsIGZpdCBieSBtYXhpbXVtIGxpa2VsaWhvb2QgKExhcGxhY2UgQXBwcm94aW1hdGlvbikgWydnbG1lck1vZCddXG4gRmFtaWx5OiBiaW5vbWlhbCAgKCBsb2dpdCApXG5Gb3JtdWxhOiBjb2wgfiBzc3RfbWVhbl9jaGFuZ2VfbGFnMV9hYnMgKyBzc3RfbWF4X2NoYW5nZV9sYWcxX2FicyArIHNzdF9taW5fY2hhbmdlX2xhZzFfYWJzICsgICAgICBzc3Rfc2Vhc19jaGFuZ2VfbGFnMV9hYnMgKyAoMSB8IHJlZykgKyAoMSB8IHllYXIpXG4gICBEYXRhOiBzcHBfbWFzdGVyX3p0ZW1wXG5cbiAgICAgQUlDICAgICAgQklDICAgbG9nTGlrIGRldmlhbmNlIGRmLnJlc2lkIFxuICA1NDY0LjQgICA1NTE3LjMgIC0yNzI1LjIgICA1NDUwLjQgICAgMTQxOTIgXG5cblNjYWxlZCByZXNpZHVhbHM6IFxuICAgIE1pbiAgICAgIDFRICBNZWRpYW4gICAgICAzUSAgICAgTWF4IFxuLTAuMzk0OCAtMC4yNDQ4IC0wLjE5OTcgLTAuMTc1NSAgNy4wODE5IFxuXG5SYW5kb20gZWZmZWN0czpcbiBHcm91cHMgTmFtZSAgICAgICAgVmFyaWFuY2UgU3RkLkRldi5cbiB5ZWFyICAgKEludGVyY2VwdCkgMC4xMjIyNyAgMC4zNDk3ICBcbiByZWcgICAgKEludGVyY2VwdCkgMC4wODg4OCAgMC4yOTgxICBcbk51bWJlciBvZiBvYnM6IDE0MTk5LCBncm91cHM6ICB5ZWFyLCAzOTsgcmVnLCA4XG5cbkZpeGVkIGVmZmVjdHM6XG4gICAgICAgICAgICAgICAgICAgICAgICAgIEVzdGltYXRlIFN0ZC4gRXJyb3IgeiB2YWx1ZSBQcig+fHp8KSAgICBcbihJbnRlcmNlcHQpICAgICAgICAgICAgICAtMy4zMjg2NTEgICAwLjMxMjQ5OSAtMTAuNjUyICAgPDJlLTE2ICoqKlxuc3N0X21lYW5fY2hhbmdlX2xhZzFfYWJzICAwLjE3Nzk2NSAgIDAuMTIyMjA4ICAgMS40NTYgICAgMC4xNDUgICAgXG5zc3RfbWF4X2NoYW5nZV9sYWcxX2FicyAgIDAuMDA1OTA0ICAgMC4wMzk0MDIgICAwLjE1MCAgICAwLjg4MSAgICBcbnNzdF9taW5fY2hhbmdlX2xhZzFfYWJzICAgMC4wMzQzNDkgICAwLjA0NDc2MCAgIDAuNzY3ICAgIDAuNDQzICAgIFxuc3N0X3NlYXNfY2hhbmdlX2xhZzFfYWJzIC0wLjAyMTI1NSAgIDAuMDI4NDI1ICAtMC43NDggICAgMC40NTUgICAgXG4tLS1cblNpZ25pZi4gY29kZXM6ICAwIOKAmCoqKuKAmSAwLjAwMSDigJgqKuKAmSAwLjAxIOKAmCrigJkgMC4wNSDigJgu4oCZIDAuMSDigJgg4oCZIDFcblxuQ29ycmVsYXRpb24gb2YgRml4ZWQgRWZmZWN0czpcbiAgICAgICAgICAgICAgICAgICAgKEludHIpIHNzdF9tZW5fY2huZ19sZzFfYnMgc3N0X214X18xXyBzc3RfbWluX2NobmdfbGcxX2JzXG5zc3RfbWVuX2NobmdfbGcxX2JzIC0wLjE5NiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIFxuc3N0X214X2NfMV8gICAgICAgICAtMC40ODkgLTAuMTQ0ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICBcbnNzdF9taW5fY2huZ19sZzFfYnMgLTAuNDc5ICAwLjIxMyAgICAgICAgICAgICAgLTAuMTUyICAgICAgICAgICAgICAgICAgICAgICAgXG5zc3Rfc3NfY18xXyAgICAgICAgIC0wLjI5MCAtMC4wMjIgICAgICAgICAgICAgIC0wLjE2OCAgICAgLTAuMTUxICAgICAgICAgICAgIFxuIn0= -->
-<pre><code>Generalized linear mixed model fit by maximum likelihood (Laplace Approximation) ['glmerMod']
- Family: binomial  ( logit )
-Formula: col ~ sst_mean_change_lag1_abs + sst_max_change_lag1_abs + sst_min_change_lag1_abs +      sst_seas_change_lag1_abs + (1 | reg) + (1 | year)
-   Data: spp_master_ztemp
-
-     AIC      BIC   logLik deviance df.resid 
-  5464.4   5517.3  -2725.2   5450.4    14192 
-
-Scaled residuals: 
-    Min      1Q  Median      3Q     Max 
--0.3948 -0.2448 -0.1997 -0.1755  7.0819 
-
-Random effects:
- Groups Name        Variance Std.Dev.
- year   (Intercept) 0.12227  0.3497  
- reg    (Intercept) 0.08888  0.2981  
-Number of obs: 14199, groups:  year, 39; reg, 8
-
-Fixed effects:
-                          Estimate Std. Error z value Pr(&gt;|z|)    
-(Intercept)              -3.328651   0.312499 -10.652   &lt;2e-16 ***
-sst_mean_change_lag1_abs  0.177965   0.122208   1.456    0.145    
-sst_max_change_lag1_abs   0.005904   0.039402   0.150    0.881    
-sst_min_change_lag1_abs   0.034349   0.044760   0.767    0.443    
-sst_seas_change_lag1_abs -0.021255   0.028425  -0.748    0.455    
----
-Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
-
-Correlation of Fixed Effects:
-                    (Intr) sst_men_chng_lg1_bs sst_mx__1_ sst_min_chng_lg1_bs
-sst_men_chng_lg1_bs -0.196                                                   
-sst_mx_c_1_         -0.489 -0.144                                            
-sst_min_chng_lg1_bs -0.479  0.213              -0.152                        
-sst_ss_c_1_         -0.290 -0.022              -0.168     -0.151             </code></pre>
-<!-- rnb-output-end -->
-<!-- rnb-chunk-end -->
-<!-- rnb-text-begin -->
-<p>Not much info from summary, but let’s compare using AICc with other model</p>
-<!-- rnb-text-end -->
-<!-- rnb-chunk-begin -->
-<!-- rnb-frame-begin eyJtZXRhZGF0YSI6eyJjbGFzc2VzIjpbImRhdGEuZnJhbWUiXSwibmNvbCI6MiwibnJvdyI6Mn0sInJkZiI6Ikg0c0lBQUFBQUFBQUEyMVFTMDdETUJDZE9HbFFJMUZWc0dEREZScnhFZnNpRUJJcnBLNnlpMXpIU1NOY3UzSWN3V0c0UnEvRGlnMlhDTml1alZvWFMvYk12Sm4zeGpPTHgrSW1LeklBUUJDUElrQ3hkaE9rbndnU0dCdjdEaENmMndLQWliSHpTN0RIMno5OCt6S2tYM2Y5ZkZ2VTN4K2ZUNEhRaU9NMTdiUXp0V0k3RUZXMTg1TDc1d2NTVU1aU3ZPWC8wYzZJWU9WYVZDVlpZZDdRRWk4N2w3azR6cFFNTjlmaFp3akRuVmYxWUZaaGhmTmE2b1k2R2dMS2lkaW9WbkJOUW1ZZGFVQ09wRkd3d083c0o2YzlOMk5VTTdMcStldnM5bXF2MXR4VFo5R2hiL3FqSDZlVk9xMlU4cWJsMUE5Q3BSVFNCd3d2S1hQQlJDL1A3aTdmeUpZclA2Tkd1MXdKaFgxZHBqZm1FVHMxREw4SytsZVBGZ0lBQUE9PSJ9 -->
+<!-- rnb-frame-begin eyJtZXRhZGF0YSI6eyJjbGFzc2VzIjpbImRhdGEuZnJhbWUiXSwibmNvbCI6MiwibnJvdyI6NH0sInJkZiI6Ikg0c0lBQUFBQUFBQUEyMVJUVXJEUUJSK21hU1ZCQ3hGWFFpS0hrQWEwSldDaFlndWROdFZkM0dhVE5OZ01sTW1LYlpuY0NNZXBUMkJLdy9nU3NTdEYzQmZuVWxtSUl4OU1IbC8zL2RldnBuQnpmRE1HM29BZ01CdVdZQnNFVHBJZkN4d3dKVitEbUR2VmdDQWp1d0doMUJac0cvNFBkQlc0NVlMNUQyL0Q0TGwwNzMxMnY4SVZpYy9YeGZ1VzdEcVgzN2VmcjhZaTFvVTU2UVFRYmRhVmhkUlBGYVJjM1YzSFJrVWw3Tkh2MGx6VkdPSHpNc3daM0VZVFRCTlNJaEhoZW9jL2UrRW5DUzQ0SmpHTEZlbzR3Mm9CY0hjZ0Ixc2dGR21JSWE2S01PRi9rMWQ5R0pjWW4vTWhRS1JyUTNLRnB1V0thT0NoT1Q5dHcyeXhlV0VxbEJiczltZFVYa3ZjUythek9oRDcvUzhnWlZuVzNtbkVhTjZQL3BWczlwcVZwdlFKS1ZFQ3lHY002NlRESTlJcHBLT2VJM3FNZndwVDJtcE5ZcHE0WmVzeEJyblJTelRsVW8xclA4QVhpQ05vSWNDQUFBPSJ9 -->
 <div data-pagedtable="false">
 <script data-pagedtable-source type="application/json">
-{"columns":[{"label":[""],"name":["_rn_"],"type":[""],"align":["left"]},{"label":["df"],"name":[1],"type":["dbl"],"align":["right"]},{"label":["AICc"],"name":[2],"type":["dbl"],"align":["right"]}],"data":[{"1":"7","2":"5455.992","_rn_":"col_mod_change_abs"},{"1":"7","2":"5464.402","_rn_":"col_mod_change_abs_lag1"}],"options":{"columns":{"min":{},"max":[10],"total":[2]},"rows":{"min":[10],"max":[10],"total":[2]},"pages":{}}}
+{"columns":[{"label":[""],"name":["_rn_"],"type":[""],"align":["left"]},{"label":["df"],"name":[1],"type":["dbl"],"align":["right"]},{"label":["AICc"],"name":[2],"type":["dbl"],"align":["right"]}],"data":[{"1":"7","2":"4729.008","_rn_":"ext_mod_change_abs"},{"1":"6","2":"4747.375","_rn_":"ext_mod_change_abs_regasrandom"},{"1":"6","2":"4907.953","_rn_":"ext_mod_change_abs_yearasrandom"},{"1":"5","2":"4925.238","_rn_":"ext_mod_change_abs_norandom"}],"options":{"columns":{"min":{},"max":[10],"total":[2]},"rows":{"min":[10],"max":[10],"total":[4]},"pages":{}}}
   </script>
 </div>
 <!-- rnb-frame-end -->
 <!-- rnb-chunk-end -->
 <!-- rnb-text-begin -->
+<p>Best with both random effects!!</p>
+<p>Now, let’s play around with lags a bit using dredge, #this didn’t work because of NA’s, I guess I’ll compare one by one then?? <a href="https://rdrr.io/cran/MuMIn/src/demo/dredge.subset.R" class="uri">https://rdrr.io/cran/MuMIn/src/demo/dredge.subset.R</a></p>
+<!-- rnb-text-end -->
+<!-- rnb-chunk-begin -->
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuY29sbmFtZXMoc3BwX21hc3Rlcl96dGVtcClcbiNJIHdhbnQgdG8gbG9vayBhdCBjb2x1bW5zIDg5OjEzNiBhcyBwb3NzaWJsZSBwcmVkaWN0b3JzXG5zdWJzZXQgPC0gc3BwX21hc3Rlcl96dGVtcFssYyg2LCA4OToxMzYpXVxuI2xldCdzIGdldCByaWQgb2YgbmEnc1xub3B0aW9ucyhuYS5hY3Rpb24gPSBcIm5hLmZhaWxcIilcbiNmaXR0aW5nIGdsb2JhbCBtb2RlbFxuZm1fY29sIDwtIGdsbShjb2wgfiAuLCBmYW1pbHkgPSBiaW5vbWlhbCwgZGF0YSA9IHN1YnNldClcbmRkIDwtIGRyZWRnZShmbV9jb2wpXG52YXJpYWJsZXNfZHJlZGdlIDwtIGNvbG5hbWVzKHNwcF9tYXN0ZXJfenRlbXBbODk6MTM2XSlcbmxpc3RfdmFyaWFibGVzIDwtIGdzdWIoXCIsXCIgLCBcIiArIFwiICwgdG9TdHJpbmcodmFyaWFibGVzX2RyZWRnZSkpXG5gYGAifQ== -->
+<pre class="r"><code>colnames(spp_master_ztemp)
+#I want to look at columns 89:136 as possible predictors
+subset &lt;- spp_master_ztemp[,c(6, 89:136)]
+#let's get rid of na's
+options(na.action = &quot;na.fail&quot;)
+#fitting global model
+fm_col &lt;- glm(col ~ ., family = binomial, data = subset)
+dd &lt;- dredge(fm_col)
+variables_dredge &lt;- colnames(spp_master_ztemp[89:136])
+list_variables &lt;- gsub(&quot;,&quot; , &quot; + &quot; , toString(variables_dredge))</code></pre>
+<!-- rnb-source-end -->
+<!-- rnb-chunk-end -->
+<!-- rnb-text-begin -->
+<p>What model performs better? a model with changes in the past year? or a model with changes in the year before last?</p>
+<p>First, let’s make a model with changes from the year before last for colonization</p>
+<!-- rnb-text-end -->
+<!-- rnb-chunk-begin -->
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuY29sX21vZF9jaGFuZ2VfYWJzX2xhZzEgPC0gZ2xtZXIoY29sIH4gc3N0X21lYW5fY2hhbmdlX2xhZzFfYWJzICsgc3N0X21heF9jaGFuZ2VfbGFnMV9hYnMgKyBzc3RfbWluX2NoYW5nZV9sYWcxX2FicyArIHNzdF9zZWFzX2NoYW5nZV9sYWcxX2FicyArICgxfHJlZykgKyAoMXx5ZWFyKSwgZGF0YSA9IHNwcF9tYXN0ZXJfenRlbXAsIGZhbWlseSA9IGJpbm9taWFsKVxuc3VtbWFyeShjb2xfbW9kX2NoYW5nZV9hYnNfbGFnMSlcbmBgYCJ9 -->
+<pre class="r"><code>col_mod_change_abs_lag1 &lt;- glmer(col ~ sst_mean_change_lag1_abs + sst_max_change_lag1_abs + sst_min_change_lag1_abs + sst_seas_change_lag1_abs + (1|reg) + (1|year), data = spp_master_ztemp, family = binomial)
+summary(col_mod_change_abs_lag1)</code></pre>
+<!-- rnb-source-end -->
+<!-- rnb-chunk-end -->
+<!-- rnb-text-begin -->
+<p>Not much info from summary, but let’s compare using AICc with other model</p>
+<!-- rnb-text-end -->
+<!-- rnb-chunk-begin -->
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuQUlDYyhjb2xfbW9kX2NoYW5nZV9hYnMsIGNvbF9tb2RfY2hhbmdlX2Fic19sYWcxKVxuYGBgIn0= -->
+<pre class="r"><code>AICc(col_mod_change_abs, col_mod_change_abs_lag1)</code></pre>
+<!-- rnb-source-end -->
+<!-- rnb-chunk-end -->
+<!-- rnb-text-begin -->
 <p>Poor results here! What about extinction?</p>
 <!-- rnb-text-end -->
 <!-- rnb-chunk-begin -->
-<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuZXh0X21vZF9jaGFuZ2VfYWJzX2xhZzEgPC0gZ2xtZXIobm93X2V4dCB+IHNzdF9tZWFuX2NoYW5nZV9sYWcxX2FicyArIHNzdF9tYXhfY2hhbmdlX2xhZzFfYWJzICsgc3N0X21pbl9jaGFuZ2VfbGFnMV9hYnMgKyBzc3Rfc2Vhc19jaGFuZ2VfbGFnMV9hYnMgKyAoMXxyZWcpICsgKDF8eWVhciksIGRhdGEgPSBzcHBfbWFzdGVyX3p0ZW1wLCBmYW1pbHkgPSBiaW5vbWlhbClcbnN1bW1hcnkoZXh0X21vZF9jaGFuZ2VfYWJzX2xhZzEpXG5cbmBgYCJ9 -->
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuZXh0X21vZF9jaGFuZ2VfYWJzX2xhZzEgPC0gZ2xtZXIobm93X2V4dCB+IHNzdF9tZWFuX2NoYW5nZV9sYWcxX2FicyArIHNzdF9tYXhfY2hhbmdlX2xhZzFfYWJzICsgc3N0X21pbl9jaGFuZ2VfbGFnMV9hYnMgKyBzc3Rfc2Vhc19jaGFuZ2VfbGFnMV9hYnMgKyAoMXxyZWcpICsgKDF8eWVhciksIGRhdGEgPSBzcHBfbWFzdGVyX3p0ZW1wLCBmYW1pbHkgPSBiaW5vbWlhbClcbnN1bW1hcnkoZXh0X21vZF9jaGFuZ2VfYWJzX2xhZzEpXG5gYGAifQ== -->
 <pre class="r"><code>ext_mod_change_abs_lag1 &lt;- glmer(now_ext ~ sst_mean_change_lag1_abs + sst_max_change_lag1_abs + sst_min_change_lag1_abs + sst_seas_change_lag1_abs + (1|reg) + (1|year), data = spp_master_ztemp, family = binomial)
-summary(ext_mod_change_abs_lag1)
-</code></pre>
+summary(ext_mod_change_abs_lag1)</code></pre>
 <!-- rnb-source-end -->
-<!-- rnb-output-begin eyJkYXRhIjoiR2VuZXJhbGl6ZWQgbGluZWFyIG1peGVkIG1vZGVsIGZpdCBieSBtYXhpbXVtIGxpa2VsaWhvb2QgKExhcGxhY2UgQXBwcm94aW1hdGlvbikgWydnbG1lck1vZCddXG4gRmFtaWx5OiBiaW5vbWlhbCAgKCBsb2dpdCApXG5Gb3JtdWxhOiBub3dfZXh0IH4gc3N0X21lYW5fY2hhbmdlX2xhZzFfYWJzICsgc3N0X21heF9jaGFuZ2VfbGFnMV9hYnMgKyAgICAgIHNzdF9taW5fY2hhbmdlX2xhZzFfYWJzICsgc3N0X3NlYXNfY2hhbmdlX2xhZzFfYWJzICsgKDEgfCAgICAgIHJlZykgKyAoMSB8IHllYXIpXG4gICBEYXRhOiBzcHBfbWFzdGVyX3p0ZW1wXG5cbiAgICAgQUlDICAgICAgQklDICAgbG9nTGlrIGRldmlhbmNlIGRmLnJlc2lkIFxuICA0NzI2LjkgICA0Nzc5LjggIC0yMzU2LjQgICA0NzEyLjkgICAgMTQxOTIgXG5cblNjYWxlZCByZXNpZHVhbHM6IFxuICAgIE1pbiAgICAgIDFRICBNZWRpYW4gICAgICAzUSAgICAgTWF4IFxuLTAuMzc4NCAtMC4yMjY0IC0wLjE3MzIgLTAuMTQyMyAgOS43MTk0IFxuXG5SYW5kb20gZWZmZWN0czpcbiBHcm91cHMgTmFtZSAgICAgICAgVmFyaWFuY2UgU3RkLkRldi5cbiB5ZWFyICAgKEludGVyY2VwdCkgMC4xMzk0ICAgMC4zNzMzICBcbiByZWcgICAgKEludGVyY2VwdCkgMC4xODY2ICAgMC40MzIwICBcbk51bWJlciBvZiBvYnM6IDE0MTk5LCBncm91cHM6ICB5ZWFyLCAzOTsgcmVnLCA4XG5cbkZpeGVkIGVmZmVjdHM6XG4gICAgICAgICAgICAgICAgICAgICAgICAgRXN0aW1hdGUgU3RkLiBFcnJvciB6IHZhbHVlIFByKD58enwpICAgIFxuKEludGVyY2VwdCkgICAgICAgICAgICAgIC00LjA4MTM4ICAgIDAuNDA2MTMgLTEwLjA0OSAgIDwyZS0xNiAqKipcbnNzdF9tZWFuX2NoYW5nZV9sYWcxX2FicyAtMC4yNzI4MiAgICAwLjE0MzMyICAtMS45MDQgICAwLjA1NzAgLiAgXG5zc3RfbWF4X2NoYW5nZV9sYWcxX2FicyAgIDAuMDg0NDkgICAgMC4wNDg4MiAgIDEuNzMxICAgMC4wODM1IC4gIFxuc3N0X21pbl9jaGFuZ2VfbGFnMV9hYnMgICAwLjA2NTM0ICAgIDAuMDU0MjAgICAxLjIwNSAgIDAuMjI4MSAgICBcbnNzdF9zZWFzX2NoYW5nZV9sYWcxX2FicyAtMC4wMjQ4MiAgICAwLjAzMzIxICAtMC43NDcgICAwLjQ1NDggICAgXG4tLS1cblNpZ25pZi4gY29kZXM6ICAwIOKAmCoqKuKAmSAwLjAwMSDigJgqKuKAmSAwLjAxIOKAmCrigJkgMC4wNSDigJgu4oCZIDAuMSDigJgg4oCZIDFcblxuQ29ycmVsYXRpb24gb2YgRml4ZWQgRWZmZWN0czpcbiAgICAgICAgICAgICAgICAgICAgKEludHIpIHNzdF9tZW5fY2huZ19sZzFfYnMgc3N0X214X18xXyBzc3RfbWluX2NobmdfbGcxX2JzXG5zc3RfbWVuX2NobmdfbGcxX2JzIC0wLjE2MiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIFxuc3N0X214X2NfMV8gICAgICAgICAtMC41MzcgLTAuMTE4ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICBcbnNzdF9taW5fY2huZ19sZzFfYnMgLTAuNTA3ICAwLjE1OCAgICAgICAgICAgICAgLTAuMDY0ICAgICAgICAgICAgICAgICAgICAgICAgXG5zc3Rfc3NfY18xXyAgICAgICAgIC0wLjI3MyAgMC4wMTIgICAgICAgICAgICAgIC0wLjE3NyAgICAgLTAuMTE0ICAgICAgICAgICAgIFxuIn0= -->
-<pre><code>Generalized linear mixed model fit by maximum likelihood (Laplace Approximation) ['glmerMod']
- Family: binomial  ( logit )
-Formula: now_ext ~ sst_mean_change_lag1_abs + sst_max_change_lag1_abs +      sst_min_change_lag1_abs + sst_seas_change_lag1_abs + (1 |      reg) + (1 | year)
-   Data: spp_master_ztemp
-
-     AIC      BIC   logLik deviance df.resid 
-  4726.9   4779.8  -2356.4   4712.9    14192 
-
-Scaled residuals: 
-    Min      1Q  Median      3Q     Max 
--0.3784 -0.2264 -0.1732 -0.1423  9.7194 
-
-Random effects:
- Groups Name        Variance Std.Dev.
- year   (Intercept) 0.1394   0.3733  
- reg    (Intercept) 0.1866   0.4320  
-Number of obs: 14199, groups:  year, 39; reg, 8
-
-Fixed effects:
-                         Estimate Std. Error z value Pr(&gt;|z|)    
-(Intercept)              -4.08138    0.40613 -10.049   &lt;2e-16 ***
-sst_mean_change_lag1_abs -0.27282    0.14332  -1.904   0.0570 .  
-sst_max_change_lag1_abs   0.08449    0.04882   1.731   0.0835 .  
-sst_min_change_lag1_abs   0.06534    0.05420   1.205   0.2281    
-sst_seas_change_lag1_abs -0.02482    0.03321  -0.747   0.4548    
----
-Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
-
-Correlation of Fixed Effects:
-                    (Intr) sst_men_chng_lg1_bs sst_mx__1_ sst_min_chng_lg1_bs
-sst_men_chng_lg1_bs -0.162                                                   
-sst_mx_c_1_         -0.537 -0.118                                            
-sst_min_chng_lg1_bs -0.507  0.158              -0.064                        
-sst_ss_c_1_         -0.273  0.012              -0.177     -0.114             </code></pre>
-<!-- rnb-output-end -->
 <!-- rnb-chunk-end -->
 <!-- rnb-text-begin -->
 <p>For extinction and lag 1 of changes, both absolute value of change in mean experienced last year and absolute value of change in max temp experienced last year appear significant As absolute value of change in mean experienced last year increases, likelihood of extinction decreases As absolute value of change in max temp experienced last year increases, likelihood of extinction increases</p>
 <p>But what about comparing this to other model?</p>
 <!-- rnb-text-end -->
 <!-- rnb-chunk-begin -->
-<!-- rnb-frame-begin eyJtZXRhZGF0YSI6eyJjbGFzc2VzIjpbImRhdGEuZnJhbWUiXSwibmNvbCI6MiwibnJvdyI6Mn0sInJkZiI6Ikg0c0lBQUFBQUFBQUEyMVFVVTRDTVJDZDdTNXJhQUloYXVLUFYyQVQ1QUlRL1BHWEwvNDJwVnVXamFVbDNZSVlMK0ZadUlwbjhCcG9XMXFEMVNidHpMeVo5Nll6ODhmRkExNWdBRUNRZGhKQXFYRXpaSjRFTXVoYWV3QkliMXdCUU4vYXlUMjRFK3dQZm54RitQMWpQam51UDIveDdDMFM2Z2l5WWExeEJrN3NES0pxNWIxcytqU2pFYVdyNUV2eEgrMmFIWFM1a1ZWSjEwVFVyQ1RMMW1mdS9tWktUdXBSL0JuS1NSdFVBNGdyb2tteFVxYWhpVTRSNVVwdWRTT0ZJU0c3amp3aUo4b3FPT0I4THBPRG5iQmpWRU82M29ubjRYaDBVV3R2ejF2MDI3ZjkwWmZYeXIxV3prVGRDQllHWVVwSkZRSk9sb3o3b0crVzUzWlhiRlVqZEpqUm9HMmhwU2FoRGxQSkErS21odE0zWDNkNlNCWUNBQUE9In0= -->
-<div data-pagedtable="false">
-<script data-pagedtable-source type="application/json">
-{"columns":[{"label":[""],"name":["_rn_"],"type":[""],"align":["left"]},{"label":["df"],"name":[1],"type":["dbl"],"align":["right"]},{"label":["AICc"],"name":[2],"type":["dbl"],"align":["right"]}],"data":[{"1":"7","2":"4729.008","_rn_":"ext_mod_change_abs"},{"1":"7","2":"4726.895","_rn_":"ext_mod_change_abs_lag1"}],"options":{"columns":{"min":{},"max":[10],"total":[2]},"rows":{"min":[10],"max":[10],"total":[2]},"pages":{}}}
-  </script>
-</div>
-<!-- rnb-frame-end -->
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuQUlDYyhleHRfbW9kX2NoYW5nZV9hYnMsIGV4dF9tb2RfY2hhbmdlX2Fic19sYWcxKVxuYGBgIn0= -->
+<pre class="r"><code>AICc(ext_mod_change_abs, ext_mod_change_abs_lag1)</code></pre>
+<!-- rnb-source-end -->
 <!-- rnb-chunk-end -->
 <!-- rnb-text-begin -->
 <p>Here, unlike colonization, it appears that changes experienced LAST year are better than changes experienced this year at predicting extinction</p>
@@ -591,66 +416,174 @@ sst_ss_c_1_         -0.273  0.012              -0.177     -0.114             </c
 <p>Colonization based on changes in temp experienced between 2-3 years ago</p>
 <!-- rnb-text-end -->
 <!-- rnb-chunk-begin -->
-<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuY29sX21vZF9jaGFuZ2VfYWJzX2xhZzIgPC0gZ2xtZXIoY29sIH4gc3N0X21lYW5fY2hhbmdlX2xhZzJfYWJzICsgc3N0X21heF9jaGFuZ2VfbGFnMl9hYnMgKyBzc3RfbWluX2NoYW5nZV9sYWcyX2FicyArIHNzdF9zZWFzX2NoYW5nZV9sYWcyX2FicyArICgxfHJlZykgKyAoMXx5ZWFyKSwgZGF0YSA9IHNwcF9tYXN0ZXJfenRlbXAsIGZhbWlseSA9IGJpbm9taWFsKVxuc3VtbWFyeShjb2xfbW9kX2NoYW5nZV9hYnNfbGFnMilcblxuYGBgIn0= -->
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuY29sX21vZF9jaGFuZ2VfYWJzX2xhZzIgPC0gZ2xtZXIoY29sIH4gc3N0X21lYW5fY2hhbmdlX2xhZzJfYWJzICsgc3N0X21heF9jaGFuZ2VfbGFnMl9hYnMgKyBzc3RfbWluX2NoYW5nZV9sYWcyX2FicyArIHNzdF9zZWFzX2NoYW5nZV9sYWcyX2FicyArICgxfHJlZykgKyAoMXx5ZWFyKSwgZGF0YSA9IHNwcF9tYXN0ZXJfenRlbXAsIGZhbWlseSA9IGJpbm9taWFsKVxuc3VtbWFyeShjb2xfbW9kX2NoYW5nZV9hYnNfbGFnMilcbmBgYCJ9 -->
 <pre class="r"><code>col_mod_change_abs_lag2 &lt;- glmer(col ~ sst_mean_change_lag2_abs + sst_max_change_lag2_abs + sst_min_change_lag2_abs + sst_seas_change_lag2_abs + (1|reg) + (1|year), data = spp_master_ztemp, family = binomial)
-summary(col_mod_change_abs_lag2)
-</code></pre>
+summary(col_mod_change_abs_lag2)</code></pre>
 <!-- rnb-source-end -->
-<!-- rnb-output-begin eyJkYXRhIjoiR2VuZXJhbGl6ZWQgbGluZWFyIG1peGVkIG1vZGVsIGZpdCBieSBtYXhpbXVtIGxpa2VsaWhvb2QgKExhcGxhY2UgQXBwcm94aW1hdGlvbikgWydnbG1lck1vZCddXG4gRmFtaWx5OiBiaW5vbWlhbCAgKCBsb2dpdCApXG5Gb3JtdWxhOiBjb2wgfiBzc3RfbWVhbl9jaGFuZ2VfbGFnMl9hYnMgKyBzc3RfbWF4X2NoYW5nZV9sYWcyX2FicyArIHNzdF9taW5fY2hhbmdlX2xhZzJfYWJzICsgICAgICBzc3Rfc2Vhc19jaGFuZ2VfbGFnMl9hYnMgKyAoMSB8IHJlZykgKyAoMSB8IHllYXIpXG4gICBEYXRhOiBzcHBfbWFzdGVyX3p0ZW1wXG5cbiAgICAgQUlDICAgICAgQklDICAgbG9nTGlrIGRldmlhbmNlIGRmLnJlc2lkIFxuICA1NDY0LjYgICA1NTE3LjUgIC0yNzI1LjMgICA1NDUwLjYgICAgMTQxOTIgXG5cblNjYWxlZCByZXNpZHVhbHM6IFxuICAgIE1pbiAgICAgIDFRICBNZWRpYW4gICAgICAzUSAgICAgTWF4IFxuLTAuMzcyMCAtMC4yNTM2IC0wLjE5NjUgLTAuMTcyNCAgNy40ODA0IFxuXG5SYW5kb20gZWZmZWN0czpcbiBHcm91cHMgTmFtZSAgICAgICAgVmFyaWFuY2UgU3RkLkRldi5cbiB5ZWFyICAgKEludGVyY2VwdCkgMC4xMjc4ICAgMC4zNTc1ICBcbiByZWcgICAgKEludGVyY2VwdCkgMS4yODc4ICAgMS4xMzQ4ICBcbk51bWJlciBvZiBvYnM6IDE0MTk5LCBncm91cHM6ICB5ZWFyLCAzOTsgcmVnLCA4XG5cbkZpeGVkIGVmZmVjdHM6XG4gICAgICAgICAgICAgICAgICAgICAgICAgRXN0aW1hdGUgU3RkLiBFcnJvciB6IHZhbHVlIFByKD58enwpICAgIFxuKEludGVyY2VwdCkgICAgICAgICAgICAgIC0yLjYzNTIxICAgIDAuNzE4NDIgIC0zLjY2OCAwLjAwMDI0NCAqKipcbnNzdF9tZWFuX2NoYW5nZV9sYWcyX2FicyAtMC4xMDU0OSAgICAwLjEyODgxICAtMC44MTkgMC40MTI3ODQgICAgXG5zc3RfbWF4X2NoYW5nZV9sYWcyX2FicyAgLTAuMTQyODMgICAgMC4xMTU4NSAgLTEuMjMzIDAuMjE3NjA5ICAgIFxuc3N0X21pbl9jaGFuZ2VfbGFnMl9hYnMgIC0wLjE0MDk1ICAgIDAuMDg4NTMgIC0xLjU5MiAwLjExMTM3MSAgICBcbnNzdF9zZWFzX2NoYW5nZV9sYWcyX2FicyAgMC4xNjI0NiAgICAwLjA5NzI0ICAgMS42NzEgMC4wOTQ3OTIgLiAgXG4tLS1cblNpZ25pZi4gY29kZXM6ICAwIOKAmCoqKuKAmSAwLjAwMSDigJgqKuKAmSAwLjAxIOKAmCrigJkgMC4wNSDigJgu4oCZIDAuMSDigJgg4oCZIDFcblxuQ29ycmVsYXRpb24gb2YgRml4ZWQgRWZmZWN0czpcbiAgICAgICAgICAgICAgICAgICAgKEludHIpIHNzdF9tZW5fY2huZ19sZzJfYnMgc3N0X214X18yXyBzc3RfbWluX2NobmdfbGcyX2JzXG5zc3RfbWVuX2NobmdfbGcyX2JzIC0wLjE4NyAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIFxuc3N0X214X2NfMl8gICAgICAgICAtMC42NTggIDAuMDY0ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICBcbnNzdF9taW5fY2huZ19sZzJfYnMgLTAuNjkzICAwLjE5MCAgICAgICAgICAgICAgIDAuNzQwICAgICAgICAgICAgICAgICAgICAgICAgXG5zc3Rfc3NfY18yXyAgICAgICAgICAwLjM5MCAtMC4wNjggICAgICAgICAgICAgIC0wLjg1MCAgICAgLTAuNjg2ICAgICAgICAgICAgIFxuIn0= -->
+<!-- rnb-chunk-end -->
+<!-- rnb-text-begin -->
+<p>And compare this using AICc to other models</p>
+<!-- rnb-text-end -->
+<!-- rnb-chunk-begin -->
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuQUlDYyhjb2xfbW9kX2NoYW5nZV9hYnMsIGNvbF9tb2RfY2hhbmdlX2Fic19sYWcxLCBjb2xfbW9kX2NoYW5nZV9hYnNfbGFnMilcbmBgYCJ9 -->
+<pre class="r"><code>AICc(col_mod_change_abs, col_mod_change_abs_lag1, col_mod_change_abs_lag2)</code></pre>
+<!-- rnb-source-end -->
+<!-- rnb-chunk-end -->
+<!-- rnb-text-begin -->
+<p>Both incorporating lags in changes are equally poor for colonization, so we’ll stick with most recent changes in temp variables.</p>
+<p>Next step, I will take away variables and see what’s best for colonization using AIC</p>
+<!-- rnb-text-end -->
+<!-- rnb-chunk-begin -->
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuc3VtbWFyeShjb2xfbW9kX2NoYW5nZV9hYnMpXG5gYGAifQ== -->
+<pre class="r"><code>summary(col_mod_change_abs)</code></pre>
+<!-- rnb-source-end -->
+<!-- rnb-chunk-end -->
+<!-- rnb-text-begin -->
+<!-- rnb-text-end -->
+<!-- rnb-chunk-begin -->
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuI3JlbWVtYmVyLCB2YXJpYWJsZXMgd2l0aCBiZXN0IFAgdmFsdWVzIGZvciBjb2xvbml6YXRpb24gQVJFIHNlYXMsIGFuZCB0aGVuIG1heCwgYW5kIHRoZW4gbWVhbiAobWluIG5vdCBzaWduaWZpY2FudClcbmNvbF9tb2RfY2hhbmdlX2Fic18zX3ZhciA8LSBnbG1lcihjb2wgfiBzc3RfbWVhbl9jaGFuZ2VfYWJzICsgc3N0X21heF9jaGFuZ2VfYWJzICsgc3N0X3NlYXNfY2hhbmdlX2FicyArICgxIHwgcmVnKSArICgxIHwgeWVhciksIGZhbWlseSA9IGJpbm9taWFsLCBkYXRhID0gc3BwX21hc3Rlcl96dGVtcClcblxuY29sX21vZF9jaGFuZ2VfYWJzXzJfdmFyIDwtIGdsbWVyKGNvbCB+IHNzdF9tYXhfY2hhbmdlX2FicyArIHNzdF9zZWFzX2NoYW5nZV9hYnMgKyAoMSB8IHJlZykgKyAoMSB8IHllYXIpLCBmYW1pbHkgPSBiaW5vbWlhbCwgZGF0YSA9IHNwcF9tYXN0ZXJfenRlbXApXG5cbmNvbF9tb2RfY2hhbmdlX2Fic18xX3ZhciA8LSBnbG1lcihjb2wgfiBzc3Rfc2Vhc19jaGFuZ2VfYWJzICsgKDEgfCByZWcpICsgKDEgfCB5ZWFyKSwgZmFtaWx5ID0gYmlub21pYWwsIGRhdGEgPSBzcHBfbWFzdGVyX3p0ZW1wKVxuXG5BSUNjKGNvbF9tb2RfY2hhbmdlX2Fic18xX3ZhciwgY29sX21vZF9jaGFuZ2VfYWJzXzJfdmFyLCBjb2xfbW9kX2NoYW5nZV9hYnNfM192YXIsIGNvbF9tb2RfY2hhbmdlX2FicylcbmBgYCJ9 -->
+<pre class="r"><code>#remember, variables with best P values for colonization ARE seas, and then max, and then mean (min not significant)
+col_mod_change_abs_3_var &lt;- glmer(col ~ sst_mean_change_abs + sst_max_change_abs + sst_seas_change_abs + (1 | reg) + (1 | year), family = binomial, data = spp_master_ztemp)
+
+col_mod_change_abs_2_var &lt;- glmer(col ~ sst_max_change_abs + sst_seas_change_abs + (1 | reg) + (1 | year), family = binomial, data = spp_master_ztemp)
+
+col_mod_change_abs_1_var &lt;- glmer(col ~ sst_seas_change_abs + (1 | reg) + (1 | year), family = binomial, data = spp_master_ztemp)
+
+AICc(col_mod_change_abs_1_var, col_mod_change_abs_2_var, col_mod_change_abs_3_var, col_mod_change_abs)</code></pre>
+<!-- rnb-source-end -->
+<!-- rnb-chunk-end -->
+<!-- rnb-text-begin -->
+<p><strong>The best model uses only seasonality as a predictor</strong> col_mod_change_abs_1_var &lt;- glmer(col ~ sst_seas_change_abs + (1 | reg) + (1 | year), family = binomial, data = spp_master_ztemp)</p>
+<p>Extinction based on changes in temp experienced between 2-3 years ago</p>
+<!-- rnb-text-end -->
+<!-- rnb-chunk-begin -->
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuZXh0X21vZF9jaGFuZ2VfYWJzX2xhZzIgPC0gZ2xtZXIobm93X2V4dCB+IHNzdF9tZWFuX2NoYW5nZV9sYWcyX2FicyArIHNzdF9tYXhfY2hhbmdlX2xhZzJfYWJzICsgc3N0X21pbl9jaGFuZ2VfbGFnMl9hYnMgKyBzc3Rfc2Vhc19jaGFuZ2VfbGFnMl9hYnMgKyAoMXxyZWcpICsgKDF8eWVhciksIGRhdGEgPSBzcHBfbWFzdGVyX3p0ZW1wLCBmYW1pbHkgPSBiaW5vbWlhbClcbnN1bW1hcnkoZXh0X21vZF9jaGFuZ2VfYWJzX2xhZzIpXG5gYGAifQ== -->
+<pre class="r"><code>ext_mod_change_abs_lag2 &lt;- glmer(now_ext ~ sst_mean_change_lag2_abs + sst_max_change_lag2_abs + sst_min_change_lag2_abs + sst_seas_change_lag2_abs + (1|reg) + (1|year), data = spp_master_ztemp, family = binomial)
+summary(ext_mod_change_abs_lag2)</code></pre>
+<!-- rnb-source-end -->
+<!-- rnb-output-begin eyJkYXRhIjoiR2VuZXJhbGl6ZWQgbGluZWFyIG1peGVkIG1vZGVsIGZpdCBieSBtYXhpbXVtIGxpa2VsaWhvb2QgKExhcGxhY2UgQXBwcm94aW1hdGlvbikgWydnbG1lck1vZCddXG4gRmFtaWx5OiBiaW5vbWlhbCAgKCBsb2dpdCApXG5Gb3JtdWxhOiBub3dfZXh0IH4gc3N0X21lYW5fY2hhbmdlX2xhZzJfYWJzICsgc3N0X21heF9jaGFuZ2VfbGFnMl9hYnMgKyAgICAgIHNzdF9taW5fY2hhbmdlX2xhZzJfYWJzICsgc3N0X3NlYXNfY2hhbmdlX2xhZzJfYWJzICsgKDEgfCAgICAgIHJlZykgKyAoMSB8IHllYXIpXG4gICBEYXRhOiBzcHBfbWFzdGVyX3p0ZW1wXG5cbiAgICAgQUlDICAgICAgQklDICAgbG9nTGlrIGRldmlhbmNlIGRmLnJlc2lkIFxuICA0NzI0LjkgICA0Nzc3LjkgIC0yMzU1LjUgICA0NzEwLjkgICAgMTQxOTIgXG5cblNjYWxlZCByZXNpZHVhbHM6IFxuICAgIE1pbiAgICAgIDFRICBNZWRpYW4gICAgICAzUSAgICAgTWF4IFxuLTAuMzczNiAtMC4yMjQzIC0wLjE2OTAgLTAuMTM5MiAgOS40NDMyIFxuXG5SYW5kb20gZWZmZWN0czpcbiBHcm91cHMgTmFtZSAgICAgICAgVmFyaWFuY2UgU3RkLkRldi5cbiB5ZWFyICAgKEludGVyY2VwdCkgMC4yNDU5ICAgMC40OTU4ICBcbiByZWcgICAgKEludGVyY2VwdCkgMC4xNzkyICAgMC40MjMzICBcbk51bWJlciBvZiBvYnM6IDE0MTk5LCBncm91cHM6ICB5ZWFyLCAzOTsgcmVnLCA4XG5cbkZpeGVkIGVmZmVjdHM6XG4gICAgICAgICAgICAgICAgICAgICAgICAgRXN0aW1hdGUgU3RkLiBFcnJvciB6IHZhbHVlIFByKD58enwpICAgIFxuKEludGVyY2VwdCkgICAgICAgICAgICAgIC00LjA4ODE0ICAgIDAuNDM3NjEgIC05LjM0MiAgIDwyZS0xNiAqKipcbnNzdF9tZWFuX2NoYW5nZV9sYWcyX2FicyAgMC4yMDcyMyAgICAwLjE0NDU5ICAgMS40MzMgICAwLjE1MTggICAgXG5zc3RfbWF4X2NoYW5nZV9sYWcyX2FicyAgIDAuMTI2NzAgICAgMC4wNTE4NiAgIDIuNDQzICAgMC4wMTQ2ICogIFxuc3N0X21pbl9jaGFuZ2VfbGFnMl9hYnMgIC0wLjAyMDYwICAgIDAuMDU0NjkgIC0wLjM3NyAgIDAuNzA2NSAgICBcbnNzdF9zZWFzX2NoYW5nZV9sYWcyX2FicyAtMC4wMzcyOSAgICAwLjAzMTkxICAtMS4xNjkgICAwLjI0MjYgICAgXG4tLS1cblNpZ25pZi4gY29kZXM6ICAwIOKAmCoqKuKAmSAwLjAwMSDigJgqKuKAmSAwLjAxIOKAmCrigJkgMC4wNSDigJgu4oCZIDAuMSDigJgg4oCZIDFcblxuQ29ycmVsYXRpb24gb2YgRml4ZWQgRWZmZWN0czpcbiAgICAgICAgICAgICAgICAgICAgKEludHIpIHNzdF9tZW5fY2huZ19sZzJfYnMgc3N0X214X18yXyBzc3RfbWluX2NobmdfbGcyX2JzXG5zc3RfbWVuX2NobmdfbGcyX2JzIC0wLjIzOSAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIFxuc3N0X214X2NfMl8gICAgICAgICAtMC41NzYgLTAuMTAyICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICBcbnNzdF9taW5fY2huZ19sZzJfYnMgLTAuNTc1ICAwLjI0OSAgICAgICAgICAgICAgIDAuMDM2ICAgICAgICAgICAgICAgICAgICAgICAgXG5zc3Rfc3NfY18yXyAgICAgICAgIC0wLjIxNyAgMC4wNDggICAgICAgICAgICAgIC0wLjIzNCAgICAgLTAuMDY0ICAgICAgICAgICAgIFxuIn0= -->
 <pre><code>Generalized linear mixed model fit by maximum likelihood (Laplace Approximation) ['glmerMod']
  Family: binomial  ( logit )
-Formula: col ~ sst_mean_change_lag2_abs + sst_max_change_lag2_abs + sst_min_change_lag2_abs +      sst_seas_change_lag2_abs + (1 | reg) + (1 | year)
+Formula: now_ext ~ sst_mean_change_lag2_abs + sst_max_change_lag2_abs +      sst_min_change_lag2_abs + sst_seas_change_lag2_abs + (1 |      reg) + (1 | year)
    Data: spp_master_ztemp
 
      AIC      BIC   logLik deviance df.resid 
-  5464.6   5517.5  -2725.3   5450.6    14192 
+  4724.9   4777.9  -2355.5   4710.9    14192 
 
 Scaled residuals: 
     Min      1Q  Median      3Q     Max 
--0.3720 -0.2536 -0.1965 -0.1724  7.4804 
+-0.3736 -0.2243 -0.1690 -0.1392  9.4432 
 
 Random effects:
  Groups Name        Variance Std.Dev.
- year   (Intercept) 0.1278   0.3575  
- reg    (Intercept) 1.2878   1.1348  
+ year   (Intercept) 0.2459   0.4958  
+ reg    (Intercept) 0.1792   0.4233  
 Number of obs: 14199, groups:  year, 39; reg, 8
 
 Fixed effects:
                          Estimate Std. Error z value Pr(&gt;|z|)    
-(Intercept)              -2.63521    0.71842  -3.668 0.000244 ***
-sst_mean_change_lag2_abs -0.10549    0.12881  -0.819 0.412784    
-sst_max_change_lag2_abs  -0.14283    0.11585  -1.233 0.217609    
-sst_min_change_lag2_abs  -0.14095    0.08853  -1.592 0.111371    
-sst_seas_change_lag2_abs  0.16246    0.09724   1.671 0.094792 .  
+(Intercept)              -4.08814    0.43761  -9.342   &lt;2e-16 ***
+sst_mean_change_lag2_abs  0.20723    0.14459   1.433   0.1518    
+sst_max_change_lag2_abs   0.12670    0.05186   2.443   0.0146 *  
+sst_min_change_lag2_abs  -0.02060    0.05469  -0.377   0.7065    
+sst_seas_change_lag2_abs -0.03729    0.03191  -1.169   0.2426    
 ---
 Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
 
 Correlation of Fixed Effects:
                     (Intr) sst_men_chng_lg2_bs sst_mx__2_ sst_min_chng_lg2_bs
-sst_men_chng_lg2_bs -0.187                                                   
-sst_mx_c_2_         -0.658  0.064                                            
-sst_min_chng_lg2_bs -0.693  0.190               0.740                        
-sst_ss_c_2_          0.390 -0.068              -0.850     -0.686             </code></pre>
+sst_men_chng_lg2_bs -0.239                                                   
+sst_mx_c_2_         -0.576 -0.102                                            
+sst_min_chng_lg2_bs -0.575  0.249               0.036                        
+sst_ss_c_2_         -0.217  0.048              -0.234     -0.064             </code></pre>
 <!-- rnb-output-end -->
 <!-- rnb-chunk-end -->
 <!-- rnb-text-begin -->
 <p>And compare this using AICc to other models</p>
 <!-- rnb-text-end -->
 <!-- rnb-chunk-begin -->
-<!-- rnb-frame-begin eyJtZXRhZGF0YSI6eyJjbGFzc2VzIjpbImRhdGEuZnJhbWUiXSwibmNvbCI6MiwibnJvdyI6M30sInJkZiI6Ikg0c0lBQUFBQUFBQUF3dHlpVERpaXVCaVlHQmdZbUJtWldSZ1lnWXlXWmlBQkNNREN3TW5pSzVnWUdBV0JpdGdZT0FEWW1ZSEdRWXdRS2ZoOGx2OS83RTlNUzExMkJxUjluTE9QVGNnUGYzWEpXTXZOSU5aOHhKelU0dUJEQUd3NFJCQnBwUTBLSXZGMGRNNUdVMExaMUYrdVI2eU5tYW9oRkJ5Zms1OGJuNUtmSEpHWWw1NmFueGlVakZVUmh4VEpqNG5NZDBRdjdRUnVsdVRjeEtMWVpiQ0JMbFNFa3NTOWRLS2dPNEI4djZoYVdIUEx5akp6TThEYW1JQ2hSNGJtbWJHSXBBSllBRUlRSllVS00wRCtUSkZOem1qTkM5YjE5Z1lTUzBJODBKcFppUTJFOFIrcHY5UXM5aWdackdsNXFWbjVxWENQSkphVkpSZkJPUGtKQ2FsNWtBNWZNQ3dCUWV0WGtGUlpsNEp6STlBMFdLOWt2eVNSSmc2TG1DSXdVVEF2bWI0QndCUm93SU9SUUlBQUE9PSJ9 -->
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuQUlDYyhleHRfbW9kX2NoYW5nZV9hYnMsIGV4dF9tb2RfY2hhbmdlX2Fic19sYWcxLCBleHRfbW9kX2NoYW5nZV9hYnNfbGFnMilcbmBgYCJ9 -->
+<pre class="r"><code>AICc(ext_mod_change_abs, ext_mod_change_abs_lag1, ext_mod_change_abs_lag2)</code></pre>
+<!-- rnb-source-end -->
+<!-- rnb-frame-begin eyJtZXRhZGF0YSI6eyJjbGFzc2VzIjpbImRhdGEuZnJhbWUiXSwibmNvbCI6MiwibnJvdyI6M30sInJkZiI6Ikg0c0lBQUFBQUFBQUEzMVFTMDdETUJDZDJHbFFMVkZWZk1TbVYyZ0VPVUZRMmJCZzAxVjNrWnU0YVVScVY0NExSVnlDcy9RcXJEZ0FGK0FBQmNleFVXUWtMSTNuOCtZOWUyWit0MGpJZ2dBQUFqd0lBR0VkaGtoZkFZUXdiUDBlQUorYkJvQ1JOcHhPd0J6Zi8rS0hGMFRlM3VmcDRlbnpnc3hlMDRQNityaDhtSGpDQTA0M3JOSEIySWgzUlZTc2JCVGUzczl5anpLVTRqbnUwN0FGenRoZVpSdFJaUG1hOHBKbGRObFk1T292a3RXMHZQa2ZUdnkvNWpWdDNLT3VTQXFxYUx5UytqODZPM3FVRTdGVmxlQ2FoTnJ0UlI0NWtLMkNLWFNuRDQ1M3ZKMnltT2JySFgrY0p0ZTkzdFpPcmNlOUdIWHZvMityRlZtdGlQR3k0c3dOd3FRVTBpVTFYYkxhSmlPOVc3UGFlQ3NycnR5TXV0ckVTaWpxK2tndWFsY3hVOFB4QjhJdWtQQkZBZ0FBIn0= -->
 <div data-pagedtable="false">
 <script data-pagedtable-source type="application/json">
-{"columns":[{"label":[""],"name":["_rn_"],"type":[""],"align":["left"]},{"label":["df"],"name":[1],"type":["dbl"],"align":["right"]},{"label":["AICc"],"name":[2],"type":["dbl"],"align":["right"]}],"data":[{"1":"7","2":"5455.992","_rn_":"col_mod_change_abs"},{"1":"7","2":"5464.402","_rn_":"col_mod_change_abs_lag1"},{"1":"7","2":"5464.594","_rn_":"col_mod_change_abs_lag2"}],"options":{"columns":{"min":{},"max":[10],"total":[2]},"rows":{"min":[10],"max":[10],"total":[3]},"pages":{}}}
+{"columns":[{"label":[""],"name":["_rn_"],"type":[""],"align":["left"]},{"label":["df"],"name":[1],"type":["dbl"],"align":["right"]},{"label":["AICc"],"name":[2],"type":["dbl"],"align":["right"]}],"data":[{"1":"7","2":"4729.008","_rn_":"ext_mod_change_abs"},{"1":"7","2":"4726.895","_rn_":"ext_mod_change_abs_lag1"},{"1":"7","2":"4724.949","_rn_":"ext_mod_change_abs_lag2"}],"options":{"columns":{"min":{},"max":[10],"total":[2]},"rows":{"min":[10],"max":[10],"total":[3]},"pages":{}}}
   </script>
 </div>
 <!-- rnb-frame-end -->
 <!-- rnb-chunk-end -->
 <!-- rnb-text-begin -->
-<p>Both incorporating lags in changes are equally poor, so we’ll stick with most recent changes. Next step, I will take away variables and see what’s best for colonization using AIC</p>
+<p>Both lags improve model, so I’ll go another level back in changes are equally poor, so we’ll stick with most recent changes.</p>
 <!-- rnb-text-end -->
 <!-- rnb-chunk-begin -->
+<!-- rnb-frame-begin eyJtZXRhZGF0YSI6eyJjbGFzc2VzIjpbImRhdGEuZnJhbWUiXSwibmNvbCI6MiwibnJvdyI6NH0sInJkZiI6Ikg0c0lBQUFBQUFBQUF3dHlpVERpaXVCaVlHQmdZbUJtWldSZ1lnWXlXWmlBQkNNREN3TW5pSzVnWUdBV0JpdGdZT0FEeVRySU1JQUJMaHF1YmxNbEU5ZUV5MEVPbThxZWluQTVWenRzS3ZsMFU5UlhCaWd1WnQ4ZCt4ak5JdGE4eE56VVlpQkRBR3daUkpBcEpRM0tZbkgwZEU1RzA4SlpsRit1aDZ5TkJTb2hsRnBSRXArYm54S2ZuSkdZbDU0YW41aFVESlVSeDVTSnowbE1OOFF2YllSZjJoamRLOGs1aWNVd044RUV1VklTU3hMMTBvcUF6Z1h5L3FGcFljOHZLTW5NendOcVlnSUZOaHVhWnNZaWtBbGdBUWhBbGhRb3pRTUZRb3B1Y2tacFhyYXVrUkdTV2hEbWhkSXNTR3dtaVAxTS82Rm1zVUhOWWt2TlM4L01TNFY1SkxXb0tMOEl4c2xKVEVyTmdYTDRnRUVQRG5tOWdxTE12QktZSDRHaXhYb2wrU1dKTUhWY3lmazVNQkd3cnhuK0FRQXhuaUZjZEFJQUFBPT0ifQ== -->
+<div data-pagedtable="false">
+<script data-pagedtable-source type="application/json">
+{"columns":[{"label":[""],"name":["_rn_"],"type":[""],"align":["left"]},{"label":["df"],"name":[1],"type":["dbl"],"align":["right"]},{"label":["AICc"],"name":[2],"type":["dbl"],"align":["right"]}],"data":[{"1":"7","2":"4729.008","_rn_":"ext_mod_change_abs"},{"1":"7","2":"4726.895","_rn_":"ext_mod_change_abs_lag1"},{"1":"7","2":"4724.949","_rn_":"ext_mod_change_abs_lag2"},{"1":"7","2":"4729.087","_rn_":"ext_mod_change_abs_lag3"}],"options":{"columns":{"min":{},"max":[10],"total":[2]},"rows":{"min":[10],"max":[10],"total":[4]},"pages":{}}}
+  </script>
+</div>
+<!-- rnb-frame-end -->
 <!-- rnb-chunk-end -->
 <!-- rnb-text-begin -->
+<p>The best is lag 2, so the change from 2-3 years ago is best at determining extinction probability</p>
+<p>Next step, I will take away variables and see what’s best for extinction using AIC</p>
+<!-- rnb-text-end -->
+<!-- rnb-chunk-begin -->
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuc3VtbWFyeShleHRfbW9kX2NoYW5nZV9hYnNfbGFnMilcblxuYGBgIn0= -->
+<pre class="r"><code>summary(ext_mod_change_abs_lag2)
+</code></pre>
+<!-- rnb-source-end -->
+<!-- rnb-output-begin eyJkYXRhIjoiR2VuZXJhbGl6ZWQgbGluZWFyIG1peGVkIG1vZGVsIGZpdCBieSBtYXhpbXVtIGxpa2VsaWhvb2QgKExhcGxhY2UgQXBwcm94aW1hdGlvbikgWydnbG1lck1vZCddXG4gRmFtaWx5OiBiaW5vbWlhbCAgKCBsb2dpdCApXG5Gb3JtdWxhOiBub3dfZXh0IH4gc3N0X21lYW5fY2hhbmdlX2xhZzJfYWJzICsgc3N0X21heF9jaGFuZ2VfbGFnMl9hYnMgKyAgICAgIHNzdF9taW5fY2hhbmdlX2xhZzJfYWJzICsgc3N0X3NlYXNfY2hhbmdlX2xhZzJfYWJzICsgKDEgfCAgICAgIHJlZykgKyAoMSB8IHllYXIpXG4gICBEYXRhOiBzcHBfbWFzdGVyX3p0ZW1wXG5cbiAgICAgQUlDICAgICAgQklDICAgbG9nTGlrIGRldmlhbmNlIGRmLnJlc2lkIFxuICA0NzI0LjkgICA0Nzc3LjkgIC0yMzU1LjUgICA0NzEwLjkgICAgMTQxOTIgXG5cblNjYWxlZCByZXNpZHVhbHM6IFxuICAgIE1pbiAgICAgIDFRICBNZWRpYW4gICAgICAzUSAgICAgTWF4IFxuLTAuMzczNiAtMC4yMjQzIC0wLjE2OTAgLTAuMTM5MiAgOS40NDMyIFxuXG5SYW5kb20gZWZmZWN0czpcbiBHcm91cHMgTmFtZSAgICAgICAgVmFyaWFuY2UgU3RkLkRldi5cbiB5ZWFyICAgKEludGVyY2VwdCkgMC4yNDU5ICAgMC40OTU4ICBcbiByZWcgICAgKEludGVyY2VwdCkgMC4xNzkyICAgMC40MjMzICBcbk51bWJlciBvZiBvYnM6IDE0MTk5LCBncm91cHM6ICB5ZWFyLCAzOTsgcmVnLCA4XG5cbkZpeGVkIGVmZmVjdHM6XG4gICAgICAgICAgICAgICAgICAgICAgICAgRXN0aW1hdGUgU3RkLiBFcnJvciB6IHZhbHVlIFByKD58enwpICAgIFxuKEludGVyY2VwdCkgICAgICAgICAgICAgIC00LjA4ODE0ICAgIDAuNDM3NjEgIC05LjM0MiAgIDwyZS0xNiAqKipcbnNzdF9tZWFuX2NoYW5nZV9sYWcyX2FicyAgMC4yMDcyMyAgICAwLjE0NDU5ICAgMS40MzMgICAwLjE1MTggICAgXG5zc3RfbWF4X2NoYW5nZV9sYWcyX2FicyAgIDAuMTI2NzAgICAgMC4wNTE4NiAgIDIuNDQzICAgMC4wMTQ2ICogIFxuc3N0X21pbl9jaGFuZ2VfbGFnMl9hYnMgIC0wLjAyMDYwICAgIDAuMDU0NjkgIC0wLjM3NyAgIDAuNzA2NSAgICBcbnNzdF9zZWFzX2NoYW5nZV9sYWcyX2FicyAtMC4wMzcyOSAgICAwLjAzMTkxICAtMS4xNjkgICAwLjI0MjYgICAgXG4tLS1cblNpZ25pZi4gY29kZXM6ICAwIOKAmCoqKuKAmSAwLjAwMSDigJgqKuKAmSAwLjAxIOKAmCrigJkgMC4wNSDigJgu4oCZIDAuMSDigJgg4oCZIDFcblxuQ29ycmVsYXRpb24gb2YgRml4ZWQgRWZmZWN0czpcbiAgICAgICAgICAgICAgICAgICAgKEludHIpIHNzdF9tZW5fY2huZ19sZzJfYnMgc3N0X214X18yXyBzc3RfbWluX2NobmdfbGcyX2JzXG5zc3RfbWVuX2NobmdfbGcyX2JzIC0wLjIzOSAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIFxuc3N0X214X2NfMl8gICAgICAgICAtMC41NzYgLTAuMTAyICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICBcbnNzdF9taW5fY2huZ19sZzJfYnMgLTAuNTc1ICAwLjI0OSAgICAgICAgICAgICAgIDAuMDM2ICAgICAgICAgICAgICAgICAgICAgICAgXG5zc3Rfc3NfY18yXyAgICAgICAgIC0wLjIxNyAgMC4wNDggICAgICAgICAgICAgIC0wLjIzNCAgICAgLTAuMDY0ICAgICAgICAgICAgIFxuIn0= -->
+<pre><code>Generalized linear mixed model fit by maximum likelihood (Laplace Approximation) ['glmerMod']
+ Family: binomial  ( logit )
+Formula: now_ext ~ sst_mean_change_lag2_abs + sst_max_change_lag2_abs +      sst_min_change_lag2_abs + sst_seas_change_lag2_abs + (1 |      reg) + (1 | year)
+   Data: spp_master_ztemp
+
+     AIC      BIC   logLik deviance df.resid 
+  4724.9   4777.9  -2355.5   4710.9    14192 
+
+Scaled residuals: 
+    Min      1Q  Median      3Q     Max 
+-0.3736 -0.2243 -0.1690 -0.1392  9.4432 
+
+Random effects:
+ Groups Name        Variance Std.Dev.
+ year   (Intercept) 0.2459   0.4958  
+ reg    (Intercept) 0.1792   0.4233  
+Number of obs: 14199, groups:  year, 39; reg, 8
+
+Fixed effects:
+                         Estimate Std. Error z value Pr(&gt;|z|)    
+(Intercept)              -4.08814    0.43761  -9.342   &lt;2e-16 ***
+sst_mean_change_lag2_abs  0.20723    0.14459   1.433   0.1518    
+sst_max_change_lag2_abs   0.12670    0.05186   2.443   0.0146 *  
+sst_min_change_lag2_abs  -0.02060    0.05469  -0.377   0.7065    
+sst_seas_change_lag2_abs -0.03729    0.03191  -1.169   0.2426    
+---
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+Correlation of Fixed Effects:
+                    (Intr) sst_men_chng_lg2_bs sst_mx__2_ sst_min_chng_lg2_bs
+sst_men_chng_lg2_bs -0.239                                                   
+sst_mx_c_2_         -0.576 -0.102                                            
+sst_min_chng_lg2_bs -0.575  0.249               0.036                        
+sst_ss_c_2_         -0.217  0.048              -0.234     -0.064             </code></pre>
+<!-- rnb-output-end -->
+<!-- rnb-chunk-end -->
+<!-- rnb-text-begin -->
+<!-- rnb-text-end -->
+<!-- rnb-chunk-begin -->
+<!-- rnb-frame-begin eyJtZXRhZGF0YSI6eyJjbGFzc2VzIjpbImRhdGEuZnJhbWUiXSwibmNvbCI6MiwibnJvdyI6NH0sInJkZiI6Ikg0c0lBQUFBQUFBQUF3dHlpVERpaXVCaVlHQmdZbUJtWldSZ1lnWXlXWmlBQkNNREN3TW5pSzVnWUdBV0JpdGdZT0FEeVRwSU1JQ0Jnd0NVRm9IU01nd3dBRkczcVZoc3g2R2tsVUJhNFZuaStWYUhUVVVGaDdyckd4dzJsWHk2S2VvcmcyWVJhMTVpYm1veGtDRUF0Z3dpeUpTU0JtV3hPSG82SjZOcDRTektMOWREMXNZQ2xaQk5yU2lKejgxUGlVL09TTXhMVDQzUFNVdzNpazlNS280M2ppOUxMQ0treUpBWVJVWklpc1RSRklIa1FRclJmWmljazFnTWN5cE1rQ3Nsc1NSUkw2MEk2QXNnN3grYUZ2YjhncExNL0R5Z0ppWlFITENoYVdZc0Fwa0FGb0FBWkVtQjBqeFEyS1RvSm1lVTVtWHJHcGtncVFWaFhpak5nc1JtZ3RqUDlCOXFGaHZVTExiVXZQVE12RlNZUjFLTGl2SmhubWZOU1V4S3pZRnkrSUF4QW80UXZZS2l6THdTbUIrQm9zVjZKZmtsaVRCMVhNbjVPVEFSc0s4Wi9nRUFHUDdLbG9zQ0FBQT0ifQ== -->
+<div data-pagedtable="false">
+<script data-pagedtable-source type="application/json">
+{"columns":[{"label":[""],"name":["_rn_"],"type":[""],"align":["left"]},{"label":["df"],"name":[1],"type":["dbl"],"align":["right"]},{"label":["AICc"],"name":[2],"type":["dbl"],"align":["right"]}],"data":[{"1":"6","2":"4723.089","_rn_":"ext_mod_change_lag2_abs_3_var"},{"1":"4","2":"4723.129","_rn_":"ext_mod_change_lag2_abs_1_var"},{"1":"5","2":"4722.440","_rn_":"ext_mod_change_lag2_abs_2_var"},{"1":"7","2":"4724.949","_rn_":"ext_mod_change_abs_lag2"}],"options":{"columns":{"min":{},"max":[10],"total":[2]},"rows":{"min":[10],"max":[10],"total":[4]},"pages":{}}}
+  </script>
+</div>
+<!-- rnb-frame-end -->
+<!-- rnb-chunk-end -->
+<!-- rnb-text-begin -->
+<p>The best model is less clear here, ext_mod_change_lag2_abs_2_var has the lowest AICc, but, it’s not substantially lower, and ext_mod_change_lag2_abs_1_var has fewer predictors, so let’s go with that <strong>ext_mod_change_lag2_abs_1_var &lt;- glmer(now_ext ~ sst_max_change_lag2_abs + (1 | reg) + (1 | year), family = binomial, data = spp_master_ztemp)</strong>: best model</p>
 <p>For now, we only care about fish so let’s go back to earlier code to extract fish only</p>
 <!-- rnb-text-end -->
 <!-- rnb-chunk-begin -->
@@ -666,7 +599,7 @@ sst_ss_c_2_          0.390 -0.068              -0.850     -0.686             </c
 <!-- rnb-text-begin -->
 <!-- rnb-text-end -->
 
-<div id="rmd-source-code">LS0tCnRpdGxlOiAiTW9kZWxpbmcgaW5kaXZpZHVhbCBpbnN0YW5jZXMgb2YgY29sb25pemF0aW9ucyBhbmQgZXh0aW5jdGlvbnMgdXNpbmdzIHRyYWl0cyIKb3V0cHV0OiBodG1sX25vdGVib29rCi0tLQpRdWVzdGlvbjogZG8gc3BlY2llcyB0cmFpdHMgaW50ZXJlYWN0IHdpdGggY2hhbmdlcyBpbiB0ZW1wZXJhdHVyZSAoY3VycmVudCBvciBwYXN0KSB0byBkZXRlcm1pbmUgd2hldGhlciBvciBub3QgYSBnaXZlbiBzcGVjaWVzIGNvbG9uaXplcyBhIG5ldyByZWdpb24gaW4gYSBnaXZlbiB5ZWFyPwoKYmlub21pYWwgcmVncmVzc2lvbnM6Cgpjb2xvbml6YXRpb24gaW4gYSBnaXZlbiB5ZWFyPyAoeWVzL25vKSB+IG1lYW4gdGVtcCBvZiB5ZWFyIG9mIHRyYXdsIHggdHJhaXRzICsgbWF4IHRlbXAgb2YgeWVhciBvZiB0cmF3bCB4IHRyYWl0cyArIG1pbiB0ZW1wIG9mIHllYXIgb2YgdHJhd2wgeCB0cmFpdHMgKyBjaGFuZ2UgaW4gbWVhbiB0ZW1wIGZyb20gbGFzdCB5ZWFyIHggdHJhaXRzICsgbGFncyArIHRyYWl0cwoKZXh0aW5jdGlvbiBpbiBhIGdpdmVuIHllYXI/ICh5ZXMvbm8pIH4gbWVhbiB0ZW1wIG9mIHllYXIgb2YgdHJhd2wgeCB0cmFpdHMgKyBtYXggdGVtcCBvZiB5ZWFyIG9mIHRyYXdsIHggdHJhaXRzICsgbWluIHRlbXAgb2YgeWVhciBvZiB0cmF3bCB4IHRyYWl0cyArIGNoYW5nZSBpbiBtZWFuIHRlbXAgZnJvbSBsYXN0IHllYXIgeCB0cmFpdHMgKyBsYWdzICsgdHJhaXRzCgpUcmFpdHMgdG8gdXNlPwogIElkZWFsOgogIGdlbmVyYWxpc20KICBkaXNwZXJzYWwgc3luZHJvbWUKICBsb25nZXZpdHkKICBib2R5IHNpemUKICBnZW5lcmF0aW9uIHRpbWUKICB0cm9waGljIGxldmVsCiAgY3VycmVudCByYW5nZSBzaXplCiAgbW9iaWxpdHkgKGZpc2gsIHllcy9ubykKCldoYXQgd2UgYWN0dWFsbHkgaGF2ZSBmcm9tIFRpbTogKCoqID0gaWRlYWwpCiAgdHJvcGhpYyBsZXZlbDoKICAgIGZlZWRpbmcubW9kZSAoZ2VuZXJhbGlzbT8pKioKICAgIHRsICh0cm9waGljIGxldmVsKSoqCiAgUmVwcm9kdWN0aW9uOiAocHJvYmFibHkgd2hpY2hldmVyIHdlIGhhdmUgbW9yZSBkYXRhIGZvcikKICAgIHNwYXduaW5nLnR5cGUgKG9wZW5fd2F0ZXIvc3Vic3RyYXR1bSwgZXRjLiApKioKICAgIGVnZy5zaXplKioKICBHcm93dGg6CiAgICBMaW5mIChib2R5IHNpemUpCiAgICBMbWF4IChib2R5IHNpemUpKgogICAgSyAoZ3Jvd3RoIHJhdGUsIDEveSkKICAgIExtIChsZW5ndGggYXQgbWF0dXJpdHkpKioKICAgIFRtYXggKG1heGltdW0gYWdlKQogICAgdG0gKGFnZSBtYXR1cml0eSkqKgoKKk5COiBJJ20gbm90aWNpbmcgdGhhdCBzb21lIHNwZWNpZXMgaGF2ZSBtdWx0aXBsZSByZWNvcmRzIGluIFRpbSdzIGRhdGFiYXNlLCBhbmQgdGhhdCBzb21lIHN0YXRzIGFyZSBub3QgcXVpdGUgbWF0Y2hpbmcgdXAgd2l0aCB3aGF0IEkgZmluZCBvbiBmaXNoYmFzZS5vcmcgKGllIEJTQiBtYXggc2l6ZSBhbmQgc3VjaCkqCgpgYGB7ciBzZXR1cH0KbGlicmFyeShNdU1JbikKbGlicmFyeShsbWU0KQpyZWFkLmNzdigidHJhaXRzX2Zvcm1hbmlwLmNzdiIpCmxvYWQoImRhdGVfc3N0dGVtcF9hdmdfU09EQV93aXRobGFncy5SZGF0YSIpCmxvYWQoInNwcF9tYXN0ZXIuUkRhdGEiKQoKYGBgCkxldCdzIGxpbmsgc3BlY2llcyBkYXRhIGZyb20gc3BwX21hc3RlciB0byB0ZW1wIGRhdGEgd2l0aCBsYWdzIGFuZCBjaGFuZ2VzCmBgYHtyfQojY29tcGFyZSB0ZW1wcyBJIGNhbGN1bGF0ZWQgdG8gdGVtcGVyYXR1cmVzIGFscmVhZHkgdGhlcmUKI21hdGNoIHJlZ2lvbiBuYW1lcyBiZXR3ZWVuIHR3byBkYXRhIHRhYmxlcwpkYXRlX3RlbXBfcmVnX2F2Z193aXRobGFncyRyZWdpb24gPC0gYXMuZmFjdG9yKGRhdGVfdGVtcF9yZWdfYXZnX3dpdGhsYWdzJHJlZ2lvbikKbGV2ZWxzKGRhdGVfdGVtcF9yZWdfYXZnX3dpdGhsYWdzJHJlZ2lvbilbbGV2ZWxzKGRhdGVfdGVtcF9yZWdfYXZnX3dpdGhsYWdzJHJlZ2lvbik9PSJBRlNDX0FsZXV0aWFucyJdIDwtICJhaSIKbGV2ZWxzKGRhdGVfdGVtcF9yZWdfYXZnX3dpdGhsYWdzJHJlZ2lvbilbbGV2ZWxzKGRhdGVfdGVtcF9yZWdfYXZnX3dpdGhsYWdzJHJlZ2lvbik9PSJBRlNDX0VCUyJdIDwtICJlYnMiCmxldmVscyhkYXRlX3RlbXBfcmVnX2F2Z193aXRobGFncyRyZWdpb24pW2xldmVscyhkYXRlX3RlbXBfcmVnX2F2Z193aXRobGFncyRyZWdpb24pPT0iQUZTQ19HT0EiXSA8LSAiZ29hIgpsZXZlbHMoZGF0ZV90ZW1wX3JlZ19hdmdfd2l0aGxhZ3MkcmVnaW9uKVtsZXZlbHMoZGF0ZV90ZW1wX3JlZ19hdmdfd2l0aGxhZ3MkcmVnaW9uKT09IkFGU0NfV0NUcmkiXSA8LSAid2N0cmkiCmxldmVscyhkYXRlX3RlbXBfcmVnX2F2Z193aXRobGFncyRyZWdpb24pW2xldmVscyhkYXRlX3RlbXBfcmVnX2F2Z193aXRobGFncyRyZWdpb24pPT0iREZPX05ld2ZvdW5kbGFuZCJdIDwtICJuZXdmIgpsZXZlbHMoZGF0ZV90ZW1wX3JlZ19hdmdfd2l0aGxhZ3MkcmVnaW9uKVtsZXZlbHMoZGF0ZV90ZW1wX3JlZ19hdmdfd2l0aGxhZ3MkcmVnaW9uKT09IkRGT19TY290aWFuU2hlbGYiXSA8LSAic2hlbGYiCmxldmVscyhkYXRlX3RlbXBfcmVnX2F2Z193aXRobGFncyRyZWdpb24pW2xldmVscyhkYXRlX3RlbXBfcmVnX2F2Z193aXRobGFncyRyZWdpb24pPT0iTkVGU0NfTkVVUyJdIDwtICJuZXVzIgpsZXZlbHMoZGF0ZV90ZW1wX3JlZ19hdmdfd2l0aGxhZ3MkcmVnaW9uKVtsZXZlbHMoZGF0ZV90ZW1wX3JlZ19hdmdfd2l0aGxhZ3MkcmVnaW9uKT09IlNDRE5SX1NFVVMiXSA8LSAic2UiCmxldmVscyhkYXRlX3RlbXBfcmVnX2F2Z193aXRobGFncyRyZWdpb24pW2xldmVscyhkYXRlX3RlbXBfcmVnX2F2Z193aXRobGFncyRyZWdpb24pPT0iU0VGU0NfR09NZXgiXSA8LSAiZ21leCIKY29sbmFtZXMoZGF0ZV90ZW1wX3JlZ19hdmdfd2l0aGxhZ3MpW2NvbG5hbWVzKGRhdGVfdGVtcF9yZWdfYXZnX3dpdGhsYWdzKSA9PSAicmVnaW9uIl0gPC0gInJlZyIKCmRhdGVfdGVtcF9yZWdfYXZnJHllYXIgPC0gYXMubnVtZXJpYyhkYXRlX3RlbXBfcmVnX2F2ZyR5ZWFyKQpzcHBfbWFzdGVyX3p0ZW1wIDwtIGxlZnRfam9pbihzcHBfbWFzdGVyLCBkYXRlX3RlbXBfcmVnX2F2Z193aXRobGFncywgYnkgPSBjKCJyZWciLCAieWVhciIpKQpgYGAKRmlyc3QsIGxldCdzIGlnbm9yZSB0cmFpdHMsIGFuZCBqdXN0IGxvb2sgYXQgdGVtcGVyYXR1cmUgYXMgcHJlZGljdG9ycyBvZiB5ZXMgbm8gY29sb25pemF0aW9uIGFuZCB5ZXMgbm8gZXh0aW5jdGlvbgpDb2xvbml6YXRpb24gaW4gdGhpcyB5ZWFyOiBjb2wKR29lcyBleHRpbmN0IGluIHRoaXMgeWVhciAoaGVyZSBsYXN0IHllYXIsIGdvbmUgbm93KSA6IG5vd19leHQKTWVhbiB0ZW1wOiByZWdpb24geWVhciBtZWFuIHNzdApNYXggdGVtcDpyZWdpb24geWVhciBtYXggc3N0Ck1pbiB0ZW1wOiByZWdpb24geWVhciBtaW4gc3N0ClNlYXNvbmFsaXR5OiByZWdpb24geWVhciBzZWFzIHNzdApgYGB7cn0KY29sX21vZCA8LSBnbG1lcihjb2wgfiByZWdpb25feWVhcl9tZWFuX3NzdCArIHJlZ2lvbl95ZWFyX21heF9zc3QgKyByZWdpb25feWVhcl9taW5fc3N0ICsgcmVnaW9uX3llYXJfc2Vhc19zc3QgKyAoMXxyZWcpICsgKDF8eWVhciksIGRhdGEgPSBzcHBfbWFzdGVyX3p0ZW1wLCBmYW1pbHkgPSBiaW5vbWlhbCkKc3VtbWFyeShjb2xfbW9kKQpleHRfbW9kIDwtIGdsbWVyKG5vd19leHQgfiByZWdpb25feWVhcl9tZWFuX3NzdCArIHJlZ2lvbl95ZWFyX21heF9zc3QgKyByZWdpb25feWVhcl9taW5fc3N0ICsgcmVnaW9uX3llYXJfc2Vhc19zc3QgKyAoMXxyZWcpICsgKDF8eWVhciksIGRhdGEgPSBzcHBfbWFzdGVyX3p0ZW1wLCBmYW1pbHkgPSBiaW5vbWlhbCkKc3VtbWFyeShleHRfbW9kKQpgYGAKVGhlIGFib3ZlIG1vZGVscyBwZXJmb3JtIHJlYWxseSBwb29ybHksIGJ1dCB0aGlzIGRvZXNuJ3QgcmVhbGx5IHN1cnByaXNlIG1lLiBJIHRoaW5rIGNoYW5nZSBpbiB0ZW1wZXJhdHVyZSBpcyBhIGJpZ2dlciBkZWFsLCBhbHRob3VnaCBJIGFtIHN1cnByaXNlZCB0aGF0IHNlYXNvbmFsaXR5IGRvZXNuJ3QgZG8gYW55dGhpbmcuIAoKTGV0J3Mgbm93IHRha2UgYSBsb29rIGF0IGNoYW5nZSBvbmx5IAoKYGBge3J9CmNvbF9tb2RfY2hhbmdlIDwtIGdsbWVyKGNvbCB+IHNzdF9tZWFuX2NoYW5nZSArIHNzdF9tYXhfY2hhbmdlICsgc3N0X21pbl9jaGFuZ2UgKyBzc3Rfc2Vhc19jaGFuZ2UgKyAoMXxyZWcpICsgKDF8eWVhciksIGRhdGEgPSBzcHBfbWFzdGVyX3p0ZW1wLCBmYW1pbHkgPSBiaW5vbWlhbCkKc3VtbWFyeShjb2xfbW9kX2NoYW5nZSkKZXh0X21vZF9jaGFuZ2UgPC0gZ2xtZXIobm93X2V4dCB+IHNzdF9tZWFuX2NoYW5nZSArIHNzdF9tYXhfY2hhbmdlICsgc3N0X21pbl9jaGFuZ2UgKyBzc3Rfc2Vhc19jaGFuZ2UgKyAoMXxyZWcpICsgKDF8eWVhciksIGRhdGEgPSBzcHBfbWFzdGVyX3p0ZW1wLCBmYW1pbHkgPSBiaW5vbWlhbCkKc3VtbWFyeShleHRfbW9kX2NoYW5nZSkKYGBgCgpMZXQncyBub3cgdGFrZSBhIGxvb2sgYXQgYWJzb2x1dGUgdmFsdWUgb2YgdGVtcCBjaGFuZ2UgZnJvbSBwcmV2aW91cyB5ZWFyIG9ubHkKYGBge3J9CmNvbF9tb2RfY2hhbmdlX2FicyA8LSBnbG1lcihjb2wgfiBzc3RfbWVhbl9jaGFuZ2VfYWJzICsgc3N0X21heF9jaGFuZ2VfYWJzICsgc3N0X21pbl9jaGFuZ2VfYWJzICsgc3N0X3NlYXNfY2hhbmdlX2FicyArICgxfHJlZykgKyAoMXx5ZWFyKSwgZGF0YSA9IHNwcF9tYXN0ZXJfenRlbXAsIGZhbWlseSA9IGJpbm9taWFsKQpzdW1tYXJ5KGNvbF9tb2RfY2hhbmdlX2FicykKYGBgClRoaXMgb25lIGFib3ZlIGFjdHVhbGx5IGdpdmVzIHJlYWxseSBnb29kIHJlc3VsdHMsIHRoaXMgaXMgZXhjaXRpbmchCldoZW4gYWJzb2x1dGUgY2hhbmdlIGluIG1heCB5ZWFybHkgdGVtcGVyYXR1cmUgSU5DUkVBU0VTLCBsaWtlbGlob29kIG9mIGNvbG9uaXphdGlvbiBpbmNyZWFzZQpXaGVuIGFic29sdXRlIGNoYW5nZSBpbiBzZWFzb25hbGl0eSBJTkNSRUFTRVMsIGxpa2VsaWhvb2Qgb2YgY29sb25pemF0aW9ucyBkZWNyZWFzZXMKV2hlbiBhYnNvbHV0ZSBjaGFuZ2UgaW4gbWVhbiB5ZWFybHkgdGVtcGVyYXR1cmUgSU5DUkVBU0VTLCBsaWtlbGlob29kIG9mIGNvbG9uaXphdGlvbiBpbmNyZWFzZXMKCmBgYHtyfQpleHRfbW9kX2NoYW5nZV9hYnMgPC0gZ2xtZXIobm93X2V4dCB+IHNzdF9tZWFuX2NoYW5nZV9hYnMgKyBzc3RfbWF4X2NoYW5nZV9hYnMgKyBzc3RfbWluX2NoYW5nZV9hYnMgKyBzc3Rfc2Vhc19jaGFuZ2VfYWJzICsgKDF8cmVnKSArICgxfHllYXIpLCBkYXRhID0gc3BwX21hc3Rlcl96dGVtcCwgZmFtaWx5ID0gYmlub21pYWwpCnN1bW1hcnkoZXh0X21vZF9jaGFuZ2VfYWJzKQpgYGAKTm90IGFzIGV4Y2l0aW5nIGFzIGNvbG9uaXphdGlvbnMsIGJ1dCBub3Qgc3VycHJpc2VkLgpXaGVuIGFic29sdXRlIGNoYW5nZSBpbiBtZWFuIHllYXJseSB0ZW1wZXJhdHVyZSBJTkNSRUFTRVMsIGxpa2VsaWhvb2Qgb2YgZXh0aW5jdGlvbiBBTFNPIGluY3JlYXNlcwoKTm93LCBsZXQncyBwbGF5IGFyb3VuZCB3aXRoIGxhZ3MgYSBiaXQgdXNpbmcgZHJlZGdlLCB0aGlzIGRpZG4ndCB3b3JrIGJlY2F1c2Ugb2YgTkEncywgSSBndWVzcyBJJ2xsIGNvbXBhcmUgb25lIGJ5IG9uZSB0aGVuPz8KaHR0cHM6Ly9yZHJyLmlvL2NyYW4vTXVNSW4vc3JjL2RlbW8vZHJlZGdlLnN1YnNldC5SCmBgYHtyfQpjb2xuYW1lcyhzcHBfbWFzdGVyX3p0ZW1wKQojSSB3YW50IHRvIGxvb2sgYXQgY29sdW1ucyA4OToxMzYgYXMgcG9zc2libGUgcHJlZGljdG9ycwpzdWJzZXQgPC0gc3BwX21hc3Rlcl96dGVtcFssYyg2LCA4OToxMzYpXQojbGV0J3MgZ2V0IHJpZCBvZiBuYSdzCm9wdGlvbnMobmEuYWN0aW9uID0gIm5hLmZhaWwiKQojZml0dGluZyBnbG9iYWwgbW9kZWwKZm1fY29sIDwtIGdsbShjb2wgfiAuLCBmYW1pbHkgPSBiaW5vbWlhbCwgZGF0YSA9IHN1YnNldCkKZGQgPC0gZHJlZGdlKGZtX2NvbCkKdmFyaWFibGVzX2RyZWRnZSA8LSBjb2xuYW1lcyhzcHBfbWFzdGVyX3p0ZW1wWzg5OjEzNl0pCmxpc3RfdmFyaWFibGVzIDwtIGdzdWIoIiwiICwgIiArICIgLCB0b1N0cmluZyh2YXJpYWJsZXNfZHJlZGdlKSkKYGBgCldoYXQgbW9kZWwgcGVyZm9ybXMgYmV0dGVyPyBhIG1vZGVsIHdpdGggY2hhbmdlcyBpbiB0aGUgcGFzdCB5ZWFyPyBvciBhIG1vZGVsIHdpdGggY2hhbmdlcyBpbiB0aGUgeWVhciBiZWZvcmUgbGFzdD8KRmlyc3QsIGxldCdzIG1ha2UgYSBtb2RlbCB3aXRoIGNoYW5nZXMgZnJvbSB0aGUgeWVhciBiZWZvcmUgbGFzdApgYGB7cn0KY29sX21vZF9jaGFuZ2VfYWJzX2xhZzEgPC0gZ2xtZXIoY29sIH4gc3N0X21lYW5fY2hhbmdlX2xhZzFfYWJzICsgc3N0X21heF9jaGFuZ2VfbGFnMV9hYnMgKyBzc3RfbWluX2NoYW5nZV9sYWcxX2FicyArIHNzdF9zZWFzX2NoYW5nZV9sYWcxX2FicyArICgxfHJlZykgKyAoMXx5ZWFyKSwgZGF0YSA9IHNwcF9tYXN0ZXJfenRlbXAsIGZhbWlseSA9IGJpbm9taWFsKQpzdW1tYXJ5KGNvbF9tb2RfY2hhbmdlX2Fic19sYWcxKQpgYGAKTm90IG11Y2ggaW5mbyBmcm9tIHN1bW1hcnksIGJ1dCBsZXQncyBjb21wYXJlIHVzaW5nIEFJQ2Mgd2l0aCBvdGhlciBtb2RlbApgYGB7cn0KQUlDYyhjb2xfbW9kX2NoYW5nZV9hYnMsIGNvbF9tb2RfY2hhbmdlX2Fic19sYWcxKQpgYGAKClBvb3IgcmVzdWx0cyBoZXJlISBXaGF0IGFib3V0IGV4dGluY3Rpb24/CmBgYHtyfQpleHRfbW9kX2NoYW5nZV9hYnNfbGFnMSA8LSBnbG1lcihub3dfZXh0IH4gc3N0X21lYW5fY2hhbmdlX2xhZzFfYWJzICsgc3N0X21heF9jaGFuZ2VfbGFnMV9hYnMgKyBzc3RfbWluX2NoYW5nZV9sYWcxX2FicyArIHNzdF9zZWFzX2NoYW5nZV9sYWcxX2FicyArICgxfHJlZykgKyAoMXx5ZWFyKSwgZGF0YSA9IHNwcF9tYXN0ZXJfenRlbXAsIGZhbWlseSA9IGJpbm9taWFsKQpzdW1tYXJ5KGV4dF9tb2RfY2hhbmdlX2Fic19sYWcxKQpgYGAKRm9yIGV4dGluY3Rpb24gYW5kIGxhZyAxIG9mIGNoYW5nZXMsIGJvdGggYWJzb2x1dGUgdmFsdWUgb2YgY2hhbmdlIGluIG1lYW4gZXhwZXJpZW5jZWQgbGFzdCB5ZWFyIGFuZCBhYnNvbHV0ZSB2YWx1ZSBvZiBjaGFuZ2UgaW4gbWF4IHRlbXAgZXhwZXJpZW5jZWQgbGFzdCB5ZWFyIGFwcGVhciBzaWduaWZpY2FudApBcyBhYnNvbHV0ZSB2YWx1ZSBvZiBjaGFuZ2UgaW4gbWVhbiBleHBlcmllbmNlZCBsYXN0IHllYXIgaW5jcmVhc2VzLCBsaWtlbGlob29kIG9mIGV4dGluY3Rpb24gZGVjcmVhc2VzCkFzIGFic29sdXRlIHZhbHVlIG9mIGNoYW5nZSBpbiBtYXggdGVtcCBleHBlcmllbmNlZCBsYXN0IHllYXIgaW5jcmVhc2VzLCBsaWtlbGlob29kIG9mIGV4dGluY3Rpb24gaW5jcmVhc2VzCgpCdXQgd2hhdCBhYm91dCBjb21wYXJpbmcgdGhpcyB0byBvdGhlciBtb2RlbD8KYGBge3J9CkFJQ2MoZXh0X21vZF9jaGFuZ2VfYWJzLCBleHRfbW9kX2NoYW5nZV9hYnNfbGFnMSkKYGBgCkhlcmUsIHVubGlrZSBjb2xvbml6YXRpb24sIGl0IGFwcGVhcnMgdGhhdCBjaGFuZ2VzIGV4cGVyaWVuY2VkIExBU1QgeWVhciBhcmUgYmV0dGVyIHRoYW4gY2hhbmdlcyBleHBlcmllbmNlZCB0aGlzIHllYXIgYXQgcHJlZGljdGluZyBleHRpbmN0aW9uCgpMZXQncyBnbyBiYWNrIG9uY2UgbW9yZSBpbiB0aW1lIGZvciBlYWNoIGZvciBraWNrcwoKQ29sb25pemF0aW9uIGJhc2VkIG9uIGNoYW5nZXMgaW4gdGVtcCBleHBlcmllbmNlZCBiZXR3ZWVuIDItMyB5ZWFycyBhZ28KYGBge3J9CmNvbF9tb2RfY2hhbmdlX2Fic19sYWcyIDwtIGdsbWVyKGNvbCB+IHNzdF9tZWFuX2NoYW5nZV9sYWcyX2FicyArIHNzdF9tYXhfY2hhbmdlX2xhZzJfYWJzICsgc3N0X21pbl9jaGFuZ2VfbGFnMl9hYnMgKyBzc3Rfc2Vhc19jaGFuZ2VfbGFnMl9hYnMgKyAoMXxyZWcpICsgKDF8eWVhciksIGRhdGEgPSBzcHBfbWFzdGVyX3p0ZW1wLCBmYW1pbHkgPSBiaW5vbWlhbCkKc3VtbWFyeShjb2xfbW9kX2NoYW5nZV9hYnNfbGFnMikKYGBgCkFuZCBjb21wYXJlIHRoaXMgdXNpbmcgQUlDYyB0byBvdGhlciBtb2RlbHMKYGBge3J9CkFJQ2MoY29sX21vZF9jaGFuZ2VfYWJzLCBjb2xfbW9kX2NoYW5nZV9hYnNfbGFnMSwgY29sX21vZF9jaGFuZ2VfYWJzX2xhZzIpCmBgYApCb3RoIGluY29ycG9yYXRpbmcgbGFncyBpbiBjaGFuZ2VzIGFyZSBlcXVhbGx5IHBvb3IsIHNvIHdlJ2xsIHN0aWNrIHdpdGggbW9zdCByZWNlbnQgY2hhbmdlcy4gTmV4dCBzdGVwLCBJIHdpbGwgdGFrZSBhd2F5IHZhcmlhYmxlcyBhbmQgc2VlIHdoYXQncyBiZXN0IGZvciBjb2xvbml6YXRpb24gdXNpbmcgQUlDCmBgYHtyfQoKYGBgCgoKCkZvciBub3csIHdlIG9ubHkgY2FyZSBhYm91dCBmaXNoIHNvIGxldCdzIGdvIGJhY2sgdG8gZWFybGllciBjb2RlIHRvIGV4dHJhY3QgZmlzaCBvbmx5CgpgYGB7cn0Kb3BlbihmaXNoX25vZmlzaGtleS5SRGF0YSkKYGBgCgpXZSB3aWxsIG5vdyBsaW1pdCBoYXVsIGluZm8gdG8gZmlzaAoKYGBge3J9CgpgYGAKCg==</div>
+<div id="rmd-source-code">LS0tCnRpdGxlOiAiTW9kZWxpbmcgaW5kaXZpZHVhbCBpbnN0YW5jZXMgb2YgY29sb25pemF0aW9ucyBhbmQgZXh0aW5jdGlvbnMgdXNpbmdzIHRyYWl0cyIKb3V0cHV0OiBodG1sX25vdGVib29rCi0tLQpRdWVzdGlvbjogZG8gc3BlY2llcyB0cmFpdHMgaW50ZXJlYWN0IHdpdGggY2hhbmdlcyBpbiB0ZW1wZXJhdHVyZSAoY3VycmVudCBvciBwYXN0KSB0byBkZXRlcm1pbmUgd2hldGhlciBvciBub3QgYSBnaXZlbiBzcGVjaWVzIGNvbG9uaXplcyBhIG5ldyByZWdpb24gaW4gYSBnaXZlbiB5ZWFyPwoKYmlub21pYWwgcmVncmVzc2lvbnM6Cgpjb2xvbml6YXRpb24gaW4gYSBnaXZlbiB5ZWFyPyAoeWVzL25vKSB+IG1lYW4gdGVtcCBvZiB5ZWFyIG9mIHRyYXdsIHggdHJhaXRzICsgbWF4IHRlbXAgb2YgeWVhciBvZiB0cmF3bCB4IHRyYWl0cyArIG1pbiB0ZW1wIG9mIHllYXIgb2YgdHJhd2wgeCB0cmFpdHMgKyBjaGFuZ2UgaW4gbWVhbiB0ZW1wIGZyb20gbGFzdCB5ZWFyIHggdHJhaXRzICsgbGFncyArIHRyYWl0cwoKZXh0aW5jdGlvbiBpbiBhIGdpdmVuIHllYXI/ICh5ZXMvbm8pIH4gbWVhbiB0ZW1wIG9mIHllYXIgb2YgdHJhd2wgeCB0cmFpdHMgKyBtYXggdGVtcCBvZiB5ZWFyIG9mIHRyYXdsIHggdHJhaXRzICsgbWluIHRlbXAgb2YgeWVhciBvZiB0cmF3bCB4IHRyYWl0cyArIGNoYW5nZSBpbiBtZWFuIHRlbXAgZnJvbSBsYXN0IHllYXIgeCB0cmFpdHMgKyBsYWdzICsgdHJhaXRzCgpUcmFpdHMgdG8gdXNlPwogIElkZWFsOgogIGdlbmVyYWxpc20KICBkaXNwZXJzYWwgc3luZHJvbWUKICBsb25nZXZpdHkKICBib2R5IHNpemUKICBnZW5lcmF0aW9uIHRpbWUKICB0cm9waGljIGxldmVsCiAgY3VycmVudCByYW5nZSBzaXplCiAgbW9iaWxpdHkgKGZpc2gsIHllcy9ubykKCldoYXQgd2UgYWN0dWFsbHkgaGF2ZSBmcm9tIFRpbTogKCoqID0gaWRlYWwpCiAgdHJvcGhpYyBsZXZlbDoKICAgIGZlZWRpbmcubW9kZSAoZ2VuZXJhbGlzbT8pKioKICAgIHRsICh0cm9waGljIGxldmVsKSoqCiAgUmVwcm9kdWN0aW9uOiAocHJvYmFibHkgd2hpY2hldmVyIHdlIGhhdmUgbW9yZSBkYXRhIGZvcikKICAgIHNwYXduaW5nLnR5cGUgKG9wZW5fd2F0ZXIvc3Vic3RyYXR1bSwgZXRjLiApKioKICAgIGVnZy5zaXplKioKICBHcm93dGg6CiAgICBMaW5mIChib2R5IHNpemUpCiAgICBMbWF4IChib2R5IHNpemUpKgogICAgSyAoZ3Jvd3RoIHJhdGUsIDEveSkKICAgIExtIChsZW5ndGggYXQgbWF0dXJpdHkpKioKICAgIFRtYXggKG1heGltdW0gYWdlKQogICAgdG0gKGFnZSBtYXR1cml0eSkqKgoKKk5COiBJJ20gbm90aWNpbmcgdGhhdCBzb21lIHNwZWNpZXMgaGF2ZSBtdWx0aXBsZSByZWNvcmRzIGluIFRpbSdzIGRhdGFiYXNlLCBhbmQgdGhhdCBzb21lIHN0YXRzIGFyZSBub3QgcXVpdGUgbWF0Y2hpbmcgdXAgd2l0aCB3aGF0IEkgZmluZCBvbiBmaXNoYmFzZS5vcmcgKGllIEJTQiBtYXggc2l6ZSBhbmQgc3VjaCkqCgpgYGB7ciBzZXR1cH0KbGlicmFyeShNdU1JbikKbGlicmFyeShsbWU0KQpyZWFkLmNzdigidHJhaXRzX2Zvcm1hbmlwLmNzdiIpCmxvYWQoImRhdGVfc3N0dGVtcF9hdmdfU09EQV93aXRobGFncy5SZGF0YSIpCmxvYWQoInNwcF9tYXN0ZXIuUkRhdGEiKQoKYGBgCkxldCdzIGxpbmsgc3BlY2llcyBkYXRhIGZyb20gc3BwX21hc3RlciB0byB0ZW1wIGRhdGEgd2l0aCBsYWdzIGFuZCBjaGFuZ2VzCmBgYHtyfQojY29tcGFyZSB0ZW1wcyBJIGNhbGN1bGF0ZWQgdG8gdGVtcGVyYXR1cmVzIGFscmVhZHkgdGhlcmUKI21hdGNoIHJlZ2lvbiBuYW1lcyBiZXR3ZWVuIHR3byBkYXRhIHRhYmxlcwpkYXRlX3RlbXBfcmVnX2F2Z193aXRobGFncyRyZWdpb24gPC0gYXMuZmFjdG9yKGRhdGVfdGVtcF9yZWdfYXZnX3dpdGhsYWdzJHJlZ2lvbikKbGV2ZWxzKGRhdGVfdGVtcF9yZWdfYXZnX3dpdGhsYWdzJHJlZ2lvbilbbGV2ZWxzKGRhdGVfdGVtcF9yZWdfYXZnX3dpdGhsYWdzJHJlZ2lvbik9PSJBRlNDX0FsZXV0aWFucyJdIDwtICJhaSIKbGV2ZWxzKGRhdGVfdGVtcF9yZWdfYXZnX3dpdGhsYWdzJHJlZ2lvbilbbGV2ZWxzKGRhdGVfdGVtcF9yZWdfYXZnX3dpdGhsYWdzJHJlZ2lvbik9PSJBRlNDX0VCUyJdIDwtICJlYnMiCmxldmVscyhkYXRlX3RlbXBfcmVnX2F2Z193aXRobGFncyRyZWdpb24pW2xldmVscyhkYXRlX3RlbXBfcmVnX2F2Z193aXRobGFncyRyZWdpb24pPT0iQUZTQ19HT0EiXSA8LSAiZ29hIgpsZXZlbHMoZGF0ZV90ZW1wX3JlZ19hdmdfd2l0aGxhZ3MkcmVnaW9uKVtsZXZlbHMoZGF0ZV90ZW1wX3JlZ19hdmdfd2l0aGxhZ3MkcmVnaW9uKT09IkFGU0NfV0NUcmkiXSA8LSAid2N0cmkiCmxldmVscyhkYXRlX3RlbXBfcmVnX2F2Z193aXRobGFncyRyZWdpb24pW2xldmVscyhkYXRlX3RlbXBfcmVnX2F2Z193aXRobGFncyRyZWdpb24pPT0iREZPX05ld2ZvdW5kbGFuZCJdIDwtICJuZXdmIgpsZXZlbHMoZGF0ZV90ZW1wX3JlZ19hdmdfd2l0aGxhZ3MkcmVnaW9uKVtsZXZlbHMoZGF0ZV90ZW1wX3JlZ19hdmdfd2l0aGxhZ3MkcmVnaW9uKT09IkRGT19TY290aWFuU2hlbGYiXSA8LSAic2hlbGYiCmxldmVscyhkYXRlX3RlbXBfcmVnX2F2Z193aXRobGFncyRyZWdpb24pW2xldmVscyhkYXRlX3RlbXBfcmVnX2F2Z193aXRobGFncyRyZWdpb24pPT0iTkVGU0NfTkVVUyJdIDwtICJuZXVzIgpsZXZlbHMoZGF0ZV90ZW1wX3JlZ19hdmdfd2l0aGxhZ3MkcmVnaW9uKVtsZXZlbHMoZGF0ZV90ZW1wX3JlZ19hdmdfd2l0aGxhZ3MkcmVnaW9uKT09IlNDRE5SX1NFVVMiXSA8LSAic2UiCmxldmVscyhkYXRlX3RlbXBfcmVnX2F2Z193aXRobGFncyRyZWdpb24pW2xldmVscyhkYXRlX3RlbXBfcmVnX2F2Z193aXRobGFncyRyZWdpb24pPT0iU0VGU0NfR09NZXgiXSA8LSAiZ21leCIKY29sbmFtZXMoZGF0ZV90ZW1wX3JlZ19hdmdfd2l0aGxhZ3MpW2NvbG5hbWVzKGRhdGVfdGVtcF9yZWdfYXZnX3dpdGhsYWdzKSA9PSAicmVnaW9uIl0gPC0gInJlZyIKCmRhdGVfdGVtcF9yZWdfYXZnJHllYXIgPC0gYXMubnVtZXJpYyhkYXRlX3RlbXBfcmVnX2F2ZyR5ZWFyKQpzcHBfbWFzdGVyX3p0ZW1wIDwtIGxlZnRfam9pbihzcHBfbWFzdGVyLCBkYXRlX3RlbXBfcmVnX2F2Z193aXRobGFncywgYnkgPSBjKCJyZWciLCAieWVhciIpKQpgYGAKRmlyc3QsIGxldCdzIGlnbm9yZSB0cmFpdHMsIGFuZCBqdXN0IGxvb2sgYXQgdGVtcGVyYXR1cmUgYXMgcHJlZGljdG9ycyBvZiB5ZXMgbm8gY29sb25pemF0aW9uIGFuZCB5ZXMgbm8gZXh0aW5jdGlvbgpDb2xvbml6YXRpb24gaW4gdGhpcyB5ZWFyOiBjb2wKR29lcyBleHRpbmN0IGluIHRoaXMgeWVhciAoaGVyZSBsYXN0IHllYXIsIGdvbmUgbm93KSA6IG5vd19leHQKTWVhbiB0ZW1wOiByZWdpb24geWVhciBtZWFuIHNzdApNYXggdGVtcDpyZWdpb24geWVhciBtYXggc3N0Ck1pbiB0ZW1wOiByZWdpb24geWVhciBtaW4gc3N0ClNlYXNvbmFsaXR5OiByZWdpb24geWVhciBzZWFzIHNzdAoKQ29sb25pemF0aW9uIGJhc2UgbW9kCmBgYHtyfQpjb2xfbW9kIDwtIGdsbWVyKGNvbCB+IHJlZ2lvbl95ZWFyX21lYW5fc3N0ICsgcmVnaW9uX3llYXJfbWF4X3NzdCArIHJlZ2lvbl95ZWFyX21pbl9zc3QgKyByZWdpb25feWVhcl9zZWFzX3NzdCArICgxfHJlZykgKyAoMXx5ZWFyKSwgZGF0YSA9IHNwcF9tYXN0ZXJfenRlbXAsIGZhbWlseSA9IGJpbm9taWFsKQpzdW1tYXJ5KGNvbF9tb2QpCmBgYAoKRXh0aW5jdGlvbiBiYXNlIG1vZApgYGB7cn0KZXh0X21vZCA8LSBnbG1lcihub3dfZXh0IH4gcmVnaW9uX3llYXJfbWVhbl9zc3QgKyByZWdpb25feWVhcl9tYXhfc3N0ICsgcmVnaW9uX3llYXJfbWluX3NzdCArIHJlZ2lvbl95ZWFyX3NlYXNfc3N0ICsgKDF8cmVnKSArICgxfHllYXIpLCBkYXRhID0gc3BwX21hc3Rlcl96dGVtcCwgZmFtaWx5ID0gYmlub21pYWwpCnN1bW1hcnkoZXh0X21vZCkKYGBgClRoZSBhYm92ZSBtb2RlbHMgcGVyZm9ybSByZWFsbHkgcG9vcmx5LCBidXQgdGhpcyBkb2Vzbid0IHJlYWxseSBzdXJwcmlzZSBtZS4gSSB0aGluayBjaGFuZ2UgaW4gdGVtcGVyYXR1cmUgaXMgYSBiaWdnZXIgZGVhbCwgYWx0aG91Z2ggSSBhbSBzdXJwcmlzZWQgdGhhdCBzZWFzb25hbGl0eSBkb2Vzbid0IGRvIGFueXRoaW5nLiAKCkxldCdzIG5vdyB0YWtlIGEgbG9vayBhdCBjaGFuZ2Ugb25seSAKCmBgYHtyfQpjb2xfbW9kX2NoYW5nZSA8LSBnbG1lcihjb2wgfiBzc3RfbWVhbl9jaGFuZ2UgKyBzc3RfbWF4X2NoYW5nZSArIHNzdF9taW5fY2hhbmdlICsgc3N0X3NlYXNfY2hhbmdlICsgKDF8cmVnKSArICgxfHllYXIpLCBkYXRhID0gc3BwX21hc3Rlcl96dGVtcCwgZmFtaWx5ID0gYmlub21pYWwpCnN1bW1hcnkoY29sX21vZF9jaGFuZ2UpCmV4dF9tb2RfY2hhbmdlIDwtIGdsbWVyKG5vd19leHQgfiBzc3RfbWVhbl9jaGFuZ2UgKyBzc3RfbWF4X2NoYW5nZSArIHNzdF9taW5fY2hhbmdlICsgc3N0X3NlYXNfY2hhbmdlICsgKDF8cmVnKSArICgxfHllYXIpLCBkYXRhID0gc3BwX21hc3Rlcl96dGVtcCwgZmFtaWx5ID0gYmlub21pYWwpCnN1bW1hcnkoZXh0X21vZF9jaGFuZ2UpCmBgYAoKTGV0J3Mgbm93IHRha2UgYSBsb29rIGF0IGFic29sdXRlIHZhbHVlIG9mIHRlbXAgY2hhbmdlIGZyb20gcHJldmlvdXMgeWVhciBvbmx5CmBgYHtyfQpjb2xfbW9kX2NoYW5nZV9hYnMgPC0gZ2xtZXIoY29sIH4gc3N0X21lYW5fY2hhbmdlX2FicyArIHNzdF9tYXhfY2hhbmdlX2FicyArIHNzdF9taW5fY2hhbmdlX2FicyArIHNzdF9zZWFzX2NoYW5nZV9hYnMgKyAoMXxyZWcpICsgKDF8eWVhciksIGRhdGEgPSBzcHBfbWFzdGVyX3p0ZW1wLCBmYW1pbHkgPSBiaW5vbWlhbCkKc3VtbWFyeShjb2xfbW9kX2NoYW5nZV9hYnMpCmBgYApUaGlzIG9uZSBhYm92ZSBhY3R1YWxseSBnaXZlcyByZWFsbHkgZ29vZCByZXN1bHRzLCB0aGlzIGlzIGV4Y2l0aW5nIQpXaGVuIGFic29sdXRlIGNoYW5nZSBpbiBtYXggeWVhcmx5IHRlbXBlcmF0dXJlIElOQ1JFQVNFUywgbGlrZWxpaG9vZCBvZiBjb2xvbml6YXRpb24gaW5jcmVhc2UKV2hlbiBhYnNvbHV0ZSBjaGFuZ2UgaW4gc2Vhc29uYWxpdHkgSU5DUkVBU0VTLCBsaWtlbGlob29kIG9mIGNvbG9uaXphdGlvbnMgZGVjcmVhc2VzCldoZW4gYWJzb2x1dGUgY2hhbmdlIGluIG1lYW4geWVhcmx5IHRlbXBlcmF0dXJlIElOQ1JFQVNFUywgbGlrZWxpaG9vZCBvZiBjb2xvbml6YXRpb24gaW5jcmVhc2VzCgpIb3cgZG8gd2UgZmVlbCBhYm91dCB0aGUgbWl4ZWQgZWZmZWN0cz8gTGV0J3MgY29tcGFyZSBBSUMKYGBge3J9Cm9wdGlvbnMobmEuYWN0aW9uID0gIm5hLm9taXQiKQpjb2xfbW9kX2NoYW5nZV9hYnNfcmVnYXNyYW5kb20gPC0gZ2xtZXIoY29sIH4gc3N0X21lYW5fY2hhbmdlX2FicyArIHNzdF9tYXhfY2hhbmdlX2FicyArIHNzdF9taW5fY2hhbmdlX2FicyArIHNzdF9zZWFzX2NoYW5nZV9hYnMgKyAoMXxyZWcpLCBkYXRhID0gc3BwX21hc3Rlcl96dGVtcCwgZmFtaWx5ID0gYmlub21pYWwpCmNvbF9tb2RfY2hhbmdlX2Fic195ZWFyYXNyYW5kb20gPC0gZ2xtZXIoY29sIH4gc3N0X21lYW5fY2hhbmdlX2FicyArIHNzdF9tYXhfY2hhbmdlX2FicyArIHNzdF9taW5fY2hhbmdlX2FicyArIHNzdF9zZWFzX2NoYW5nZV9hYnMgKyAoMXx5ZWFyKSwgZGF0YSA9IHNwcF9tYXN0ZXJfenRlbXAsIGZhbWlseSA9IGJpbm9taWFsKQpjb2xfbW9kX2NoYW5nZV9hYnNfbm9yYW5kb20gPC0gZ2xtKGNvbCB+IHNzdF9tZWFuX2NoYW5nZV9hYnMgKyBzc3RfbWF4X2NoYW5nZV9hYnMgKyBzc3RfbWluX2NoYW5nZV9hYnMgKyBzc3Rfc2Vhc19jaGFuZ2VfYWJzLCBkYXRhID0gc3BwX21hc3Rlcl96dGVtcCwgZmFtaWx5ID0gYmlub21pYWwpCkFJQ2MoY29sX21vZF9jaGFuZ2VfYWJzLCBjb2xfbW9kX2NoYW5nZV9hYnNfcmVnYXNyYW5kb20sY29sX21vZF9jaGFuZ2VfYWJzX3llYXJhc3JhbmRvbSwgY29sX21vZF9jaGFuZ2VfYWJzX25vcmFuZG9tKQpgYGAKQmVzdCB3aXRoIGJvdGggcmFuZG9tIGVmZmVjdHMhIQoKCmBgYHtyfQpleHRfbW9kX2NoYW5nZV9hYnMgPC0gZ2xtZXIobm93X2V4dCB+IHNzdF9tZWFuX2NoYW5nZV9hYnMgKyBzc3RfbWF4X2NoYW5nZV9hYnMgKyBzc3RfbWluX2NoYW5nZV9hYnMgKyBzc3Rfc2Vhc19jaGFuZ2VfYWJzICsgKDF8cmVnKSArICgxfHllYXIpLCBkYXRhID0gc3BwX21hc3Rlcl96dGVtcCwgZmFtaWx5ID0gYmlub21pYWwpCnN1bW1hcnkoZXh0X21vZF9jaGFuZ2VfYWJzKQpgYGAKTm90IGFzIGV4Y2l0aW5nIGFzIGNvbG9uaXphdGlvbnMsIGJ1dCBub3Qgc3VycHJpc2VkLgpXaGVuIGFic29sdXRlIGNoYW5nZSBpbiBtZWFuIHllYXJseSB0ZW1wZXJhdHVyZSBJTkNSRUFTRVMsIGxpa2VsaWhvb2Qgb2YgZXh0aW5jdGlvbiBBTFNPIGluY3JlYXNlcwoKQWdhaW4sIGhvdyBkbyB3ZSBmZWVsIGFib3V0IHRoZSBtaXhlZCBlZmZlY3RzIGluIG91ciBleHRpbmN0aW9uIG1vZGVsPyBMZXQncyBjb21wYXJlIEFJQwpgYGB7cn0Kb3B0aW9ucyhuYS5hY3Rpb24gPSAibmEub21pdCIpCmV4dF9tb2RfY2hhbmdlX2Fic19yZWdhc3JhbmRvbSA8LSBnbG1lcihub3dfZXh0IH4gc3N0X21lYW5fY2hhbmdlX2FicyArIHNzdF9tYXhfY2hhbmdlX2FicyArIHNzdF9taW5fY2hhbmdlX2FicyArIHNzdF9zZWFzX2NoYW5nZV9hYnMgKyAoMXxyZWcpLCBkYXRhID0gc3BwX21hc3Rlcl96dGVtcCwgZmFtaWx5ID0gYmlub21pYWwpCmV4dF9tb2RfY2hhbmdlX2Fic195ZWFyYXNyYW5kb20gPC0gZ2xtZXIobm93X2V4dCB+IHNzdF9tZWFuX2NoYW5nZV9hYnMgKyBzc3RfbWF4X2NoYW5nZV9hYnMgKyBzc3RfbWluX2NoYW5nZV9hYnMgKyBzc3Rfc2Vhc19jaGFuZ2VfYWJzICsgKDF8eWVhciksIGRhdGEgPSBzcHBfbWFzdGVyX3p0ZW1wLCBmYW1pbHkgPSBiaW5vbWlhbCkKZXh0X21vZF9jaGFuZ2VfYWJzX25vcmFuZG9tIDwtIGdsbShub3dfZXh0IH4gc3N0X21lYW5fY2hhbmdlX2FicyArIHNzdF9tYXhfY2hhbmdlX2FicyArIHNzdF9taW5fY2hhbmdlX2FicyArIHNzdF9zZWFzX2NoYW5nZV9hYnMsIGRhdGEgPSBzcHBfbWFzdGVyX3p0ZW1wLCBmYW1pbHkgPSBiaW5vbWlhbCkKQUlDYyhleHRfbW9kX2NoYW5nZV9hYnMsIGV4dF9tb2RfY2hhbmdlX2Fic19yZWdhc3JhbmRvbSxleHRfbW9kX2NoYW5nZV9hYnNfeWVhcmFzcmFuZG9tLCBleHRfbW9kX2NoYW5nZV9hYnNfbm9yYW5kb20pCmBgYApCZXN0IHdpdGggYm90aCByYW5kb20gZWZmZWN0cyEhCgpOb3csIGxldCdzIHBsYXkgYXJvdW5kIHdpdGggbGFncyBhIGJpdCB1c2luZyBkcmVkZ2UsIAojdGhpcyBkaWRuJ3Qgd29yayBiZWNhdXNlIG9mIE5BJ3MsIEkgZ3Vlc3MgSSdsbCBjb21wYXJlIG9uZSBieSBvbmUgdGhlbj8/Cmh0dHBzOi8vcmRyci5pby9jcmFuL011TUluL3NyYy9kZW1vL2RyZWRnZS5zdWJzZXQuUgpgYGB7cn0KY29sbmFtZXMoc3BwX21hc3Rlcl96dGVtcCkKI0kgd2FudCB0byBsb29rIGF0IGNvbHVtbnMgODk6MTM2IGFzIHBvc3NpYmxlIHByZWRpY3RvcnMKc3Vic2V0IDwtIHNwcF9tYXN0ZXJfenRlbXBbLGMoNiwgODk6MTM2KV0KI2xldCdzIGdldCByaWQgb2YgbmEncwpvcHRpb25zKG5hLmFjdGlvbiA9ICJuYS5mYWlsIikKI2ZpdHRpbmcgZ2xvYmFsIG1vZGVsCmZtX2NvbCA8LSBnbG0oY29sIH4gLiwgZmFtaWx5ID0gYmlub21pYWwsIGRhdGEgPSBzdWJzZXQpCmRkIDwtIGRyZWRnZShmbV9jb2wpCnZhcmlhYmxlc19kcmVkZ2UgPC0gY29sbmFtZXMoc3BwX21hc3Rlcl96dGVtcFs4OToxMzZdKQpsaXN0X3ZhcmlhYmxlcyA8LSBnc3ViKCIsIiAsICIgKyAiICwgdG9TdHJpbmcodmFyaWFibGVzX2RyZWRnZSkpCmBgYAoKV2hhdCBtb2RlbCBwZXJmb3JtcyBiZXR0ZXI/IGEgbW9kZWwgd2l0aCBjaGFuZ2VzIGluIHRoZSBwYXN0IHllYXI/IG9yIGEgbW9kZWwgd2l0aCBjaGFuZ2VzIGluIHRoZSB5ZWFyIGJlZm9yZSBsYXN0PwoKRmlyc3QsIGxldCdzIG1ha2UgYSBtb2RlbCB3aXRoIGNoYW5nZXMgZnJvbSB0aGUgeWVhciBiZWZvcmUgbGFzdCBmb3IgY29sb25pemF0aW9uCmBgYHtyfQpjb2xfbW9kX2NoYW5nZV9hYnNfbGFnMSA8LSBnbG1lcihjb2wgfiBzc3RfbWVhbl9jaGFuZ2VfbGFnMV9hYnMgKyBzc3RfbWF4X2NoYW5nZV9sYWcxX2FicyArIHNzdF9taW5fY2hhbmdlX2xhZzFfYWJzICsgc3N0X3NlYXNfY2hhbmdlX2xhZzFfYWJzICsgKDF8cmVnKSArICgxfHllYXIpLCBkYXRhID0gc3BwX21hc3Rlcl96dGVtcCwgZmFtaWx5ID0gYmlub21pYWwpCnN1bW1hcnkoY29sX21vZF9jaGFuZ2VfYWJzX2xhZzEpCmBgYApOb3QgbXVjaCBpbmZvIGZyb20gc3VtbWFyeSwgYnV0IGxldCdzIGNvbXBhcmUgdXNpbmcgQUlDYyB3aXRoIG90aGVyIG1vZGVsCmBgYHtyfQpBSUNjKGNvbF9tb2RfY2hhbmdlX2FicywgY29sX21vZF9jaGFuZ2VfYWJzX2xhZzEpCmBgYAoKUG9vciByZXN1bHRzIGhlcmUhIFdoYXQgYWJvdXQgZXh0aW5jdGlvbj8KYGBge3J9CmV4dF9tb2RfY2hhbmdlX2Fic19sYWcxIDwtIGdsbWVyKG5vd19leHQgfiBzc3RfbWVhbl9jaGFuZ2VfbGFnMV9hYnMgKyBzc3RfbWF4X2NoYW5nZV9sYWcxX2FicyArIHNzdF9taW5fY2hhbmdlX2xhZzFfYWJzICsgc3N0X3NlYXNfY2hhbmdlX2xhZzFfYWJzICsgKDF8cmVnKSArICgxfHllYXIpLCBkYXRhID0gc3BwX21hc3Rlcl96dGVtcCwgZmFtaWx5ID0gYmlub21pYWwpCnN1bW1hcnkoZXh0X21vZF9jaGFuZ2VfYWJzX2xhZzEpCmBgYApGb3IgZXh0aW5jdGlvbiBhbmQgbGFnIDEgb2YgY2hhbmdlcywgYm90aCBhYnNvbHV0ZSB2YWx1ZSBvZiBjaGFuZ2UgaW4gbWVhbiBleHBlcmllbmNlZCBsYXN0IHllYXIgYW5kIGFic29sdXRlIHZhbHVlIG9mIGNoYW5nZSBpbiBtYXggdGVtcCBleHBlcmllbmNlZCBsYXN0IHllYXIgYXBwZWFyIHNpZ25pZmljYW50CkFzIGFic29sdXRlIHZhbHVlIG9mIGNoYW5nZSBpbiBtZWFuIGV4cGVyaWVuY2VkIGxhc3QgeWVhciBpbmNyZWFzZXMsIGxpa2VsaWhvb2Qgb2YgZXh0aW5jdGlvbiBkZWNyZWFzZXMKQXMgYWJzb2x1dGUgdmFsdWUgb2YgY2hhbmdlIGluIG1heCB0ZW1wIGV4cGVyaWVuY2VkIGxhc3QgeWVhciBpbmNyZWFzZXMsIGxpa2VsaWhvb2Qgb2YgZXh0aW5jdGlvbiBpbmNyZWFzZXMKCkJ1dCB3aGF0IGFib3V0IGNvbXBhcmluZyB0aGlzIHRvIG90aGVyIG1vZGVsPwpgYGB7cn0KQUlDYyhleHRfbW9kX2NoYW5nZV9hYnMsIGV4dF9tb2RfY2hhbmdlX2Fic19sYWcxKQpgYGAKSGVyZSwgdW5saWtlIGNvbG9uaXphdGlvbiwgaXQgYXBwZWFycyB0aGF0IGNoYW5nZXMgZXhwZXJpZW5jZWQgTEFTVCB5ZWFyIGFyZSBiZXR0ZXIgdGhhbiBjaGFuZ2VzIGV4cGVyaWVuY2VkIHRoaXMgeWVhciBhdCBwcmVkaWN0aW5nIGV4dGluY3Rpb24KCkxldCdzIGdvIGJhY2sgb25jZSBtb3JlIGluIHRpbWUgZm9yIGVhY2ggZm9yIGtpY2tzCgpDb2xvbml6YXRpb24gYmFzZWQgb24gY2hhbmdlcyBpbiB0ZW1wIGV4cGVyaWVuY2VkIGJldHdlZW4gMi0zIHllYXJzIGFnbwpgYGB7cn0KY29sX21vZF9jaGFuZ2VfYWJzX2xhZzIgPC0gZ2xtZXIoY29sIH4gc3N0X21lYW5fY2hhbmdlX2xhZzJfYWJzICsgc3N0X21heF9jaGFuZ2VfbGFnMl9hYnMgKyBzc3RfbWluX2NoYW5nZV9sYWcyX2FicyArIHNzdF9zZWFzX2NoYW5nZV9sYWcyX2FicyArICgxfHJlZykgKyAoMXx5ZWFyKSwgZGF0YSA9IHNwcF9tYXN0ZXJfenRlbXAsIGZhbWlseSA9IGJpbm9taWFsKQpzdW1tYXJ5KGNvbF9tb2RfY2hhbmdlX2Fic19sYWcyKQpgYGAKQW5kIGNvbXBhcmUgdGhpcyB1c2luZyBBSUNjIHRvIG90aGVyIG1vZGVscwpgYGB7cn0KQUlDYyhjb2xfbW9kX2NoYW5nZV9hYnMsIGNvbF9tb2RfY2hhbmdlX2Fic19sYWcxLCBjb2xfbW9kX2NoYW5nZV9hYnNfbGFnMikKYGBgCkJvdGggaW5jb3Jwb3JhdGluZyBsYWdzIGluIGNoYW5nZXMgYXJlIGVxdWFsbHkgcG9vciBmb3IgY29sb25pemF0aW9uLCBzbyB3ZSdsbCBzdGljayB3aXRoIG1vc3QgcmVjZW50IGNoYW5nZXMgaW4gdGVtcCB2YXJpYWJsZXMuIAoKTmV4dCBzdGVwLCBJIHdpbGwgdGFrZSBhd2F5IHZhcmlhYmxlcyBhbmQgc2VlIHdoYXQncyBiZXN0IGZvciBjb2xvbml6YXRpb24gdXNpbmcgQUlDCmBgYHtyfQpzdW1tYXJ5KGNvbF9tb2RfY2hhbmdlX2FicykKYGBgCgpgYGB7cn0KI3JlbWVtYmVyLCB2YXJpYWJsZXMgd2l0aCBiZXN0IFAgdmFsdWVzIGZvciBjb2xvbml6YXRpb24gQVJFIHNlYXMsIGFuZCB0aGVuIG1heCwgYW5kIHRoZW4gbWVhbiAobWluIG5vdCBzaWduaWZpY2FudCkKY29sX21vZF9jaGFuZ2VfYWJzXzNfdmFyIDwtIGdsbWVyKGNvbCB+IHNzdF9tZWFuX2NoYW5nZV9hYnMgKyBzc3RfbWF4X2NoYW5nZV9hYnMgKyBzc3Rfc2Vhc19jaGFuZ2VfYWJzICsgKDEgfCByZWcpICsgKDEgfCB5ZWFyKSwgZmFtaWx5ID0gYmlub21pYWwsIGRhdGEgPSBzcHBfbWFzdGVyX3p0ZW1wKQoKY29sX21vZF9jaGFuZ2VfYWJzXzJfdmFyIDwtIGdsbWVyKGNvbCB+IHNzdF9tYXhfY2hhbmdlX2FicyArIHNzdF9zZWFzX2NoYW5nZV9hYnMgKyAoMSB8IHJlZykgKyAoMSB8IHllYXIpLCBmYW1pbHkgPSBiaW5vbWlhbCwgZGF0YSA9IHNwcF9tYXN0ZXJfenRlbXApCgpjb2xfbW9kX2NoYW5nZV9hYnNfMV92YXIgPC0gZ2xtZXIoY29sIH4gc3N0X3NlYXNfY2hhbmdlX2FicyArICgxIHwgcmVnKSArICgxIHwgeWVhciksIGZhbWlseSA9IGJpbm9taWFsLCBkYXRhID0gc3BwX21hc3Rlcl96dGVtcCkKCkFJQ2MoY29sX21vZF9jaGFuZ2VfYWJzXzFfdmFyLCBjb2xfbW9kX2NoYW5nZV9hYnNfMl92YXIsIGNvbF9tb2RfY2hhbmdlX2Fic18zX3ZhciwgY29sX21vZF9jaGFuZ2VfYWJzKQpgYGAKKipUaGUgYmVzdCBtb2RlbCB1c2VzIG9ubHkgc2Vhc29uYWxpdHkgYXMgYSBwcmVkaWN0b3IqKgpjb2xfbW9kX2NoYW5nZV9hYnNfMV92YXIgPC0gZ2xtZXIoY29sIH4gc3N0X3NlYXNfY2hhbmdlX2FicyArICgxIHwgcmVnKSArICgxIHwgeWVhciksIGZhbWlseSA9IGJpbm9taWFsLCBkYXRhID0gc3BwX21hc3Rlcl96dGVtcCkKCkV4dGluY3Rpb24gYmFzZWQgb24gY2hhbmdlcyBpbiB0ZW1wIGV4cGVyaWVuY2VkIGJldHdlZW4gMi0zIHllYXJzIGFnbwpgYGB7cn0KZXh0X21vZF9jaGFuZ2VfYWJzX2xhZzIgPC0gZ2xtZXIobm93X2V4dCB+IHNzdF9tZWFuX2NoYW5nZV9sYWcyX2FicyArIHNzdF9tYXhfY2hhbmdlX2xhZzJfYWJzICsgc3N0X21pbl9jaGFuZ2VfbGFnMl9hYnMgKyBzc3Rfc2Vhc19jaGFuZ2VfbGFnMl9hYnMgKyAoMXxyZWcpICsgKDF8eWVhciksIGRhdGEgPSBzcHBfbWFzdGVyX3p0ZW1wLCBmYW1pbHkgPSBiaW5vbWlhbCkKc3VtbWFyeShleHRfbW9kX2NoYW5nZV9hYnNfbGFnMikKYGBgCkFuZCBjb21wYXJlIHRoaXMgdXNpbmcgQUlDYyB0byBvdGhlciBtb2RlbHMKYGBge3J9CkFJQ2MoZXh0X21vZF9jaGFuZ2VfYWJzLCBleHRfbW9kX2NoYW5nZV9hYnNfbGFnMSwgZXh0X21vZF9jaGFuZ2VfYWJzX2xhZzIpCmBgYApCb3RoIGxhZ3MgaW1wcm92ZSBtb2RlbCwgc28gSSdsbCBnbyBhbm90aGVyIGxldmVsIGJhY2sgaW4gY2hhbmdlcyBhcmUgZXF1YWxseSBwb29yLCBzbyB3ZSdsbCBzdGljayB3aXRoIG1vc3QgcmVjZW50IGNoYW5nZXMuIApgYGB7cn0KZXh0X21vZF9jaGFuZ2VfYWJzX2xhZzMgPC0gZ2xtZXIobm93X2V4dCB+IHNzdF9tZWFuX2NoYW5nZV9sYWczX2FicyArIHNzdF9tYXhfY2hhbmdlX2xhZzNfYWJzICsgc3N0X21pbl9jaGFuZ2VfbGFnM19hYnMgKyBzc3Rfc2Vhc19jaGFuZ2VfbGFnM19hYnMgKyAoMXxyZWcpICsgKDF8eWVhciksIGRhdGEgPSBzcHBfbWFzdGVyX3p0ZW1wLCBmYW1pbHkgPSBiaW5vbWlhbCkKc3VtbWFyeShleHRfbW9kX2NoYW5nZV9hYnNfbGFnMykKQUlDYyhleHRfbW9kX2NoYW5nZV9hYnMsIGV4dF9tb2RfY2hhbmdlX2Fic19sYWcxLCBleHRfbW9kX2NoYW5nZV9hYnNfbGFnMiwgZXh0X21vZF9jaGFuZ2VfYWJzX2xhZzMpCmBgYApUaGUgYmVzdCBpcyBsYWcgMiwgc28gdGhlIGNoYW5nZSBmcm9tIDItMyB5ZWFycyBhZ28gaXMgYmVzdCBhdCBkZXRlcm1pbmluZyBleHRpbmN0aW9uIHByb2JhYmlsaXR5CgpOZXh0IHN0ZXAsIEkgd2lsbCB0YWtlIGF3YXkgdmFyaWFibGVzIGFuZCBzZWUgd2hhdCdzIGJlc3QgZm9yIGV4dGluY3Rpb24gdXNpbmcgQUlDCgpgYGB7cn0Kc3VtbWFyeShleHRfbW9kX2NoYW5nZV9hYnNfbGFnMikKYGBgCgpgYGB7cn0KI3JlbWVtYmVyLCB2YXJpYWJsZXMgd2l0aCBiZXN0IFAgdmFsdWVzIGZvciBleHRpbmN0aW9uIHdpdGggMiBsYWcgYXJlIG1heCBjaGFuZ2UgbGFnIDIgYWJzLCBtZWFuIGNoYW5nZSBsYWcgMiBhYnMsIHNlYXMgY2hhbmdlIGxhZyAyIGFicywgYW5kIGxhc3QgbWluIGNoYW5nZSBsYWcgMiBhYnMKZXh0X21vZF9jaGFuZ2VfbGFnMl9hYnNfM192YXIgPC0gZ2xtZXIobm93X2V4dCB+IHNzdF9tZWFuX2NoYW5nZV9sYWcyX2FicyArIHNzdF9tYXhfY2hhbmdlX2xhZzJfYWJzICsgc3N0X3NlYXNfY2hhbmdlX2xhZzJfYWJzICsgKDEgfCByZWcpICsgKDEgfCB5ZWFyKSwgZmFtaWx5ID0gYmlub21pYWwsIGRhdGEgPSBzcHBfbWFzdGVyX3p0ZW1wKQpleHRfbW9kX2NoYW5nZV9sYWcyX2Fic18yX3ZhciA8LSBnbG1lcihub3dfZXh0IH4gc3N0X21lYW5fY2hhbmdlX2xhZzJfYWJzICsgc3N0X21heF9jaGFuZ2VfbGFnMl9hYnMgKyAoMSB8IHJlZykgKyAoMSB8IHllYXIpLCBmYW1pbHkgPSBiaW5vbWlhbCwgZGF0YSA9IHNwcF9tYXN0ZXJfenRlbXApCmV4dF9tb2RfY2hhbmdlX2xhZzJfYWJzXzFfdmFyIDwtIGdsbWVyKG5vd19leHQgfiBzc3RfbWF4X2NoYW5nZV9sYWcyX2FicyArICgxIHwgcmVnKSArICgxIHwgeWVhciksIGZhbWlseSA9IGJpbm9taWFsLCBkYXRhID0gc3BwX21hc3Rlcl96dGVtcCkKCkFJQ2MoZXh0X21vZF9jaGFuZ2VfbGFnMl9hYnNfM192YXIsIGV4dF9tb2RfY2hhbmdlX2xhZzJfYWJzXzFfdmFyLCBleHRfbW9kX2NoYW5nZV9sYWcyX2Fic18yX3ZhciwgZXh0X21vZF9jaGFuZ2VfYWJzX2xhZzIpCmBgYApUaGUgYmVzdCBtb2RlbCBpcyBsZXNzIGNsZWFyIGhlcmUsIGV4dF9tb2RfY2hhbmdlX2xhZzJfYWJzXzJfdmFyIGhhcyB0aGUgbG93ZXN0IEFJQ2MsIGJ1dCwgaXQncyBub3Qgc3Vic3RhbnRpYWxseSBsb3dlciwgYW5kIGV4dF9tb2RfY2hhbmdlX2xhZzJfYWJzXzFfdmFyIGhhcyBmZXdlciBwcmVkaWN0b3JzLCBzbyBsZXQncyBnbyB3aXRoIHRoYXQKKipleHRfbW9kX2NoYW5nZV9sYWcyX2Fic18xX3ZhciA8LSBnbG1lcihub3dfZXh0IH4gc3N0X21heF9jaGFuZ2VfbGFnMl9hYnMgKyAoMSB8IHJlZykgKyAoMSB8IHllYXIpLCBmYW1pbHkgPSBiaW5vbWlhbCwgZGF0YSA9IHNwcF9tYXN0ZXJfenRlbXApKio6IGJlc3QgbW9kZWwKCgpGb3Igbm93LCB3ZSBvbmx5IGNhcmUgYWJvdXQgZmlzaCBzbyBsZXQncyBnbyBiYWNrIHRvIGVhcmxpZXIgY29kZSB0byBleHRyYWN0IGZpc2ggb25seQoKYGBge3J9Cm9wZW4oZmlzaF9ub2Zpc2hrZXkuUkRhdGEpCmBgYAoKV2Ugd2lsbCBub3cgbGltaXQgaGF1bCBpbmZvIHRvIGZpc2gKCmBgYHtyfQoKYGBgCgo=</div>
 
 
 

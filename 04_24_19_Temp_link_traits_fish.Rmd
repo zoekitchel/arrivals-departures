@@ -72,9 +72,15 @@ Mean temp: region year mean sst
 Max temp:region year max sst
 Min temp: region year min sst
 Seasonality: region year seas sst
+
+Colonization base mod
 ```{r}
 col_mod <- glmer(col ~ region_year_mean_sst + region_year_max_sst + region_year_min_sst + region_year_seas_sst + (1|reg) + (1|year), data = spp_master_ztemp, family = binomial)
 summary(col_mod)
+```
+
+Extinction base mod
+```{r}
 ext_mod <- glmer(now_ext ~ region_year_mean_sst + region_year_max_sst + region_year_min_sst + region_year_seas_sst + (1|reg) + (1|year), data = spp_master_ztemp, family = binomial)
 summary(ext_mod)
 ```
@@ -99,6 +105,17 @@ When absolute change in max yearly temperature INCREASES, likelihood of coloniza
 When absolute change in seasonality INCREASES, likelihood of colonizations decreases
 When absolute change in mean yearly temperature INCREASES, likelihood of colonization increases
 
+How do we feel about the mixed effects? Let's compare AIC
+```{r}
+options(na.action = "na.omit")
+col_mod_change_abs_regasrandom <- glmer(col ~ sst_mean_change_abs + sst_max_change_abs + sst_min_change_abs + sst_seas_change_abs + (1|reg), data = spp_master_ztemp, family = binomial)
+col_mod_change_abs_yearasrandom <- glmer(col ~ sst_mean_change_abs + sst_max_change_abs + sst_min_change_abs + sst_seas_change_abs + (1|year), data = spp_master_ztemp, family = binomial)
+col_mod_change_abs_norandom <- glm(col ~ sst_mean_change_abs + sst_max_change_abs + sst_min_change_abs + sst_seas_change_abs, data = spp_master_ztemp, family = binomial)
+AICc(col_mod_change_abs, col_mod_change_abs_regasrandom,col_mod_change_abs_yearasrandom, col_mod_change_abs_norandom)
+```
+Best with both random effects!!
+
+
 ```{r}
 ext_mod_change_abs <- glmer(now_ext ~ sst_mean_change_abs + sst_max_change_abs + sst_min_change_abs + sst_seas_change_abs + (1|reg) + (1|year), data = spp_master_ztemp, family = binomial)
 summary(ext_mod_change_abs)
@@ -106,7 +123,18 @@ summary(ext_mod_change_abs)
 Not as exciting as colonizations, but not surprised.
 When absolute change in mean yearly temperature INCREASES, likelihood of extinction ALSO increases
 
-Now, let's play around with lags a bit using dredge, this didn't work because of NA's, I guess I'll compare one by one then??
+Again, how do we feel about the mixed effects in our extinction model? Let's compare AIC
+```{r}
+options(na.action = "na.omit")
+ext_mod_change_abs_regasrandom <- glmer(now_ext ~ sst_mean_change_abs + sst_max_change_abs + sst_min_change_abs + sst_seas_change_abs + (1|reg), data = spp_master_ztemp, family = binomial)
+ext_mod_change_abs_yearasrandom <- glmer(now_ext ~ sst_mean_change_abs + sst_max_change_abs + sst_min_change_abs + sst_seas_change_abs + (1|year), data = spp_master_ztemp, family = binomial)
+ext_mod_change_abs_norandom <- glm(now_ext ~ sst_mean_change_abs + sst_max_change_abs + sst_min_change_abs + sst_seas_change_abs, data = spp_master_ztemp, family = binomial)
+AICc(ext_mod_change_abs, ext_mod_change_abs_regasrandom,ext_mod_change_abs_yearasrandom, ext_mod_change_abs_norandom)
+```
+Best with both random effects!!
+
+Now, let's play around with lags a bit using dredge, 
+#this didn't work because of NA's, I guess I'll compare one by one then??
 https://rdrr.io/cran/MuMIn/src/demo/dredge.subset.R
 ```{r}
 colnames(spp_master_ztemp)
@@ -120,8 +148,10 @@ dd <- dredge(fm_col)
 variables_dredge <- colnames(spp_master_ztemp[89:136])
 list_variables <- gsub("," , " + " , toString(variables_dredge))
 ```
+
 What model performs better? a model with changes in the past year? or a model with changes in the year before last?
-First, let's make a model with changes from the year before last
+
+First, let's make a model with changes from the year before last for colonization
 ```{r}
 col_mod_change_abs_lag1 <- glmer(col ~ sst_mean_change_lag1_abs + sst_max_change_lag1_abs + sst_min_change_lag1_abs + sst_seas_change_lag1_abs + (1|reg) + (1|year), data = spp_master_ztemp, family = binomial)
 summary(col_mod_change_abs_lag1)
@@ -157,11 +187,59 @@ And compare this using AICc to other models
 ```{r}
 AICc(col_mod_change_abs, col_mod_change_abs_lag1, col_mod_change_abs_lag2)
 ```
-Both incorporating lags in changes are equally poor, so we'll stick with most recent changes. Next step, I will take away variables and see what's best for colonization using AIC
-```{r}
+Both incorporating lags in changes are equally poor for colonization, so we'll stick with most recent changes in temp variables. 
 
+Next step, I will take away variables and see what's best for colonization using AIC
+```{r}
+summary(col_mod_change_abs)
 ```
 
+```{r}
+#remember, variables with best P values for colonization ARE seas, and then max, and then mean (min not significant)
+col_mod_change_abs_3_var <- glmer(col ~ sst_mean_change_abs + sst_max_change_abs + sst_seas_change_abs + (1 | reg) + (1 | year), family = binomial, data = spp_master_ztemp)
+
+col_mod_change_abs_2_var <- glmer(col ~ sst_max_change_abs + sst_seas_change_abs + (1 | reg) + (1 | year), family = binomial, data = spp_master_ztemp)
+
+col_mod_change_abs_1_var <- glmer(col ~ sst_seas_change_abs + (1 | reg) + (1 | year), family = binomial, data = spp_master_ztemp)
+
+AICc(col_mod_change_abs_1_var, col_mod_change_abs_2_var, col_mod_change_abs_3_var, col_mod_change_abs)
+```
+**The best model uses only seasonality as a predictor**
+col_mod_change_abs_1_var <- glmer(col ~ sst_seas_change_abs + (1 | reg) + (1 | year), family = binomial, data = spp_master_ztemp)
+
+Extinction based on changes in temp experienced between 2-3 years ago
+```{r}
+ext_mod_change_abs_lag2 <- glmer(now_ext ~ sst_mean_change_lag2_abs + sst_max_change_lag2_abs + sst_min_change_lag2_abs + sst_seas_change_lag2_abs + (1|reg) + (1|year), data = spp_master_ztemp, family = binomial)
+summary(ext_mod_change_abs_lag2)
+```
+And compare this using AICc to other models
+```{r}
+AICc(ext_mod_change_abs, ext_mod_change_abs_lag1, ext_mod_change_abs_lag2)
+```
+Both lags improve model, so I'll go another level back in changes are equally poor, so we'll stick with most recent changes. 
+```{r}
+ext_mod_change_abs_lag3 <- glmer(now_ext ~ sst_mean_change_lag3_abs + sst_max_change_lag3_abs + sst_min_change_lag3_abs + sst_seas_change_lag3_abs + (1|reg) + (1|year), data = spp_master_ztemp, family = binomial)
+summary(ext_mod_change_abs_lag3)
+AICc(ext_mod_change_abs, ext_mod_change_abs_lag1, ext_mod_change_abs_lag2, ext_mod_change_abs_lag3)
+```
+The best is lag 2, so the change from 2-3 years ago is best at determining extinction probability
+
+Next step, I will take away variables and see what's best for extinction using AIC
+
+```{r}
+summary(ext_mod_change_abs_lag2)
+```
+
+```{r}
+#remember, variables with best P values for extinction with 2 lag are max change lag 2 abs, mean change lag 2 abs, seas change lag 2 abs, and last min change lag 2 abs
+ext_mod_change_lag2_abs_3_var <- glmer(now_ext ~ sst_mean_change_lag2_abs + sst_max_change_lag2_abs + sst_seas_change_lag2_abs + (1 | reg) + (1 | year), family = binomial, data = spp_master_ztemp)
+ext_mod_change_lag2_abs_2_var <- glmer(now_ext ~ sst_mean_change_lag2_abs + sst_max_change_lag2_abs + (1 | reg) + (1 | year), family = binomial, data = spp_master_ztemp)
+ext_mod_change_lag2_abs_1_var <- glmer(now_ext ~ sst_max_change_lag2_abs + (1 | reg) + (1 | year), family = binomial, data = spp_master_ztemp)
+
+AICc(ext_mod_change_lag2_abs_3_var, ext_mod_change_lag2_abs_1_var, ext_mod_change_lag2_abs_2_var, ext_mod_change_abs_lag2)
+```
+The best model is less clear here, ext_mod_change_lag2_abs_2_var has the lowest AICc, but, it's not substantially lower, and ext_mod_change_lag2_abs_1_var has fewer predictors, so let's go with that
+**ext_mod_change_lag2_abs_1_var <- glmer(now_ext ~ sst_max_change_lag2_abs + (1 | reg) + (1 | year), family = binomial, data = spp_master_ztemp)**: best model
 
 
 For now, we only care about fish so let's go back to earlier code to extract fish only
