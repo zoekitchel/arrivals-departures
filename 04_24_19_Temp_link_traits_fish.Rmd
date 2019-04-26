@@ -39,6 +39,8 @@ What we actually have from Tim: (** = ideal)
 *NB: I'm noticing that some species have multiple records in Tim's database, and that some stats are not quite matching up with what I find on fishbase.org (ie BSB max size and such)*
 
 ```{r setup}
+library(MuMIn)
+library(lme4)
 read.csv("traits_formanip.csv")
 load("date_ssttemp_avg_SODA_withlags.Rdata")
 load("spp_master.RData")
@@ -48,26 +50,119 @@ Let's link species data from spp_master to temp data with lags and changes
 ```{r}
 #compare temps I calculated to temperatures already there
 #match region names between two data tables
-date_temp_reg_avg$region <- as.factor(date_temp_reg_avg$region)
-levels(date_temp_reg_avg$region)[levels(date_temp_reg_avg$region)=="AFSC_Aleutians"] <- "ai"
-levels(date_temp_reg_avg$region)[levels(date_temp_reg_avg$region)=="AFSC_EBS"] <- "ebs"
-levels(date_temp_reg_avg$region)[levels(date_temp_reg_avg$region)=="AFSC_GOA"] <- "goa"
-levels(date_temp_reg_avg$region)[levels(date_temp_reg_avg$region)=="AFSC_WCTri"] <- "wctri"
-levels(date_temp_reg_avg$region)[levels(date_temp_reg_avg$region)=="DFO_Newfoundland"] <- "newf"
-levels(date_temp_reg_avg$region)[levels(date_temp_reg_avg$region)=="DFO_ScotianShelf"] <- "shelf"
-levels(date_temp_reg_avg$region)[levels(date_temp_reg_avg$region)=="NEFSC_NEUS"] <- "neus"
-levels(date_temp_reg_avg$region)[levels(date_temp_reg_avg$region)=="SCDNR_SEUS"] <- "se"
-levels(date_temp_reg_avg$region)[levels(date_temp_reg_avg$region)=="SEFSC_GOMex"] <- "gmex"
-colnames(date_temp_reg_avg)[colnames(date_temp_reg_avg) == "region"] <- "reg"
+date_temp_reg_avg_withlags$region <- as.factor(date_temp_reg_avg_withlags$region)
+levels(date_temp_reg_avg_withlags$region)[levels(date_temp_reg_avg_withlags$region)=="AFSC_Aleutians"] <- "ai"
+levels(date_temp_reg_avg_withlags$region)[levels(date_temp_reg_avg_withlags$region)=="AFSC_EBS"] <- "ebs"
+levels(date_temp_reg_avg_withlags$region)[levels(date_temp_reg_avg_withlags$region)=="AFSC_GOA"] <- "goa"
+levels(date_temp_reg_avg_withlags$region)[levels(date_temp_reg_avg_withlags$region)=="AFSC_WCTri"] <- "wctri"
+levels(date_temp_reg_avg_withlags$region)[levels(date_temp_reg_avg_withlags$region)=="DFO_Newfoundland"] <- "newf"
+levels(date_temp_reg_avg_withlags$region)[levels(date_temp_reg_avg_withlags$region)=="DFO_ScotianShelf"] <- "shelf"
+levels(date_temp_reg_avg_withlags$region)[levels(date_temp_reg_avg_withlags$region)=="NEFSC_NEUS"] <- "neus"
+levels(date_temp_reg_avg_withlags$region)[levels(date_temp_reg_avg_withlags$region)=="SCDNR_SEUS"] <- "se"
+levels(date_temp_reg_avg_withlags$region)[levels(date_temp_reg_avg_withlags$region)=="SEFSC_GOMex"] <- "gmex"
+colnames(date_temp_reg_avg_withlags)[colnames(date_temp_reg_avg_withlags) == "region"] <- "reg"
 
 date_temp_reg_avg$year <- as.numeric(date_temp_reg_avg$year)
-spp_master_ztemp <- left_join(spp_master, date_temp_reg_avg, by = c("reg", "year"))
-head(spp_master_ztemp)
-spp_master$temp_dif <- spp_master_ztemp$temp-spp_master_ztemp$ztemps #spp_master doesn't actually have temperatures, so, we'll skip this
-#hopefully they match up!
-head(date_temp_reg_avg)
+spp_master_ztemp <- left_join(spp_master, date_temp_reg_avg_withlags, by = c("reg", "year"))
+```
+First, let's ignore traits, and just look at temperature as predictors of yes no colonization and yes no extinction
+Colonization in this year: col
+Goes extinct in this year (here last year, gone now) : now_ext
+Mean temp: region year mean sst
+Max temp:region year max sst
+Min temp: region year min sst
+Seasonality: region year seas sst
+```{r}
+col_mod <- glmer(col ~ region_year_mean_sst + region_year_max_sst + region_year_min_sst + region_year_seas_sst + (1|reg) + (1|year), data = spp_master_ztemp, family = binomial)
+summary(col_mod)
+ext_mod <- glmer(now_ext ~ region_year_mean_sst + region_year_max_sst + region_year_min_sst + region_year_seas_sst + (1|reg) + (1|year), data = spp_master_ztemp, family = binomial)
+summary(ext_mod)
+```
+The above models perform really poorly, but this doesn't really surprise me. I think change in temperature is a bigger deal, although I am surprised that seasonality doesn't do anything. 
+
+Let's now take a look at change only 
+
+```{r}
+col_mod_change <- glmer(col ~ sst_mean_change + sst_max_change + sst_min_change + sst_seas_change + (1|reg) + (1|year), data = spp_master_ztemp, family = binomial)
+summary(col_mod_change)
+ext_mod_change <- glmer(now_ext ~ sst_mean_change + sst_max_change + sst_min_change + sst_seas_change + (1|reg) + (1|year), data = spp_master_ztemp, family = binomial)
+summary(ext_mod_change)
+```
+
+Let's now take a look at absolute value of temp change from previous year only
+```{r}
+col_mod_change_abs <- glmer(col ~ sst_mean_change_abs + sst_max_change_abs + sst_min_change_abs + sst_seas_change_abs + (1|reg) + (1|year), data = spp_master_ztemp, family = binomial)
+summary(col_mod_change_abs)
+```
+This one above actually gives really good results, this is exciting!
+When absolute change in max yearly temperature INCREASES, likelihood of colonization increase
+When absolute change in seasonality INCREASES, likelihood of colonizations decreases
+When absolute change in mean yearly temperature INCREASES, likelihood of colonization increases
+
+```{r}
+ext_mod_change_abs <- glmer(now_ext ~ sst_mean_change_abs + sst_max_change_abs + sst_min_change_abs + sst_seas_change_abs + (1|reg) + (1|year), data = spp_master_ztemp, family = binomial)
+summary(ext_mod_change_abs)
+```
+Not as exciting as colonizations, but not surprised.
+When absolute change in mean yearly temperature INCREASES, likelihood of extinction ALSO increases
+
+Now, let's play around with lags a bit using dredge, this didn't work because of NA's, I guess I'll compare one by one then??
+https://rdrr.io/cran/MuMIn/src/demo/dredge.subset.R
+```{r}
+colnames(spp_master_ztemp)
+#I want to look at columns 89:136 as possible predictors
+subset <- spp_master_ztemp[,c(6, 89:136)]
+#let's get rid of na's
+options(na.action = "na.fail")
+#fitting global model
+fm_col <- glm(col ~ ., family = binomial, data = subset)
+dd <- dredge(fm_col)
+variables_dredge <- colnames(spp_master_ztemp[89:136])
+list_variables <- gsub("," , " + " , toString(variables_dredge))
+```
+What model performs better? a model with changes in the past year? or a model with changes in the year before last?
+First, let's make a model with changes from the year before last
+```{r}
+col_mod_change_abs_lag1 <- glmer(col ~ sst_mean_change_lag1_abs + sst_max_change_lag1_abs + sst_min_change_lag1_abs + sst_seas_change_lag1_abs + (1|reg) + (1|year), data = spp_master_ztemp, family = binomial)
+summary(col_mod_change_abs_lag1)
+```
+Not much info from summary, but let's compare using AICc with other model
+```{r}
+AICc(col_mod_change_abs, col_mod_change_abs_lag1)
+```
+
+Poor results here! What about extinction?
+```{r}
+ext_mod_change_abs_lag1 <- glmer(now_ext ~ sst_mean_change_lag1_abs + sst_max_change_lag1_abs + sst_min_change_lag1_abs + sst_seas_change_lag1_abs + (1|reg) + (1|year), data = spp_master_ztemp, family = binomial)
+summary(ext_mod_change_abs_lag1)
+```
+For extinction and lag 1 of changes, both absolute value of change in mean experienced last year and absolute value of change in max temp experienced last year appear significant
+As absolute value of change in mean experienced last year increases, likelihood of extinction decreases
+As absolute value of change in max temp experienced last year increases, likelihood of extinction increases
+
+But what about comparing this to other model?
+```{r}
+AICc(ext_mod_change_abs, ext_mod_change_abs_lag1)
+```
+Here, unlike colonization, it appears that changes experienced LAST year are better than changes experienced this year at predicting extinction
+
+Let's go back once more in time for each for kicks
+
+Colonization based on changes in temp experienced between 2-3 years ago
+```{r}
+col_mod_change_abs_lag2 <- glmer(col ~ sst_mean_change_lag2_abs + sst_max_change_lag2_abs + sst_min_change_lag2_abs + sst_seas_change_lag2_abs + (1|reg) + (1|year), data = spp_master_ztemp, family = binomial)
+summary(col_mod_change_abs_lag2)
+```
+And compare this using AICc to other models
+```{r}
+AICc(col_mod_change_abs, col_mod_change_abs_lag1, col_mod_change_abs_lag2)
+```
+Both incorporating lags in changes are equally poor, so we'll stick with most recent changes. Next step, I will take away variables and see what's best for colonization using AIC
+```{r}
 
 ```
+
+
 
 For now, we only care about fish so let's go back to earlier code to extract fish only
 
