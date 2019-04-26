@@ -191,31 +191,6 @@ base::nrow(date_temp_reg_avg)
 
 I now have the predictor values I need, yearly min and max for entire region per year
 
-Next, I need to link to regional yearly species data
-
-```{r}
-load("spp_master.RData")
-#compare temps I calculated to temperatures already there
-#match region names between two data tables
-date_temp_reg_avg$region <- as.factor(date_temp_reg_avg$region)
-levels(date_temp_reg_avg$region)[levels(date_temp_reg_avg$region)=="AFSC_Aleutians"] <- "ai"
-levels(date_temp_reg_avg$region)[levels(date_temp_reg_avg$region)=="AFSC_EBS"] <- "ebs"
-levels(date_temp_reg_avg$region)[levels(date_temp_reg_avg$region)=="AFSC_GOA"] <- "goa"
-levels(date_temp_reg_avg$region)[levels(date_temp_reg_avg$region)=="AFSC_WCTri"] <- "wctri"
-levels(date_temp_reg_avg$region)[levels(date_temp_reg_avg$region)=="DFO_Newfoundland"] <- "newf"
-levels(date_temp_reg_avg$region)[levels(date_temp_reg_avg$region)=="DFO_ScotianShelf"] <- "shelf"
-levels(date_temp_reg_avg$region)[levels(date_temp_reg_avg$region)=="NEFSC_NEUS"] <- "neus"
-levels(date_temp_reg_avg$region)[levels(date_temp_reg_avg$region)=="SCDNR_SEUS"] <- "se"
-levels(date_temp_reg_avg$region)[levels(date_temp_reg_avg$region)=="SEFSC_GOMex"] <- "gmex"
-colnames(date_temp_reg_avg)[colnames(date_temp_reg_avg) == "region"] <- "reg"
-date_temp_reg_avg$year <- as.numeric(date_temp_reg_avg$year)
-
-spp_master_ztemp <- left_join(spp_master, date_temp_reg_avg, by = c("reg", "year"))
-head(spp_master_ztemp)
-spp_master$temp_dif <- spp_master_ztemp$temp-spp_master_ztemp$ztemps #spp_master doesn't actually have temperatures, so, we'll skip this
-#hopefully they match up!
-head(date_temp_reg_avg)
-```
 Next step is to calculate change in temp from previous year to now, luckily I can farm this code from 27_acf_timeseries_analysis_covariates.R
 
 I think I should calculate both change in temperature and lags from date_temp_reg_avg in order to keep years not actually surveyed (i.e. triennial west coast survey)
@@ -253,10 +228,91 @@ date_temp_reg_avg_withlags[,c("sst_mean_change") := (region_year_mean_sst - lag1
 date_temp_reg_avg_withlags[,c("sst_max_change") := (region_year_max_sst - lag1.region_year_max_sst)]
 date_temp_reg_avg_withlags[,c("sst_min_change") := (region_year_min_sst - lag1.region_year_min_sst)]
 date_temp_reg_avg_withlags[,c("sst_seas_change") := (region_year_seas_sst - lag1.region_year_seas_sst)]
-
+```
+Change experienced last year
+```{r}
+date_temp_reg_avg_withlags[,c("sst_mean_change_lag1") := (lag1.region_year_mean_sst - lag2.region_year_mean_sst)]
+date_temp_reg_avg_withlags[,c("sst_max_change_lag1") := (lag1.region_year_mean_sst - lag2.region_year_max_sst)]
+date_temp_reg_avg_withlags[,c("sst_min_change_lag1") := (lag1.region_year_mean_sst - lag2.region_year_min_sst)]
+date_temp_reg_avg_withlags[,c("sst_seas_change_lag1") := (lag1.region_year_mean_sst - lag2.region_year_seas_sst)]
+```
+Change experienced 2 years ago
+```{r}
+date_temp_reg_avg_withlags[,c("sst_mean_change_lag2") := (lag2.region_year_mean_sst - lag3.region_year_mean_sst)]
+date_temp_reg_avg_withlags[,c("sst_max_change_lag2") := (lag2.region_year_mean_sst - lag3.region_year_max_sst)]
+date_temp_reg_avg_withlags[,c("sst_min_change_lag2") := (lag2.region_year_mean_sst - lag3.region_year_min_sst)]
+date_temp_reg_avg_withlags[,c("sst_seas_change_lag2") := (lag2.region_year_mean_sst - lag3.region_year_seas_sst)]
+```
+Change experienced 3 years ago
+```{r}
+date_temp_reg_avg_withlags[,c("sst_mean_change_lag3") := (lag3.region_year_mean_sst - lag4.region_year_mean_sst)]
+date_temp_reg_avg_withlags[,c("sst_max_change_lag3") := (lag3.region_year_mean_sst - lag4.region_year_max_sst)]
+date_temp_reg_avg_withlags[,c("sst_min_change_lag3") := (lag3.region_year_mean_sst - lag4.region_year_min_sst)]
+date_temp_reg_avg_withlags[,c("sst_seas_change_lag3") := (lag3.region_year_mean_sst - lag4.region_year_seas_sst)]
+```
+Change experienced 4 years ago
+```{r}
+date_temp_reg_avg_withlags[,c("sst_mean_change_lag4") := (lag4.region_year_mean_sst - lag5.region_year_mean_sst)]
+date_temp_reg_avg_withlags[,c("sst_max_change_lag4") := (lag4.region_year_mean_sst - lag5.region_year_max_sst)]
+date_temp_reg_avg_withlags[,c("sst_min_change_lag4") := (lag4.region_year_mean_sst - lag5.region_year_min_sst)]
+date_temp_reg_avg_withlags[,c("sst_seas_change_lag4") := (lag4.region_year_mean_sst - lag5.region_year_seas_sst)]
+```
+Change experienced 5 years ago
+```{r}
+date_temp_reg_avg_withlags[,c("sst_mean_change_lag5") := (lag5.region_year_mean_sst - lag6.region_year_mean_sst)]
+date_temp_reg_avg_withlags[,c("sst_max_change_lag5") := (lag5.region_year_mean_sst - lag6.region_year_max_sst)]
+date_temp_reg_avg_withlags[,c("sst_min_change_lag5") := (lag5.region_year_mean_sst - lag6.region_year_min_sst)]
+date_temp_reg_avg_withlags[,c("sst_seas_change_lag5") := (lag5.region_year_mean_sst - lag6.region_year_seas_sst)]
 ```
 
-Another way to look at lags
+From Ryan's famous plot, we are more concerned with absolute value of change!
+```{r}
+date_temp_reg_avg_withlags[,c("sst_mean_change_abs") := abs(sst_mean_change)]
+date_temp_reg_avg_withlags[,c("sst_max_change_abs") := abs(sst_max_change)]
+date_temp_reg_avg_withlags[,c("sst_min_change_abs") := abs(sst_min_change)]
+date_temp_reg_avg_withlags[,c("sst_seas_change_abs") := abs(sst_seas_change)]
+```
+Abs Change experienced last year
+```{r}
+date_temp_reg_avg_withlags[,c("sst_mean_change_lag1_abs") := abs(lag1.region_year_mean_sst - lag2.region_year_mean_sst)]
+date_temp_reg_avg_withlags[,c("sst_max_change_lag1_abs") := abs(lag1.region_year_mean_sst - lag2.region_year_max_sst)]
+date_temp_reg_avg_withlags[,c("sst_min_change_lag1_abs") := abs(lag1.region_year_mean_sst - lag2.region_year_min_sst)]
+date_temp_reg_avg_withlags[,c("sst_seas_change_lag1_abs") := abs(lag1.region_year_mean_sst - lag2.region_year_seas_sst)]
+```
+Abs Change experienced 2 years ago
+```{r}
+date_temp_reg_avg_withlags[,c("sst_mean_change_lag2_abs") := abs(lag2.region_year_mean_sst - lag3.region_year_mean_sst)]
+date_temp_reg_avg_withlags[,c("sst_max_change_lag2_abs") := abs(lag2.region_year_mean_sst - lag3.region_year_max_sst)]
+date_temp_reg_avg_withlags[,c("sst_min_change_lag2_abs") := abs(lag2.region_year_mean_sst - lag3.region_year_min_sst)]
+date_temp_reg_avg_withlags[,c("sst_seas_change_lag2_abs") := abs(lag2.region_year_mean_sst - lag3.region_year_seas_sst)]
+```
+Abs Change experienced 3 years ago
+```{r}
+date_temp_reg_avg_withlags[,c("sst_mean_change_lag3_abs") := abs(lag3.region_year_mean_sst - lag4.region_year_mean_sst)]
+date_temp_reg_avg_withlags[,c("sst_max_change_lag3_abs") := abs(lag3.region_year_mean_sst - lag4.region_year_max_sst)]
+date_temp_reg_avg_withlags[,c("sst_min_change_lag3_abs") := abs(lag3.region_year_mean_sst - lag4.region_year_min_sst)]
+date_temp_reg_avg_withlags[,c("sst_seas_change_lag3_abs") := abs(lag3.region_year_mean_sst - lag4.region_year_seas_sst)]
+```
+Abs Change experienced 4 years ago
+```{r}
+date_temp_reg_avg_withlags[,c("sst_mean_change_lag4_abs") := abs(lag4.region_year_mean_sst - lag5.region_year_mean_sst)]
+date_temp_reg_avg_withlags[,c("sst_max_change_lag4_abs") := abs(lag4.region_year_mean_sst - lag5.region_year_max_sst)]
+date_temp_reg_avg_withlags[,c("sst_min_change_lag4_abs") := abs(lag4.region_year_mean_sst - lag5.region_year_min_sst)]
+date_temp_reg_avg_withlags[,c("sst_seas_change_lag4_abs") := abs(lag4.region_year_mean_sst - lag5.region_year_seas_sst)]
+```
+Abs Change experienced 5 years ago
+```{r}
+date_temp_reg_avg_withlags[,c("sst_mean_change_lag5_abs") := abs(lag5.region_year_mean_sst - lag6.region_year_mean_sst)]
+date_temp_reg_avg_withlags[,c("sst_max_change_lag5_abs") := abs(lag5.region_year_mean_sst - lag6.region_year_max_sst)]
+date_temp_reg_avg_withlags[,c("sst_min_change_lag5_abs") := abs(lag5.region_year_mean_sst - lag6.region_year_min_sst)]
+date_temp_reg_avg_withlags[,c("sst_seas_change_lag5_abs") := abs(lag5.region_year_mean_sst - lag6.region_year_seas_sst)]
+```
+Let's save all these goodies!!
+```{r}
+save(date_temp_reg_avg_withlags, file = "date_ssttemp_avg_SODA_withlags.Rdata")
+```
+
+Another way to look at lags, but this isn't appropriate for the binomials I'm currently looking at
 
 ```{r}
 ccf()

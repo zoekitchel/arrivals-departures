@@ -39,10 +39,43 @@ What we actually have from Tim: (** = ideal)
 *NB: I'm noticing that some species have multiple records in Tim's database, and that some stats are not quite matching up with what I find on fishbase.org (ie BSB max size and such)*
 
 ```{r setup}
+read.csv("traits_formanip.csv")
+load("date_ssttemp_avg_SODA_withlags.Rdata")
+load("spp_master.RData")
+
+```
+Let's link species data from spp_master to temp data with lags and changes
+```{r}
+#compare temps I calculated to temperatures already there
+#match region names between two data tables
+date_temp_reg_avg$region <- as.factor(date_temp_reg_avg$region)
+levels(date_temp_reg_avg$region)[levels(date_temp_reg_avg$region)=="AFSC_Aleutians"] <- "ai"
+levels(date_temp_reg_avg$region)[levels(date_temp_reg_avg$region)=="AFSC_EBS"] <- "ebs"
+levels(date_temp_reg_avg$region)[levels(date_temp_reg_avg$region)=="AFSC_GOA"] <- "goa"
+levels(date_temp_reg_avg$region)[levels(date_temp_reg_avg$region)=="AFSC_WCTri"] <- "wctri"
+levels(date_temp_reg_avg$region)[levels(date_temp_reg_avg$region)=="DFO_Newfoundland"] <- "newf"
+levels(date_temp_reg_avg$region)[levels(date_temp_reg_avg$region)=="DFO_ScotianShelf"] <- "shelf"
+levels(date_temp_reg_avg$region)[levels(date_temp_reg_avg$region)=="NEFSC_NEUS"] <- "neus"
+levels(date_temp_reg_avg$region)[levels(date_temp_reg_avg$region)=="SCDNR_SEUS"] <- "se"
+levels(date_temp_reg_avg$region)[levels(date_temp_reg_avg$region)=="SEFSC_GOMex"] <- "gmex"
+colnames(date_temp_reg_avg)[colnames(date_temp_reg_avg) == "region"] <- "reg"
+
+date_temp_reg_avg$year <- as.numeric(date_temp_reg_avg$year)
+spp_master_ztemp <- left_join(spp_master, date_temp_reg_avg, by = c("reg", "year"))
+head(spp_master_ztemp)
+spp_master$temp_dif <- spp_master_ztemp$temp-spp_master_ztemp$ztemps #spp_master doesn't actually have temperatures, so, we'll skip this
+#hopefully they match up!
+head(date_temp_reg_avg)
 
 ```
 
 For now, we only care about fish so let's go back to earlier code to extract fish only
+
+```{r}
+open(fish_nofishkey.RData)
+```
+
+We will now limit haul info to fish
 
 ```{r}
 
