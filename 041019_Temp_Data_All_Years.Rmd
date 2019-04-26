@@ -196,7 +196,7 @@ Next, I need to link to regional yearly species data
 ```{r}
 load("spp_master.RData")
 #compare temps I calculated to temperatures already there
-#match region names
+#match region names between two data tables
 date_temp_reg_avg$region <- as.factor(date_temp_reg_avg$region)
 levels(date_temp_reg_avg$region)[levels(date_temp_reg_avg$region)=="AFSC_Aleutians"] <- "ai"
 levels(date_temp_reg_avg$region)[levels(date_temp_reg_avg$region)=="AFSC_EBS"] <- "ebs"
@@ -207,9 +207,12 @@ levels(date_temp_reg_avg$region)[levels(date_temp_reg_avg$region)=="DFO_ScotianS
 levels(date_temp_reg_avg$region)[levels(date_temp_reg_avg$region)=="NEFSC_NEUS"] <- "neus"
 levels(date_temp_reg_avg$region)[levels(date_temp_reg_avg$region)=="SCDNR_SEUS"] <- "se"
 levels(date_temp_reg_avg$region)[levels(date_temp_reg_avg$region)=="SEFSC_GOMex"] <- "gmex"
+colnames(date_temp_reg_avg)[colnames(date_temp_reg_avg) == "region"] <- "reg"
+date_temp_reg_avg$year <- as.numeric(date_temp_reg_avg$year)
 
-spp_master_ztemp <- left_join(spp_master, date_temp_reg_avg, by = c("region", "year"))
-spp_master$temp_dif <- spp_master_ztemp$temp-spp_master_ztemp$ztemps
+spp_master_ztemp <- left_join(spp_master, date_temp_reg_avg, by = c("reg", "year"))
+head(spp_master_ztemp)
+spp_master$temp_dif <- spp_master_ztemp$temp-spp_master_ztemp$ztemps #spp_master doesn't actually have temperatures, so, we'll skip this
 #hopefully they match up!
 head(date_temp_reg_avg)
 ```
@@ -232,16 +235,16 @@ nm9 <- paste("lag8", nm1, sep=".")
 nm10 <- paste("lag9", nm1, sep=".")
 nm11 <- paste("lag10", nm1, sep=".")
 date_temp_reg_avg_withlags <- data.table(date_temp_reg_avg)
-date_temp_reg_avg_withlags[, (nm2) :=  shift(.SD, n=1, type = "lag"), by=region, .SDcols=nm1]
-date_temp_reg_avg_withlags[, (nm3) :=  shift(.SD, n=2, type = "lag"), by=region, .SDcols=nm1]
-date_temp_reg_avg_withlags[, (nm4) :=  shift(.SD, n=3, type = "lag"), by=region, .SDcols=nm1]
-date_temp_reg_avg_withlags[, (nm5) :=  shift(.SD, n=4, type = "lag"), by=region, .SDcols=nm1]
-date_temp_reg_avg_withlags[, (nm6) :=  shift(.SD, n=5, type = "lag"), by=region, .SDcols=nm1]
-date_temp_reg_avg_withlags[, (nm7) :=  shift(.SD, n=6, type = "lag"), by=region, .SDcols=nm1]
-date_temp_reg_avg_withlags[, (nm8) :=  shift(.SD, n=7, type = "lag"), by=region, .SDcols=nm1]
-date_temp_reg_avg_withlags[, (nm9) :=  shift(.SD, n=8, type = "lag"), by=region, .SDcols=nm1]
-date_temp_reg_avg_withlags[, (nm10) :=  shift(.SD, n=9, type = "lag"), by=region, .SDcols=nm1]
-date_temp_reg_avg_withlags[, (nm11) :=  shift(.SD, n=10, type = "lag"), by=region, .SDcols=nm1]
+date_temp_reg_avg_withlags[, (nm2) :=  data.table::shift(.SD, n=1, type = "lag"), by=reg, .SDcols=nm1]
+date_temp_reg_avg_withlags[, (nm3) :=  data.table::shift(.SD, n=2, type = "lag"), by=reg, .SDcols=nm1]
+date_temp_reg_avg_withlags[, (nm4) :=  data.table::shift(.SD, n=3, type = "lag"), by=reg, .SDcols=nm1]
+date_temp_reg_avg_withlags[, (nm5) :=  data.table::shift(.SD, n=4, type = "lag"), by=reg, .SDcols=nm1]
+date_temp_reg_avg_withlags[, (nm6) :=  data.table::shift(.SD, n=5, type = "lag"), by=reg, .SDcols=nm1]
+date_temp_reg_avg_withlags[, (nm7) :=  data.table::shift(.SD, n=6, type = "lag"), by=reg, .SDcols=nm1]
+date_temp_reg_avg_withlags[, (nm8) :=  data.table::shift(.SD, n=7, type = "lag"), by=reg, .SDcols=nm1]
+date_temp_reg_avg_withlags[, (nm9) :=  data.table::shift(.SD, n=8, type = "lag"), by=reg, .SDcols=nm1]
+date_temp_reg_avg_withlags[, (nm10) :=  data.table::shift(.SD, n=9, type = "lag"), by=reg, .SDcols=nm1]
+date_temp_reg_avg_withlags[, (nm11) :=  data.table::shift(.SD, n=10, type = "lag"), by=reg, .SDcols=nm1]
 ```
 
 Now, I'm adding change since last year
