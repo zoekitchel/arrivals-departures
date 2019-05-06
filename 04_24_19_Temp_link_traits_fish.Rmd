@@ -41,6 +41,8 @@ What we actually have from Tim: (** = ideal)
 ```{r setup}
 library(MuMIn)
 library(lme4)
+library(dplyr)
+library(tidyr)
 read.csv("traits_formanip.csv")
 load("date_ssttemp_avg_SODA_withlags.Rdata")
 load("spp_master.RData")
@@ -203,6 +205,7 @@ col_mod_change_abs_2_var <- glmer(col ~ sst_max_change_abs + sst_seas_change_abs
 col_mod_change_abs_1_var <- glmer(col ~ sst_seas_change_abs + (1 | reg) + (1 | year), family = binomial, data = spp_master_ztemp)
 
 AICc(col_mod_change_abs_1_var, col_mod_change_abs_2_var, col_mod_change_abs_3_var, col_mod_change_abs)
+summary(col_mod_change_abs_1_var)
 ```
 **The best model uses only seasonality as a predictor**
 col_mod_change_abs_1_var <- glmer(col ~ sst_seas_change_abs + (1 | reg) + (1 | year), family = binomial, data = spp_master_ztemp)
@@ -239,18 +242,130 @@ ext_mod_change_lag2_abs_1_var <- glmer(now_ext ~ sst_max_change_lag2_abs + (1 | 
 AICc(ext_mod_change_lag2_abs_3_var, ext_mod_change_lag2_abs_1_var, ext_mod_change_lag2_abs_2_var, ext_mod_change_abs_lag2)
 ```
 The best model is less clear here, ext_mod_change_lag2_abs_2_var has the lowest AICc, but, it's not substantially lower, and ext_mod_change_lag2_abs_1_var has fewer predictors, so let's go with that
-**ext_mod_change_lag2_abs_1_var <- glmer(now_ext ~ sst_max_change_lag2_abs + (1 | reg) + (1 | year), family = binomial, data = spp_master_ztemp)**: best model
+**ext_mod_change_lag2_abs_1_var <- glmer(now_ext ~ sst_max_change_lag2_abs + (1 | reg) + (1 | year), family = binomial, data = spp_master_ztemp)**: best model for extinction
+```{r}
+summary(ext_mod_change_lag2_abs_1_var)
+```
+We're able to explain 12% of variation in extinction from the change in maximum temperature between 2-3 years ago (extinction debt?)
 
+**col_mod_change_abs_1_var <- glmer(col ~ sst_seas_change_abs + (1 | reg) + (1 | year), family = binomial, data = spp_master_ztemp)**: best model for colonization
+```{r}
+summary(col_mod_change_abs_1_var)
+```
+We're able to explain 13% of the variation in colonization with change in seasonality from last year
 
-For now, we only care about fish so let's go back to earlier code to extract fish only
+_______________
+
+Now we will see if adding traits can improve the model, we only have traits for fish at this point, so we only care about fish so let's go back to earlier code to extract fish only
 
 ```{r}
-open(fish_nofishkey.RData)
+load("fish_nofishkey.RData")
 ```
 
-We will now limit haul info to fish
+We will now limit spp_master_z to fish
 
 ```{r}
+spp_master_ztemp_fishnofish <- left_join(spp_master_ztemp, fish_nofishkey, by = c("reg", "spp"))
+spp_master_ztemp_fishnofish$fish <- as.factor(spp_master_ztemp_fishnofish$fish)
+spp_master_ztemp_fishonly <- spp_master_ztemp_fishnofish %>%
+  filter(fish == "Y")
+?filter
+summary(spp_master_ztemp_fishnofish$fish) # I have NA's but I will ignore for now
+```
+Let's now link to traits!
+```{r}
+traits <- read.csv("traits_formanip.csv")
+traits$spp <- paste(traits$genus, traits$species, sep = " ")
+#restrict to LME 1:9 and 54 according to https://www.st.nmfs.noaa.gov/ecosystems/lme/
+levels(as.factor(traits$lme))
+traits_NA <- traits %>%
+  dplyr::filter(lme < 10 | lme == 54) %>%
+  group_by(spp) %>%
+  filter(row_number() == 1) #this means we only have one observation per species
 
+spp_master_ztemp_fishonly_traits <- left_join(spp_master_ztemp_fishonly, traits_NA, by = "spp")
 ```
 
+Traits that actually look reasonable to use
+
+feeding.mode: benthivorous, generalist, herbivorous, piscivorous, planktivorous
+  *maybe make this into generalist or specialist? (only 2 NA's) --> $generalist
+
+tl: 2-4.65 (no NA's)
+
+egg.size: 
+  *(looks like I need to make this numeric or something) 111 NA's
+  
+spawning.type ( open_water-substratum, guarder, nonguarder, internal_bearer, external_bearer) 63 NA's
+
+Lmax (2.5-1520) only 1 NA!
+
+tmax (0.55 - 223) 181 NA's
+
+tm (156 NA's) 
+
+Lm (712 NA's) *exclude
+
+
+Let's simplify feeding.mode to just generalist vs. specialist
+```{r}
+spp_master_ztemp_fishonly_traits$generalist <- NA
+spp_master_ztemp_fishonly_traits$generalist[spp_master_ztemp_fishonly_traits$feeding.mode == "generalists"] <- 1
+spp_master_ztemp_fishonly_traits$generalist[spp_master_ztemp_fishonly_traits$feeding.mode != "generalists"] <- 0
+```
+Let's look at egg size
+```{r}
+spp_master_ztemp_fishonly_traits$egg.size <- as.numeric(spp_master_ztemp_fishonly_traits$egg.size)
+summary(spp_master_ztemp_fishonly_traits$egg.size)
+#much better
+```
+For this analysis, I'm just going to look at trait values we have a lot of
+generalist
+tl
+spawning.type
+Lmax
+
+Let's first run best models now that we're looking only at fish
+reminders:
+col_mod_change_abs_1_var <- glmer(col ~ sst_seas_change_abs + (1 | reg) + (1 | year), family = binomial, data = spp_master_ztemp)
+ext_mod_change_lag2_abs_1_var <- glmer(now_ext ~ sst_max_change_lag2_abs + (1 | reg) + (1 | year), family = binomial, data = spp_master_ztemp)
+
+First colonization
+```{r}
+col_mod_change_abs_1_var_fishonly <- glmer(col ~ sst_seas_change_abs + (1 | reg) + (1 | year), family = binomial, data = spp_master_ztemp_fishonly_traits)
+summary(col_mod_change_abs_1_var_fishonly)
+AICc(col_mod_change_abs_1_var_fishonly, col_mod_change_abs_1_var)
+#unclear, but the AICc value for the fish only model is much better even though it appears dismal interms of p value, let's try with all variables again
+col_mod_change_abs_fishonly <- glmer(col ~ sst_mean_change_abs + sst_max_change_abs + sst_min_change_abs + sst_seas_change_abs + (1|reg) + (1|year), data = spp_master_ztemp_fishonly_traits, family = binomial)
+summary(col_mod_change_abs_fishonly) #nothing is significant
+#still we'll try to add in traits
+col_mod_change_abs_1_var_fishonly_wtraits <- glmer(col ~ sst_seas_change_abs*generalist + (1 | reg) + (1 | year), family = binomial, data = spp_master_ztemp_fishonly_traits)
+summary(col_mod_change_abs_1_var_fishonly_wtraits)
+summary(col_mod_change_abs_1_var_fishonly)
+AICc(col_mod_change_abs_1_var_fishonly_wtraits, col_mod_change_abs_1_var_fishonly)
+```
+Let's try the same with extinction
+```{r}
+ext_mod_change_lag2_abs_1_var_fishonly_wtraits <- glmer(now_ext ~ sst_max_change_lag2_abs*generalist + (1 | reg) + (1 | year), family = binomial, data = spp_master_ztemp_fishonly_traits)
+summary(ext_mod_change_lag2_abs_1_var_fishonly_wtraits)
+```
+
+
+One idea would just be to semarate as sessile and mobile by invertebrate/fish
+Best Model Colonization:
+col_mod_change_abs_1_var <- glmer(col ~ sst_seas_change_abs + (1 | reg) + (1 | year), family = binomial, data = spp_master_ztemp)
+
+```{r}
+col_mod_change_abs_1_var_sessilemobile <- glmer(col ~ sst_seas_change_abs*fish + (1 | reg) + (1 | year), family = binomial, data = spp_master_ztemp_fishnofish)
+summary(col_mod_change_abs_1_var_sessilemobile)
+AICc(col_mod_change_abs_1_var_sessilemobile, col_mod_change_abs_1_var)
+```
+Including sessile/mobile improves our ability to predict likelihood of colonization
+
+What about extinction?
+```{r}
+ext_mod_change_lag2_abs_1_var_sessilemobile <- glmer(now_ext ~ sst_max_change_lag2_abs*fish + (1 | reg) + (1 | year), family = binomial, data = spp_master_ztemp_fishnofish)
+summary(ext_mod_change_lag2_abs_1_var_sessilemobile)
+AICc(ext_mod_change_lag2_abs_1_var, ext_mod_change_lag2_abs_1_var_sessilemobile)
+```
+Here, sessile/mobile also improves fit and also the interaction with change in maximum temperature. The role of mobility changes with the size of the change in temperature between years. 
