@@ -326,7 +326,7 @@ spawning.type
 Lmax
 
 Let's first run best models now that we're looking only at fish
-reminders:
+reminders of best models:
 col_mod_change_abs_1_var <- glmer(col ~ sst_seas_change_abs + (1 | reg) + (1 | year), family = binomial, data = spp_master_ztemp)
 ext_mod_change_lag2_abs_1_var <- glmer(now_ext ~ sst_max_change_lag2_abs + (1 | reg) + (1 | year), family = binomial, data = spp_master_ztemp)
 
@@ -351,12 +351,15 @@ summary(ext_mod_change_lag2_abs_1_var_fishonly_wtraits)
 ```
 
 
-One idea would just be to semarate as sessile and mobile by invertebrate/fish
-Best Model Colonization:
+One idea would just be to seperate by mobility as Malin did in Nature 2019
+Reminder, best Model Colonization:
 col_mod_change_abs_1_var <- glmer(col ~ sst_seas_change_abs + (1 | reg) + (1 | year), family = binomial, data = spp_master_ztemp)
 
 ```{r}
-col_mod_change_abs_1_var_sessilemobile <- glmer(col ~ sst_seas_change_abs*fish + (1 | reg) + (1 | year), family = binomial, data = spp_master_ztemp_fishnofish)
+#import Malin's dataset
+mobility_traits <- read.csv("dataset_1_traits_nature.csv")
+spp_master_ztemp_fishnofish_mobility <- inner_join(spp_master_ztemp_fishnofish, mobility_traits, by = "spp")
+col_mod_change_abs_1_var_mobility <- glmer(col ~ sst_seas_change_abs*fish + (1 | reg) + (1 | year), family = binomial, data = spp_master_ztemp_fishnofish)
 summary(col_mod_change_abs_1_var_sessilemobile)
 AICc(col_mod_change_abs_1_var_sessilemobile, col_mod_change_abs_1_var)
 ```
