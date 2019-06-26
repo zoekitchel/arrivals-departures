@@ -18,11 +18,50 @@ library(ggplot2)
 load("/Users/zoekitchel/Documents/grad school/Rutgers/Coursework/Fall 2018/SDM/hauls_catch_Dec2017 1.RData")
 ```
 
-First, I will make list of GPS points and days/year ranges for which I need temperatures
+First, I will make list of GPS points and days/year ranges for which I need temperatures, keeping in mind I want to be able to look at lags of 10, and therefore I need to extend time back by 10. (1953 to be safe)
 
-```{r}
+```{r compiling lat, long, year}
 latlongyear <- hauls %>%
-  dplyr::select(lat, lon, year, month)
+  dplyr::select(lat, lon, month, year, region)
+
+#add years back to 1953
+#for each group, find first year, then generate new observations with repeated GPS sequence going back 10 years
+
+#regions
+regions <- levels(as.factor(hauls$region))
+
+newlatlongyear <- data.frame(matrix(ncol = 5, nrow = 0))
+
+colnames(newlatlongyear) <- c("lat", "lon", "month", "year", "region")
+
+for (i in 1:length(regions)) {
+  subset <- latlongyear[latlongyear$region == regions[i],]
+  minyear <- min(subset$year)
+  newminyear <- minyear - 10
+  minyearplus10 <- minyear + 10
+  
+  yearstoadd <- seq(newminyear, (minyear - 1))
+  
+  subsetlatlong <- subset[subset$year < minyearplus10,]#subset lat lon values used in first 10 years of survey
+  subsetlatlong.noreg <- subsetlatlong[,c(1:3)] #don't need column with location or year anymore
+  
+  subsetlatlong.m <- subsetlatlong.noreg %>%
+    unite("latlongmonth", c("lat", "lon", "month") , sep = "_", remove = TRUE) #merge lat lon to expand grid
+  
+  subsetlatlong.m.vector <- subsetlatlong.m$latlongmonth
+  
+  tempdf <- expand.grid(subsetlatlong.m.vector, yearstoadd)
+  
+  tempdf.sep <- separate(tempdf, Var1, c("lat", "lon", "month"), sep = "_", remove = T)
+  colnames(tempdf.sep)[colnames(tempdf.sep)=="Var2"] <- "year"
+  tempdf.sep$region <- regions[i]
+  
+  newlatlongyear <- rbind(newlatlongyear, tempdf.sep)
+  
+} # this for loop generates latitude year combinations for 10 years before sampling began to allow us to look at lags up to 10 years with no NA's
+
+#now, we will merge these data with our latlongyear data from hauls
+latlongyear_10yrboost <-rbind(latlongyear, newlatlongyear)
 
 ```
 
@@ -30,7 +69,7 @@ Okay, now getting SODA data
 Where I got the data to match soda in trawlData (following Ryan's readme)
 Soda Data Files
 
- 1. Go Here: http://iridl.ldeo.columbia.edu/SOURCES/.CARTON-GIESE/.SODA/.v2p1p6/.temp/time/%28Jan%201958%29%28Dec%202008%29RANGEEDGES/lat/%280N%29%2889.5N%29RANGEEDGES/lon/%28-200E%29%2820E%29RANGEEDGES/time/%28Jan%201958%29%28Dec%202008%29RANGEEDGES/depth/%285.01%29%285.01%29RANGEEDGES/lat/%280N%29%2889.5N%29RANGEEDGES/lon/%28-200E%29%2820E%29RANGEEDGES/datafiles.html
+ 1. [Go Here](https://iridl.ldeo.columbia.edu/SOURCES/.CARTON-GIESE/.SODA/.v2p2p4/.temp/time/%28Jan%201953%29%28Dec%202008%29RANGEEDGES/depth/%285.01%29%285.01%29RANGEEDGES/lat/%280N%29%2889.5N%29RANGEEDGES/lon/%28-200E%29%2820E%29RANGEEDGES/datafiles.html)
 
  2. Restrict ranges as follows for SST to match SODA in trawlData
 
@@ -40,7 +79,7 @@ Soda Data Files
 
  	5.01 to 5.01
 
- 	Jan 1958 to Dec 2008 --> 612 pts
+ 	Jan 1958 to Dec 2008 --> 672 pts
 
 
  3. Stop Selecting
@@ -50,7 +89,7 @@ Soda Data Files
  5. Download NetCDF Format
  6. File is too big for GitHub, so compress, mine compressed to 95mb using Keka to 7zip
 
-```{r}
+```{r import SODA temperature data}
 cp <- nc_open("/Users/zoekitchel/Documents/grad school/Rutgers/LabWork/Colonization_Extinction/CARTON-GIESE_SODA_v2p1p6_sstemp.nc")
 print(cp)
 
@@ -94,8 +133,8 @@ plot(soda_sst[[9]])
 
 saveRDS(soda_sst, "SODA2.1.6_SST.rds")
 ```
-New column in latlongyear with "X1958.01.01" format, looks like I may not need to do this after all...
 
+New column in latlongyear with "X1958.01.01" format, looks like I may not need to do this after all...
 ```{r}
 latlongyear$month_digits <- NA
 for (i in 1:nrow(latlongyear)) {
@@ -113,18 +152,18 @@ latlongyearIDonly <- latlongyear %>%
 justlatlong <- latlongyear %>%
   dplyr::select(lat, lon)
 ```
+
 SET COORDINATE SYSTEM
-```{r}
+```{r set coordinate system}
 locations <- SpatialPoints(cbind(latlongyear$lon, latlongyear$lat), 
                             proj4string=CRS("+proj=longlat +datum=WGS84 +ellps=WGS84 +towgs84=0,0,0"))
-cord.UTM <- spTransform(locations, crs(soda_sst))
-plot(cord.UTM)
+plot(locations)
 ```
 
-Now, let's extract values
+Now, let's extract values *NB: if they do a correct sampling method, this shouldn't be a problem, but is there any world in which we should be averaging temperature values in a different way? here, we're just using the trawl data points, should it be rather the whole region?*
 
 ```{r}
-temp_values <- raster::extract(soda_sst, cord.UTM)
+temp_values <- raster::extract(soda_sst, cord.latlong)
 df <- cbind(justlatlong, temp_values)
 subset(df, is.na(df[,4])) #looking for NA's
 ```
