@@ -63,6 +63,12 @@ for (i in 1:length(regions)) {
 #now, we will merge these data with our latlongyear data from hauls
 latlongyear_10yrboost <-rbind(latlongyear, newlatlongyear)
 
+summary(latlongyear_10yrboost)
+
+latlongyear_10yrboost$lat <- as.numeric(latlongyear_10yrboost$lat)
+latlongyear_10yrboost$lon <- as.numeric(latlongyear_10yrboost$lon)
+latlongyear_10yrboost$month <- as.numeric(latlongyear_10yrboost$month)
+latlongyear_10yrboost$region <- as.factor(latlongyear_10yrboost$region)
 ```
 
 Okay, now getting SODA data
@@ -134,36 +140,39 @@ plot(soda_sst[[9]])
 saveRDS(soda_sst, "SODA2.1.6_SST.rds")
 ```
 
-New column in latlongyear with "X1958.01.01" format, looks like I may not need to do this after all...
+New column in latlongyear_10yrboost with "X1958.01.01" format, looks like I may not need to do this after all... SKIPPING FOR NOW
 ```{r}
-latlongyear$month_digits <- NA
-for (i in 1:nrow(latlongyear)) {
-  if (latlongyear$month[[i]] < 10) {
-    latlongyear$month_digits[[i]] <- paste0("0", month(latlongyear$month[[i]]))
+latlongyear_10yrboost$month_digits <- NA
+for (i in 1:nrow(latlongyear_10yrboost)) {
+  if (latlongyear_10yrboost$month[[i]] < 10) {
+    latlongyear_10yrboost$month_digits[[i]] <- paste0("0", latlongyear_10yrboost$month[[i]])
   } else {
-    latlongyear$month_digits[[i]] <- paste0(month(latlongyear$month[[i]]))
+    latlongyear_10yrboost$month_digits[[i]] <- paste0(latlongyear_10yrboost$month[[i]])
   }
 }
-latlongyear$day <- paste0("0", c(1))
-latlongyear$year_digits <- paste0("X", latlongyear$year)
-latlongyear$ID <- paste(latlongyear$year_digits, latlongyear$month_digits, latlongyear$day, sep=".")
-latlongyearIDonly <- latlongyear %>%
+latlongyear_10yrboost$day <- paste0("0", c(1))
+latlongyear_10yrboost$year_digits <- paste0("X", latlongyear_10yrboost$year)
+latlongyear_10yrboost$ID <- paste(latlongyear_10yrboost$year_digits, latlongyear_10yrboost$month_digits, latlongyear_10yrboost$day, sep=".")
+latlongyear_10yrboostIDonly <- latlongyear_10yrboost %>%
   dplyr::select(ID, lat, lon)
-justlatlong <- latlongyear %>%
-  dplyr::select(lat, lon)
+
 ```
 
 SET COORDINATE SYSTEM
 ```{r set coordinate system}
-locations <- SpatialPoints(cbind(latlongyear$lon, latlongyear$lat), 
+locations <- SpatialPoints(cbind(latlongyear_10yrboost$lon, latlongyear_10yrboost$lat), 
                             proj4string=CRS("+proj=longlat +datum=WGS84 +ellps=WGS84 +towgs84=0,0,0"))
 plot(locations)
 ```
 
 Now, let's extract values *NB: if they do a correct sampling method, this shouldn't be a problem, but is there any world in which we should be averaging temperature values in a different way? here, we're just using the trawl data points, should it be rather the whole region?*
 
-```{r}
-temp_values <- raster::extract(soda_sst, cord.latlong)
+```{r extracting temperature values at correct GPS points}
+temp_values <- raster::extract(soda_sst, locations)
+
+justlatlong <- latlongyear_10yrboost %>%
+  dplyr::select(lat, lon)
+
 df <- cbind(justlatlong, temp_values)
 subset(df, is.na(df[,4])) #looking for NA's
 ```
@@ -303,7 +312,34 @@ date_temp_reg_avg_withlags[,c("sst_max_change_lag5") := (lag5.region_year_mean_s
 date_temp_reg_avg_withlags[,c("sst_min_change_lag5") := (lag5.region_year_mean_sst - lag6.region_year_min_sst)]
 date_temp_reg_avg_withlags[,c("sst_seas_change_lag5") := (lag5.region_year_mean_sst - lag6.region_year_seas_sst)]
 ```
-
+Change experienced 6 years ago
+```{r}
+date_temp_reg_avg_withlags[,c("sst_mean_change_lag6") := (lag6.region_year_mean_sst - lag7.region_year_mean_sst)]
+date_temp_reg_avg_withlags[,c("sst_max_change_lag6") := (lag6.region_year_mean_sst - lag7.region_year_max_sst)]
+date_temp_reg_avg_withlags[,c("sst_min_change_lag6") := (lag6.region_year_mean_sst - lag7.region_year_min_sst)]
+date_temp_reg_avg_withlags[,c("sst_seas_change_lag6") := (lag6.region_year_mean_sst - lag7.region_year_seas_sst)]
+```
+Change experienced 7 years ago
+```{r}
+date_temp_reg_avg_withlags[,c("sst_mean_change_lag7") := (lag7.region_year_mean_sst - lag8.region_year_mean_sst)]
+date_temp_reg_avg_withlags[,c("sst_max_change_lag7") := (lag7.region_year_mean_sst - lag8.region_year_max_sst)]
+date_temp_reg_avg_withlags[,c("sst_min_change_lag7") := (lag7.region_year_mean_sst - lag8.region_year_min_sst)]
+date_temp_reg_avg_withlags[,c("sst_seas_change_lag7") := (lag7.region_year_mean_sst - lag8.region_year_seas_sst)]
+```
+Change experienced 8 years ago
+```{r}
+date_temp_reg_avg_withlags[,c("sst_mean_change_lag8") := (lag8.region_year_mean_sst - lag9.region_year_mean_sst)]
+date_temp_reg_avg_withlags[,c("sst_max_change_lag8") := (lag8.region_year_mean_sst - lag9.region_year_max_sst)]
+date_temp_reg_avg_withlags[,c("sst_min_change_lag8") := (lag8.region_year_mean_sst - lag9.region_year_min_sst)]
+date_temp_reg_avg_withlags[,c("sst_seas_change_lag8") := (lag8.region_year_mean_sst - lag9.region_year_seas_sst)]
+```
+Change experienced 9 years ago
+```{r}
+date_temp_reg_avg_withlags[,c("sst_mean_change_lag9") := (lag9.region_year_mean_sst - lag10.region_year_mean_sst)]
+date_temp_reg_avg_withlags[,c("sst_max_change_lag9") := (lag9.region_year_mean_sst - lag10.region_year_max_sst)]
+date_temp_reg_avg_withlags[,c("sst_min_change_lag9") := (lag9.region_year_mean_sst - lag10.region_year_min_sst)]
+date_temp_reg_avg_withlags[,c("sst_seas_change_lag9") := (lag9.region_year_mean_sst - lag10.region_year_seas_sst)]
+```
 From Ryan's famous plot, we are more concerned with absolute value of change!
 ```{r}
 date_temp_reg_avg_withlags[,c("sst_mean_change_abs") := abs(sst_mean_change)]
@@ -314,37 +350,58 @@ date_temp_reg_avg_withlags[,c("sst_seas_change_abs") := abs(sst_seas_change)]
 Abs Change experienced last year
 ```{r}
 date_temp_reg_avg_withlags[,c("sst_mean_change_lag1_abs") := abs(lag1.region_year_mean_sst - lag2.region_year_mean_sst)]
-date_temp_reg_avg_withlags[,c("sst_max_change_lag1_abs") := abs(lag1.region_year_mean_sst - lag2.region_year_max_sst)]
-date_temp_reg_avg_withlags[,c("sst_min_change_lag1_abs") := abs(lag1.region_year_mean_sst - lag2.region_year_min_sst)]
-date_temp_reg_avg_withlags[,c("sst_seas_change_lag1_abs") := abs(lag1.region_year_mean_sst - lag2.region_year_seas_sst)]
+date_temp_reg_avg_withlags[,c("sst_max_change_lag1_abs") := abs(lag1.region_year_max_sst - lag2.region_year_max_sst)]
+date_temp_reg_avg_withlags[,c("sst_min_change_lag1_abs") := abs(lag1.region_year_min_sst - lag2.region_year_min_sst)]
+date_temp_reg_avg_withlags[,c("sst_seas_change_lag1_abs") := abs(lag1.region_year_seas_sst - lag2.region_year_seas_sst)]
 ```
 Abs Change experienced 2 years ago
 ```{r}
 date_temp_reg_avg_withlags[,c("sst_mean_change_lag2_abs") := abs(lag2.region_year_mean_sst - lag3.region_year_mean_sst)]
-date_temp_reg_avg_withlags[,c("sst_max_change_lag2_abs") := abs(lag2.region_year_mean_sst - lag3.region_year_max_sst)]
-date_temp_reg_avg_withlags[,c("sst_min_change_lag2_abs") := abs(lag2.region_year_mean_sst - lag3.region_year_min_sst)]
-date_temp_reg_avg_withlags[,c("sst_seas_change_lag2_abs") := abs(lag2.region_year_mean_sst - lag3.region_year_seas_sst)]
+date_temp_reg_avg_withlags[,c("sst_max_change_lag2_abs") := abs(lag2.region_year_max_sst - lag3.region_year_max_sst)]
+date_temp_reg_avg_withlags[,c("sst_min_change_lag2_abs") := abs(lag2.region_year_min_sst - lag3.region_year_min_sst)]
+date_temp_reg_avg_withlags[,c("sst_seas_change_lag2_abs") := abs(lag2.region_year_seas_sst - lag3.region_year_seas_sst)]
 ```
 Abs Change experienced 3 years ago
 ```{r}
 date_temp_reg_avg_withlags[,c("sst_mean_change_lag3_abs") := abs(lag3.region_year_mean_sst - lag4.region_year_mean_sst)]
-date_temp_reg_avg_withlags[,c("sst_max_change_lag3_abs") := abs(lag3.region_year_mean_sst - lag4.region_year_max_sst)]
-date_temp_reg_avg_withlags[,c("sst_min_change_lag3_abs") := abs(lag3.region_year_mean_sst - lag4.region_year_min_sst)]
-date_temp_reg_avg_withlags[,c("sst_seas_change_lag3_abs") := abs(lag3.region_year_mean_sst - lag4.region_year_seas_sst)]
+date_temp_reg_avg_withlags[,c("sst_max_change_lag3_abs") := abs(lag3.region_year_max_sst - lag4.region_year_max_sst)]
+date_temp_reg_avg_withlags[,c("sst_min_change_lag3_abs") := abs(lag3.region_year_min_sst - lag4.region_year_min_sst)]
+date_temp_reg_avg_withlags[,c("sst_seas_change_lag3_abs") := abs(lag3.region_year_seas_sst - lag4.region_year_seas_sst)]
 ```
 Abs Change experienced 4 years ago
 ```{r}
 date_temp_reg_avg_withlags[,c("sst_mean_change_lag4_abs") := abs(lag4.region_year_mean_sst - lag5.region_year_mean_sst)]
-date_temp_reg_avg_withlags[,c("sst_max_change_lag4_abs") := abs(lag4.region_year_mean_sst - lag5.region_year_max_sst)]
-date_temp_reg_avg_withlags[,c("sst_min_change_lag4_abs") := abs(lag4.region_year_mean_sst - lag5.region_year_min_sst)]
-date_temp_reg_avg_withlags[,c("sst_seas_change_lag4_abs") := abs(lag4.region_year_mean_sst - lag5.region_year_seas_sst)]
+date_temp_reg_avg_withlags[,c("sst_max_change_lag4_abs") := abs(lag4.region_year_max_sst - lag5.region_year_max_sst)]
+date_temp_reg_avg_withlags[,c("sst_min_change_lag4_abs") := abs(lag4.region_year_min_sst - lag5.region_year_min_sst)]
+date_temp_reg_avg_withlags[,c("sst_seas_change_lag4_abs") := abs(lag4.region_year_seas_sst - lag5.region_year_seas_sst)]
 ```
 Abs Change experienced 5 years ago
 ```{r}
 date_temp_reg_avg_withlags[,c("sst_mean_change_lag5_abs") := abs(lag5.region_year_mean_sst - lag6.region_year_mean_sst)]
-date_temp_reg_avg_withlags[,c("sst_max_change_lag5_abs") := abs(lag5.region_year_mean_sst - lag6.region_year_max_sst)]
-date_temp_reg_avg_withlags[,c("sst_min_change_lag5_abs") := abs(lag5.region_year_mean_sst - lag6.region_year_min_sst)]
-date_temp_reg_avg_withlags[,c("sst_seas_change_lag5_abs") := abs(lag5.region_year_mean_sst - lag6.region_year_seas_sst)]
+date_temp_reg_avg_withlags[,c("sst_max_change_lag5_abs") := abs(lag5.region_year_max_sst - lag6.region_year_max_sst)]
+date_temp_reg_avg_withlags[,c("sst_min_change_lag5_abs") := abs(lag5.region_year_min_sst - lag6.region_year_min_sst)]
+date_temp_reg_avg_withlags[,c("sst_seas_change_lag5_abs") := abs(lag5.region_year_seas_sst - lag6.region_year_seas_sst)]
+```
+Abs Change experienced 6 years ago
+```{r}
+date_temp_reg_avg_withlags[,c("sst_mean_change_lag6_abs") := abs(lag6.region_year_mean_sst - lag7.region_year_mean_sst)]
+date_temp_reg_avg_withlags[,c("sst_max_change_lag6_abs") := abs(lag6.region_year_max_sst - lag7.region_year_max_sst)]
+date_temp_reg_avg_withlags[,c("sst_min_change_lag6_abs") := abs(lag6.region_year_min_sst - lag7.region_year_min_sst)]
+date_temp_reg_avg_withlags[,c("sst_seas_change_lag6_abs") := abs(lag6.region_year_seas_sst - lag7.region_year_seas_sst)]
+```
+Abs Change experienced 7 years ago
+```{r}
+date_temp_reg_avg_withlags[,c("sst_mean_change_lag7_abs") := abs(lag7.region_year_mean_sst - lag8.region_year_mean_sst)]
+date_temp_reg_avg_withlags[,c("sst_max_change_lag7_abs") := abs(lag7.region_year_max_sst - lag8.region_year_max_sst)]
+date_temp_reg_avg_withlags[,c("sst_min_change_lag7_abs") := abs(lag7.region_year_min_sst - lag8.region_year_min_sst)]
+date_temp_reg_avg_withlags[,c("sst_seas_change_lag7_abs") := abs(lag7.region_year_seas_sst - lag8.region_year_seas_sst)]
+```
+Abs Change experienced 8 years ago
+```{r}
+date_temp_reg_avg_withlags[,c("sst_mean_change_lag8_abs") := abs(lag8.region_year_mean_sst - lag9.region_year_mean_sst)]
+date_temp_reg_avg_withlags[,c("sst_max_change_lag8_abs") := abs(lag8.region_year_max_sst - lag9.region_year_max_sst)]
+date_temp_reg_avg_withlags[,c("sst_min_change_lag8_abs") := abs(lag8.region_year_min_sst - lag9.region_year_min_sst)]
+date_temp_reg_avg_withlags[,c("sst_seas_change_lag8_abs") := abs(lag8.region_year_seas_sst - lag9.region_year_seas_sst)]
 ```
 Let's save all these goodies!!
 ```{r}
