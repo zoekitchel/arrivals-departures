@@ -18,11 +18,11 @@ library(ggplot2)
 load("/Users/zoekitchel/Documents/grad school/Rutgers/Coursework/Fall 2018/SDM/hauls_catch_Dec2017 1.RData")
 ```
 
-First, I will make list of GPS points and days/year ranges for which I need temperatures, keeping in mind I want to be able to look at lags of 10, and therefore I need to extend time back by 10. (1953 to be safe)
+First, I will make list of GPS points and days/year ranges for which I need temperatures, keeping in mind I want to be able to look at lags of 10, and therefore I need to extend time back by 10.
 
 ```{r compiling lat, long, year}
 latlongyear <- hauls %>%
-  dplyr::select(lat, lon, month, year, region)
+  dplyr::select(lat, lon, year, region)
 
 #add years back to 1953
 #for each group, find first year, then generate new observations with repeated GPS sequence going back 10 years
@@ -32,43 +32,44 @@ regions <- levels(as.factor(hauls$region))
 
 newlatlongyear <- data.frame(matrix(ncol = 5, nrow = 0))
 
-colnames(newlatlongyear) <- c("lat", "lon", "month", "year", "region")
+colnames(newlatlongyear) <- c("lat", "lon", "year", "month", "region")
 
 for (i in 1:length(regions)) {
-  subset <- latlongyear[latlongyear$region == regions[i],]
-  minyear <- min(subset$year)
-  newminyear <- minyear - 10
-  minyearplus10 <- minyear + 10
+  subset <- latlongyear[latlongyear$region == regions[i],] #subset to a region
+  minyear <- min(subset$year) #minimum year for this region
+  newminyear <- minyear - 10 #minimum year minus 10 (to allow for lags)
+  secondtomin <- min(subset$year[subset$year!=min(subset$year)]) #year of second earliest tow
+  maxyear <- max(subset$year) #year of latest tow
+  secondtomax <- max(subset$year[subset$year!=max(subset$year)]) #year of second latest tow
   
-  yearstoadd <- seq(newminyear, (minyear - 1))
+  allyears <- seq(newminyear, maxyear) #years we need to simulate GPS points for
   
-  subsetlatlong <- subset[subset$year < minyearplus10,]#subset lat lon values used in first 10 years of survey
-  subsetlatlong.noreg <- subsetlatlong[,c(1:3)] #don't need column with location or year anymore
+  subsetlatlong <- subset[subset$year <= secondtomin | subset$year >= secondtomax,] #subset lat lon values used in first 2 years and last two years of survey
+  subsetlatlong.noreg <- subsetlatlong[,c(1:2)] #don't need column with location or year anymore
+  
+  allmonths <- c(1:12) #we want temp values for every month
   
   subsetlatlong.m <- subsetlatlong.noreg %>%
-    unite("latlongmonth", c("lat", "lon", "month") , sep = "_", remove = TRUE) #merge lat lon to expand grid
+    unite("latlon", c("lat", "lon") , sep = "_", remove = TRUE) #merge lat lon in order to expand grid (essentially, lat_lon becomes a key)
   
-  subsetlatlong.m.vector <- subsetlatlong.m$latlongmonth
+  subsetlatlong.m.vector <- subsetlatlong.m$latlon #extract vector
   
-  tempdf <- expand.grid(subsetlatlong.m.vector, yearstoadd)
+  #we now have three vectors we need to expand grid for, subsetlatlong.m.vector, allyears, and allmonths, length of expanded grid should equal
+  invisible(length(subsetlatlong.m.vector)*length(allyears)*length(allmonths)) #this checks out
   
-  tempdf.sep <- separate(tempdf, Var1, c("lat", "lon", "month"), sep = "_", remove = T)
+  tempdf <- expand.grid(subsetlatlong.m.vector, allyears, allmonths) #matches every year value with a lat_lon_month
+  
+  tempdf.sep <- separate(tempdf, Var1, c("lat", "lon"), sep = "_", remove = T)
   colnames(tempdf.sep)[colnames(tempdf.sep)=="Var2"] <- "year"
+  colnames(tempdf.sep)[colnames(tempdf.sep)=="Var3"] <- "month"
   tempdf.sep$region <- regions[i]
   
-  newlatlongyear <- rbind(newlatlongyear, tempdf.sep)
+  newlatlongyear <- rbind(newlatlongyear, tempdf.sep) #this file now has ALL possible year, lat, lon, month points we need to extract
   
 } # this for loop generates latitude year combinations for 10 years before sampling began to allow us to look at lags up to 10 years with no NA's
 
-#now, we will merge these data with our latlongyear data from hauls
-latlongyear_10yrboost <-rbind(latlongyear, newlatlongyear)
+#it's possible at some point I may need to randomly sample these, because 8736684 extractions may be too many...
 
-summary(latlongyear_10yrboost)
-
-latlongyear_10yrboost$lat <- as.numeric(latlongyear_10yrboost$lat)
-latlongyear_10yrboost$lon <- as.numeric(latlongyear_10yrboost$lon)
-latlongyear_10yrboost$month <- as.numeric(latlongyear_10yrboost$month)
-latlongyear_10yrboost$region <- as.factor(latlongyear_10yrboost$region)
 ```
 
 Okay, now getting SODA data
@@ -140,27 +141,30 @@ plot(soda_sst[[9]])
 saveRDS(soda_sst, "SODA2.1.6_SST.rds")
 ```
 
-New column in latlongyear_10yrboost with "X1958.01.01" format, looks like I may not need to do this after all... SKIPPING FOR NOW
+New column in newlatlongyear with "X1958.01.01" format, looks like I may not need to do this after all... SKIPPING FOR NOW
+*this takes a super long time to run, so we should save this result
 ```{r}
-latlongyear_10yrboost$month_digits <- NA
-for (i in 1:nrow(latlongyear_10yrboost)) {
-  if (latlongyear_10yrboost$month[[i]] < 10) {
-    latlongyear_10yrboost$month_digits[[i]] <- paste0("0", latlongyear_10yrboost$month[[i]])
+newlatlongyear$month_digits <- NA
+for (i in 1:nrow(newlatlongyear)) {
+  if (newlatlongyear$month[[i]] < 10) {
+    newlatlongyear$month_digits[[i]] <- paste0("0", newlatlongyear$month[[i]])
   } else {
-    latlongyear_10yrboost$month_digits[[i]] <- paste0(latlongyear_10yrboost$month[[i]])
+    newlatlongyear$month_digits[[i]] <- paste0(newlatlongyear$month[[i]])
   }
 }
-latlongyear_10yrboost$day <- paste0("0", c(1))
-latlongyear_10yrboost$year_digits <- paste0("X", latlongyear_10yrboost$year)
-latlongyear_10yrboost$ID <- paste(latlongyear_10yrboost$year_digits, latlongyear_10yrboost$month_digits, latlongyear_10yrboost$day, sep=".")
-latlongyear_10yrboostIDonly <- latlongyear_10yrboost %>%
+newlatlongyear$day <- paste0("0", c(1))
+newlatlongyear$year_digits <- paste0("X", newlatlongyear$year)
+newlatlongyear$ID <- paste(newlatlongyear$year_digits, newlatlongyear$month_digits, newlatlongyear$day, sep=".")
+newlatlongyearIDonly <- newlatlongyear %>%
   dplyr::select(ID, lat, lon)
+
+save(newlatlongyear, newlatlongyearIDonly, file = "newlatlongyear.Rdata")
 
 ```
 
 SET COORDINATE SYSTEM
 ```{r set coordinate system}
-locations <- SpatialPoints(cbind(latlongyear_10yrboost$lon, latlongyear_10yrboost$lat), 
+locations <- SpatialPoints(cbind(latlongyear_10yrboostIDonly$lon, latlongyear_10yrboostIDonly$lat), 
                             proj4string=CRS("+proj=longlat +datum=WGS84 +ellps=WGS84 +towgs84=0,0,0"))
 plot(locations)
 ```
@@ -169,6 +173,7 @@ Now, let's extract values *NB: if they do a correct sampling method, this should
 
 ```{r extracting temperature values at correct GPS points}
 temp_values <- raster::extract(soda_sst, locations)
+save(temp_values, file = "extracted_temp_values_SODA.Rdata")
 
 justlatlong <- latlongyear_10yrboost %>%
   dplyr::select(lat, lon)
@@ -181,7 +186,7 @@ Let's look at the problem rows, GOOD NEWS, the problem is that we have a few GPS
 #now, to make my life easier, I'm just gonna remove NA's here
 df_na_rm <- df[complete.cases(df[,4]), ]
 head(df_na_rm, rows=10, cols=10)
-df_long <- gather(df_na_rm, key = "ID", value = "temp", 3:614 )
+df_long <- gather(df_na_rm, key = "ID", value = "temp", 3:674 )
 head(df_long)
 ```
 
@@ -208,16 +213,13 @@ Therefore, the next step is to merge these data with which regions link to which
 First, I will make a lat lon region key
 
 ```{r}
-latlongreg <- hauls %>%
-  dplyr::select(lat, lon, region)
-head(latlongreg)
+latlongreg.key <- latlongyear[,c(1,2,5)]
 ```
 
 Then I will link data table with GPS and date and temp with regions using above key, and then take appropriate averages
 
 ```{r}
-date_temp_reg <- left_join(df_long2, latlongreg, by = c("lat", "lon"))
-head(df_long2)
+date_temp_reg <- left_join(df_long2, latlongreg.key, by = c("lat", "lon"))
 date_temp_reg_month_avg <- date_temp_reg %>%
   group_by(region, year, month) %>%
   summarize(region_month_mean_sst = mean(temp))
@@ -258,16 +260,16 @@ nm9 <- paste("lag8", nm1, sep=".")
 nm10 <- paste("lag9", nm1, sep=".")
 nm11 <- paste("lag10", nm1, sep=".")
 date_temp_reg_avg_withlags <- data.table(date_temp_reg_avg)
-date_temp_reg_avg_withlags[, (nm2) :=  data.table::shift(.SD, n=1, type = "lag"), by=reg, .SDcols=nm1]
-date_temp_reg_avg_withlags[, (nm3) :=  data.table::shift(.SD, n=2, type = "lag"), by=reg, .SDcols=nm1]
-date_temp_reg_avg_withlags[, (nm4) :=  data.table::shift(.SD, n=3, type = "lag"), by=reg, .SDcols=nm1]
-date_temp_reg_avg_withlags[, (nm5) :=  data.table::shift(.SD, n=4, type = "lag"), by=reg, .SDcols=nm1]
-date_temp_reg_avg_withlags[, (nm6) :=  data.table::shift(.SD, n=5, type = "lag"), by=reg, .SDcols=nm1]
-date_temp_reg_avg_withlags[, (nm7) :=  data.table::shift(.SD, n=6, type = "lag"), by=reg, .SDcols=nm1]
-date_temp_reg_avg_withlags[, (nm8) :=  data.table::shift(.SD, n=7, type = "lag"), by=reg, .SDcols=nm1]
-date_temp_reg_avg_withlags[, (nm9) :=  data.table::shift(.SD, n=8, type = "lag"), by=reg, .SDcols=nm1]
-date_temp_reg_avg_withlags[, (nm10) :=  data.table::shift(.SD, n=9, type = "lag"), by=reg, .SDcols=nm1]
-date_temp_reg_avg_withlags[, (nm11) :=  data.table::shift(.SD, n=10, type = "lag"), by=reg, .SDcols=nm1]
+date_temp_reg_avg_withlags[, (nm2) :=  data.table::shift(.SD, n=1, type = "lag"), by=region, .SDcols=nm1]
+date_temp_reg_avg_withlags[, (nm3) :=  data.table::shift(.SD, n=2, type = "lag"), by=region, .SDcols=nm1]
+date_temp_reg_avg_withlags[, (nm4) :=  data.table::shift(.SD, n=3, type = "lag"), by=region, .SDcols=nm1]
+date_temp_reg_avg_withlags[, (nm5) :=  data.table::shift(.SD, n=4, type = "lag"), by=region, .SDcols=nm1]
+date_temp_reg_avg_withlags[, (nm6) :=  data.table::shift(.SD, n=5, type = "lag"), by=region, .SDcols=nm1]
+date_temp_reg_avg_withlags[, (nm7) :=  data.table::shift(.SD, n=6, type = "lag"), by=region, .SDcols=nm1]
+date_temp_reg_avg_withlags[, (nm8) :=  data.table::shift(.SD, n=7, type = "lag"), by=region, .SDcols=nm1]
+date_temp_reg_avg_withlags[, (nm9) :=  data.table::shift(.SD, n=8, type = "lag"), by=region, .SDcols=nm1]
+date_temp_reg_avg_withlags[, (nm10) :=  data.table::shift(.SD, n=9, type = "lag"), by=region, .SDcols=nm1]
+date_temp_reg_avg_withlags[, (nm11) :=  data.table::shift(.SD, n=10, type = "lag"), by=region, .SDcols=nm1]
 ```
 
 Now, I'm adding change since last year
@@ -403,9 +405,10 @@ date_temp_reg_avg_withlags[,c("sst_max_change_lag8_abs") := abs(lag8.region_year
 date_temp_reg_avg_withlags[,c("sst_min_change_lag8_abs") := abs(lag8.region_year_min_sst - lag9.region_year_min_sst)]
 date_temp_reg_avg_withlags[,c("sst_seas_change_lag8_abs") := abs(lag8.region_year_seas_sst - lag9.region_year_seas_sst)]
 ```
-Let's save all these goodies!!
+Let's git rid of any rows with any NA's (any important ones shouldn't have any) and then save all these goodies!!
 ```{r}
-save(date_temp_reg_avg_withlags, file = "date_ssttemp_avg_SODA_withlags.Rdata")
+date_temp_reg_avg_withlags.naomit <- na.omit(date_temp_reg_avg_withlags)
+save(date_temp_reg_avg_withlags.naomit, file = "date_ssttemp_avg_SODA_withlags.Rdata")
 ```
 
 Another way to look at lags, but this isn't appropriate for the binomials I'm currently looking at
