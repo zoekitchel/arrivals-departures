@@ -35,21 +35,24 @@ newlatlongyear <- data.frame(matrix(ncol = 5, nrow = 0))
 colnames(newlatlongyear) <- c("lat", "lon", "year", "month", "region")
 
 for (i in 1:length(regions)) {
-  subset <- latlongyear[latlongyear$region == regions[i],] #subset to a region
+  subset <- latlongyear[latlongyear$region == regions[i],] #subset to a region, ct 2478
   minyear <- min(subset$year) #minimum year for this region
   newminyear <- minyear - 10 #minimum year minus 10 (to allow for lags)
   secondtomin <- min(subset$year[subset$year!=min(subset$year)]) #year of second earliest tow
   maxyear <- max(subset$year) #year of latest tow
   secondtomax <- max(subset$year[subset$year!=max(subset$year)]) #year of second latest tow
   
-  allyears <- seq(newminyear, maxyear) #years we need to simulate GPS points for
+  allyears <- seq(newminyear, maxyear) #years we need to simulate GPS points for, 19
   
   subsetlatlong <- subset[subset$year <= secondtomin | subset$year >= secondtomax,] #subset lat lon values used in first 2 years and last two years of survey
-  subsetlatlong.noreg <- subsetlatlong[,c(1:2)] #don't need column with location or year anymore
+  subsetlatlong.noreg <- subsetlatlong[,c(1:2)] #don't need column with location or year anymore, 1488
+  #randomly choose 1/5 of these
+  quarter <- 0.20*nrow(subsetlatlong.noreg)
+  subsetlatlong.reduced <- subsetlatlong.noreg[sample(nrow(subsetlatlong.noreg), quarter), ]
   
   allmonths <- c(1:12) #we want temp values for every month
   
-  subsetlatlong.m <- subsetlatlong.noreg %>%
+  subsetlatlong.m <- subsetlatlong.reduced %>%
     unite("latlon", c("lat", "lon") , sep = "_", remove = TRUE) #merge lat lon in order to expand grid (essentially, lat_lon becomes a key)
   
   subsetlatlong.m.vector <- subsetlatlong.m$latlon #extract vector
@@ -68,7 +71,9 @@ for (i in 1:length(regions)) {
   
 } # this for loop generates latitude year combinations for 10 years before sampling began to allow us to look at lags up to 10 years with no NA's
 
-#it's possible at some point I may need to randomly sample these, because 8736684 extractions may be too many...
+#it's possible at some point I may need to randomly sample these, because 8736684 extractions may be too many... and I was correct
+#we know it works okay with 136044 hauls, let's take a sub-sample of this, and then multiply by years (~70) and months (~12) (840)
+
 
 ```
 
