@@ -6,16 +6,16 @@ output: html_notebook
 ```{r setup}
 library(dplyr)
 library(data.table)
-library(here)
 library(raster)
 library(ncdf4)
 library(lubridate)
 library(maptools)
-library(rgdal)
+library(rgdal) #can't install into terminal R 3.6
 library(tidyr)
 library(ggplot2)
 
 load("/Users/zoekitchel/Documents/grad school/Rutgers/Coursework/Fall 2018/SDM/hauls_catch_Dec2017 1.RData")
+#load("col_ext/hauls_catch_Dec2017 1.RData")
 ```
 
 First, I will make list of GPS points and days/year ranges for which I need temperatures, keeping in mind I want to be able to look at lags of 10, and therefore I need to extend time back by 10.
@@ -30,42 +30,42 @@ latlongyear <- hauls %>%
 #regions
 regions <- levels(as.factor(hauls$region))
 
-newlatlongyear <- data.frame(matrix(ncol = 5, nrow = 0))
+newlatlongyear <- data.table(matrix(ncol = 5, nrow = 0))
 
 colnames(newlatlongyear) <- c("lat", "lon", "year", "month", "region")
 
 for (i in 1:length(regions)) {
-  subset <- latlongyear[latlongyear$region == regions[i],] #subset to a region, ct 2478
+  subset <- latlongyear[latlongyear$region == regions[i],] #subset to a region, ct 4588
   minyear <- min(subset$year) #minimum year for this region
   newminyear <- minyear - 10 #minimum year minus 10 (to allow for lags)
   secondtomin <- min(subset$year[subset$year!=min(subset$year)]) #year of second earliest tow
   maxyear <- max(subset$year) #year of latest tow
-  secondtomax <- max(subset$year[subset$year!=max(subset$year)]) #year of second latest tow
+  #secondtomax <- max(subset$year[subset$year!=max(subset$year)]) #year of second latest tow
   
   allyears <- seq(newminyear, maxyear) #years we need to simulate GPS points for, 19
   
-  subsetlatlong <- subset[subset$year <= secondtomin | subset$year >= secondtomax,] #subset lat lon values used in first 2 years and last two years of survey
-  subsetlatlong.noreg <- subsetlatlong[,c(1:2)] #don't need column with location or year anymore, 1488
+  #subsetlatlong <- subset[subset$year <= secondtomin | subset$year >= secondtomax,] #subset lat lon values used in first 2 years and last two years of survey
+  subsetlatlong.noreg <- subset[,c(1:2)] #don't need column with location or year anymore, 1488
   #randomly choose 1/5 of these
-  quarter <- 0.20*nrow(subsetlatlong.noreg)
-  subsetlatlong.reduced <- subsetlatlong.noreg[sample(nrow(subsetlatlong.noreg), quarter), ]
+  twentieth <- 0.05*nrow(subsetlatlong.noreg)
+  subsetlatlong.reduced <- data.table(subsetlatlong.noreg[sample(nrow(subsetlatlong.noreg), twentieth), ]) #229 GPS points
   
   allmonths <- c(1:12) #we want temp values for every month
   
-  subsetlatlong.m <- subsetlatlong.reduced %>%
-    unite("latlon", c("lat", "lon") , sep = "_", remove = TRUE) #merge lat lon in order to expand grid (essentially, lat_lon becomes a key)
+  subsetlatlong.m <- subsetlatlong.reduced[ , latlon := do.call(paste, c(.SD, sep = "_"))] #merge lat lon in order to expand grid (essentially, lat_lon becomes a key)
   
   subsetlatlong.m.vector <- subsetlatlong.m$latlon #extract vector
   
   #we now have three vectors we need to expand grid for, subsetlatlong.m.vector, allyears, and allmonths, length of expanded grid should equal
   invisible(length(subsetlatlong.m.vector)*length(allyears)*length(allmonths)) #this checks out
   
-  tempdf <- expand.grid(subsetlatlong.m.vector, allyears, allmonths) #matches every year value with a lat_lon_month
+  tempdf <- data.table(expand.grid(subsetlatlong.m.vector, allyears, allmonths)) #matches every year value with a lat_lon_month
   
-  tempdf.sep <- separate(tempdf, Var1, c("lat", "lon"), sep = "_", remove = T)
+  tempdf.sep <- tempdf[, c("lat", "lon") := tstrsplit(Var1, "_", fixed=TRUE)]
   colnames(tempdf.sep)[colnames(tempdf.sep)=="Var2"] <- "year"
   colnames(tempdf.sep)[colnames(tempdf.sep)=="Var3"] <- "month"
   tempdf.sep$region <- regions[i]
+  tempdf.sep <- tempdf.sep[,Var1:=NULL] #delete column we split from
   
   newlatlongyear <- rbind(newlatlongyear, tempdf.sep) #this file now has ALL possible year, lat, lon, month points we need to extract
   
@@ -136,7 +136,6 @@ get.soda.sst <- function(file){
 	
 }
 
-
 ## Using Ryan's code
 soda_sst <- get.soda.sst("/Users/zoekitchel/Documents/grad school/Rutgers/LabWork/Colonization_Extinction/CARTON-GIESE_SODA_v2p1p6_sstemp.nc")
 soda_sst
@@ -144,6 +143,7 @@ soda_sst
 plot(soda_sst[[9]])
 
 saveRDS(soda_sst, "SODA2.1.6_SST.rds")
+#load("col_ext/SODA2.1.6_SST.rds")
 ```
 
 New column in newlatlongyear with "X1958.01.01" format, looks like I may not need to do this after all... SKIPPING FOR NOW
@@ -160,8 +160,13 @@ for (i in 1:nrow(newlatlongyear)) {
 newlatlongyear$day <- paste0("0", c(1))
 newlatlongyear$year_digits <- paste0("X", newlatlongyear$year)
 newlatlongyear$ID <- paste(newlatlongyear$year_digits, newlatlongyear$month_digits, newlatlongyear$day, sep=".")
+
+newlatlongyear <- transform(newlatlongyear, lat = as.numeric(lat), lon = as.numeric(lon))
+
 newlatlongyearIDonly <- newlatlongyear %>%
   dplyr::select(ID, lat, lon)
+latlongonly <- newlatlongyear %>%
+  dplyr::select(lat, lon)
 
 save(newlatlongyear, newlatlongyearIDonly, file = "newlatlongyear.Rdata")
 
@@ -169,18 +174,20 @@ save(newlatlongyear, newlatlongyearIDonly, file = "newlatlongyear.Rdata")
 
 SET COORDINATE SYSTEM
 ```{r set coordinate system}
-locations <- SpatialPoints(cbind(latlongyear_10yrboostIDonly$lon, latlongyear_10yrboostIDonly$lat), 
+locations <- SpatialPoints(cbind(newlatlongyear$lon, newlatlongyear$lat), 
                             proj4string=CRS("+proj=longlat +datum=WGS84 +ellps=WGS84 +towgs84=0,0,0"))
 plot(locations)
 ```
 
-Now, let's extract values *NB: if they do a correct sampling method, this shouldn't be a problem, but is there any world in which we should be averaging temperature values in a different way? here, we're just using the trawl data points, should it be rather the whole region?*
+Now, let's extract values 
+*NB: if they do a correct sampling method, this shouldn't be a problem, but is there any world in which we should be averaging temperature values in a different way? here, we're just using the trawl data points, should it be rather the whole region? They seem to be rather arbitrary break points?*
 
+#this also takes a long time, so be sure to save output
 ```{r extracting temperature values at correct GPS points}
 temp_values <- raster::extract(soda_sst, locations)
 save(temp_values, file = "extracted_temp_values_SODA.Rdata")
 
-justlatlong <- latlongyear_10yrboost %>%
+justlatlong <- newlatlongyear %>%
   dplyr::select(lat, lon)
 
 df <- cbind(justlatlong, temp_values)
@@ -191,8 +198,8 @@ Let's look at the problem rows, GOOD NEWS, the problem is that we have a few GPS
 #now, to make my life easier, I'm just gonna remove NA's here
 df_na_rm <- df[complete.cases(df[,4]), ]
 head(df_na_rm, rows=10, cols=10)
-df_long <- gather(df_na_rm, key = "ID", value = "temp", 3:674 )
-head(df_long)
+df_long <- gather(df, key = "ID", value = "temp", 3:674 )
+head()
 ```
 
 We now have to split the date back up unfortunately, and get rid of X
