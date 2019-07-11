@@ -10,7 +10,7 @@ library(raster)
 library(ncdf4)
 library(lubridate)
 library(maptools)
-library(rgdal) #can't install into terminal R 3.6
+library(rgdal)
 library(tidyr)
 library(ggplot2)
 
@@ -23,6 +23,43 @@ First, I will make list of GPS points and days/year ranges for which I need temp
 ```{r compiling lat, long, year}
 latlongyear <- hauls %>%
   dplyr::select(lat, lon, year, region)
+
+latlongyear <- as.data.table(latlongyear)
+
+
+```
+I am having way too many issues with such a giant data set. Let's try another route
+```{r alternative route}
+#How many lat/lon combos for each year/region?
+regions <- levels(as.factor(hauls$region))
+
+unique_combos <- vector()
+for (i in 1:length(regions)) {
+  subset <- latlongyear %>% filter(region == regions[i])
+  
+  years <- levels(as.factor(subset$year))
+  
+  for (j in 1:length(years)) {
+    subset2 <- subset %>% filter(year == years[j])
+    uniquelatlong <- nrow(unique(subset2[,c('lat','lon')]))
+    unique_combos[length(unique_combos)+1] <- uniquelatlong
+  }
+}
+
+mean(unique_combos) #avg number lat/long per year/reg combo is ~450
+
+#does each year look similar? yes, checked for a few regions
+levels(as.factor(latlongyear[region == regions[8]]$year))
+plot(x=latlongyear[region == regions[8] & year == 2012]$lon, y=latlongyear[region == regions[8] & year == 2012]$lat)
+points(x=latlongyear[region == regions[8] & year == 1986]$lon, y=latlongyear[region == regions[8] & year == 1986]$lat, col = "blue")
+points(x=latlongyear[region == regions[8] & year == 1991]$lon, y=latlongyear[region == regions[8] & year == 1991]$lat, col = "red")
+points(x=latlongyear[region == regions[8] & year == 1994]$lon, y=latlongyear[region == regions[8] & year == 1994]$lat, col = "green")
+
+```
+So, I need roughly ~600 points per year/month combo, so, 4 months x years x 600 points = 24000-127200
+
+Below, I am reducing to a mere 0.01 of all points, or 45 points per month/year/reg combo, because I think that's all I can handle, but it still seems representative
+```{r compiling lat, long, year, month to extract }
 
 #add years back to 1953
 #for each group, find first year, then generate new observations with repeated GPS sequence going back 10 years
@@ -42,15 +79,16 @@ for (i in 1:length(regions)) {
   maxyear <- max(subset$year) #year of latest tow
   #secondtomax <- max(subset$year[subset$year!=max(subset$year)]) #year of second latest tow
   
-  allyears <- seq(newminyear, maxyear) #years we need to simulate GPS points for, 19
+  allyears <- seq(newminyear, maxyear) #years we need to simulate GPS points for, 42
   
   #subsetlatlong <- subset[subset$year <= secondtomin | subset$year >= secondtomax,] #subset lat lon values used in first 2 years and last two years of survey
-  subsetlatlong.noreg <- subset[,c(1:2)] #don't need column with location or year anymore, 1488
+  subsetlatlong.noreg <- subset[,c(1:2)] #don't need column with location or year anymore, 4588
+  #above gives me all GPS points that were ever sampled in this region over entire time period
   #randomly choose 1/5 of these
-  twentieth <- 0.05*nrow(subsetlatlong.noreg)
-  subsetlatlong.reduced <- data.table(subsetlatlong.noreg[sample(nrow(subsetlatlong.noreg), twentieth), ]) #229 GPS points
+  hundredth <- 0.01*nrow(subsetlatlong.noreg)
+  subsetlatlong.reduced <- data.table(subsetlatlong.noreg[sample(nrow(subsetlatlong.noreg), hundredth), ]) #only 45 points
   
-  allmonths <- c(1:12) #we want temp values for every month
+  allmonths <- c(1,2,7,8) #we want temp values for 2 coldest and 2 warmest months
   
   subsetlatlong.m <- subsetlatlong.reduced[ , latlon := do.call(paste, c(.SD, sep = "_"))] #merge lat lon in order to expand grid (essentially, lat_lon becomes a key)
   
@@ -59,7 +97,7 @@ for (i in 1:length(regions)) {
   #we now have three vectors we need to expand grid for, subsetlatlong.m.vector, allyears, and allmonths, length of expanded grid should equal
   invisible(length(subsetlatlong.m.vector)*length(allyears)*length(allmonths)) #this checks out
   
-  tempdf <- data.table(expand.grid(subsetlatlong.m.vector, allyears, allmonths)) #matches every year value with a lat_lon_month
+  tempdf <- data.table(expand.grid(subsetlatlong.m.vector, allyears, allmonths)) #matches every year value with a lat_lon_month, 7560 in total
   
   tempdf.sep <- tempdf[, c("lat", "lon") := tstrsplit(Var1, "_", fixed=TRUE)]
   colnames(tempdf.sep)[colnames(tempdf.sep)=="Var2"] <- "year"
@@ -149,26 +187,18 @@ saveRDS(soda_sst, "SODA2.1.6_SST.rds")
 New column in newlatlongyear with "X1958.01.01" format, looks like I may not need to do this after all... SKIPPING FOR NOW
 *this takes a super long time to run, so we should save this result
 ```{r}
-newlatlongyear$month_digits <- NA
-for (i in 1:nrow(newlatlongyear)) {
-  if (newlatlongyear$month[[i]] < 10) {
-    newlatlongyear$month_digits[[i]] <- paste0("0", newlatlongyear$month[[i]])
-  } else {
-    newlatlongyear$month_digits[[i]] <- paste0(newlatlongyear$month[[i]])
-  }
-}
-newlatlongyear$day <- paste0("0", c(1))
-newlatlongyear$year_digits <- paste0("X", newlatlongyear$year)
-newlatlongyear$ID <- paste(newlatlongyear$year_digits, newlatlongyear$month_digits, newlatlongyear$day, sep=".")
+
+
+newlatlongyear[, month_digits := ifelse(month < 10, paste0("0", month), month)][, day := paste0("0", c(1))][, year_digits := paste0("X", newlatlongyear$year)]
+newlatlongyear[, ID := paste(newlatlongyear$year_digits, newlatlongyear$month_digits, newlatlongyear$day, sep=".")]
 
 newlatlongyear <- transform(newlatlongyear, lat = as.numeric(lat), lon = as.numeric(lon))
+newlatlongyear[, lat := as.numeric(lat)][, lon := as.numeric(lon)]
 
-newlatlongyearIDonly <- newlatlongyear %>%
-  dplyr::select(ID, lat, lon)
-latlongonly <- newlatlongyear %>%
-  dplyr::select(lat, lon)
+vec <- c("ID", "lat", "lon")
+newlatlongyearID <- newlatlongyear[, vec, with=FALSE]
 
-save(newlatlongyear, newlatlongyearIDonly, file = "newlatlongyear.Rdata")
+save(newlatlongyear, newlatlongyearID, file = "newlatlongyear.Rdata")
 
 ```
 
@@ -184,30 +214,32 @@ Now, let's extract values
 
 #this also takes a long time, so be sure to save output
 ```{r extracting temperature values at correct GPS points}
-temp_values <- raster::extract(soda_sst, locations)
+system.time(temp_values <- raster::extract(soda_sst, locations))
 save(temp_values, file = "extracted_temp_values_SODA.Rdata")
 
-justlatlong <- newlatlongyear %>%
-  dplyr::select(lat, lon)
+justlatlong <- newlatlongyear[, vec[2:3], with = FALSE]
 
 df <- cbind(justlatlong, temp_values)
-subset(df, is.na(df[,4])) #looking for NA's
+save(df, file = "latlong_temp_values.Rdata")
 ```
-Let's look at the problem rows, GOOD NEWS, the problem is that we have a few GPS locations of trawls lacking datapoints, luckily, we can just get rid of these points when averaging!!
+I need a data.table in long format, but right now it's too long, so I'm going back up and only using jan, feb, july, aug.
 ```{r}
-#now, to make my life easier, I'm just gonna remove NA's here
-df_na_rm <- df[complete.cases(df[,4]), ]
-head(df_na_rm, rows=10, cols=10)
-df_long <- gather(df, key = "ID", value = "temp", 3:674 )
-head()
+cow <- c("lat", "lon", "*.01.01", "*.02.01", "*.07.01", "*.08.01")
+
+colnames_keep <- grep(paste(cow,collapse="|"), colnames(df), value=TRUE)
+
+df <- df[, colnames_keep, with=FALSE]
+
+df_long <- melt(df, measure.vars = 3:ncol(df),
+               variable.name = "dateID", value.name = "temp")
+
+save(df_long, file = "SODA_monthly_data_beforesplit.R")
 ```
 
 We now have to split the date back up unfortunately, and get rid of X
 
 ```{r}
-rm(df, soda_sst, cord.UTM, df_na_rm, locations, temp_values)#open memory
-df_long2 <- df_long %>%
-  separate(col = ID, into = c("year", "month", "day"))
+df_long[, c("year", "month", "day") := tstrsplit(dateID, ".", fixed=TRUE)]
 
 df_long2$year <- substr(as.character(df_long2$year), 2, 5)
 head(df_long2, 30)
