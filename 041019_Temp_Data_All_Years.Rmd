@@ -109,9 +109,8 @@ for (i in 1:length(regions)) {
   
 } # this for loop generates latitude year combinations for 10 years before sampling began to allow us to look at lags up to 10 years with no NA's
 
-#it's possible at some point I may need to randomly sample these, because 8736684 extractions may be too many... and I was correct
-#we know it works okay with 136044 hauls, let's take a sub-sample of this, and then multiply by years (~70) and months (~12) (840)
 
+#244604 total rows here
 
 ```
 
@@ -181,14 +180,11 @@ soda_sst
 plot(soda_sst[[9]])
 
 saveRDS(soda_sst, "SODA2.1.6_SST.rds")
-#load("col_ext/SODA2.1.6_SST.rds")
+#soda_sst <- readRDS("SODA2.1.6_SST.rds") to load instead
 ```
 
-New column in newlatlongyear with "X1958.01.01" format, looks like I may not need to do this after all... SKIPPING FOR NOW
-*this takes a super long time to run, so we should save this result
-```{r}
-
-
+New column in newlatlongyear with "X1958.01.01" format.
+```{r adjusting to date key format}
 newlatlongyear[, month_digits := ifelse(month < 10, paste0("0", month), month)][, day := paste0("0", c(1))][, year_digits := paste0("X", newlatlongyear$year)]
 newlatlongyear[, ID := paste(newlatlongyear$year_digits, newlatlongyear$month_digits, newlatlongyear$day, sep=".")]
 
@@ -198,7 +194,7 @@ newlatlongyear[, lat := as.numeric(lat)][, lon := as.numeric(lon)]
 vec <- c("ID", "lat", "lon")
 newlatlongyearID <- newlatlongyear[, vec, with=FALSE]
 
-save(newlatlongyear, newlatlongyearID, file = "newlatlongyear.Rdata")
+#save(newlatlongyear, newlatlongyearID, file = "newlatlongyear.Rdata")
 
 ```
 
@@ -215,35 +211,30 @@ Now, let's extract values
 #this also takes a long time, so be sure to save output
 ```{r extracting temperature values at correct GPS points}
 system.time(temp_values <- raster::extract(soda_sst, locations))
-save(temp_values, file = "extracted_temp_values_SODA.Rdata")
+#save(temp_values, file = "extracted_temp_values_SODA.Rdata")
 
 justlatlong <- newlatlongyear[, vec[2:3], with = FALSE]
 
 df <- cbind(justlatlong, temp_values)
-save(df, file = "latlong_temp_values.Rdata")
+#save(df, file = "latlong_temp_values.Rdata")
 ```
 I need a data.table in long format, but right now it's too long, so I'm going back up and only using jan, feb, july, aug.
-```{r}
-cow <- c("lat", "lon", "*.01.01", "*.02.01", "*.07.01", "*.08.01")
-
-colnames_keep <- grep(paste(cow,collapse="|"), colnames(df), value=TRUE)
-
-df <- df[, colnames_keep, with=FALSE]
+```{r melt}
 
 df_long <- melt(df, measure.vars = 3:ncol(df),
                variable.name = "dateID", value.name = "temp")
 
-save(df_long, file = "SODA_monthly_data_beforesplit.R")
+#save(df_long, file = "SODA_monthly_data_beforesplit.R")
 ```
 
 We now have to split the date back up unfortunately, and get rid of X
 
-```{r}
+```{r splitting ID column back up}
 df_long[, c("year", "month", "day") := tstrsplit(dateID, ".", fixed=TRUE)]
 
-df_long2$year <- substr(as.character(df_long2$year), 2, 5)
-head(df_long2, 30)
-save(df_long2, file = "SODA_monthly_data.R")
+df_long[,year := substr(as.character(df_long$year), 2, 5)]
+
+#save(df_long, file = "SODA_monthly_data.R")
 ```
 
 I currently have mean monthly values for a ton of GPS points within a region.
@@ -256,20 +247,24 @@ Therefore, the next step is to merge these data with which regions link to which
 
 First, I will make a lat lon region key
 
-```{r}
-latlongreg.key <- latlongyear[,c(1,2,5)]
+```{r key}
+latlongreg.key <- latlongyear[,c(1,2,4)]
+latlongreg.key.u <- unique(latlongreg.key[,c('lat','lon', 'region')])
+
 ```
 
 Then I will link data table with GPS and date and temp with regions using above key, and then take appropriate averages
 
-```{r}
-date_temp_reg <- left_join(df_long2, latlongreg.key, by = c("lat", "lon"))
-date_temp_reg_month_avg <- date_temp_reg %>%
-  group_by(region, year, month) %>%
-  summarize(region_month_mean_sst = mean(temp))
-head(date_temp_reg_month_avg)
+```{r linking data to region to take avg across regions with left join}
+#left join
+df_reg <- merge(df_long, latlongreg.key.u)
 
-date_temp_reg_avg <- date_temp_reg_month_avg %>%
+df_reg[, lapply(.SD,mean), by=list(year,region,month)] #monthly mean across region
+
+#now, max, min, seas, mean across years
+setDT(df_reg)[ , list(region_year_mean_sst = mean(region_month_mean_sst), region_year_max_sst = max(region_month_mean_sst)), region_year_min_sst = mean(region_month_mean_sst),region_year_seas_sst = region_year_max_sst - region_year_min_sst , by = .(region, year)]
+
+date_temp_reg_avg <- df_reg %>%
   group_by(region, year) %>%
   summarize(region_year_mean_sst = mean(region_month_mean_sst), region_year_max_sst = max(region_month_mean_sst), region_year_min_sst = min(region_month_mean_sst)) %>%
   mutate(region_year_seas_sst = region_year_max_sst - region_year_min_sst)
