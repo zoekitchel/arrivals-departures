@@ -1,5 +1,5 @@
 ---
-title: "Modeling individual instances of colonizations and extinctions usings traits"
+title: "Modeling individual instances of colonizations and extinctions"
 output: html_notebook
 ---
 Question: do species traits intereact with changes in temperature (current or past) to determine whether or not a given species colonizes a new region in a given year?
@@ -44,30 +44,40 @@ library(lme4)
 library(dplyr)
 library(tidyr)
 library(faraway)
-read.csv("traits_formanip.csv")
+traits <- read.csv("traits_formanip.csv")
 load("date_ssttemp_avg_SODA_withlags.Rdata")
 load("spp_master.RData")
 
 ```
 Let's link species data from spp_master to temp data with lags and changes
-```{r}
-#compare temps I calculated to temperatures already there
-#match region names between two data tables
-date_temp_reg_avg_withlags$region <- as.factor(date_temp_reg_avg_withlags$region)
-levels(date_temp_reg_avg_withlags$region)[levels(date_temp_reg_avg_withlags$region)=="AFSC_Aleutians"] <- "ai"
-levels(date_temp_reg_avg_withlags$region)[levels(date_temp_reg_avg_withlags$region)=="AFSC_EBS"] <- "ebs"
-levels(date_temp_reg_avg_withlags$region)[levels(date_temp_reg_avg_withlags$region)=="AFSC_GOA"] <- "goa"
-levels(date_temp_reg_avg_withlags$region)[levels(date_temp_reg_avg_withlags$region)=="AFSC_WCTri"] <- "wctri"
-levels(date_temp_reg_avg_withlags$region)[levels(date_temp_reg_avg_withlags$region)=="DFO_Newfoundland"] <- "newf"
-levels(date_temp_reg_avg_withlags$region)[levels(date_temp_reg_avg_withlags$region)=="DFO_ScotianShelf"] <- "shelf"
-levels(date_temp_reg_avg_withlags$region)[levels(date_temp_reg_avg_withlags$region)=="NEFSC_NEUS"] <- "neus"
-levels(date_temp_reg_avg_withlags$region)[levels(date_temp_reg_avg_withlags$region)=="SCDNR_SEUS"] <- "se"
-levels(date_temp_reg_avg_withlags$region)[levels(date_temp_reg_avg_withlags$region)=="SEFSC_GOMex"] <- "gmex"
-colnames(date_temp_reg_avg_withlags)[colnames(date_temp_reg_avg_withlags) == "region"] <- "reg"
 
-date_temp_reg_avg$year <- as.numeric(date_temp_reg_avg$year)
-spp_master_ztemp <- left_join(spp_master, date_temp_reg_avg_withlags, by = c("reg", "year"))
+```{r}
+#match region names between two data tables
+levels(date_temp_reg_avg_withlags.naomit$reg)[levels(date_temp_reg_avg_withlags.naomit$reg)=="AFSC_Aleutians"] <- "ai"
+levels(date_temp_reg_avg_withlags.naomit$reg)[levels(date_temp_reg_avg_withlags.naomit$reg)=="AFSC_EBS"] <- "ebs"
+levels(date_temp_reg_avg_withlags.naomit$reg)[levels(date_temp_reg_avg_withlags.naomit$reg)=="AFSC_GOA"] <- "goa"
+levels(date_temp_reg_avg_withlags.naomit$reg)[levels(date_temp_reg_avg_withlags.naomit$reg)=="AFSC_WCTri"] <- "wctri"
+levels(date_temp_reg_avg_withlags.naomit$reg)[levels(date_temp_reg_avg_withlags.naomit$reg)=="DFO_Newfoundland"] <- "newf"
+levels(date_temp_reg_avg_withlags.naomit$reg)[levels(date_temp_reg_avg_withlags.naomit$reg)=="DFO_ScotianShelf"] <- "shelf"
+levels(date_temp_reg_avg_withlags.naomit$reg)[levels(date_temp_reg_avg_withlags.naomit$reg)=="NEFSC_NEUS"] <- "neus"
+levels(date_temp_reg_avg_withlags.naomit$reg)[levels(date_temp_reg_avg_withlags.naomit$reg)=="SCDNR_SEUS"] <- "se"
+levels(date_temp_reg_avg_withlags.naomit$reg)[levels(date_temp_reg_avg_withlags.naomit$reg)=="SEFSC_GOMex"] <- "gmex"
+date_temp_reg_avg_withlags.naomit$reg <- as.factor(date_temp_reg_avg_withlags.naomit$reg)
+#colnames(date_temp_reg_avg_withlags.naomit)[colnames(date_temp_reg_avg_withlags.naomit) == "region"] <- "reg"
+
+date_temp_reg_avg_withlags.naomit$year <- as.numeric(date_temp_reg_avg_withlags.naomit$year)
 ```
+
+```{r combine species data with temp data}
+spp_master_ztemp <- left_join(spp_master, date_temp_reg_avg_withlags.naomit, by = c("reg", "year"))
+
+spp_master_ztemp <- merge(spp_master, date_temp_reg_avg_withlags.naomit)
+#make sure all na are gone
+
+spp_master_ztemp_naomit <- na.omit(spp_master_ztemp)
+
+```
+#SKIP
 First, let's ignore traits, and just look at temperature as predictors of yes no colonization and yes no extinction
 Colonization in this year: col
 Goes extinct in this year (here last year, gone now) : now_ext
@@ -75,6 +85,18 @@ Mean temp: region year mean sst
 Max temp:region year max sst
 Min temp: region year min sst
 Seasonality: region year seas sst
+```{r get to know temperature data better}
+plot(date_temp_reg_avg_withlags$year, date_temp_reg_avg_withlags$region_year_mean_sst) #mean temp through time
+plot(date_temp_reg_avg_withlags$year, date_temp_reg_avg_withlags$region_year_min_sst) #min temp through time
+plot(date_temp_reg_avg_withlags$year, date_temp_reg_avg_withlags$region_year_max_sst) #max temp through time
+plot(date_temp_reg_avg_withlags$year, date_temp_reg_avg_withlags$region_year_seas_sst) #seasonality through time
+```
+
+What about correlations among temperature variables?
+```{r r-correlations between temperature variables }
+res <- cor(date_temp_reg_avg_withlags[,3:6])
+res
+```
 
 Colonization base mod
 ```{r}
@@ -174,21 +196,59 @@ AICc(ext_mod_change_abs, ext_mod_change_abs_regasrandom,ext_mod_change_abs_yeara
 ```
 Best with both random effects!!
 
+#START HERE
 Now, let's play around with lags a bit using dredge, 
-#this didn't work because of NA's, I guess I'll compare one by one then??
-https://rdrr.io/cran/MuMIn/src/demo/dredge.subset.R
-```{r}
-colnames(spp_master_ztemp)
+```{r dredge colonization}
 #I want to look at columns 89:136 as possible predictors
-subset <- spp_master_ztemp[,c(6, 89:136)]
-#let's get rid of na's
+dredgesubset <- spp_master_ztemp_naomit[,c(1:3,6,45:164)] # this will have to change
+#let's set the NA setting correctly
 options(na.action = "na.fail")
 #fitting global model
-fm_col <- glm(col ~ ., family = binomial, data = subset)
-dd <- dredge(fm_col)
-variables_dredge <- colnames(spp_master_ztemp[89:136])
-list_variables <- gsub("," , " + " , toString(variables_dredge))
+fm1_col <- glmer(col ~ . + (1|reg) + (1|year), family = binomial, data = dredgesubset) #fixed-effect model matrix is rank deficient so dropping 51 columns / coefficients
+
+#include only models with 1 term (and intercept)
+dd <- dredge(fm1_col, m.lim = c(0, 1))
+
+subset(dd, delta < 2)
+
+# Visualize the model selection table:
+
+par(mar = c(3,5,6,4))
+plot(dd.col, labAsExpr = TRUE)
+
+# Model average models with delta AICc < 2
+model.avg(dd.col, subset = delta < 2)
+
+#or as a 95% confidence set:
+model.avg(dd.col, subset = cumsum(weight) <= .95) # get averaged coefficients
+
+#'Best' model
+summary(get.models(dd.col, 1)[[1]])
 ```
+Now a dredge for extinction
+```{r dredge extinction}
+#fitting global model
+fm1_ext <- glmm(now_ext ~ . + (1|reg) + (1|year), family = binomial, data = dredgesubset)
+dd.ext <- dredge(fm1_ext)
+
+subset(dd.ext, delta < 2)
+
+# Visualize the model selection table:
+
+par(mar = c(3,5,6,4))
+plot(dd.ext, labAsExpr = TRUE)
+
+# Model average models with delta AICc < 2
+model.avg(dd.ext, subset = delta < 2)
+
+#or as a 95% confidence set:
+model.avg(dd.ext, subset = cumsum(weight) <= .95) # get averaged coefficients
+
+#'Best' model
+summary(get.models(dd.ext, 1)[[1]])
+```
+********
+##Below I'm doing a more"organic" and less perscriptive dredge
 
 What model performs better? a model with changes in the past year? or a model with changes in the year before last?
 

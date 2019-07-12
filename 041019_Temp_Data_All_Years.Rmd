@@ -259,23 +259,16 @@ Then I will link data table with GPS and date and temp with regions using above 
 #left join
 df_reg <- merge(df_long, latlongreg.key.u)
 
-df_reg[, lapply(.SD,mean), by=list(year,region,month)] #monthly mean across region
+df_reg[, temp_month_mean:=mean(temp), by=list(year,region,month)] #monthly mean across region
 
 #now, max, min, seas, mean across years
-setDT(df_reg)[ , list(region_year_mean_sst = mean(region_month_mean_sst), region_year_max_sst = max(region_month_mean_sst)), region_year_min_sst = mean(region_month_mean_sst),region_year_seas_sst = region_year_max_sst - region_year_min_sst , by = .(region, year)]
+df_reg[ , region_year_mean_sst := mean(temp_month_mean), by = list(year, region)][ , region_year_max_sst := max(temp_month_mean), by = list(year, region)][ , region_year_min_sst := min(temp_month_mean), by = list(year, region)][ , region_year_seas_sst := region_year_max_sst - region_year_min_sst, by = list(year, region)]  #max, mean, min, seas
 
-date_temp_reg_avg <- df_reg %>%
-  group_by(region, year) %>%
-  summarize(region_year_mean_sst = mean(region_month_mean_sst), region_year_max_sst = max(region_month_mean_sst), region_year_min_sst = min(region_month_mean_sst)) %>%
-  mutate(region_year_seas_sst = region_year_max_sst - region_year_min_sst)
-head(date_temp_reg_avg)
+save(df_reg, file = "date_ssttemp_avg_SODA.Rdata") #save this so i can start here!
 
-save(date_temp_reg_avg, date_temp_reg_month_avg, file = "date_ssttemp_avg_SODA.Rdata") #save this so i can start here!
-
-ggplot(data=date_temp_reg_avg, aes(x=year, y=region_year_mean_sst)) +
+ggplot(data=df_reg, aes(x=year, y=region_year_mean_sst)) +
   geom_point() +
   facet_wrap(~region)
-base::nrow(date_temp_reg_avg)
 ```
 
 I now have the predictor values I need, yearly min and max for entire region per year
@@ -287,7 +280,7 @@ I think I should calculate both change in temperature and lags from date_temp_re
 Here I am first adding lags
 ```{r}
 #adding lag values (1, 2, 3, 4, 5) for seasonality and change in temperature
-nm1 <- grep("*sst*", colnames(date_temp_reg_avg), value=TRUE)
+nm1 <- grep("*sst*", colnames(df_reg), value=TRUE)
 nm2 <- paste("lag1", nm1, sep=".")
 nm3 <- paste("lag2", nm1, sep=".")
 nm4 <- paste("lag3", nm1, sep=".")
@@ -298,7 +291,7 @@ nm8 <- paste("lag7", nm1, sep=".")
 nm9 <- paste("lag8", nm1, sep=".")
 nm10 <- paste("lag9", nm1, sep=".")
 nm11 <- paste("lag10", nm1, sep=".")
-date_temp_reg_avg_withlags <- data.table(date_temp_reg_avg)
+date_temp_reg_avg_withlags <- data.table(df_reg)
 date_temp_reg_avg_withlags[, (nm2) :=  data.table::shift(.SD, n=1, type = "lag"), by=region, .SDcols=nm1]
 date_temp_reg_avg_withlags[, (nm3) :=  data.table::shift(.SD, n=2, type = "lag"), by=region, .SDcols=nm1]
 date_temp_reg_avg_withlags[, (nm4) :=  data.table::shift(.SD, n=3, type = "lag"), by=region, .SDcols=nm1]
@@ -380,6 +373,9 @@ date_temp_reg_avg_withlags[,c("sst_mean_change_lag9") := (lag9.region_year_mean_
 date_temp_reg_avg_withlags[,c("sst_max_change_lag9") := (lag9.region_year_mean_sst - lag10.region_year_max_sst)]
 date_temp_reg_avg_withlags[,c("sst_min_change_lag9") := (lag9.region_year_mean_sst - lag10.region_year_min_sst)]
 date_temp_reg_avg_withlags[,c("sst_seas_change_lag9") := (lag9.region_year_mean_sst - lag10.region_year_seas_sst)]
+
+#empty memory space
+rm(dat, df, df_long, df_reg, hauls, locations, soda_sst, temp_values)
 ```
 From Ryan's famous plot, we are more concerned with absolute value of change!
 ```{r}
@@ -443,6 +439,11 @@ date_temp_reg_avg_withlags[,c("sst_mean_change_lag8_abs") := abs(lag8.region_yea
 date_temp_reg_avg_withlags[,c("sst_max_change_lag8_abs") := abs(lag8.region_year_max_sst - lag9.region_year_max_sst)]
 date_temp_reg_avg_withlags[,c("sst_min_change_lag8_abs") := abs(lag8.region_year_min_sst - lag9.region_year_min_sst)]
 date_temp_reg_avg_withlags[,c("sst_seas_change_lag8_abs") := abs(lag8.region_year_seas_sst - lag9.region_year_seas_sst)]
+
+#now I can get rid of years before 1963
+#first make sure years is numeric
+date_temp_reg_avg_withlags$year <- as.numeric(date_temp_reg_avg_withlags$year)
+fin_temps_wlags <- date_temp_reg_avg_withlags[year > 1962]
 ```
 Let's git rid of any rows with any NA's (any important ones shouldn't have any) and then save all these goodies!!
 ```{r}
