@@ -2,6 +2,39 @@
 title: "Extracting SODA Temperature Update"
 output: html_notebook
 ---
+What lat/lon values do we actually need?
+```{r make list of all GPS points we want to extract temp data from}
+library(data.table)
+load("/Users/zoekitchel/Documents/grad school/Rutgers/Coursework/Fall 2018/SDM/hauls_catch_Dec2017 1.RData")
+#load("col_ext/hauls_catch_Dec2017 1.RData")
+hauls <- data.table(hauls)
+cols <- c("lat", "lon", "region")
+latlongyear <- hauls[, cols, with = F]
+
+# set the key to all columns
+setkey(latlongyear)
+
+# Get unique lat lon combos
+latlongyear.u <- unique(latlongyear[list(lat, lon), nomatch = 0])
+
+#minimum lat?, maximum lat? minimum long? maximum long?
+summary(latlongyear.u)
+
+#also added 360 to put in same units as NetCDF files
+
+minlat <- min(latlongyear.u$lat)
+maxlat <- max(latlongyear.u$lat)
+minlon <- min(latlongyear.u$lon) + 360
+maxlon <- max(latlongyear.u$lon) + 360
+
+minlat
+maxlat
+minlon
+maxlon
+
+
+```
+
 We need to follow Jim's lead, and use SODA 2.4 for pre 1980, and then SODA 3.3 for post 1980. Unfortunately, they're accessible in different ways. We will start with 1980+
 
 ```{terminal import SODA post 1980}
@@ -29,8 +62,34 @@ for i in `cat soda3.3.1_mn_ocean_reg_import.txt`;do ncks -d depth,-1 "${i}" "${i
 #top?
 for i in `cat soda3.3.1_mn_ocean_reg_import.txt`;do ncks -d depth,1 "${i}" "${i%.*}_surface.nc";done
 ```
+Seeing now that these files in their current state actually contain multiple variables, and I only want one (temp)
+```{terminal extracting only temp from 1980 to 2015}
+#bottom
+for i in `cat soda3.3.1_mn_ocean_reg_import.txt`; do ncks -v temp "${i%.*}_bottom.nc" "${i%.*}_sbt.nc";done
+#surface
+for i in `cat soda3.3.1_mn_ocean_reg_import.txt`; do ncks -v temp "${i%.*}_surface.nc" "${i%.*}_sst.nc";done
+```
+Let's now crop down to actual points we need:
+24.49008
+62.01917
+170.603
+316.165
+```{terminal crop points into box for North America}
+#bottom
+for i in `cat soda3.3.1_mn_ocean_reg_import.txt`; do ncks -O -d latitude,24.49008,62.01917 -d longitude,170.603,316.165 "${i%.*}_sbt.nc" "${i%.*}_sbt.nc";done
+#surface
+for i in `cat soda3.3.1_mn_ocean_reg_import.txt`; do ncks -O -d latitude,24.49008,62.01917 -d longitude,170.603,316.165 "${i%.*}_sst.nc" "${i%.*}_sst.nc";done
+```
+I will now merge these files along time
+```{terminal merge 1980-2015 files for sbt and sst}
+ncrcat *sst.nc -O soda3.3.1_1980_2015_sst.nc
+ncrcat *sbt.nc -O soda3.3.1_1980_2015_sbt.nc
+```
+Ideally, here I will average nc before importing into raster brick
+```{terminal hopefully use nco to average over GPS points}
+```
 
-For top, and to actually extract bottom, I think I can use Ryan's code
+To extract, use Ryan's code
 ```{r 1980+ extract bottom and top temp}
 #Ryan's function to extract from nc_open
 get.soda.sst <- function(file){
@@ -67,26 +126,8 @@ soda_sst <- get.soda.sst("col_ext/CARTON-GIESE_SODA_v2p1p6_sstemp.nc")
 
 ```
 
-
-
-Now, let's average temperature values for every month over all GPS points in each region
-```{r make list of all GPS points we want to extract temp data from, and then average}
-library(data.table)
-load("/Users/zoekitchel/Documents/grad school/Rutgers/Coursework/Fall 2018/SDM/hauls_catch_Dec2017 1.RData")
-#load("col_ext/hauls_catch_Dec2017 1.RData")
-hauls <- data.table(hauls)
-cols <- c("lat", "lon", "region")
-latlongyear <- hauls[, cols, with = F]
-
-# set the key to all columns
-setkey(latlongyear)
-
-# Get unique lat lon combos
-latlongyear.u <- unique(latlongyear[list(lat, lon), nomatch = 0])
-
-```
 Now, we will import OPENDAP files (netcdf off web) for pre 1980 from SODA 2.4. But I will have to run this in terminal.
-```{r import SODA pre 1980}
+```{terminal import SODA pre 1980}
 conda activate /local/home/zoek/enter/envs/myRenv3_5
 R
 library(ncdf4)
@@ -227,4 +268,4 @@ bottom <- apply(!is.na(haul_temp), 1, sum)
 soda.sbt <- haul_temp[cbind(1:nrow(haul_temp), bottom)]
 ```
 
-
+I didn't use this link, but it appears to be helpful. [ERDAPP](https://coastwatch.pfeg.noaa.gov/erddap/griddap/erdSoda331oceanmday.html).

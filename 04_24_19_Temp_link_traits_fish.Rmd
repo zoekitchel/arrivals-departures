@@ -53,15 +53,12 @@ Let's link species data from spp_master to temp data with lags and changes
 
 ```{r}
 #match region names between two data tables
-levels(date_temp_reg_avg_withlags.naomit$reg)[levels(date_temp_reg_avg_withlags.naomit$reg)=="AFSC_Aleutians"] <- "ai"
-levels(date_temp_reg_avg_withlags.naomit$reg)[levels(date_temp_reg_avg_withlags.naomit$reg)=="AFSC_EBS"] <- "ebs"
-levels(date_temp_reg_avg_withlags.naomit$reg)[levels(date_temp_reg_avg_withlags.naomit$reg)=="AFSC_GOA"] <- "goa"
-levels(date_temp_reg_avg_withlags.naomit$reg)[levels(date_temp_reg_avg_withlags.naomit$reg)=="AFSC_WCTri"] <- "wctri"
-levels(date_temp_reg_avg_withlags.naomit$reg)[levels(date_temp_reg_avg_withlags.naomit$reg)=="DFO_Newfoundland"] <- "newf"
-levels(date_temp_reg_avg_withlags.naomit$reg)[levels(date_temp_reg_avg_withlags.naomit$reg)=="DFO_ScotianShelf"] <- "shelf"
-levels(date_temp_reg_avg_withlags.naomit$reg)[levels(date_temp_reg_avg_withlags.naomit$reg)=="NEFSC_NEUS"] <- "neus"
-levels(date_temp_reg_avg_withlags.naomit$reg)[levels(date_temp_reg_avg_withlags.naomit$reg)=="SCDNR_SEUS"] <- "se"
-levels(date_temp_reg_avg_withlags.naomit$reg)[levels(date_temp_reg_avg_withlags.naomit$reg)=="SEFSC_GOMex"] <- "gmex"
+reg <- levels(as.factor(spp_master$reg))
+region <- c("AFSC_Aleutians","AFSC_EBS", "SEFSC_GOMex", "AFSC_GOA", "NEFSC_NEUS", "DFO_Newfoundland", "SCDNR_SEUS", "DFO_ScotianShelf", "AFSC_WCTri")
+regions.dt <- data.table(reg, region)
+
+date_temp_reg_avg_withlags.naomit <- date_temp_reg_avg_withlags.naomit[regions.dt, nomatch = 0, on = c("region")]
+
 date_temp_reg_avg_withlags.naomit$reg <- as.factor(date_temp_reg_avg_withlags.naomit$reg)
 #colnames(date_temp_reg_avg_withlags.naomit)[colnames(date_temp_reg_avg_withlags.naomit) == "region"] <- "reg"
 
@@ -69,15 +66,11 @@ date_temp_reg_avg_withlags.naomit$year <- as.numeric(date_temp_reg_avg_withlags.
 ```
 
 ```{r combine species data with temp data}
-spp_master_ztemp <- left_join(spp_master, date_temp_reg_avg_withlags.naomit, by = c("reg", "year"))
-
-spp_master_ztemp <- merge(spp_master, date_temp_reg_avg_withlags.naomit)
-#make sure all na are gone
-
-spp_master_ztemp_naomit <- na.omit(spp_master_ztemp)
+#r combine species data with temp data
+spp_master_ztemp <- spp_master[date_temp_reg_avg_withlags.naomit, by = c("reg", "year")]
 
 ```
-#SKIP
+#Below Running from Amphiprion Output
 First, let's ignore traits, and just look at temperature as predictors of yes no colonization and yes no extinction
 Colonization in this year: col
 Goes extinct in this year (here last year, gone now) : now_ext
@@ -85,11 +78,32 @@ Mean temp: region year mean sst
 Max temp:region year max sst
 Min temp: region year min sst
 Seasonality: region year seas sst
+```{r import amphiprion output}
+readRDS("/Users/zoekitchel/Documents/grad school/Rutgers/LabWork/Colonization_Extinction/spp_master_ztemp.rds")
+#eliminate regions not in Ryan's paper
+date_temp_reg_avg_withlags.naomit.r <- date_temp_reg_avg_withlags.naomit[reg %in% c("AFSC_Aleutians","AFSC_EBS","AFSC_GOA","AFSC_WCTri","DFO_Newfoundland","DFO_ScotianShelf","NEFSC_NEUS","SCDNR_SEUS","SEFSC_GOMex")]
+
+```
+```{r where are col and ext happening, and how often}
+spp_master_summary <- spp_master %>%
+  group_by(reg) %>%
+  summarise(number_col = sum(col)/n(), number_ext = sum(now_ext)/n())
+
+ggplot(data=spp_master_summary, aes(x=reg)) +
+  geom_bar
+```
+
+
+
 ```{r get to know temperature data better}
-plot(date_temp_reg_avg_withlags$year, date_temp_reg_avg_withlags$region_year_mean_sst) #mean temp through time
-plot(date_temp_reg_avg_withlags$year, date_temp_reg_avg_withlags$region_year_min_sst) #min temp through time
-plot(date_temp_reg_avg_withlags$year, date_temp_reg_avg_withlags$region_year_max_sst) #max temp through time
-plot(date_temp_reg_avg_withlags$year, date_temp_reg_avg_withlags$region_year_seas_sst) #seasonality through time
+#temperature through time
+ggplot(data=date_temp_reg_avg_withlags.naomit, aes(x=year, y=region_year_mean_sst, col = reg)) +
+  geom_point() +
+  labs(x="Year", y="Mean Annual Surface Temperature (˚C)") +
+  geom_smooth(aes(col = reg), se = F, method = "lm")
+
+levels(date_temp_reg_avg_withlags.naomit.r$reg)
+
 ```
 
 What about correlations among temperature variables?

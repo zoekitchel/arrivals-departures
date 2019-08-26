@@ -24,43 +24,6 @@ First, I will make list of GPS points and days/year ranges for which I need temp
 latlongyear <- hauls %>%
   dplyr::select(lat, lon, year, region)
 
-latlongyear <- as.data.table(latlongyear)
-
-
-```
-I am having way too many issues with such a giant data set. Let's try another route
-```{r alternative route}
-#How many lat/lon combos for each year/region?
-regions <- levels(as.factor(hauls$region))
-
-unique_combos <- vector()
-for (i in 1:length(regions)) {
-  subset <- latlongyear %>% filter(region == regions[i])
-  
-  years <- levels(as.factor(subset$year))
-  
-  for (j in 1:length(years)) {
-    subset2 <- subset %>% filter(year == years[j])
-    uniquelatlong <- nrow(unique(subset2[,c('lat','lon')]))
-    unique_combos[length(unique_combos)+1] <- uniquelatlong
-  }
-}
-
-mean(unique_combos) #avg number lat/long per year/reg combo is ~450
-
-#does each year look similar? yes, checked for a few regions
-levels(as.factor(latlongyear[region == regions[8]]$year))
-plot(x=latlongyear[region == regions[8] & year == 2012]$lon, y=latlongyear[region == regions[8] & year == 2012]$lat)
-points(x=latlongyear[region == regions[8] & year == 1986]$lon, y=latlongyear[region == regions[8] & year == 1986]$lat, col = "blue")
-points(x=latlongyear[region == regions[8] & year == 1991]$lon, y=latlongyear[region == regions[8] & year == 1991]$lat, col = "red")
-points(x=latlongyear[region == regions[8] & year == 1994]$lon, y=latlongyear[region == regions[8] & year == 1994]$lat, col = "green")
-
-```
-So, I need roughly ~600 points per year/month combo, so, 4 months x years x 600 points = 24000-127200
-
-Below, I am reducing to a mere 0.01 of all points, or 45 points per month/year/reg combo, because I think that's all I can handle, but it still seems representative
-```{r compiling lat, long, year, month to extract }
-
 #add years back to 1953
 #for each group, find first year, then generate new observations with repeated GPS sequence going back 10 years
 
@@ -79,16 +42,15 @@ for (i in 1:length(regions)) {
   maxyear <- max(subset$year) #year of latest tow
   #secondtomax <- max(subset$year[subset$year!=max(subset$year)]) #year of second latest tow
   
-  allyears <- seq(newminyear, maxyear) #years we need to simulate GPS points for, 42
+  allyears <- seq(newminyear, maxyear) #years we need to simulate GPS points for, 19
   
   #subsetlatlong <- subset[subset$year <= secondtomin | subset$year >= secondtomax,] #subset lat lon values used in first 2 years and last two years of survey
-  subsetlatlong.noreg <- subset[,c(1:2)] #don't need column with location or year anymore, 4588
-  #above gives me all GPS points that were ever sampled in this region over entire time period
+  subsetlatlong.noreg <- subset[,c(1:2)] #don't need column with location or year anymore, 1488
   #randomly choose 1/5 of these
-  hundredth <- 0.01*nrow(subsetlatlong.noreg)
-  subsetlatlong.reduced <- data.table(subsetlatlong.noreg[sample(nrow(subsetlatlong.noreg), hundredth), ]) #only 45 points
+  twentieth <- 0.05*nrow(subsetlatlong.noreg)
+  subsetlatlong.reduced <- data.table(subsetlatlong.noreg[sample(nrow(subsetlatlong.noreg), twentieth), ]) #229 GPS points
   
-  allmonths <- c(1,2,7,8) #we want temp values for 2 coldest and 2 warmest months
+  allmonths <- c(1,2,7,8) #we want temp values for every month
   
   subsetlatlong.m <- subsetlatlong.reduced[ , latlon := do.call(paste, c(.SD, sep = "_"))] #merge lat lon in order to expand grid (essentially, lat_lon becomes a key)
   
@@ -97,7 +59,7 @@ for (i in 1:length(regions)) {
   #we now have three vectors we need to expand grid for, subsetlatlong.m.vector, allyears, and allmonths, length of expanded grid should equal
   invisible(length(subsetlatlong.m.vector)*length(allyears)*length(allmonths)) #this checks out
   
-  tempdf <- data.table(expand.grid(subsetlatlong.m.vector, allyears, allmonths)) #matches every year value with a lat_lon_month, 7560 in total
+  tempdf <- data.table(expand.grid(subsetlatlong.m.vector, allyears, allmonths)) #matches every year value with a lat_lon_month
   
   tempdf.sep <- tempdf[, c("lat", "lon") := tstrsplit(Var1, "_", fixed=TRUE)]
   colnames(tempdf.sep)[colnames(tempdf.sep)=="Var2"] <- "year"
@@ -109,8 +71,9 @@ for (i in 1:length(regions)) {
   
 } # this for loop generates latitude year combinations for 10 years before sampling began to allow us to look at lags up to 10 years with no NA's
 
+#it's possible at some point I may need to randomly sample these, because 8736684 extractions may be too many... and I was correct
+#we know it works okay with 136044 hauls, let's take a sub-sample of this, and then multiply by years (~70) and months (~12) (840)
 
-#244604 total rows here
 
 ```
 
@@ -126,9 +89,9 @@ Soda Data Files
 
  	0N to 89.5N --> 179 pts
 
- 	5.01 to 5.01
+   TRY WITH ALL DEPTHS
 
- 	Jan 1958 to Dec 2008 --> 672 pts
+ 	Jan 1953 to Dec 2008 --> 672 pts
 
 
  3. Stop Selecting
@@ -180,11 +143,14 @@ soda_sst
 plot(soda_sst[[9]])
 
 saveRDS(soda_sst, "SODA2.1.6_SST.rds")
-#soda_sst <- readRDS("SODA2.1.6_SST.rds") to load instead
+#load("col_ext/SODA2.1.6_SST.rds")
 ```
 
-New column in newlatlongyear with "X1958.01.01" format.
-```{r adjusting to date key format}
+New column in newlatlongyear with "X1958.01.01" format, looks like I may not need to do this after all... SKIPPING FOR NOW
+*this takes a super long time to run, so we should save this result
+```{r}
+
+
 newlatlongyear[, month_digits := ifelse(month < 10, paste0("0", month), month)][, day := paste0("0", c(1))][, year_digits := paste0("X", newlatlongyear$year)]
 newlatlongyear[, ID := paste(newlatlongyear$year_digits, newlatlongyear$month_digits, newlatlongyear$day, sep=".")]
 
@@ -194,7 +160,7 @@ newlatlongyear[, lat := as.numeric(lat)][, lon := as.numeric(lon)]
 vec <- c("ID", "lat", "lon")
 newlatlongyearID <- newlatlongyear[, vec, with=FALSE]
 
-#save(newlatlongyear, newlatlongyearID, file = "newlatlongyear.Rdata")
+save(newlatlongyear, newlatlongyearID, file = "newlatlongyear.Rdata")
 
 ```
 
@@ -211,30 +177,34 @@ Now, let's extract values
 #this also takes a long time, so be sure to save output
 ```{r extracting temperature values at correct GPS points}
 system.time(temp_values <- raster::extract(soda_sst, locations))
-#save(temp_values, file = "extracted_temp_values_SODA.Rdata")
+save(temp_values, file = "extracted_temp_values_SODA.Rdata")
 
 justlatlong <- newlatlongyear[, vec[2:3], with = FALSE]
 
 df <- cbind(justlatlong, temp_values)
-#save(df, file = "latlong_temp_values.Rdata")
+save(df, file = "latlong_temp_values.Rdata")
 ```
 I need a data.table in long format, but right now it's too long, so I'm going back up and only using jan, feb, july, aug.
-```{r melt}
+```{r}
+cow <- c("lat", "lon", "*.01.01", "*.02.01", "*.07.01", "*.08.01")
+
+colnames_keep <- grep(paste(cow,collapse="|"), colnames(df), value=TRUE)
+
+df <- df[, colnames_keep, with=FALSE]
 
 df_long <- melt(df, measure.vars = 3:ncol(df),
                variable.name = "dateID", value.name = "temp")
-
-#save(df_long, file = "SODA_monthly_data_beforesplit.R")
 ```
 
 We now have to split the date back up unfortunately, and get rid of X
 
-```{r splitting ID column back up}
+```{r}
+
 df_long[, c("year", "month", "day") := tstrsplit(dateID, ".", fixed=TRUE)]
 
-df_long[,year := substr(as.character(df_long$year), 2, 5)]
-
-#save(df_long, file = "SODA_monthly_data.R")
+df_long2$year <- substr(as.character(df_long2$year), 2, 5)
+head(df_long2, 30)
+save(df_long2, file = "SODA_monthly_data.R")
 ```
 
 I currently have mean monthly values for a ton of GPS points within a region.
@@ -247,28 +217,26 @@ Therefore, the next step is to merge these data with which regions link to which
 
 First, I will make a lat lon region key
 
-```{r key}
+```{r}
 latlongreg.key <- latlongyear[,c(1,2,4)]
-latlongreg.key.u <- unique(latlongreg.key[,c('lat','lon', 'region')])
-
+head(latlongyear)
 ```
 
 Then I will link data table with GPS and date and temp with regions using above key, and then take appropriate averages
 
-```{r linking data to region to take avg across regions with left join}
-#left join
-df_reg <- merge(df_long, latlongreg.key.u)
+```{r link GPS points with regions}
+date_temp_reg <- df_long[latlongreg.key, nomatch = 0, on = c("lat","lon")] #this takes a while
 
-df_reg[, temp_month_mean:=mean(temp), by=list(year,region,month)] #monthly mean across region
+date_temp_reg <- date_temp_reg[,list(mean_month_temp=mean(temp)),by=c("region", "year", "month")]
+date_temp_reg <- date_temp_reg[,list(region_year_mean_sst = mean(mean_month_temp), region_year_max_sst = max(mean_month_temp), region_year_min_sst = min(mean_month_temp)), by = c("region", "year")]
+date_temp_reg <- date_temp_reg[,region_year_seas_sst := region_year_max_sst - region_year_min_sst, by = c("region", "year")] #this way of adding columns keeps other columns
 
-#now, max, min, seas, mean across years
-df_reg[ , region_year_mean_sst := mean(temp_month_mean), by = list(year, region)][ , region_year_max_sst := max(temp_month_mean), by = list(year, region)][ , region_year_min_sst := min(temp_month_mean), by = list(year, region)][ , region_year_seas_sst := region_year_max_sst - region_year_min_sst, by = list(year, region)]  #max, mean, min, seas
+save(date_temp_reg, file = "date_ssttemp_avg_SODA.Rdata")
 
-save(df_reg, file = "date_ssttemp_avg_SODA.Rdata") #save this so i can start here!
-
-ggplot(data=df_reg, aes(x=year, y=region_year_mean_sst)) +
+ggplot(data=date_temp_reg_avg, aes(x=year, y=region_year_mean_sst)) +
   geom_point() +
   facet_wrap(~region)
+base::nrow(date_temp_reg_avg)
 ```
 
 I now have the predictor values I need, yearly min and max for entire region per year
@@ -280,7 +248,7 @@ I think I should calculate both change in temperature and lags from date_temp_re
 Here I am first adding lags
 ```{r}
 #adding lag values (1, 2, 3, 4, 5) for seasonality and change in temperature
-nm1 <- grep("*sst*", colnames(df_reg), value=TRUE)
+nm1 <- grep("*sst*", colnames(date_temp_reg_avg), value=TRUE)
 nm2 <- paste("lag1", nm1, sep=".")
 nm3 <- paste("lag2", nm1, sep=".")
 nm4 <- paste("lag3", nm1, sep=".")
@@ -291,7 +259,7 @@ nm8 <- paste("lag7", nm1, sep=".")
 nm9 <- paste("lag8", nm1, sep=".")
 nm10 <- paste("lag9", nm1, sep=".")
 nm11 <- paste("lag10", nm1, sep=".")
-date_temp_reg_avg_withlags <- data.table(df_reg)
+date_temp_reg_avg_withlags <- data.table(date_temp_reg_avg)
 date_temp_reg_avg_withlags[, (nm2) :=  data.table::shift(.SD, n=1, type = "lag"), by=region, .SDcols=nm1]
 date_temp_reg_avg_withlags[, (nm3) :=  data.table::shift(.SD, n=2, type = "lag"), by=region, .SDcols=nm1]
 date_temp_reg_avg_withlags[, (nm4) :=  data.table::shift(.SD, n=3, type = "lag"), by=region, .SDcols=nm1]
@@ -373,9 +341,6 @@ date_temp_reg_avg_withlags[,c("sst_mean_change_lag9") := (lag9.region_year_mean_
 date_temp_reg_avg_withlags[,c("sst_max_change_lag9") := (lag9.region_year_mean_sst - lag10.region_year_max_sst)]
 date_temp_reg_avg_withlags[,c("sst_min_change_lag9") := (lag9.region_year_mean_sst - lag10.region_year_min_sst)]
 date_temp_reg_avg_withlags[,c("sst_seas_change_lag9") := (lag9.region_year_mean_sst - lag10.region_year_seas_sst)]
-
-#empty memory space
-rm(dat, df, df_long, df_reg, hauls, locations, soda_sst, temp_values)
 ```
 From Ryan's famous plot, we are more concerned with absolute value of change!
 ```{r}
@@ -439,11 +404,6 @@ date_temp_reg_avg_withlags[,c("sst_mean_change_lag8_abs") := abs(lag8.region_yea
 date_temp_reg_avg_withlags[,c("sst_max_change_lag8_abs") := abs(lag8.region_year_max_sst - lag9.region_year_max_sst)]
 date_temp_reg_avg_withlags[,c("sst_min_change_lag8_abs") := abs(lag8.region_year_min_sst - lag9.region_year_min_sst)]
 date_temp_reg_avg_withlags[,c("sst_seas_change_lag8_abs") := abs(lag8.region_year_seas_sst - lag9.region_year_seas_sst)]
-
-#now I can get rid of years before 1963
-#first make sure years is numeric
-date_temp_reg_avg_withlags$year <- as.numeric(date_temp_reg_avg_withlags$year)
-fin_temps_wlags <- date_temp_reg_avg_withlags[year > 1962]
 ```
 Let's git rid of any rows with any NA's (any important ones shouldn't have any) and then save all these goodies!!
 ```{r}
