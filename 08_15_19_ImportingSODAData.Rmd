@@ -1,0 +1,230 @@
+---
+title: "Extracting SODA Temperature Update"
+output: html_notebook
+---
+We need to follow Jim's lead, and use SODA 2.4 for pre 1980, and then SODA 3.3 for post 1980. Unfortunately, they're accessible in different ways. We will start with 1980+
+
+```{terminal import SODA post 1980}
+#install nco
+conda install -c conda-forge nco
+#make text file from https://www.atmos.umd.edu/~ocean/index_files/soda3.3.1_mn_ocean_reg.txt
+#add "/ocean"after regrided (error on their part)
+
+wget -i soda3.3.1_mn_ocean_reg_import.txt
+
+```
+
+This takes a while, as it's 100 gb of data and no way to narrow down beforehand as far as I can tell. 
+**Downloaded: 36 files, 118G in 46m 13s (43.6 MB/s)**
+
+```{terminal merge these files post 1980 into one}
+ncrcat -h soda3.3.1_mn_ocean_reg_*.nc soda3.3.1_mn_ocean_reg_1980_2015.nc
+```
+This merge doesn't seem possible, so seems better to loop rather than merge
+
+```{terminal extract just top/bottom layers from 1980 to 2015}
+#bottom?
+for i in `cat soda3.3.1_mn_ocean_reg_import.txt`;do ncks -d depth,-1 "${i}" "${i%.*}_bottom.nc";done
+
+#top?
+for i in `cat soda3.3.1_mn_ocean_reg_import.txt`;do ncks -d depth,1 "${i}" "${i%.*}_surface.nc";done
+```
+
+For top, and to actually extract bottom, I think I can use Ryan's code
+```{r 1980+ extract bottom and top temp}
+#Ryan's function to extract from nc_open
+get.soda.sst <- function(file){
+  
+  soda.info <- nc_open(file)
+  name.soda.sizes <- sapply(soda.info$var$temp$dim, function(x)x$name)
+  soda.sizes <- soda.info$var$temp$size
+  dim.units <- sapply(soda.info$var$temp$dim, function(x)x$units)
+  print(dim.units)
+  stopifnot(grepl("months since ", dim.units[4])) # make sure time is in correct units and in right place
+  names(soda.sizes) <- name.soda.sizes
+  ntime <- soda.sizes["time"]
+  ndepth <- soda.sizes["depth"]
+  
+  soda.time0 <- soda.info$var$temp$dim[[4]]$vals
+  ref.date <- as.Date(gsub("months since ", "", dim.units[4]))
+  start.before.ref <- grepl("-", soda.time0[1]) # is the first date before ref.date?
+  n.month.before <- ceiling(abs(soda.time0[1])) + as.integer(start.before.ref)
+  start.increment <- ifelse(start.before.ref, "-1 month", "1 month")
+  time.start <- rev(seq.Date(ref.date, by=start.increment, length.out=n.month.before))[1]
+  soda.time <- seq.Date(time.start, by="1 month", length.out=ntime)
+  
+  soda.sst <- brick(file)
+  names(soda.sst) <- soda.time
+  
+  
+  return(soda.sst)
+  
+}
+
+## Using Ryan's code
+soda_sst <- get.soda.sst("col_ext/CARTON-GIESE_SODA_v2p1p6_sstemp.nc")
+
+
+```
+
+
+
+Now, let's average temperature values for every month over all GPS points in each region
+```{r make list of all GPS points we want to extract temp data from, and then average}
+library(data.table)
+load("/Users/zoekitchel/Documents/grad school/Rutgers/Coursework/Fall 2018/SDM/hauls_catch_Dec2017 1.RData")
+#load("col_ext/hauls_catch_Dec2017 1.RData")
+hauls <- data.table(hauls)
+cols <- c("lat", "lon", "region")
+latlongyear <- hauls[, cols, with = F]
+
+# set the key to all columns
+setkey(latlongyear)
+
+# Get unique lat lon combos
+latlongyear.u <- unique(latlongyear[list(lat, lon), nomatch = 0])
+
+```
+Now, we will import OPENDAP files (netcdf off web) for pre 1980 from SODA 2.4. But I will have to run this in terminal.
+```{r import SODA pre 1980}
+conda activate /local/home/zoek/enter/envs/myRenv3_5
+R
+library(ncdf4)
+library(raster)
+```
+Unfortunately, It looks like I'm going to have to import files one by one.
+I made text file in amphiprion to bulk download `wget -i soda2.2.4_mn_ocean_reg.txt --no-check-certificate`
+file names going in as data.nc.x etc.
+5.01-70.02: data.nc
+82.92-197.79: data.nc.1
+229.48-729.35: data.nc.2
+918.37-2375.0: data.nc.3
+2625.0-4375.0: data.nc.4
+4625.0-5375.0: data.nc.5
+
+May need to merge in terminal
+```{terminal merge SODA files pre 1980}
+conda install -c conda-forge cdo #installing climate data operators
+conda install -c conda-forge nco
+cdo merge data.n* data.pre1980.nc
+
+#only bottom layer
+ncks -d depth,-1 in.nc out.nc #NCO ncks with a negative hyperslab
+```
+
+```{trying to import}
+get.soda <- function(file){
+
+	soda.info <- nc_open(file)
+	name.soda.sizes <- sapply(soda.info$var$temp$dim, function(x)x$name)
+	soda.sizes <- soda.info$var$temp$size
+	dim.units <- sapply(soda.info$var$temp$dim, function(x)x$units)
+	print(dim.units)
+	stopifnot(grepl("months since ", dim.units[4])) # make sure time is in correct units and in right place
+	names(soda.sizes) <- name.soda.sizes
+	ntime <- soda.sizes["time"]
+	ndepth <- soda.sizes["depth"]
+
+	soda.time0 <- soda.info$var$temp$dim[[4]]$vals
+	ref.date <- as.Date(gsub("months since ", "", dim.units[4]))
+	start.before.ref <- grepl("-", soda.time0[1]) # is the first date before ref.date?
+	n.month.before <- ceiling(abs(soda.time0[1])) + as.integer(start.before.ref)
+	start.increment <- ifelse(start.before.ref, "-1 month", "1 month")
+	time.start <- rev(seq.Date(ref.date, by=start.increment, length.out=n.month.before))[1]
+	soda.time <- seq.Date(time.start, by="1 month", length.out=ntime)
+	
+	soda <- brick(file)
+	names(soda) <- soda.time
+
+		
+	return(soda)
+}
+
+soda_pre1980 <- get.soda(data.nc)
+
+	
+```
+
+```{merge SODA files pre 1980}
+data.nc <- nc_open('data.nc')
+data.nc.1 <- nc_open('data.nc.1')
+data.nc.2 <- nc_open('data.nc.2')
+data.nc.3 <- nc_open('data.nc.3')
+data.nc.4 <- nc_open('data.nc.4')
+data.nc.5 <- nc_open('data.nc.5')
+
+data.nc.merge <- cbind(
+  ncvar_get(data.nc, 'temp'),
+  ncvar_get(data.nc.1, 'temp'),
+  ncvar_get(data.nc.2, 'temp'),
+  ncvar_get(data.nc.3, 'temp'),
+  ncvar_get(data.nc.4, 'temp'),
+  ncvar_get(data.nc.5, 'temp'))
+dim(data.nc.merge)
+var <- data.nc$var['temp']$temp
+
+#new file
+data.nc.pre1980 <- nc_create(
+  filename = 'SODA_monthly_2.2.4_1953_1979.nc',
+  #define variables
+  vars = ncvar_def(
+    name = 'temp',
+    units = var$units,
+    dim = dim(data.nc.merge)))
+
+#write to it
+ncvar_put(
+  nc = data.nc.pre1980,
+  varid = 'temp',
+  vals = data.nc.merge)
+
+#close
+nc_close(data.nc.pre1980)
+
+```
+Now I only want surface and bottom temperature for this.
+
+```{r import SODA pre 1980 sst}
+# =========================================
+# = Function to Read in SODA, Grab Surface =
+# =========================================
+get.soda.sst <- function(file){
+
+	soda.info <- nc_open(file)
+	name.soda.sizes <- sapply(soda.info$var$temp$dim, function(x)x$name)
+	soda.sizes <- soda.info$var$temp$size
+	dim.units <- sapply(soda.info$var$temp$dim, function(x)x$units)
+	print(dim.units)
+	stopifnot(grepl("months since ", dim.units[4])) # make sure time is in correct units and in right place
+	names(soda.sizes) <- name.soda.sizes
+	ntime <- soda.sizes["time"]
+	ndepth <- soda.sizes["depth"]
+
+	soda.time0 <- soda.info$var$temp$dim[[4]]$vals
+	ref.date <- as.Date(gsub("months since ", "", dim.units[4]))
+	start.before.ref <- grepl("-", soda.time0[1]) # is the first date before ref.date?
+	n.month.before <- ceiling(abs(soda.time0[1])) + as.integer(start.before.ref)
+	start.increment <- ifelse(start.before.ref, "-1 month", "1 month")
+	time.start <- rev(seq.Date(ref.date, by=start.increment, length.out=n.month.before))[1]
+	soda.time <- seq.Date(time.start, by="1 month", length.out=ntime)
+	
+	soda.sst <- brick(file)
+	names(soda.sst) <- soda.time
+
+		
+	return(soda.sst)
+	
+}
+
+#still may need to extract first column somewhere
+
+```
+
+And now, the challenge, bottom temperature
+
+```{r bottom temp SODA}
+bottom <- apply(!is.na(haul_temp), 1, sum)
+soda.sbt <- haul_temp[cbind(1:nrow(haul_temp), bottom)]
+```
+
+
