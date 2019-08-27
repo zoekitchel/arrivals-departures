@@ -36,7 +36,7 @@ summary(latlongyear.u$lon)
 
 We need to follow Jim's lead, and use SODA 2.2 for pre 1980, and then SODA 3.3 for post 1980. Unfortunately, they're accessible in different ways. We will start with 1980+
 
-```{terminal import SODA post 1980}
+```{bash import SODA post 1980}
 #install nco
 conda install -c conda-forge nco
 #make text file from https://www.atmos.umd.edu/~ocean/index_files/soda3.3.1_mn_ocean_reg.txt
@@ -49,7 +49,7 @@ wget -i soda3.3.1_mn_ocean_reg_import.txt
 This takes a while, as it's 100 gb of data and no way to narrow down beforehand as far as I can tell. 
 **Downloaded: 36 files, 118G in 46m 13s (43.6 MB/s)**
 
-```{terminal extract just top/bottom layers from 1980 to 2015 for each yearly file}
+```{bash extract just top/bottom layers from 1980 to 2015 for each yearly file}
 #bottom
 for i in `cat soda3.3.1_mn_ocean_reg_import.txt`;do ncks -d depth,-1 "${i}" "${i%.*}_bottom.nc";done
 
@@ -58,12 +58,31 @@ for i in `cat soda3.3.1_mn_ocean_reg_import.txt`;do ncks -d depth,1 "${i}" "${i%
 ```
 
 Seeing now that these files in their current state actually contain multiple variables, and I only want one (temp)
-```{terminal extracting only temp from 1980 to 2015}
+```{bash extracting only temp from 1980 to 2015}
 #bottom
-for i in `cat soda3.3.1_mn_ocean_reg_import.txt`; do ncks -v temp "${i%.*}_bottom.nc" "${i%.*}_sbt.nc";done
+for i in `cat soda3.3.1_mn_ocean_reg_import.txt`; do ncks -v temp -O "${i%.*}_bottom.nc" "${i%.*}_sbt.nc";done
 #surface
-for i in `cat soda3.3.1_mn_ocean_reg_import.txt`; do ncks -v temp "${i%.*}_surface.nc" "${i%.*}_sst.nc";done
+for i in `cat soda3.3.1_mn_ocean_reg_import.txt`; do ncks -v temp -O "${i%.*}_surface.nc" "${i%.*}_sst.nc";done
 ```
+
+I will now merge these files along time. Ensure that there are no other files that match `soda3.3.1*sst.nc` syntax because then it won't work.
+```{bash merge 1980-2015 files for sbt and sst}
+ncrcat soda3.3.1*sst.nc -O soda3.3.1_1980_2015_sst.nc
+ncrcat soda3.3.1*sbt.nc -O soda3.3.1_1980_2015_sbt.nc
+```
+
+*STOPPED HERE*
+First, convert grid in soda 3.3.1 from 0 360 to -180 180
+```{bash convert grid}
+#bottom
+for i in `cat soda3.3.1_mn_ocean_reg_import.txt`; do ncks -O -v longitude --msa -d longitude,0.25,359.75 "${i%.*}_sbt.nc" "${i%.*}_sbt_rotate.nc"; done 
+for i in `cat soda3.3.1_mn_ocean_reg_import.txt`; do ncap2 -O -s 'where(longitude > 180) longitude=longitude-360' "${i%.*}_sbt.nc" "${i%.*}_sbt.nc";done
+ncks -C -H -v longitude ~/nco/data/in.nc
+ncks --trd -C -H -v LatLon ~/out.nc
+#surface
+for i in `cat soda3.3.1_mn_ocean_reg_import.txt`; do ncap2 -O -s 'where(longitude > 180) longitude=longitude-360' "${i%.*}_sst.nc" "${i%.*}_sst.nc";done
+```
+
 Let's now crop down to actual points we need:
 24.49008 lat
 62.01917 lat
@@ -73,22 +92,18 @@ Let's now crop down to actual points we need:
 Interpretted by iridl.ldeo.columbia.edu
 24.25N - 62.25N
 170.75E(170.75) - 43.75W(-43.75)
-```{terminal crop points into box for North America}
+
+Crop to correct lat lon
+```{bash crop points into box for North America}
 #surface
-for i in `cat soda3.3.1_mn_ocean_reg_import.txt`; do ncks -O -d latitude,24.25,62.25 -d longitude,170.75,-43.75 "${i%.*}_sst.nc" "${i%.*}_sst.nc";done
+ncks -O -d latitude,24.25,62.25 -d longitude,170.75,-43.75 soda3.3.1_1980_2015_sst.nc soda3.3.1_1980_2015_sst.nc
 
 #bottom
-for i in `cat soda3.3.1_mn_ocean_reg_import.txt`; do ncks -O -d latitude,24.25,62.25 -d longitude,170.75,-43.75 "${i%.*}_sbt.nc" "${i%.*}_sbt.nc";done
-```
-
-I will now merge these files along time. DO THIS
-```{terminal merge 1980-2015 files for sbt and sst}
-ncrcat soda3.3.1*sst.nc -O soda3.3.1_1980_2015_sst.nc
-ncrcat soda3.3.1*sst.nc -O soda3.3.1_1980_2015_sbt.nc
+ncks -O -d latitude,24.25,62.25 -d longitude,170.75,-43.75 soda3.3.1_1980_2015_sst.nc soda3.3.1_1980_2015_sbt.nc
 ```
 
 Change names of dimensions to match earlier time files
-```{terminal change names of dimensions and variables for 1980+}
+```{bash change names of dimensions and variables for 1980+}
 #surface
 ncrename -d latitude,lat -v latitude,lat soda3.3.1_1980_2015_sst.nc
 ncrename -d longitude,lon -v longitude,lon soda3.3.1_1980_2015_sst.nc
@@ -103,7 +118,9 @@ Now, we will import netcdf data for pre 1980 from SODA 2.4.
 
 Unfortunately, It looks like I'm going to have to import files one by one for chunks of depth.
 
-I made text file in amphiprion to bulk download `wget -i -O soda2.2.4_mn_ocean_reg.txt --no-check-certificate` DO THIS
+Text file with links: /Scratch/zoek_scratch/soda2.2.4_mn_ocean_reg.txt
+
+I made text file in amphiprion to bulk download `wget -i soda2.2.4_mn_ocean_reg.txt --no-check-certificate` DO THIS
 file names going in as data.nc.x etc.
 5.01-70.02: data.nc
 82.92-197.79: data.nc.1
@@ -112,7 +129,7 @@ file names going in as data.nc.x etc.
 2625.0-4375.0: data.nc.4
 4625.0-5375.0: data.nc.5
 
-```{terminal merge SODA files pre 1980}
+```{bash merge SODA files pre 1980}
 #merge all depth chunks
 cdo merge data.n* data.pre1980.nc
 
@@ -123,14 +140,17 @@ ncks -d depth,-1 data.pre1980.nc soda2.2.4_1953_1979_sbt.nc #NCO ncks with a neg
 ncks -d depth,1 data.pre1980.nc soda2.2.4_1953_1979_sst.nc
 ```
 
-We now have four files we need, but with slightly different coordinates. 
+We now have four files we need.
 NC file for 1953-1979 bottom temp `soda2.2.4_1953_1979_sbt.nc`
 NC file for 1953-1979 surface temp `soda2.2.4_1953_1979_sst.nc`
 NC file for 1980-2015 bottom temp `soda3.3.1_1980_2015_sbt.nc`
 NC file for 1980-2015 surface temp `soda3.3.1_1980_2015_sst.nc`
 
 ************
+Merging files (surface - surface, bottom - bottom)
+```{bash merge two surface and two bottom temperature files}
 
+```
 
 ```{trying to import}
 get.soda <- function(file){
