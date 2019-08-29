@@ -18,65 +18,6 @@ load("/Users/zoekitchel/Documents/grad school/Rutgers/Coursework/Fall 2018/SDM/h
 #load("col_ext/hauls_catch_Dec2017 1.RData")
 ```
 
-First, I will make list of GPS points and days/year ranges for which I need temperatures, keeping in mind I want to be able to look at lags of 10, and therefore I need to extend time back by 10.
-
-```{r compiling lat, long, year}
-latlongyear <- hauls %>%
-  dplyr::select(lat, lon, year, region)
-
-#add years back to 1953
-#for each group, find first year, then generate new observations with repeated GPS sequence going back 10 years
-
-#regions
-regions <- levels(as.factor(hauls$region))
-
-newlatlongyear <- data.table(matrix(ncol = 5, nrow = 0))
-
-colnames(newlatlongyear) <- c("lat", "lon", "year", "month", "region")
-
-for (i in 1:length(regions)) {
-  subset <- latlongyear[latlongyear$region == regions[i],] #subset to a region, ct 4588
-  minyear <- min(subset$year) #minimum year for this region
-  newminyear <- minyear - 10 #minimum year minus 10 (to allow for lags)
-  secondtomin <- min(subset$year[subset$year!=min(subset$year)]) #year of second earliest tow
-  maxyear <- max(subset$year) #year of latest tow
-  #secondtomax <- max(subset$year[subset$year!=max(subset$year)]) #year of second latest tow
-  
-  allyears <- seq(newminyear, maxyear) #years we need to simulate GPS points for, 19
-  
-  #subsetlatlong <- subset[subset$year <= secondtomin | subset$year >= secondtomax,] #subset lat lon values used in first 2 years and last two years of survey
-  subsetlatlong.noreg <- subset[,c(1:2)] #don't need column with location or year anymore, 1488
-  #randomly choose 1/5 of these
-  twentieth <- 0.05*nrow(subsetlatlong.noreg)
-  subsetlatlong.reduced <- data.table(subsetlatlong.noreg[sample(nrow(subsetlatlong.noreg), twentieth), ]) #229 GPS points
-  
-  allmonths <- c(1,2,7,8) #we want temp values for every month
-  
-  subsetlatlong.m <- subsetlatlong.reduced[ , latlon := do.call(paste, c(.SD, sep = "_"))] #merge lat lon in order to expand grid (essentially, lat_lon becomes a key)
-  
-  subsetlatlong.m.vector <- subsetlatlong.m$latlon #extract vector
-  
-  #we now have three vectors we need to expand grid for, subsetlatlong.m.vector, allyears, and allmonths, length of expanded grid should equal
-  invisible(length(subsetlatlong.m.vector)*length(allyears)*length(allmonths)) #this checks out
-  
-  tempdf <- data.table(expand.grid(subsetlatlong.m.vector, allyears, allmonths)) #matches every year value with a lat_lon_month
-  
-  tempdf.sep <- tempdf[, c("lat", "lon") := tstrsplit(Var1, "_", fixed=TRUE)]
-  colnames(tempdf.sep)[colnames(tempdf.sep)=="Var2"] <- "year"
-  colnames(tempdf.sep)[colnames(tempdf.sep)=="Var3"] <- "month"
-  tempdf.sep$region <- regions[i]
-  tempdf.sep <- tempdf.sep[,Var1:=NULL] #delete column we split from
-  
-  newlatlongyear <- rbind(newlatlongyear, tempdf.sep) #this file now has ALL possible year, lat, lon, month points we need to extract
-  
-} # this for loop generates latitude year combinations for 10 years before sampling began to allow us to look at lags up to 10 years with no NA's
-
-#it's possible at some point I may need to randomly sample these, because 8736684 extractions may be too many... and I was correct
-#we know it works okay with 136044 hauls, let's take a sub-sample of this, and then multiply by years (~70) and months (~12) (840)
-
-
-```
-
 Okay, now getting SODA data
 Where I got the data to match soda in trawlData (following Ryan's readme)
 Soda Data Files
