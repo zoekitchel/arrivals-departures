@@ -18,38 +18,18 @@ load("/Users/zoekitchel/Documents/grad school/Rutgers/Coursework/Fall 2018/SDM/h
 #load("col_ext/hauls_catch_Dec2017 1.RData")
 ```
 
-Okay, now getting SODA data
-Where I got the data to match soda in trawlData (following Ryan's readme)
-Soda Data Files
-
- 1. [Go Here](https://iridl.ldeo.columbia.edu/SOURCES/.CARTON-GIESE/.SODA/.v2p2p4/.temp/time/%28Jan%201953%29%28Dec%202008%29RANGEEDGES/depth/%285.01%29%285.01%29RANGEEDGES/lat/%280N%29%2889.5N%29RANGEEDGES/lon/%28-200E%29%2820E%29RANGEEDGES/datafiles.html)
-
- 2. Restrict ranges as follows for SST to match SODA in trawlData
-
- 	-200E to 20E --> 440 pts
-
- 	0N to 89.5N --> 179 pts
-
-   TRY WITH ALL DEPTHS
-
- 	Jan 1953 to Dec 2008 --> 672 pts
-
-
- 3. Stop Selecting
-
- 4. Click Data Files
-
- 5. Download NetCDF Format
- 6. File is too big for GitHub, so compress, mine compressed to 95mb using Keka to 7zip
+Import SODA data which is on amphiprion now as:
+NC file for 1953-1979 bottom temp `soda2.2.4_1953_1979_sbt.nc`
+NC file for 1953-1979 surface temp `soda2.2.4_1953_1979_sst.nc`
+NC file for 1980-2015 bottom temp `soda3.3.1_1980_2015_sbt_restricted.nc`
+NC file for 1980-2015 surface temp `soda3.3.1_1980_2015_sst_restricted.nc`
 
 ```{r import SODA temperature data}
-cp <- nc_open("/Users/zoekitchel/Documents/grad school/Rutgers/LabWork/Colonization_Extinction/CARTON-GIESE_SODA_v2p1p6_sstemp.nc")
-print(cp)
 
 # =========================================
-# = Function to Read in SODA, Grab Surface =
+# = Function to Read in SODA, Grab Surface = by Ryan
 # =========================================
-get.soda.sst <- function(file){
+get.soda <- function(file){
 
 	soda.info <- nc_open(file)
 	name.soda.sizes <- sapply(soda.info$var$temp$dim, function(x)x$name)
@@ -69,8 +49,8 @@ get.soda.sst <- function(file){
 	time.start <- rev(seq.Date(ref.date, by=start.increment, length.out=n.month.before))[1]
 	soda.time <- seq.Date(time.start, by="1 month", length.out=ntime)
 	
-	soda.sst <- brick(file)
-	names(soda.sst) <- soda.time
+	soda <- brick(file)
+	names(soda) <- soda.time
 
 		
 	return(soda.sst)
@@ -78,14 +58,47 @@ get.soda.sst <- function(file){
 }
 
 ## Using Ryan's code
-soda_sst <- get.soda.sst("/Users/zoekitchel/Documents/grad school/Rutgers/LabWork/Colonization_Extinction/CARTON-GIESE_SODA_v2p1p6_sstemp.nc")
-soda_sst
+soda2.2.4_1953_1979_sbt <- get.soda("soda2.2.4_1953_1979_sbt.nc")
+soda2.2.4_1953_1979_sst <- get.soda("soda2.2.4_1953_1979_sst.nc")
+soda3.3.1_1980_2015_sbt_restricted <- get.soda("soda3.3.1_1980_2015_sbt_restricted.nc")
+soda3.3.1_1980_2015_sst_restricted <- get.soda("soda3.3.1_1980_2015_sst_restricted.nc")
 
-plot(soda_sst[[9]])
 
-saveRDS(soda_sst, "SODA2.1.6_SST.rds")
-#load("col_ext/SODA2.1.6_SST.rds")
+
+plot(soda2.2.4_1953_1979_sbt)
+plot(soda2.2.4_1953_1979_sst)
+plot(soda3.3.1_1980_2015_sbt_restricted)
+plot(soda3.3.1_1980_2015_sst_restricted)
+
+saveRDS()
+#load()
 ```
+NEED TO EDIT FROM HERE ONCE I HAVE FILES
+Now, can we merge these files? Atleast sbt and sst? They will be bricks at this point
+START HERE
+From stack overflow
+raster::stack(nc, nc2, nc3, nc4, nc5, nc6, nc7) should do the trick. A very similar approach has been described e.g. here.
+
+However, be aware that the objects you would like to stack are required to have an identical coordinate references system (CRS), resolution (res), and extent. Otherwise, stack will most likely fail. You could deploy raster::projectRaster and raster::resample to create objects with uniform spatial properties if one (or several) of the above criteria is different.
+```{r  merge nc files along time}
+```
+
+Generating coordinates I need to extract, and then average
+```{r generating coordinates to extract from hauls}
+load("/Users/zoekitchel/Documents/grad school/Rutgers/Coursework/Fall 2018/SDM/hauls_catch_Dec2017 1.RData")
+#load("col_ext/hauls_catch_Dec2017 1.RData")
+hauls <- data.table(hauls)
+cols <- c("lat", "lon", "region")
+latlongyear <- hauls[, cols, with = F]
+
+# set the key to all columns
+setkey(latlongyear)
+
+# Get unique lat lon combos
+latlongyear.u <- unique(latlongyear[list(lat, lon), nomatch = 0])
+```
+
+NEED TO EDIT FROM HERE ON ONCE I ACTUALLY HAVE FILES
 
 New column in newlatlongyear with "X1958.01.01" format, looks like I may not need to do this after all... SKIPPING FOR NOW
 *this takes a super long time to run, so we should save this result
@@ -113,7 +126,6 @@ plot(locations)
 ```
 
 Now, let's extract values 
-*NB: if they do a correct sampling method, this shouldn't be a problem, but is there any world in which we should be averaging temperature values in a different way? here, we're just using the trawl data points, should it be rather the whole region? They seem to be rather arbitrary break points?*
 
 #this also takes a long time, so be sure to save output
 ```{r extracting temperature values at correct GPS points}

@@ -20,8 +20,6 @@ latlongyear.u <- unique(latlongyear[list(lat, lon), nomatch = 0])
 #minimum lat?, maximum lat? minimum long? maximum long?
 summary(latlongyear.u)
 
-#also added 360 to put in same units as NetCDF files
-
 minlat <- min(latlongyear.u$lat)
 maxlat <- max(latlongyear.u$lat)
 minlon <- min(latlongyear.u$lon)
@@ -71,16 +69,17 @@ ncrcat soda3.3.1*sst.nc -O soda3.3.1_1980_2015_sst.nc
 ncrcat soda3.3.1*sbt.nc -O soda3.3.1_1980_2015_sbt.nc
 ```
 
-*STOPPED HERE*
-First, convert grid in soda 3.3.1 from 0 360 to -180 180
+First, convert grid in soda 3.3.1 from 0 360 to -180 180 using nco.
+
+*The first command (ncks) shifts the data, the second command (ncap2) recalibrates the coordinate to the newly shifted data. One comment on applying this algorithm: Be careful to specify hemispheres that do not overlap, e.g., by inadvertently specifying coordinate ranges in the first command that both include the date line. Some users will find using index-based rather than coordinate-based hyperslabs makes this clearer. Examine a plot of the field to make sure your rotation was correct.*
+
 ```{bash convert grid}
 #bottom
-for i in `cat soda3.3.1_mn_ocean_reg_import.txt`; do ncks -O -v longitude --msa -d longitude,0.25,359.75 "${i%.*}_sbt.nc" "${i%.*}_sbt_rotate.nc"; done 
-for i in `cat soda3.3.1_mn_ocean_reg_import.txt`; do ncap2 -O -s 'where(longitude > 180) longitude=longitude-360' "${i%.*}_sbt.nc" "${i%.*}_sbt.nc";done
-ncks -C -H -v longitude ~/nco/data/in.nc
-ncks --trd -C -H -v LatLon ~/out.nc
+ncks -O --msa -d longitude,181.,360. -d longitude,0.,180.0 soda3.3.1_1980_2015_sbt.nc soda3.3.1_1980_2015_sbt.nc #shifts data
+ncap2 -O -s 'where(longitude > 180) longitude=longitude-360' soda3.3.1_1980_2015_sbt.nc soda3.3.1_1980_2015_sbt.nc #recalibrates coordinate to newly shifted data
 #surface
-for i in `cat soda3.3.1_mn_ocean_reg_import.txt`; do ncap2 -O -s 'where(longitude > 180) longitude=longitude-360' "${i%.*}_sst.nc" "${i%.*}_sst.nc";done
+ncks -O --msa -d longitude,181.,360. -d longitude,0.,180.0 soda3.3.1_1980_2015_sst.nc soda3.3.1_1980_2015_sst.nc #shifts data
+ncap2 -O -s 'where(longitude > 180) longitude=longitude-360' soda3.3.1_1980_2015_sst.nc soda3.3.1_1980_2015_sst.nc #recalibrates coordinate to newly shifted data
 ```
 
 Let's now crop down to actual points we need:
@@ -96,20 +95,20 @@ Interpretted by iridl.ldeo.columbia.edu
 Crop to correct lat lon
 ```{bash crop points into box for North America}
 #surface
-ncks -O -d latitude,24.25,62.25 -d longitude,170.75,-43.75 soda3.3.1_1980_2015_sst.nc soda3.3.1_1980_2015_sst.nc
+ncks -O -d latitude,24.25,62.25 -d longitude,170.75,-43.75 soda3.3.1_1980_2015_sst.nc soda3.3.1_1980_2015_sst_restricted.nc
 
 #bottom
-ncks -O -d latitude,24.25,62.25 -d longitude,170.75,-43.75 soda3.3.1_1980_2015_sst.nc soda3.3.1_1980_2015_sbt.nc
+ncks -O -d latitude,24.25,62.25 -d longitude,170.75,-43.75 soda3.3.1_1980_2015_sbt.nc soda3.3.1_1980_2015_sbt_restricted.nc
 ```
 
 Change names of dimensions to match earlier time files
 ```{bash change names of dimensions and variables for 1980+}
 #surface
-ncrename -d latitude,lat -v latitude,lat soda3.3.1_1980_2015_sst.nc
-ncrename -d longitude,lon -v longitude,lon soda3.3.1_1980_2015_sst.nc
+ncrename -d latitude,lat -v latitude,lat soda3.3.1_1980_2015_sst_restricted.nc
+ncrename -d longitude,lon -v longitude,lon soda3.3.1_1980_2015_sst_restricted.nc
 #bottom
-ncrename -d latitude,lat -v latitude,lat soda3.3.1_1980_2015_sbt.nc
-ncrename -d longitude,lon -v longitude,lon soda3.3.1_1980_2015_sbt.nc
+ncrename -d latitude,lat -v latitude,lat soda3.3.1_1980_2015_sbt_restricted.nc
+ncrename -d longitude,lon -v longitude,lon soda3.3.1_1980_2015_sbt_restricted.nc
 ```
 *Done with 1980-2015*
 **********
@@ -143,46 +142,18 @@ ncks -d depth,1 data.pre1980.nc soda2.2.4_1953_1979_sst.nc
 We now have four files we need.
 NC file for 1953-1979 bottom temp `soda2.2.4_1953_1979_sbt.nc`
 NC file for 1953-1979 surface temp `soda2.2.4_1953_1979_sst.nc`
-NC file for 1980-2015 bottom temp `soda3.3.1_1980_2015_sbt.nc`
-NC file for 1980-2015 surface temp `soda3.3.1_1980_2015_sst.nc`
+NC file for 1980-2015 bottom temp `soda3.3.1_1980_2015_sbt_restricted.nc`
+NC file for 1980-2015 surface temp `soda3.3.1_1980_2015_sst_restricted.nc`
 
+```{bash move from amphiprion to local to test}
+#(this doesn't work don't know why, using fetch instead)
+#from local machine
+scp zoek@amphiprion.deenr.rutgers.edu: ../../../Scratch/zoek_scratch/soda2.2.4_1953_1979_sbt.nc
+scp zoek@amphiprion.deenr.rutgers.edu: /Scratch/zoek_scratch/soda2.2.4_1953_1979_sst.nc
+scp zoek@amphiprion.deenr.rutgers.edu: /Scratch/zoek_scratch/soda3.3.1_1980_2015_sbt_restricted.nc
+scp zoek@amphiprion.deenr.rutgers.edu: /Scratch/zoek_scratch/soda3.3.1_1980_2015_sst_restricted.nc
+
+```
 ************
-Merging files (surface - surface, bottom - bottom)
-```{bash merge two surface and two bottom temperature files}
-
-```
-
-```{trying to import}
-get.soda <- function(file){
-
-	soda.info <- nc_open(file)
-	name.soda.sizes <- sapply(soda.info$var$temp$dim, function(x)x$name)
-	soda.sizes <- soda.info$var$temp$size
-	dim.units <- sapply(soda.info$var$temp$dim, function(x)x$units)
-	print(dim.units)
-	stopifnot(grepl("months since ", dim.units[4])) # make sure time is in correct units and in right place
-	names(soda.sizes) <- name.soda.sizes
-	ntime <- soda.sizes["time"]
-	ndepth <- soda.sizes["depth"]
-
-	soda.time0 <- soda.info$var$temp$dim[[4]]$vals
-	ref.date <- as.Date(gsub("months since ", "", dim.units[4]))
-	start.before.ref <- grepl("-", soda.time0[1]) # is the first date before ref.date?
-	n.month.before <- ceiling(abs(soda.time0[1])) + as.integer(start.before.ref)
-	start.increment <- ifelse(start.before.ref, "-1 month", "1 month")
-	time.start <- rev(seq.Date(ref.date, by=start.increment, length.out=n.month.before))[1]
-	soda.time <- seq.Date(time.start, by="1 month", length.out=ntime)
-	
-	soda <- brick(file)
-	names(soda) <- soda.time
-
-		
-	return(soda)
-}
-
-soda_pre1980 <- get.soda(data.nc)
-
-	
-```
 
 I didn't use this link, but it appears to be helpful. [ERDAPP](https://coastwatch.pfeg.noaa.gov/erddap/griddap/erdSoda331oceanmday.html).
