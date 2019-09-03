@@ -4,82 +4,69 @@ output: html_notebook
 ---
 What lat/lon values do we actually need?
 ```{r make list of all GPS points we want to extract temp data from}
-library(data.table)
-load("/Users/zoekitchel/Documents/grad school/Rutgers/Coursework/Fall 2018/SDM/hauls_catch_Dec2017 1.RData")
-#load("col_ext/hauls_catch_Dec2017 1.RData")
-hauls <- data.table(hauls)
-cols <- c("lat", "lon", "region")
-latlongyear <- hauls[, cols, with = F]
+librarydata.table
+load"/Users/zoekitchel/Documents/grad school/Rutgers/Coursework/Fall 2018/SDM/hauls_catch_Dec20171.RData"
+#load"col_ext/hauls_catch_Dec20171.RData"
+hauls <- data.tablehauls
+cols <- c"lat",  "lon",  "region"
+latlongyear <- hauls[,  cols,  with = F]
 
 # set the key to all columns
-setkey(latlongyear)
+setkeylatlongyear
 
 # Get unique lat lon combos
-latlongyear.u <- unique(latlongyear[list(lat, lon), nomatch = 0])
+latlongyear.u <- uniquelatlongyear[listlat,  lon,  nomatch = 0]
 
-#minimum lat?, maximum lat? minimum long? maximum long?
-summary(latlongyear.u)
+#minimum lat?,  maximum lat? minimum long? maximum long?
+summarylatlongyear.u
 
-minlat <- min(latlongyear.u$lat)
-maxlat <- max(latlongyear.u$lat)
-minlon <- min(latlongyear.u$lon)
-maxlon <- max(latlongyear.u$lon)
+minlat <- minlatlongyear.u$lat
+maxlat <- maxlatlongyear.u$lat
+minlon <- minlatlongyear.u$lon
+maxlon <- maxlatlongyear.u$lon
 
 minlat
 maxlat
 minlon
 maxlon
-summary(latlongyear.u$lon)
+summarylatlongyear.u$lon
 ```
 
-We need to follow Jim's lead, and use SODA 2.2 for pre 1980, and then SODA 3.3 for post 1980. Unfortunately, they're accessible in different ways. We will start with 1980+
+We need to follow Jim's lead,  and use SODA 2.2 for pre1980,  and then SODA 3.3 for post1980. Unfortunately,  they're accessible in different ways. We will start with1980+
 
-```{bash import SODA post 1980}
+```{bash import SODA post1980}
 #install nco
-conda install -c conda-forge nco
+conda install-c conda-forge nco
 #make text file from https://www.atmos.umd.edu/~ocean/index_files/soda3.3.1_mn_ocean_reg.txt
-#add "/ocean"after regrided (error on their part)
+#add "/ocean"after regrided error on their part
 
-wget -i soda3.3.1_mn_ocean_reg_import.txt
+wget-i soda3.3.1_mn_ocean_reg_import.txt
 
 ```
 
-This takes a while, as it's 100 gb of data and no way to narrow down beforehand as far as I can tell. 
-**Downloaded: 36 files, 118G in 46m 13s (43.6 MB/s)**
+This takes a while,  as it's100 gb of data and no way to narrow down beforehand as far as I can tell. 
+**Downloaded: 36 files, 118G in 46m13s 43.6 MB/s**
 
-```{bash extract just top/bottom layers from 1980 to 2015 for each yearly file}
+```{bash extract just top/bottom layers from1980 to 2015 for each yearly file}
 #bottom
-for i in `cat soda3.3.1_mn_ocean_reg_import.txt`;do ncks -d depth,-1 "${i}" "${i%.*}_bottom.nc";done
+for i in `cat soda3.3.1_mn_ocean_reg_import.txt`;do ncks-d depth, -1 "${i}" "${i%.*}_bottom.nc";done
 
 #surface
-for i in `cat soda3.3.1_mn_ocean_reg_import.txt`;do ncks -d depth,1 "${i}" "${i%.*}_surface.nc";done
+for i in `cat soda3.3.1_mn_ocean_reg_import.txt`;do ncks-d depth, 1 "${i}" "${i%.*}_surface.nc";done
 ```
 
-Seeing now that these files in their current state actually contain multiple variables, and I only want one (temp)
-```{bash extracting only temp from 1980 to 2015}
+Seeing now that these files in their current state actually contain multiple variables,  and I only want one temp
+```{bash extracting only temp from1980 to 2015}
 #bottom
-for i in `cat soda3.3.1_mn_ocean_reg_import.txt`; do ncks -v temp -O "${i%.*}_bottom.nc" "${i%.*}_sbt.nc";done
+for i in `cat soda3.3.1_mn_ocean_reg_import.txt`; do ncks-v temp-O "${i%.*}_bottom.nc" "${i%.*}_sbt.nc";done
 #surface
-for i in `cat soda3.3.1_mn_ocean_reg_import.txt`; do ncks -v temp -O "${i%.*}_surface.nc" "${i%.*}_sst.nc";done
+for i in `cat soda3.3.1_mn_ocean_reg_import.txt`; do ncks-v temp-O "${i%.*}_surface.nc" "${i%.*}_sst.nc";done
 ```
 
 I will now merge these files along time. Ensure that there are no other files that match `soda3.3.1*sst.nc` syntax because then it won't work.
-```{bash merge 1980-2015 files for sbt and sst}
+```{bash merge1980-2015 files for sbt and sst}
 ncrcat soda3.3.1*sst.nc -O soda3.3.1_1980_2015_sst.nc
 ncrcat soda3.3.1*sbt.nc -O soda3.3.1_1980_2015_sbt.nc
-```
-
-First, convert grid in soda 3.3.1 from 0 360 to -180 180 using nco.
-
-*The first command (ncks) shifts the data, the second command (ncap2) recalibrates the coordinate to the newly shifted data. One comment on applying this algorithm: Be careful to specify hemispheres that do not overlap, e.g., by inadvertently specifying coordinate ranges in the first command that both include the date line. Some users will find using index-based rather than coordinate-based hyperslabs makes this clearer. Examine a plot of the field to make sure your rotation was correct.*
-
-```{bash convert grid}
-#bottom
-ncks -O --msa -d longitude,181.,360. -d longitude,0.,180.0 soda3.3.1_1980_2015_sbt.nc soda3.3.1_1980_2015_sbt.nc #shifts data
-ncap2 -O -s 'where(longitude > 180) longitude=longitude-360' soda3.3.1_1980_2015_sbt.nc soda3.3.1_1980_2015_sbt.nc #recalibrates coordinate to newly shifted data
-#surface
-ncks -O --msa -d longitude,181.,360. -d longitude,0.,180.0 soda3.3.1_1980_2015_sst.nc soda3.3.1_1980_2015_sst.nc #shifts data
-ncap2 -O -s 'where(longitude > 180) longitude=longitude-360' soda3.3.1_1980_2015_sst.nc soda3.3.1_1980_2015_sst.nc #recalibrates coordinate to newly shifted data
 ```
 
 Let's now crop down to actual points we need:
@@ -88,38 +75,64 @@ Let's now crop down to actual points we need:
 -189.397 lon
 -43.835 lon
 
-Interpretted by iridl.ldeo.columbia.edu
-24.25N - 62.25N
-170.75E(170.75) - 43.75W(-43.75)
+But, currently, this 3.3.1 data is in 0-360, or technically 0.25-359.75 which is equal to -179.75E - +179.75E
 
+To match what we will extract from 2.2.4, we need -189.75E and -43.25E. So, we need to keep 0.25-136.25 AND 350.75-359.75.
+
+Let's crop into two pieces, and then remerge.
 Crop to correct lat lon
-```{bash crop points into box for North America}
+```{bash crop points to those we actually need from 0-360 from 3.3.1}
 #surface
-ncks -O -d latitude,24.25,62.25 -d longitude,170.75,-43.75 soda3.3.1_1980_2015_sst.nc soda3.3.1_1980_2015_sst_restricted.nc
+ncks -O -d latitude,24.25,62.25 -d longitude,0.25,136.25 soda3.3.1_1980_2015_sst.nc soda3.3.1_1980_2015_sst_westchunk.nc
+ncks -O -d latitude,24.25,62.25 -d longitude,350.75,359.75 soda3.3.1_1980_2015_sst.nc soda3.3.1_1980_2015_sst_eastchunk.nc
 
 #bottom
-ncks -O -d latitude,24.25,62.25 -d longitude,170.75,-43.75 soda3.3.1_1980_2015_sbt.nc soda3.3.1_1980_2015_sbt_restricted.nc
+ncks -O -d latitude,24.25,62.25 -d longitude,0.25,136.25 soda3.3.1_1980_2015_sbt.nc soda3.3.1_1980_2015_sbt_westchunk.nc
+ncks -O -d latitude,24.25,62.25 -d longitude,350.75,359.75 soda3.3.1_1980_2015_sbt.nc soda3.3.1_1980_2015_sbt_eastchunk.nc
+
+#now, merge these
+cdo collgrid soda3.3.1_1980_2015_sst_eastchunk.nc soda3.3.1_1980_2015_sst_westchunk.nc soda3.3.1_1980_2015_sst_reorient.nc
+cdo collgrid soda3.3.1_1980_2015_sbt_eastchunk.nc soda3.3.1_1980_2015_sbt_westchunk.nc soda3.3.1_1980_2015_sbt_reorient.nc
 ```
+
+This isn't perfect, as it gives us 0.25-136.75 AND 349.75-359.75 in this order, but in the next step we will switch order.
+
+*The first command ncks shifts the data,  the second command ncap2 recalibrates the coordinate to the newly shifted data. One comment on applying this algorithm: Be careful to specify hemispheres that do not overlap,  e.g.,  by inadvertently specifying coordinate ranges in the first command that both include the date line. Some users will find using index-based rather than coordinate-based hyperslabs makes this clearer. Examine a plot of the field to make sure your rotation was correct.*
+
+```{bash convert grid}
+#surface
+ncks -O --msa -d longitude,181.,360. -d longitude,0.,180.0 soda3.3.1_1980_2015_sst_reorient.nc soda3.3.1_1980_2015_sst_shift.nc #shifts data
+ncap2 -O -s 'where(longitude > 180) longitude=longitude-540' soda3.3.1_1980_2015_sst_shift.nc soda3.3.1_1980_2015_sst_shift.nc
+ncap2 -O -s 'where(longitude > 0) longitude=longitude-180' soda3.3.1_1980_2015_sst_shift.nc soda3.3.1_1980_2015_sst_final.nc
+#bottom
+ncks -O --msa -d longitude,181.,360. -d longitude,0.,180.0 soda3.3.1_1980_2015_sbt_reorient.nc soda3.3.1_1980_2015_sbt_shift.nc #shifts data
+ncap2 -O -s 'where(longitude > 180) longitude=longitude-540' soda3.3.1_1980_2015_sbt_shift.nc soda3.3.1_1980_2015_sbt_shift.nc
+ncap2 -O -s 'where(longitude > 0) longitude=longitude-180' soda3.3.1_1980_2015_sbt_shift.nc soda3.3.1_1980_2015_sbt_final.nc
+```
+
 
 Change names of dimensions to match earlier time files
-```{bash change names of dimensions and variables for 1980+}
+```{bash change names of dimensions and variables for1980+}
 #surface
-ncrename -d latitude,lat -v latitude,lat soda3.3.1_1980_2015_sst_restricted.nc
-ncrename -d longitude,lon -v longitude,lon soda3.3.1_1980_2015_sst_restricted.nc
+ncrename-d latitude, lat-v latitude, lat soda3.3.1_1980_2015_sst_restricted.nc
+ncrename-d longitude, lon-v longitude, lon soda3.3.1_1980_2015_sst_restricted.nc
 #bottom
-ncrename -d latitude,lat -v latitude,lat soda3.3.1_1980_2015_sbt_restricted.nc
-ncrename -d longitude,lon -v longitude,lon soda3.3.1_1980_2015_sbt_restricted.nc
+ncrename-d latitude, lat-v latitude, lat soda3.3.1_1980_2015_sbt_restricted.nc
+ncrename-d longitude, lon-v longitude, lon soda3.3.1_1980_2015_sbt_restricted.nc
 ```
-*Done with 1980-2015*
+*Done with1980-2015*
 **********
 
-Now, we will import netcdf data for pre 1980 from SODA 2.4.
+Now,  we will import netcdf data for pre1980 from SODA 2.4.
 
-Unfortunately, It looks like I'm going to have to import files one by one for chunks of depth.
+Unfortunately,  It looks like I'm going to have to import files one by one for chunks of depth.
 
 Text file with links: /Scratch/zoek_scratch/soda2.2.4_mn_ocean_reg.txt
 
-I made text file in amphiprion to bulk download `wget -i soda2.2.4_mn_ocean_reg.txt --no-check-certificate` DO THIS
+In order to give a buffer and correctly download from iridl.ldeo.columbia.edu, use -190E- -43E
+SODA 2.2.4 gives -189.75E and -43.25E which is equal to 189.75W and 43.25W OR 170.25E and -43.25E
+
+I made text file in amphiprion to bulk download `wget-i soda2.2.4_mn_ocean_reg.txt--no-check-certificate` DO THIS
 file names going in as data.nc.x etc.
 5.01-70.02: data.nc
 82.92-197.79: data.nc.1
@@ -128,7 +141,7 @@ file names going in as data.nc.x etc.
 2625.0-4375.0: data.nc.4
 4625.0-5375.0: data.nc.5
 
-```{bash merge SODA files pre 1980}
+```{bash merge SODA files pre1980}
 #merge all depth chunks
 cdo merge data.n* data.pre1980.nc
 
@@ -140,13 +153,13 @@ ncks -d depth,1 data.pre1980.nc soda2.2.4_1953_1979_sst.nc
 ```
 
 We now have four files we need.
-NC file for 1953-1979 bottom temp `soda2.2.4_1953_1979_sbt.nc`
-NC file for 1953-1979 surface temp `soda2.2.4_1953_1979_sst.nc`
-NC file for 1980-2015 bottom temp `soda3.3.1_1980_2015_sbt_restricted.nc`
-NC file for 1980-2015 surface temp `soda3.3.1_1980_2015_sst_restricted.nc`
+NC file for1953-1979 bottom temp `soda2.2.4_1953_1979_sbt.nc`
+NC file for1953-1979 surface temp `soda2.2.4_1953_1979_sst.nc`
+NC file for1980-2015 bottom temp `soda3.3.1_1980_2015_sbt_restricted.nc`
+NC file for1980-2015 surface temp `soda3.3.1_1980_2015_sst_restricted.nc`
 
 ```{bash move from amphiprion to local to test}
-#(this doesn't work don't know why, using fetch instead)
+#this doesn't work don't know why,  using fetch instead
 #from local machine
 scp zoek@amphiprion.deenr.rutgers.edu: ../../../Scratch/zoek_scratch/soda2.2.4_1953_1979_sbt.nc
 scp zoek@amphiprion.deenr.rutgers.edu: /Scratch/zoek_scratch/soda2.2.4_1953_1979_sst.nc
@@ -156,4 +169,4 @@ scp zoek@amphiprion.deenr.rutgers.edu: /Scratch/zoek_scratch/soda3.3.1_1980_2015
 ```
 ************
 
-I didn't use this link, but it appears to be helpful. [ERDAPP](https://coastwatch.pfeg.noaa.gov/erddap/griddap/erdSoda331oceanmday.html).
+I didn't use this link,  but it appears to be helpful. [ERDAPP]https://coastwatch.pfeg.noaa.gov/erddap/griddap/erdSoda331oceanmday.html.
