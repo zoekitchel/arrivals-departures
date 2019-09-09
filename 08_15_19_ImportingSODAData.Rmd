@@ -4,32 +4,38 @@ output: html_notebook
 ---
 What lat/lon values do we actually need?
 ```{r make list of all GPS points we want to extract temp data from}
-librarydata.table
-load"/Users/zoekitchel/Documents/grad school/Rutgers/Coursework/Fall 2018/SDM/hauls_catch_Dec20171.RData"
-#load"col_ext/hauls_catch_Dec20171.RData"
-hauls <- data.tablehauls
-cols <- c"lat",  "lon",  "region"
+library(data.table)
+load("/Users/zoekitchel/Documents/grad school/Rutgers/Coursework/Fall 2018/SDM/hauls_catch_Dec2017 1.RData")
+#load("~/col_ext/hauls_catch_Dec2017 1.RData")
+hauls <- data.table(hauls)
+cols <- c("lat",  "lon",  "region", "depth")
 latlongyear <- hauls[,  cols,  with = F]
 
 # set the key to all columns
-setkeylatlongyear
+setkey(latlongyear)
 
 # Get unique lat lon combos
-latlongyear.u <- uniquelatlongyear[listlat,  lon,  nomatch = 0]
+latlongyear.u <- unique(latlongyear[list(lat,  lon),  nomatch = 0])
+
+#only take maximum depth
+latlongyear.u_maxdepth <- latlongyear.u[latlongyear.u[, .I[which.max(depth)], by = c("lat","lon")]$V1]
 
 #minimum lat?,  maximum lat? minimum long? maximum long?
-summarylatlongyear.u
+summary(latlongyear.u_maxdepth)
 
-minlat <- minlatlongyear.u$lat
-maxlat <- maxlatlongyear.u$lat
-minlon <- minlatlongyear.u$lon
-maxlon <- maxlatlongyear.u$lon
+minlat <- min(latlongyear.u_maxdepth$lat)
+maxlat <- max(latlongyear.u_maxdepth$lat)
+minlon <- min(latlongyear.u_maxdepth$lon)
+maxlon <- max(latlongyear.u_maxdepth$lon)
+maxdepth <- max(latlongyear.u_maxdepth$depth)
+mindepth <- min(latlongyear.u_maxdepth$depth)
 
 minlat
 maxlat
 minlon
 maxlon
-summarylatlongyear.u$lon
+maxdepth
+mindepth
 ```
 
 We need to follow Jim's lead,  and use SODA 2.2 for pre1980,  and then SODA 3.3 for post1980. Unfortunately,  they're accessible in different ways. We will start with1980+
@@ -49,18 +55,19 @@ This takes a while,  as it's100 gb of data and no way to narrow down beforehand 
 
 ```{bash extract just top/bottom layers from1980 to 2015 for each yearly file}
 #bottom
-for i in `cat soda3.3.1_mn_ocean_reg_import.txt`;do ncks-d depth, -1 "${i}" "${i%.*}_bottom.nc";done
+for i in `cat soda3.3.1_mn_ocean_reg_import.txt`;do ncks -d depth,-1 "${i}" "${i%.*}_bottom.nc";done
 
 #surface
-for i in `cat soda3.3.1_mn_ocean_reg_import.txt`;do ncks-d depth, 1 "${i}" "${i%.*}_surface.nc";done
+for i in `cat soda3.3.1_mn_ocean_reg_import.txt`;do ncks -d depth,0 "${i}" "${i%.*}_surface.nc";done #in python, 0 is the first dimension
+
 ```
 
-Seeing now that these files in their current state actually contain multiple variables,  and I only want one temp
-```{bash extracting only temp from1980 to 2015}
+Seeing now that these files in their current state actually contain multiple variables, and I only want one temp
+```{bash extracting only temp from 1980 to 2015}
 #bottom
-for i in `cat soda3.3.1_mn_ocean_reg_import.txt`; do ncks-v temp-O "${i%.*}_bottom.nc" "${i%.*}_sbt.nc";done
+for i in `cat soda3.3.1_mn_ocean_reg_import.txt`; do ncks -v temp -O "${i%.*}_bottom.nc" "${i%.*}_sbt.nc";done
 #surface
-for i in `cat soda3.3.1_mn_ocean_reg_import.txt`; do ncks-v temp-O "${i%.*}_surface.nc" "${i%.*}_sst.nc";done
+for i in `cat soda3.3.1_mn_ocean_reg_import.txt`; do ncks -v temp -O "${i%.*}_surface.nc" "${i%.*}_sst.nc";done
 ```
 
 I will now merge these files along time. Ensure that there are no other files that match `soda3.3.1*sst.nc` syntax because then it won't work.
@@ -75,52 +82,71 @@ Let's now crop down to actual points we need:
 -189.397 lon
 -43.835 lon
 
-But, currently, this 3.3.1 data is in 0-360, or technically 0.25-359.75 which is equal to -179.75E - +179.75E
+But, currently, this 3.3.1 data is in 0-360, or technically 0.25-359.75 which is equal to 0.25 to -0.25
 
-To match what we will extract from 2.2.4, we need -189.75E and -43.25E. So, we need to keep 0.25-136.25 AND 350.75-359.75.
+To match what we will extract from 2.2.4, we need -189.75E and -43.25E. So, we need to keep 170.25-316.75
 
 Let's crop into two pieces, and then remerge.
 Crop to correct lat lon
 ```{bash crop points to those we actually need from 0-360 from 3.3.1}
 #surface
-ncks -O -d latitude,24.25,62.25 -d longitude,0.25,136.25 soda3.3.1_1980_2015_sst.nc soda3.3.1_1980_2015_sst_westchunk.nc
-ncks -O -d latitude,24.25,62.25 -d longitude,350.75,359.75 soda3.3.1_1980_2015_sst.nc soda3.3.1_1980_2015_sst_eastchunk.nc
+ncks -O -d latitude,24.25,62.25 -d longitude,170.25,316.75 soda3.3.1_1980_2015_sst.nc soda3.3.1_1980_2015_sst_crop.nc
+
 
 #bottom
-ncks -O -d latitude,24.25,62.25 -d longitude,0.25,136.25 soda3.3.1_1980_2015_sbt.nc soda3.3.1_1980_2015_sbt_westchunk.nc
-ncks -O -d latitude,24.25,62.25 -d longitude,350.75,359.75 soda3.3.1_1980_2015_sbt.nc soda3.3.1_1980_2015_sbt_eastchunk.nc
+ncks -O -d latitude,24.25,62.25 -d longitude,170.25,316.75 soda3.3.1_1980_2015_sbt.nc soda3.3.1_1980_2015_sbt_crop.nc
 
-#now, merge these
-cdo collgrid soda3.3.1_1980_2015_sst_eastchunk.nc soda3.3.1_1980_2015_sst_westchunk.nc soda3.3.1_1980_2015_sst_reorient.nc
-cdo collgrid soda3.3.1_1980_2015_sbt_eastchunk.nc soda3.3.1_1980_2015_sbt_westchunk.nc soda3.3.1_1980_2015_sbt_reorient.nc
 ```
 
-This isn't perfect, as it gives us 0.25-136.75 AND 349.75-359.75 in this order, but in the next step we will switch order.
 
 *The first command ncks shifts the data,  the second command ncap2 recalibrates the coordinate to the newly shifted data. One comment on applying this algorithm: Be careful to specify hemispheres that do not overlap,  e.g.,  by inadvertently specifying coordinate ranges in the first command that both include the date line. Some users will find using index-based rather than coordinate-based hyperslabs makes this clearer. Examine a plot of the field to make sure your rotation was correct.*
 
 ```{bash convert grid}
 #surface
-ncks -O --msa -d longitude,181.,360. -d longitude,0.,180.0 soda3.3.1_1980_2015_sst_reorient.nc soda3.3.1_1980_2015_sst_shift.nc #shifts data
-ncap2 -O -s 'where(longitude > 180) longitude=longitude-540' soda3.3.1_1980_2015_sst_shift.nc soda3.3.1_1980_2015_sst_shift.nc
-ncap2 -O -s 'where(longitude > 0) longitude=longitude-180' soda3.3.1_1980_2015_sst_shift.nc soda3.3.1_1980_2015_sst_final.nc
+ncap2 -O -s 'longitude=longitude-360' soda3.3.1_1980_2015_sst_crop.nc soda3.3.1_1980_2015_sst_final.nc
+
 #bottom
-ncks -O --msa -d longitude,181.,360. -d longitude,0.,180.0 soda3.3.1_1980_2015_sbt_reorient.nc soda3.3.1_1980_2015_sbt_shift.nc #shifts data
-ncap2 -O -s 'where(longitude > 180) longitude=longitude-540' soda3.3.1_1980_2015_sbt_shift.nc soda3.3.1_1980_2015_sbt_shift.nc
-ncap2 -O -s 'where(longitude > 0) longitude=longitude-180' soda3.3.1_1980_2015_sbt_shift.nc soda3.3.1_1980_2015_sbt_final.nc
+ncap2 -O -s 'longitude=longitude-360' soda3.3.1_1980_2015_sbt_crop.nc soda3.3.1_1980_2015_sbt_final.nc
 ```
 
 
 Change names of dimensions to match earlier time files
 ```{bash change names of dimensions and variables for1980+}
 #surface
-ncrename-d latitude, lat-v latitude, lat soda3.3.1_1980_2015_sst_restricted.nc
-ncrename-d longitude, lon-v longitude, lon soda3.3.1_1980_2015_sst_restricted.nc
+ncrename -d latitude,lat -v latitude,lat soda3.3.1_1980_2015_sst_final.nc
+ncrename -d longitude,lon -v longitude,lon soda3.3.1_1980_2015_sst_final.nc
 #bottom
-ncrename-d latitude, lat-v latitude, lat soda3.3.1_1980_2015_sbt_restricted.nc
-ncrename-d longitude, lon-v longitude, lon soda3.3.1_1980_2015_sbt_restricted.nc
+ncrename -d latitude,lat -v latitude,lat soda3.3.1_1980_2015_sbt_final.nc
+ncrename -d longitude,lon -v longitude,lon soda3.3.1_1980_2015_sbt_final.nc
 ```
 *Done with1980-2015*
+
+----------
+Malin recommended extracting bottom temperature by extracting from given depth value at each GPS location from trawl rather than trying to create a bottom layer, so I will also merge but keep all depths, so I will also try this way.Surface is fine, but I have to make the bottom layer in a different way.
+
+Maximum depth = 1504 meters, so only up to 1625.7 in SODA data
+```{bash limit to depths included in trawl survey}
+#limit depth to 1625.7 (closest to max in trawl survey)
+for i in `cat soda3.3.1_mn_ocean_reg_import.txt`;do ncks -O -d depth,0.,1625.7 "${i}" "${i%.*}_bottom_trawl.nc";done
+
+#only look at temperature variable
+for i in `cat soda3.3.1_mn_ocean_reg_import.txt`; do ncks -v temp -O "${i%.*}_bottom_trawl.nc" "${i%.*}_sbt_trawl.nc";done
+
+#now merge these files over time
+ncrcat soda3.3.1*sbt_trawl.nc -O soda3.3.1_1980_2015_sbt_trawl.nc
+
+#crop to points we need lat lon
+ncks -O -d latitude,24.25,62.25 -d longitude,170.25,316.75 soda3.3.1_1980_2015_sbt_trawl.nc soda3.3.1_1980_2015_sbt_trawl_crop.nc
+
+#change grid from 0 360 - -180-180
+ncap2 -O -s 'longitude=longitude-360' soda3.3.1_1980_2015_sbt_trawl_crop.nc soda3.3.1_1980_2015_sbt_trawl_final.nc
+
+#change names to lat/lon
+ncrename -d latitude,lat -v latitude,lat soda3.3.1_1980_2015_sbt_trawl_final.nc
+ncrename -d longitude,lon -v longitude,lon soda3.3.1_1980_2015_sbt_trawl_final.nc
+```
+---------
+
 **********
 
 Now,  we will import netcdf data for pre1980 from SODA 2.4.
@@ -151,22 +177,134 @@ ncks -d depth,-1 data.pre1980.nc soda2.2.4_1953_1979_sbt.nc #NCO ncks with a neg
 #only surface layer
 ncks -d depth,1 data.pre1980.nc soda2.2.4_1953_1979_sst.nc
 ```
+Get rid of depth dimension for surface temp files
+```{bash delete depth dimension and variable for surface temp files}
+ncwa -a depth soda2.2.4_1953_1979_sst.nc soda2.2.4_1953_1979_sst.nc
+ncwa -a depth soda3.3.1_1980_2015_sst_final.nc soda3.3.1_1980_2015_sst_final.nc
 
-We now have four files we need.
-NC file for1953-1979 bottom temp `soda2.2.4_1953_1979_sbt.nc`
-NC file for1953-1979 surface temp `soda2.2.4_1953_1979_sst.nc`
-NC file for1980-2015 bottom temp `soda3.3.1_1980_2015_sbt_restricted.nc`
-NC file for1980-2015 surface temp `soda3.3.1_1980_2015_sst_restricted.nc`
+ncks -x -v depth soda2.2.4_1953_1979_sst.nc soda2.2.4_1953_1979_sst.nc
+ncks -x -v depth soda3.3.1_1980_2015_sst_final.nc soda3.3.1_1980_2015_sst_final.nc
 
-```{bash move from amphiprion to local to test}
-#this doesn't work don't know why,  using fetch instead
-#from local machine
-scp zoek@amphiprion.deenr.rutgers.edu: ../../../Scratch/zoek_scratch/soda2.2.4_1953_1979_sbt.nc
-scp zoek@amphiprion.deenr.rutgers.edu: /Scratch/zoek_scratch/soda2.2.4_1953_1979_sst.nc
-scp zoek@amphiprion.deenr.rutgers.edu: /Scratch/zoek_scratch/soda3.3.1_1980_2015_sbt_restricted.nc
-scp zoek@amphiprion.deenr.rutgers.edu: /Scratch/zoek_scratch/soda3.3.1_1980_2015_sst_restricted.nc
+```
+We have to match time units, soda2.2.4 in 360 day and 3.3.1 in gregorian
+START HERE, maybe import first, and then play with time
+```{bash fixing time units}
+cdo -a setcalendar,standard soda3.3.1_1980_2015_sst_final.nc soda3.3.1_1980_2015_sst_final_timefix.nc
+cdo -a setcalendar,standard soda3.3.1_1980_2015_sbt_final.nc soda3.3.1_1980_2015_sbt_final_timefix.nc
+cdo -a setcalendar,standard soda2.2.4_1953_1979_sst.nc soda2.2.4_1953_1979_sst_timefix.nc
+cdo -a setcalendar,standard soda2.2.4_1953_1979_sbt.nc soda2.2.4_1953_1979_sbt_timefix.nc
+```
+----------
+Malin recommended extracting bottom temperature by extracting from given depth value at each GPS location from trawl rather than trying to create a bottom layer, so I will also merge but keep all depths, so I will also try this way.Surface is fine, but I have to make the bottom layer in a different way.
+
+Maximum depth = 1504 meters, so only up to 1625.7 in SODA data
+```{bash limit to depths included in trawl survey}
+#limit depth to 1625.7 (closest to max in trawl survey)
+ncks -O -d depth,0.,1625.7 data.pre1980.nc soda2.2.4_1953_1979_sbt_trawl_final.nc
+```
+---------
+
+
+Can't figure the time thing out, I will upload what I have.
+soda3.3.1_1980_2015_sst_final.nc
+soda3.3.1_1980_2015_sbt_trawl_final.nc
+soda2.2.4_1953_1979_sst.nc
+soda2.2.4_1953_1979_sbt_trawl_final.nc
+
+
+Now, we should be able to merge pre 1979 and post 1979
+```{bash Final Merge}
+#surface
+ncrcat soda2.2.4_1953_1979_sst_timefix.nc -O soda3.3.1_1980_2015_sst_final_timefix.nc soda_sst.nc
+ncrcat soda2.2.4_1953_1979_sbt.nc -O soda3.3.1_1980_2015_sbt_final.nc soda_sbt.nc
 
 ```
 ************
 
 I didn't use this link,  but it appears to be helpful. [ERDAPP]https://coastwatch.pfeg.noaa.gov/erddap/griddap/erdSoda331oceanmday.html.
+
+************
+
+Now I have 2 files for surface temperature (3 dimensions) and surface-deepest trawls (bottom temperature, 4 dimensions). Surface temperature should be straight forward enough. However, I think the next step for bottom temperature is to split them both into monthly files, and these will be of three dimensions (depth, lat, lon). Then, I can extract depth, lat, lon, data and loop through all month files.
+
+Let's start with extracting GPS points from surface temperature, this should be easy enough.
+```{r extract temp values at GPS points for surface temperature}
+#First, pre 1980
+
+# =========================================
+# = Function to Read in SODA, Grab Surface = by Ryan
+# =========================================
+get.soda <- function(file){
+
+	soda.info <- nc_open(file)
+	name.soda.sizes <- sapply(soda.info$var$temp$dim, function(x)x$name)
+	soda.sizes <- soda.info$var$temp$size
+	dim.units <- sapply(soda.info$var$temp$dim, function(x)x$units)
+	print(dim.units)
+	stopifnot(grepl("months since ", dim.units[3])) # make sure time is in correct units and in right place
+	names(soda.sizes) <- name.soda.sizes
+	ntime <- soda.sizes["time"]
+	ndepth <- soda.sizes["depth"]
+
+	soda.time0 <- soda.info$var$temp$dim[[3]]$vals
+	ref.date <- as.Date(gsub("months since ", "", dim.units[3]))
+	start.before.ref <- grepl("-", soda.time0[1]) # is the first date before ref.date?
+	n.month.before <- ceiling(abs(soda.time0[1])) + as.integer(start.before.ref)
+	start.increment <- ifelse(start.before.ref, "-1 month", "1 month")
+	time.start <- rev(seq.Date(ref.date, by=start.increment, length.out=n.month.before))[1]
+	soda.time <- seq.Date(time.start, by="1 month", length.out=ntime)
+	
+	soda <- brick(file)
+	names(soda) <- soda.time
+
+		
+	return(soda)
+	
+}
+
+soda_surface_2.2.4 <- get.soda("soda2.2.4_1953_1979_sst.nc")
+
+#Now, post 1980
+
+# =========================================
+# = Function to Read in SODA, Grab Surface = by Ryan (NOTICE EDITS FROM ABOVE BECAUSE OF TIME)
+# =========================================
+get.soda.3.3.1 <- function(file){
+
+	soda.info <- nc_open(file)
+	name.soda.sizes <- sapply(soda.info$var$temp$dim, function(x)x$name)
+	soda.sizes <- soda.info$var$temp$size
+	dim.units <- sapply(soda.info$var$temp$dim, function(x)x$units)
+	print(dim.units)
+	names(soda.sizes) <- name.soda.sizes
+	ntime <- soda.sizes["time"]
+
+	time.start <- as.Date("1980-01-01")
+	soda.time <- seq.Date(time.start, by="1 month", length.out=ntime)
+	
+	soda <- brick(file)
+	names(soda) <- soda.time
+
+		
+	return(soda)
+	
+}
+
+soda_surface_3.3.1<- get.soda.3.3.1("soda3.3.1_1980_2015_sst_final.nc")
+
+```
+
+Now, in R, merge these two raster bricks
+```{r merge stacks for surface temperature across time}
+soda_surface <- stack(soda_surface_2.2.4, soda_surface_3.3.1)
+#save
+writeRaster(soda_surface, "soda_surface_sep2019.grd")
+```
+
+Now, we have to extract GPS points from bottom temperature, I expect this to be more difficult. 
+```{bash split into years}
+#first, 1053-1979
+soda2.2.4_1953_1979_sbt_trawl_final.nc
+
+ncks -d time,0,364 data.nc 1991.nc
+```

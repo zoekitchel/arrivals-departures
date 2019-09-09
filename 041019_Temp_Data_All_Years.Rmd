@@ -19,10 +19,10 @@ load("/Users/zoekitchel/Documents/grad school/Rutgers/Coursework/Fall 2018/SDM/h
 ```
 
 Import SODA data which is on amphiprion now as:
-NC file for 1953-1979 bottom temp `soda2.2.4_1953_1979_sbt.nc`
+NC file for 1980-2015 surface temp `soda3.3.1_1980_2015_sst_final.nc`
+NC file for 1980-2015 bottom temp `soda3.3.1_1980_2015_sbt_final.nc`
 NC file for 1953-1979 surface temp `soda2.2.4_1953_1979_sst.nc`
-NC file for 1980-2015 bottom temp `soda3.3.1_1980_2015_sbt_restricted.nc`
-NC file for 1980-2015 surface temp `soda3.3.1_1980_2015_sst_restricted.nc`
+NC file for 1953-1979 bottom temp `soda2.2.4_1953_1979_sbt.nc`
 
 ```{r import SODA temperature data}
 
@@ -73,6 +73,46 @@ plot(soda3.3.1_1980_2015_sst_restricted)
 saveRDS()
 #load()
 ```
+
+I'm going to use my code instead of Ryan's for now. 
+```{r netcdf to brick}
+library(raster)
+library(ncdf4)
+soda3_sst <- "/Users/zoekitchel/Downloads/soda3.3.1_1980_2015_sst_final.nc"
+#terminal soda3_sst <- "soda3.3.1_1980_2015_sst_final.nc"
+soda3_sst.b <- brick(soda3_sst)  
+
+soda3_sst.b
+
+#plotting to figure out where things went wrong
+
+
+# 1. Open jpeg file
+jpeg("rplot3.jpg", width = 400)
+# 2. Create the plot
+plot(soda3_sst.b[[3]])
+# 3. Close the file
+dev.off()
+
+
+
+
+soda3_sbt <- "/Users/zoekitchel/Downloads/soda3.3.1_1980_2015_sbt_final.nc"
+soda3_sbt.b <- brick(soda3_sbt)  
+
+soda3_sbt.b
+
+plot(soda3_sbt.b[[30]])
+
+soda2_sst <- "/Users/zoekitchel/Downloads/soda2.2.4_1953_1979_sst.nc"
+soda2_sst.b <- soda2_sst
+
+plot(soda2_sst.b[[2]])
+
+```
+
+
+
 NEED TO EDIT FROM HERE ONCE I HAVE FILES
 Now, can we merge these files? Atleast sbt and sst? They will be bricks at this point
 START HERE
