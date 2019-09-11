@@ -125,9 +125,10 @@ ncrename -d longitude,lon -v longitude,lon soda3.3.1_1980_2015_sbt_final.nc
 Malin recommended extracting bottom temperature by extracting from given depth value at each GPS location from trawl rather than trying to create a bottom layer, so I will also merge but keep all depths, so I will also try this way.Surface is fine, but I have to make the bottom layer in a different way.
 
 Maximum depth = 1504 meters, so only up to 1625.7 in SODA data
-```{bash limit to depths included in trawl survey}
+```{bash limit to depths included in trawl survey 3.3.1}
 #limit depth to 1625.7 (closest to max in trawl survey)
 for i in `cat soda3.3.1_mn_ocean_reg_import.txt`;do ncks -O -d depth,0.,1625.7 "${i}" "${i%.*}_bottom_trawl.nc";done
+#I should keep this depth max even if I don't use Malin's recommendation because bottom temperature below this point (deepest trawl) is illogical
 
 #only look at temperature variable
 for i in `cat soda3.3.1_mn_ocean_reg_import.txt`; do ncks -v temp -O "${i%.*}_bottom_trawl.nc" "${i%.*}_sbt_trawl.nc";done
@@ -198,27 +199,31 @@ cdo -a setcalendar,standard soda2.2.4_1953_1979_sbt.nc soda2.2.4_1953_1979_sbt_t
 Malin recommended extracting bottom temperature by extracting from given depth value at each GPS location from trawl rather than trying to create a bottom layer, so I will also merge but keep all depths, so I will also try this way.Surface is fine, but I have to make the bottom layer in a different way.
 
 Maximum depth = 1504 meters, so only up to 1625.7 in SODA data
-```{bash limit to depths included in trawl survey}
+```{bash limit to depths included in trawl survey 2.2.4}
 #limit depth to 1625.7 (closest to max in trawl survey)
 ncks -O -d depth,0.,1625.7 data.pre1980.nc soda2.2.4_1953_1979_sbt_trawl_final.nc
+#I should keep this depth max even if I don't use Malin's recommendation because bottom temperature below this point (deepest trawl) is illogical
 ```
+
 ---------
 
 
 Can't figure the time thing out, I will upload what I have.
-soda3.3.1_1980_2015_sst_final.nc
-soda3.3.1_1980_2015_sbt_trawl_final.nc
+soda3.3.1_1980_2015_sst_final_timefix.nc*
+soda3.3.1_1980_2015_sbt_trawl_final_timefix.nc*
 soda2.2.4_1953_1979_sst.nc
 soda2.2.4_1953_1979_sbt_trawl_final.nc
 
 
-Now, we should be able to merge pre 1979 and post 1979
-```{bash Final Merge}
-#surface
-ncrcat soda2.2.4_1953_1979_sst_timefix.nc -O soda3.3.1_1980_2015_sst_final_timefix.nc soda_sst.nc
-ncrcat soda2.2.4_1953_1979_sbt.nc -O soda3.3.1_1980_2015_sbt_final.nc soda_sbt.nc
+*see below for timefix specifics
+```{bash enumerating 3.3.1 months sequentially}
+#I want it to be months since ""months since 1960-01-01""
+#1980-01-01 (first value) is 241.5 months since 1960-01-01
+ncap2 -s 'time=array(241.5,1,$time)' soda3.3.1_1980_2015_sst_final.nc soda3.3.1_1980_2015_sst_final_timefix.nc
+ncap2 -s 'time=array(241.5,1,$time)' soda3.3.1_1980_2015_sbt_trawl_final.nc soda3.3.1_1980_2015_sbt_trawl_final_timefix.nc
 
 ```
+
 ************
 
 I didn't use this link,  but it appears to be helpful. [ERDAPP]https://coastwatch.pfeg.noaa.gov/erddap/griddap/erdSoda331oceanmday.html.
@@ -279,7 +284,7 @@ get.soda.3.3.1 <- function(file){
 	names(soda.sizes) <- name.soda.sizes
 	ntime <- soda.sizes["time"]
 
-	time.start <- as.Date("1980-01-01")
+	time.start <- as.Date("1980-01-01") #set this to date you want to start at
 	soda.time <- seq.Date(time.start, by="1 month", length.out=ntime)
 	
 	soda <- brick(file)
@@ -290,7 +295,7 @@ get.soda.3.3.1 <- function(file){
 	
 }
 
-soda_surface_3.3.1<- get.soda.3.3.1("soda3.3.1_1980_2015_sst_final.nc")
+soda_surface_3.3.1 <- get.soda.3.3.1("soda3.3.1_1980_2015_sst_final_timefix.nc")
 
 ```
 
@@ -298,13 +303,133 @@ Now, in R, merge these two raster bricks
 ```{r merge stacks for surface temperature across time}
 soda_surface <- stack(soda_surface_2.2.4, soda_surface_3.3.1)
 #save
-writeRaster(soda_surface, "soda_surface_sep2019.grd")
+writeRaster(soda_surface, "soda_surface_sep2019.grd", overwrite = T)
+```
+Done with surface temperature.
+
+Now, we have to do the same for bottom temperature, will use Ryan and Becca's code.
+
+First, 2.2.4 `soda2.2.4_1953_1979_sbt_trawl_final.nc`
+```{r bring in bottom 2.2.4}
+# =========================================
+# = Function to Read in SODA, Grab Bottom =
+# =========================================
+get.soda.bot.2.2.4 <- function(file){
+
+	soda.info <- nc_open(file)
+	name.soda.sizes <- sapply(soda.info$var$temp$dim, function(x)x$name)
+	soda.sizes <- soda.info$var$temp$size
+	dim.units <- sapply(soda.info$var$temp$dim, function(x)x$units)
+	print(dim.units)
+	stopifnot(grepl("months since ", dim.units[4])) # make sure time is in correct units and in right place
+	names(soda.sizes) <- name.soda.sizes
+	ntime <- soda.sizes["time"]
+	ndepth <- soda.sizes["depth"]
+
+	soda.time0 <- soda.info$var$temp$dim[[4]]$vals
+	ref.date <- as.Date(gsub("months since ", "", dim.units[4]))
+	start.before.ref <- grepl("-", soda.time0[1]) # is the first date before ref.date?
+	n.month.before <- ceiling(abs(soda.time0[1])) + as.integer(start.before.ref)
+	start.increment <- ifelse(start.before.ref, "-1 month", "1 month")
+	time.start <- rev(seq.Date(ref.date, by=start.increment, length.out=n.month.before))[1]
+	soda.time <- seq.Date(time.start, by="1 month", length.out=ntime)
+
+
+	pb <- txtProgressBar(min=1, max=ntime, style=3)
+	for(i in 1:ntime){
+		t.soda <- brick(file, lvar=4, level=i)
+		# need to switch missing value to actual NA # TODO is this automatically done by brick()? I think so.
+		
+		soda.depths <- as.numeric(gsub("X", "", names(t.soda))) # does weird rounding that I don't understand
+	
+		# get the deepest available temperature in each gridd cell
+		t.soda.bot <- do.call(cover, unstack(subset(t.soda, length(soda.depths):1)))
+		names(t.soda.bot) <- soda.time[i]
+		# the subsetting piece flips the order of the layers (so that deepest is first layer)
+		# by unstacking I reformat from raster with layers, to list of rasters
+		# that list can be used as the list of arguments to a function taking ...
+		# cover keeps the values in the first object of the ..., and replaces the NA's with values from the second ...
+		# that process repeats until through all object listed in the ...
+		# in other words, the final value will be the value in the first layer that has a non-NA value in that cell
+		
+		# accumulate over time periods (monthly in original data sets I'm using)
+		# this will be for the first time period (1958-1978)
+		if(i==1){
+			soda.bot <- t.soda.bot
+		}else{
+			soda.bot <- addLayer(soda.bot, t.soda.bot)
+		}
+		setTxtProgressBar(pb, i)
+	}
+	close(pb)
+	
+	return(soda.bot)
+	
+}
+
+soda_bottom_2.2.4 <- get.soda.bot.2.2.4("soda2.2.4_1953_1979_sbt_trawl_final.nc")
+
 ```
 
-Now, we have to extract GPS points from bottom temperature, I expect this to be more difficult. 
-```{bash split into years}
-#first, 1053-1979
-soda2.2.4_1953_1979_sbt_trawl_final.nc
+Then, 3.3.1 `soda3.3.1_1980_2015_sbt_trawl_final_timefix.nc`
+```{r bring in bottom 3.3.1}
+# =========================================
+# = Function to Read in SODA, Grab Bottom =
+# =========================================
+get.soda.bot.3.3.1 <- function(file){
 
-ncks -d time,0,364 data.nc 1991.nc
+	soda.info <- nc_open(file)
+	name.soda.sizes <- sapply(soda.info$var$temp$dim, function(x)x$name)
+	soda.sizes <- soda.info$var$temp$size
+	dim.units <- sapply(soda.info$var$temp$dim, function(x)x$units)
+	print(dim.units)
+	names(soda.sizes) <- name.soda.sizes
+	ntime <- soda.sizes["time"]
+	ndepth <- soda.sizes["depth"]
+
+  time.start <- as.Date("1980-01-01") #set this to date you want to start at
+	soda.time <- seq.Date(time.start, by="1 month", length.out=ntime)
+
+
+	pb <- txtProgressBar(min=1, max=ntime, style=3)
+	for(i in 1:ntime){
+		t.soda <- brick(file, lvar=4, level=i)
+		# need to switch missing value to actual NA # TODO is this automatically done by brick()? I think so.
+		
+		soda.depths <- as.numeric(gsub("X", "", names(t.soda))) # does weird rounding that I don't understand
+	
+		# get the deepest available temperature in each gridd cell
+		t.soda.bot <- do.call(cover, unstack(subset(t.soda, length(soda.depths):1)))
+		names(t.soda.bot) <- soda.time[i]
+		# the subsetting piece flips the order of the layers (so that deepest is first layer)
+		# by unstacking I reformat from raster with layers, to list of rasters
+		# that list can be used as the list of arguments to a function taking ...
+		# cover keeps the values in the first object of the ..., and replaces the NA's with values from the second ...
+		# that process repeats until through all object listed in the ...
+		# in other words, the final value will be the value in the first layer that has a non-NA value in that cell
+		
+		# accumulate over time periods (monthly in original data sets I'm using)
+		# this will be for the first time period (1958-1978)
+		if(i==1){
+			soda.bot <- t.soda.bot
+		}else{
+			soda.bot <- addLayer(soda.bot, t.soda.bot)
+		}
+		setTxtProgressBar(pb, i)
+	}
+	close(pb)
+	
+	return(soda.bot)
+	
+}
+
+soda_bottom_3.3.1 <- get.soda.bot.3.3.1("soda3.3.1_1980_2015_sbt_trawl_final_timefix.nc")
+
+```
+
+Now, in R, merge these two raster bricks
+```{r merge stacks for bottom temperature across time}
+soda_bottom <- stack(soda_bottom_2.2.4, soda_bottom_3.3.1)
+#save
+writeRaster(soda_bottom, "soda_bottom_sep2019.grd", overwrite = T)
 ```
