@@ -84,7 +84,7 @@ Let's now crop down to actual points we need:
 
 But, currently, this 3.3.1 data is in 0-360, or technically 0.25-359.75 which is equal to 0.25 to -0.25
 
-To match what we will extract from 2.2.4, we need -189.75E and -43.25E. So, we need to keep 170.25-316.75
+To match what we will extract from 2.2.4, we need -189.75E and -43.25E. So, we need to keep 170.25-316.75**
 
 Let's crop into two pieces, and then remerge.
 Crop to correct lat lon
