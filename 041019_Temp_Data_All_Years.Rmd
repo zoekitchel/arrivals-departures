@@ -2,6 +2,7 @@
 title: "Temp_Data_All_Years"
 output: html_notebook
 ---
+This will all be done in terminal R window. 
 
 ```{r setup}
 library(dplyr)
@@ -14,119 +15,25 @@ library(rgdal)
 library(tidyr)
 library(ggplot2)
 
-load("/Users/zoekitchel/Documents/grad school/Rutgers/Coursework/Fall 2018/SDM/hauls_catch_Dec2017 1.RData")
-#load("col_ext/hauls_catch_Dec2017 1.RData")
 ```
 
-Import SODA data which is on amphiprion now as:
-NC file for 1980-2015 surface temp `soda3.3.1_1980_2015_sst_final.nc`
-NC file for 1980-2015 bottom temp `soda3.3.1_1980_2015_sbt_final.nc`
-NC file for 1953-1979 surface temp `soda2.2.4_1953_1979_sst.nc`
-NC file for 1953-1979 bottom temp `soda2.2.4_1953_1979_sbt.nc`
+I have already converted NetCDF files to grd raster files. 
+`col_ext/soda_bottom_sep2019.gri`
+`col_ext/soda_bottom_sep2019.grd`
+`col_ext/soda_surface_sep2019.gri`
+`col_ext/soda_surface_sep2019.grd`
 
-```{r import SODA temperature data}
+At this point, don't know difference between gri and grd. But, gri is 68.5 MB and .grd is 35.7 KB
 
-# =========================================
-# = Function to Read in SODA, Grab Surface = by Ryan
-# =========================================
-get.soda <- function(file){
+```{r load netcdf now rasterbrick files}
+soda_bottom <- brick("soda_bottom_sep2019.gri")
+soda_bottom <- brick("soda_surface_sep2019.gri")
 
-	soda.info <- nc_open(file)
-	name.soda.sizes <- sapply(soda.info$var$temp$dim, function(x)x$name)
-	soda.sizes <- soda.info$var$temp$size
-	dim.units <- sapply(soda.info$var$temp$dim, function(x)x$units)
-	print(dim.units)
-	stopifnot(grepl("months since ", dim.units[4])) # make sure time is in correct units and in right place
-	names(soda.sizes) <- name.soda.sizes
-	ntime <- soda.sizes["time"]
-	ndepth <- soda.sizes["depth"]
-
-	soda.time0 <- soda.info$var$temp$dim[[4]]$vals
-	ref.date <- as.Date(gsub("months since ", "", dim.units[4]))
-	start.before.ref <- grepl("-", soda.time0[1]) # is the first date before ref.date?
-	n.month.before <- ceiling(abs(soda.time0[1])) + as.integer(start.before.ref)
-	start.increment <- ifelse(start.before.ref, "-1 month", "1 month")
-	time.start <- rev(seq.Date(ref.date, by=start.increment, length.out=n.month.before))[1]
-	soda.time <- seq.Date(time.start, by="1 month", length.out=ntime)
-	
-	soda <- brick(file)
-	names(soda) <- soda.time
-
-		
-	return(soda.sst)
-	
-}
-
-## Using Ryan's code
-soda2.2.4_1953_1979_sbt <- get.soda("soda2.2.4_1953_1979_sbt.nc")
-soda2.2.4_1953_1979_sst <- get.soda("soda2.2.4_1953_1979_sst.nc")
-soda3.3.1_1980_2015_sbt_restricted <- get.soda("soda3.3.1_1980_2015_sbt_restricted.nc")
-soda3.3.1_1980_2015_sst_restricted <- get.soda("soda3.3.1_1980_2015_sst_restricted.nc")
-
-
-
-plot(soda2.2.4_1953_1979_sbt)
-plot(soda2.2.4_1953_1979_sst)
-plot(soda3.3.1_1980_2015_sbt_restricted)
-plot(soda3.3.1_1980_2015_sst_restricted)
-
-saveRDS()
-#load()
-```
-
-I'm going to use my code instead of Ryan's for now. 
-```{r netcdf to brick}
-library(raster)
-library(ncdf4)
-soda3_sst <- "/Users/zoekitchel/Downloads/soda3.3.1_1980_2015_sst_final.nc"
-#terminal soda3_sst <- "soda3.3.1_1980_2015_sst_final.nc"
-soda3_sst.b <- brick(soda3_sst)  
-
-soda3_sst.b
-
-#plotting to figure out where things went wrong
-
-
-# 1. Open jpeg file
-jpeg("rplot3.jpg", width = 400)
-# 2. Create the plot
-plot(soda3_sst.b[[3]])
-# 3. Close the file
-dev.off()
-
-
-
-
-soda3_sbt <- "/Users/zoekitchel/Downloads/soda3.3.1_1980_2015_sbt_final.nc"
-soda3_sbt.b <- brick(soda3_sbt)  
-
-soda3_sbt.b
-
-plot(soda3_sbt.b[[30]])
-
-soda2_sst <- "/Users/zoekitchel/Downloads/soda2.2.4_1953_1979_sst.nc"
-soda2_sst.b <- soda2_sst
-
-plot(soda2_sst.b[[2]])
-
-```
-
-
-
-NEED TO EDIT FROM HERE ONCE I HAVE FILES
-Now, can we merge these files? Atleast sbt and sst? They will be bricks at this point
-START HERE
-From stack overflow
-raster::stack(nc, nc2, nc3, nc4, nc5, nc6, nc7) should do the trick. A very similar approach has been described e.g. here.
-
-However, be aware that the objects you would like to stack are required to have an identical coordinate references system (CRS), resolution (res), and extent. Otherwise, stack will most likely fail. You could deploy raster::projectRaster and raster::resample to create objects with uniform spatial properties if one (or several) of the above criteria is different.
-```{r  merge nc files along time}
 ```
 
 Generating coordinates I need to extract, and then average
 ```{r generating coordinates to extract from hauls}
-load("/Users/zoekitchel/Documents/grad school/Rutgers/Coursework/Fall 2018/SDM/hauls_catch_Dec2017 1.RData")
-#load("col_ext/hauls_catch_Dec2017 1.RData")
+load("col_ext/hauls_catch_Dec2017 1.RData")
 hauls <- data.table(hauls)
 cols <- c("lat", "lon", "region")
 latlongyear <- hauls[, cols, with = F]
@@ -138,9 +45,7 @@ setkey(latlongyear)
 latlongyear.u <- unique(latlongyear[list(lat, lon), nomatch = 0])
 ```
 
-NEED TO EDIT FROM HERE ON ONCE I ACTUALLY HAVE FILES
-
-New column in newlatlongyear with "X1958.01.01" format, looks like I may not need to do this after all... SKIPPING FOR NOW
+New column in newlatlongyear with "X1958.01.01" format, looks like I may not need to do this after all... *SKIPPING FOR NOW*
 *this takes a super long time to run, so we should save this result
 ```{r}
 
@@ -160,45 +65,70 @@ save(newlatlongyear, newlatlongyearID, file = "newlatlongyear.Rdata")
 
 SET COORDINATE SYSTEM
 ```{r set coordinate system}
-locations <- SpatialPoints(cbind(newlatlongyear$lon, newlatlongyear$lat), 
+locations <- SpatialPoints(cbind(latlongyear.u$lon, latlongyear.u$lat), 
                             proj4string=CRS("+proj=longlat +datum=WGS84 +ellps=WGS84 +towgs84=0,0,0"))
+jpeg("plots.jpg")
 plot(locations)
+dev.off()
 ```
 
 Now, let's extract values 
 
-#this also takes a long time, so be sure to save output
 ```{r extracting temperature values at correct GPS points}
-system.time(temp_values <- raster::extract(soda_sst, locations))
-save(temp_values, file = "extracted_temp_values_SODA.Rdata")
+system.time(temp_values_sbt <- raster::extract(soda_bottom, locations))
+system.time(temp_values_sst <- raster::extract(soda_surface, locations))
 
-justlatlong <- newlatlongyear[, vec[2:3], with = FALSE]
+#column bind
+latlon_temp_values_sbt <- cbind(latlongyear.u, temp_values_sbt)
+latlon_temp_values_sst <- cbind(latlongyear.u, temp_values_sst)
 
-df <- cbind(justlatlong, temp_values)
-save(df, file = "latlong_temp_values.Rdata")
 ```
-I need a data.table in long format, but right now it's too long, so I'm going back up and only using jan, feb, july, aug.
-```{r}
-cow <- c("lat", "lon", "*.01.01", "*.02.01", "*.07.01", "*.08.01")
 
-colnames_keep <- grep(paste(cow,collapse="|"), colnames(df), value=TRUE)
+I need a data.table in long format. This takes a while.
 
-df <- df[, colnames_keep, with=FALSE]
-
-df_long <- melt(df, measure.vars = 3:ncol(df),
+```{r melt temp data}
+#surface
+system.time(df_long_sst <- melt(latlon_temp_values_sst, measure.vars = 3:ncol(latlon_temp_values_sst),
                variable.name = "dateID", value.name = "temp")
+)
+
+#bottom
+system.time(df_long_sbt <- melt(latlon_temp_values_sst, measure.vars = 3:ncol(latlon_temp_values_sbt),
+               variable.name = "dateID", value.name = "temp")
+)
 ```
+There is a warning as I'm coercing Xxxxx.xx.xx to character, and for some reason not all are characters already, but this seems fine
 
 We now have to split the date back up unfortunately, and get rid of X
 
-```{r}
+```{r split dateID}
+#surface
+df_long_sst[, c("year", "month", "day") := tstrsplit(dateID, ".", fixed=TRUE)]
 
-df_long[, c("year", "month", "day") := tstrsplit(dateID, ".", fixed=TRUE)]
+df_long_sst$year <- substr(as.character(df_long_sst$year), 2, 5)
 
-df_long2$year <- substr(as.character(df_long2$year), 2, 5)
-head(df_long2, 30)
-save(df_long2, file = "SODA_monthly_data.R")
+#bottom
+df_long_sbt[, c("year", "month", "day") := tstrsplit(dateID, ".", fixed=TRUE)]
+
+df_long_sbt$year <- substr(as.character(df_long_sbt$year), 2, 5)
+
 ```
+____
+
+
+Now, I have to start taking averages.
+First, average over all GPS points in a region for a given year and month (this gives us avg temp per region per month)
+Second, group by year, find mean in a year
+Second, group by year, max in each year
+Second, group by year, min in each year
+Third, find difference between min and max for each year
+
+This being said, I think I should think more carefully than this. I need to look a mean, min, max for a year BEFORE the month of the trawl.. this will be a little more complicated than how I've been doing it for sure. 
+
+It also means I have to keep this mega file, and look on demand for temp data, which may not be possible. 
+
+For each haul, look at haul month, and then take data from 12 months before that date. 
+
 
 I currently have mean monthly values for a ton of GPS points within a region.
 For temperature values, I will first take a mean for each month over the whole region, so then I have a mean month/year value. region_*month*_mean_sst
