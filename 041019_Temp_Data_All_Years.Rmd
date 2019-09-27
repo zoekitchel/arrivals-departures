@@ -52,24 +52,6 @@ setkey(latlongyear)
 latlongyear.u <- unique(latlongyear[list(lat, lon), nomatch = 0])
 ```
 
-New column in newlatlongyear with "X1958.01.01" format, looks like I may not need to do this after all... *SKIPPING FOR NOW*
-*this takes a super long time to run, so we should save this result
-```{r}
-
-
-newlatlongyear[, month_digits := ifelse(month < 10, paste0("0", month), month)][, day := paste0("0", c(1))][, year_digits := paste0("X", newlatlongyear$year)]
-newlatlongyear[, ID := paste(newlatlongyear$year_digits, newlatlongyear$month_digits, newlatlongyear$day, sep=".")]
-
-newlatlongyear <- transform(newlatlongyear, lat = as.numeric(lat), lon = as.numeric(lon))
-newlatlongyear[, lat := as.numeric(lat)][, lon := as.numeric(lon)]
-
-vec <- c("ID", "lat", "lon")
-newlatlongyearID <- newlatlongyear[, vec, with=FALSE]
-
-save(newlatlongyear, newlatlongyearID, file = "newlatlongyear.Rdata")
-
-```
-
 SET COORDINATE SYSTEM
 ```{r set coordinate system}
 locations <- SpatialPoints(cbind(latlongyear.u$lon, latlongyear.u$lat), 
@@ -120,6 +102,7 @@ df_long_sbt[, c("year", "month", "day") := tstrsplit(dateID, ".", fixed=TRUE)]
 df_long_sbt$year <- substr(as.character(df_long_sbt$year), 2, 5)
 
 ```
+
 ____
 
 First is to average over all points in a region for every month/year combo. This takes a while.
@@ -137,6 +120,10 @@ First is to average over all points in a region for every month/year combo. This
   soda_sst_monthavg <- df_long_sst[,list(sst_mean=mean(temp)),by=c("region", "year", "month")]
   #bottom
   soda_sbt_monthavg <- df_long_sbt[,list(sbt_mean=mean(temp)),by=c("region", "year", "month")]
+  
+  #good time to save
+
+save(soda_sst_monthavg, soda_sbt_monthavg, file = "col_ext/soda_avg_monthly_temps.Rdata")
 ```
 It seems as though the best way to speak to the trawls data set and ask it to look for a specific year/month and then go back from that date by a specified interval is to turn all months into julian months, to eliminate year variable.
 ```{r convert month year to julian month}
@@ -362,7 +349,12 @@ i=1
 for (i in 1:nrow(hauls)) {
   this_month_julian <- hauls$month_julian[i]
   this_region <- hauls$region[i]
-  this_month_julian_back1year <- month_julian-11
+  monthstosubtract <- seq(from = 11, by = 12, length.out = 11)
+  
+  this_month_julian_reverse <- NA
+  for (j in 1:length(monthstosubtract)){
+    this_month_julian_reverse[j] <- this_month_julian-monthstosubtract[j]
+  }
   #surface
   subset_sst <- soda_sst_monthavg[region == this_region & month_julian >= this_month_julian_back1year & soda_sst_monthavg$month_julian <= this_month_julian]
   mean_sst_temp <- mean(subset_sst$sst_mean)
@@ -376,7 +368,23 @@ for (i in 1:nrow(hauls)) {
   hauls$min_sst_temp[i] <- min_sst_temp
   hauls$seas_sst_temp[i] <- seas_sst_temp
   
-  #surface lags
+  #surface raw lags 
+  hauls$mean_sst_temp_lag1
+  this_month_julian_back2year <- month_julian-23
+  subset_sst <- soda_sst_monthavg[region == this_region & month_julian >= this_month_julian_back2year & soda_sst_monthavg$month_julian <= this_month_julian_back1year]
+  mean_sst_temp <- mean(subset_sst$sst_mean)
+  max_sst_temp <- max(subset_sst$sst_mean)
+  min_sst_temp <- min(subset_sst$sst_mean)
+  
+  seas_sst_temp <- max_sst_temp - min_sst_temp
+  
+  hauls$mean_sst_temp[i] <- mean_sst_temp
+  hauls$max_sst_temp[i] <- max_sst_temp
+  hauls$min_sst_temp[i] <- min_sst_temp
+  hauls$seas_sst_temp[i] <- seas_sst_temp
+  
+  
+  
   
   
 }
