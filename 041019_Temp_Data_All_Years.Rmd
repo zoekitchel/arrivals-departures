@@ -4,6 +4,13 @@ output: html_notebook
 ---
 This will all be done in terminal R window. 
 
+```{bash terminal setup}
+ssh zoek@amphiprion.deenr.rutgers.edu
+conda activate /local/home/zoek/enter/envs/myRenv3_5
+
+```
+
+
 ```{r setup}
 library(dplyr)
 library(data.table)
@@ -26,8 +33,8 @@ I have already converted NetCDF files to grd raster files.
 At this point, don't know difference between gri and grd. But, gri is 68.5 MB and .grd is 35.7 KB
 
 ```{r load netcdf now rasterbrick files}
-soda_bottom <- brick("soda_bottom_sep2019.gri")
-soda_bottom <- brick("soda_surface_sep2019.gri")
+soda_bottom <- brick("col_ext/soda_bottom_sep2019.gri")
+soda_surface <- brick("col_ext/soda_surface_sep2019.gri")
 
 ```
 
@@ -88,18 +95,18 @@ I need a data.table in long format. This takes a while.
 
 ```{r melt temp data}
 #surface
-system.time(df_long_sst <- melt(latlon_temp_values_sst, measure.vars = 3:ncol(latlon_temp_values_sst),
+system.time(df_long_sst <- melt(latlon_temp_values_sst, measure.vars = 4:ncol(latlon_temp_values_sst),
                variable.name = "dateID", value.name = "temp")
 )
 
 #bottom
-system.time(df_long_sbt <- melt(latlon_temp_values_sst, measure.vars = 3:ncol(latlon_temp_values_sbt),
+system.time(df_long_sbt <- melt(latlon_temp_values_sbt, measure.vars = 4:ncol(latlon_temp_values_sbt),
                variable.name = "dateID", value.name = "temp")
 )
-```
-There is a warning as I'm coercing Xxxxx.xx.xx to character, and for some reason not all are characters already, but this seems fine
 
-We now have to split the date back up unfortunately, and get rid of X
+```
+
+We now have to split the date, and get rid of X
 
 ```{r split dateID}
 #surface
@@ -115,6 +122,60 @@ df_long_sbt$year <- substr(as.character(df_long_sbt$year), 2, 5)
 ```
 ____
 
+First is to average over all points in a region for every month/year combo. This takes a while.
+```{r avg over GPS points}
+#make sure region, year, and month are all factors
+  #surface
+  nms <- c("region", "year", "month")
+  df_long_sst[, (nms) := lapply(.SD, factor), .SDcols = nms]
+  
+  #bottom
+  df_long_sbt[, (nms) := lapply(.SD, factor), .SDcols = nms]
+
+#average over year
+  #surface
+  soda_sst_monthavg <- df_long_sst[,list(sst_mean=mean(temp)),by=c("region", "year", "month")]
+  #bottom
+  soda_sbt_monthavg <- df_long_sbt[,list(sbt_mean=mean(temp)),by=c("region", "year", "month")]
+```
+It seems as though the best way to speak to the trawls data set and ask it to look for a specific year/month and then go back from that date by a specified interval is to turn all months into julian months, to eliminate year variable.
+```{r convert month year to julian month}
+#how many months?
+year_month_key <- soda_sst_monthavg[, .N, by = c('year', 'month')][,1:2]
+max_julian_month <- nrow(year_month_key)
+
+#sequence of 1:756
+julian_months <- seq(1, max_julian_month, by=1)
+
+#makekey
+year_month_key <- cbind(year_month_key, "month_julian" = julian_months)
+
+
+```
+I need to use this key to add julian month to data tables for sst and sbt. 
+```{r add julian month}
+#surface
+soda_sst_monthavg <- soda_sst_monthavg[year_month_key, on = c(year = 'year', month = 'month')]
+
+#surface
+soda_sbt_monthavg <- soda_sbt_monthavg[year_month_key, on = c(year = 'year', month = 'month')]
+
+
+```
+
+Make sure that month and year match in characters and class in `hauls` and `soda_s?t_monthavg`
+
+```{r match year month in hauls}
+hauls$year <- as.factor(hauls$year)
+hauls$month <- as.factor(hauls$month)
+setattr(hauls$month,"levels",c('01','02','03','04','05','06','07','08','09','10','11','12'))
+
+#now, add julian day to hauls data table as well
+
+hauls <- hauls[year_month_key, nomatch = 0, on = c(year = 'year', month = 'month')]
+```
+
+
 
 Now, I have to start taking averages.
 First, average over all GPS points in a region for a given year and month (this gives us avg temp per region per month)
@@ -128,6 +189,199 @@ This being said, I think I should think more carefully than this. I need to look
 It also means I have to keep this mega file, and look on demand for temp data, which may not be possible. 
 
 For each haul, look at haul month, and then take data from 12 months before that date. 
+
+```{r averaging temperature values}
+#turn region into factor in hauls datatable
+hauls$region <- as.factor(hauls$region)
+
+#new columns for loop
+#surface
+#raw
+  hauls$mean_sst_temp <- NA
+  hauls$max_sst_temp <- NA
+  hauls$min_sst_temp <- NA
+  hauls$seas_sst_temp <- NA
+  
+  
+  #lag raw
+  hauls$mean_sst_temp_lag1 <- NA
+  hauls$mean_sst_temp_lag2 <- NA
+  hauls$mean_sst_temp_lag3 <- NA
+  hauls$mean_sst_temp_lag4 <- NA
+  hauls$mean_sst_temp_lag5 <- NA
+  hauls$mean_sst_temp_lag6 <- NA
+  hauls$mean_sst_temp_lag7 <- NA
+  hauls$mean_sst_temp_lag8 <- NA
+  hauls$mean_sst_temp_lag9 <- NA
+  hauls$mean_sst_temp_lag10 <- NA
+  
+  hauls$max_sst_temp_lag1 <- NA
+  hauls$max_sst_temp_lag2 <- NA
+  hauls$max_sst_temp_lag3 <- NA
+  hauls$max_sst_temp_lag4 <- NA
+  hauls$max_sst_temp_lag5 <- NA
+  hauls$max_sst_temp_lag6 <- NA
+  hauls$max_sst_temp_lag7 <- NA
+  hauls$max_sst_temp_lag8 <- NA
+  hauls$max_sst_temp_lag9 <- NA
+  hauls$max_sst_temp_lag10 <- NA
+  
+  hauls$min_sst_temp_lag1 <- NA
+  hauls$min_sst_temp_lag2 <- NA
+  hauls$min_sst_temp_lag3 <- NA
+  hauls$min_sst_temp_lag4 <- NA
+  hauls$min_sst_temp_lag5 <- NA
+  hauls$min_sst_temp_lag6 <- NA
+  hauls$min_sst_temp_lag7 <- NA
+  hauls$min_sst_temp_lag8 <- NA
+  hauls$min_sst_temp_lag9 <- NA
+  hauls$min_sst_temp_lag10 <- NA
+  
+  hauls$seas_sst_temp_lag1 <- NA
+  hauls$seas_sst_temp_lag2 <- NA
+  hauls$seas_sst_temp_lag3 <- NA
+  hauls$seas_sst_temp_lag4 <- NA
+  hauls$seas_sst_temp_lag5 <- NA
+  hauls$seas_sst_temp_lag6 <- NA
+  hauls$seas_sst_temp_lag7 <- NA
+  hauls$seas_sst_temp_lag8 <- NA
+  hauls$seas_sst_temp_lag9 <- NA
+  hauls$seas_sst_temp_lag10 <- NA
+ 
+  
+  #change
+  hauls$mean_sst_temp_change <- NA
+  hauls$max_sst_temp_change <- NA
+  hauls$min_sst_temp_change <- NA
+  hauls$seas_sst_temp_change <- NA
+
+  
+  #lag change
+  hauls$mean_sst_temp_change_lag1 <- NA
+  hauls$mean_sst_temp_change_lag2 <- NA
+  hauls$mean_sst_temp_change_lag3 <- NA
+  hauls$mean_sst_temp_change_lag4 <- NA
+  hauls$mean_sst_temp_change_lag5 <- NA
+  hauls$mean_sst_temp_change_lag6 <- NA
+  hauls$mean_sst_temp_change_lag7 <- NA
+  hauls$mean_sst_temp_change_lag8 <- NA
+  hauls$mean_sst_temp_change_lag9 <- NA
+  hauls$mean_sst_temp_change_lag10 <- NA
+  
+  hauls$max_sst_temp_change_lag1 <- NA
+  hauls$max_sst_temp_change_lag2 <- NA
+  hauls$max_sst_temp_change_lag3 <- NA
+  hauls$max_sst_temp_change_lag4 <- NA
+  hauls$max_sst_temp_change_lag5 <- NA
+  hauls$max_sst_temp_change_lag6 <- NA
+  hauls$max_sst_temp_change_lag7 <- NA
+  hauls$max_sst_temp_change_lag8 <- NA
+  hauls$max_sst_temp_change_lag9 <- NA
+  hauls$max_sst_temp_change_lag10 <- NA
+  
+  hauls$min_sst_temp_change_lag1 <- NA
+  hauls$min_sst_temp_change_lag2 <- NA
+  hauls$min_sst_temp_change_lag3 <- NA
+  hauls$min_sst_temp_change_lag4 <- NA
+  hauls$min_sst_temp_change_lag5 <- NA
+  hauls$min_sst_temp_change_lag6 <- NA
+  hauls$min_sst_temp_change_lag7 <- NA
+  hauls$min_sst_temp_change_lag8 <- NA
+  hauls$min_sst_temp_change_lag9 <- NA
+  hauls$min_sst_temp_change_lag10 <- NA
+  
+  hauls$seas_sst_temp_change_lag1 <- NA
+  hauls$seas_sst_temp_change_lag2 <- NA
+  hauls$seas_sst_temp_change_lag3 <- NA
+  hauls$seas_sst_temp_change_lag4 <- NA
+  hauls$seas_sst_temp_change_lag5 <- NA
+  hauls$seas_sst_temp_change_lag6 <- NA
+  hauls$seas_sst_temp_change_lag7 <- NA
+  hauls$seas_sst_temp_change_lag8 <- NA
+  hauls$seas_sst_temp_change_lag9 <- NA
+  hauls$seas_sst_temp_change_lag10 <- NA
+  
+  
+  #abs change
+  hauls$mean_sst_temp_change_abs <- NA
+  hauls$max_sst_temp_change_abs <- NA
+  hauls$min_sst_temp_change_abs <- NA
+  hauls$seas_sst_temp_change_abs <- NA
+  
+  
+  #lag abs change
+  hauls$mean_sst_temp_change_abs_lag1 <- NA
+  hauls$mean_sst_temp_change_abs_lag2 <- NA
+  hauls$mean_sst_temp_change_abs_lag3 <- NA
+  hauls$mean_sst_temp_change_abs_lag4 <- NA
+  hauls$mean_sst_temp_change_abs_lag5 <- NA
+  hauls$mean_sst_temp_change_abs_lag6 <- NA
+  hauls$mean_sst_temp_change_abs_lag7 <- NA
+  hauls$mean_sst_temp_change_abs_lag8 <- NA
+  hauls$mean_sst_temp_change_abs_lag9 <- NA
+  hauls$mean_sst_temp_change_abs_lag10 <- NA
+  
+  hauls$max_sst_temp_change_abs_lag1 <- NA
+  hauls$max_sst_temp_change_abs_lag2 <- NA
+  hauls$max_sst_temp_change_abs_lag3 <- NA
+  hauls$max_sst_temp_change_abs_lag4 <- NA
+  hauls$max_sst_temp_change_abs_lag5 <- NA
+  hauls$max_sst_temp_change_abs_lag6 <- NA
+  hauls$max_sst_temp_change_abs_lag7 <- NA
+  hauls$max_sst_temp_change_abs_lag8 <- NA
+  hauls$max_sst_temp_change_abs_lag9 <- NA
+  hauls$max_sst_temp_change_abs_lag10 <- NA
+  
+  hauls$min_sst_temp_change_abs_lag1 <- NA
+  hauls$min_sst_temp_change_abs_lag2 <- NA
+  hauls$min_sst_temp_change_abs_lag3 <- NA
+  hauls$min_sst_temp_change_abs_lag4 <- NA
+  hauls$min_sst_temp_change_abs_lag5 <- NA
+  hauls$min_sst_temp_change_abs_lag6 <- NA
+  hauls$min_sst_temp_change_abs_lag7 <- NA
+  hauls$min_sst_temp_change_abs_lag8 <- NA
+  hauls$min_sst_temp_change_abs_lag9 <- NA
+  hauls$min_sst_temp_change_abs_lag10 <- NA
+  
+  hauls$seas_sst_temp_change_abs_lag1 <- NA
+  hauls$seas_sst_temp_change_abs_lag2 <- NA
+  hauls$seas_sst_temp_change_abs_lag3 <- NA
+  hauls$seas_sst_temp_change_abs_lag4 <- NA
+  hauls$seas_sst_temp_change_abs_lag5 <- NA
+  hauls$seas_sst_temp_change_abs_lag6 <- NA
+  hauls$seas_sst_temp_change_abs_lag7 <- NA
+  hauls$seas_sst_temp_change_abs_lag8 <- NA
+  hauls$seas_sst_temp_change_abs_lag9 <- NA
+  hauls$seas_sst_temp_change_abs_lag10 <- NA
+  
+
+#bottom
+  
+  
+i=1
+for (i in 1:nrow(hauls)) {
+  this_month_julian <- hauls$month_julian[i]
+  this_region <- hauls$region[i]
+  this_month_julian_back1year <- month_julian-11
+  #surface
+  subset_sst <- soda_sst_monthavg[region == this_region & month_julian >= this_month_julian_back1year & soda_sst_monthavg$month_julian <= this_month_julian]
+  mean_sst_temp <- mean(subset_sst$sst_mean)
+  max_sst_temp <- max(subset_sst$sst_mean)
+  min_sst_temp <- min(subset_sst$sst_mean)
+  
+  seas_sst_temp <- max_sst_temp - min_sst_temp
+  
+  hauls$mean_sst_temp[i] <- mean_sst_temp
+  hauls$max_sst_temp[i] <- max_sst_temp
+  hauls$min_sst_temp[i] <- min_sst_temp
+  hauls$seas_sst_temp[i] <- seas_sst_temp
+  
+  #surface lags
+  
+  
+}
+```
+
 
 
 I currently have mean monthly values for a ton of GPS points within a region.
