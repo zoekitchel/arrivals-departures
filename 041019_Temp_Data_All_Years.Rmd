@@ -356,7 +356,7 @@ for (i in 1:nrow(hauls)) {
     this_month_julian_reverse[j] <- this_month_julian-monthstosubtract[j]
   }
   #surface
-  subset_sst <- soda_sst_monthavg[region == this_region & month_julian >= this_month_julian_back1year & soda_sst_monthavg$month_julian <= this_month_julian]
+  subset_sst <- soda_sst_monthavg[region == this_region & month_julian >= this_month_julian_reverse[1] & soda_sst_monthavg$month_julian <= this_month_julian]
   mean_sst_temp <- mean(subset_sst$sst_mean)
   max_sst_temp <- max(subset_sst$sst_mean)
   min_sst_temp <- min(subset_sst$sst_mean)
@@ -370,13 +370,13 @@ for (i in 1:nrow(hauls)) {
   
   #surface raw lags 
   hauls$mean_sst_temp_lag1
-  this_month_julian_back2year <- month_julian-23
-  subset_sst <- soda_sst_monthavg[region == this_region & month_julian >= this_month_julian_back2year & soda_sst_monthavg$month_julian <= this_month_julian_back1year]
-  mean_sst_temp <- mean(subset_sst$sst_mean)
-  max_sst_temp <- max(subset_sst$sst_mean)
-  min_sst_temp <- min(subset_sst$sst_mean)
   
-  seas_sst_temp <- max_sst_temp - min_sst_temp
+  subset_sst <- soda_sst_monthavg[region == this_region & month_julian >= this_month_julian_reverse[2] & soda_sst_monthavg$month_julian <= this_month_julian_reverse[1]]
+  mean_sst_temp_lag1 <- mean(subset_sst$sst_mean)
+  max_sst_temp_lag1 <- max(subset_sst$sst_mean)
+  min_sst_temp_lag1 <- min(subset_sst$sst_mean)
+  
+  seas_sst_temp_lag1 <- max_sst_temp - min_sst_temp
   
   hauls$mean_sst_temp[i] <- mean_sst_temp
   hauls$max_sst_temp[i] <- max_sst_temp
