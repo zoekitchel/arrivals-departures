@@ -191,49 +191,14 @@ hauls$region <- as.factor(hauls$region)
   
   
   #lag raw
-  hauls$mean_sst_temp_lag1 <- NA
-  hauls$mean_sst_temp_lag2 <- NA
-  hauls$mean_sst_temp_lag3 <- NA
-  hauls$mean_sst_temp_lag4 <- NA
-  hauls$mean_sst_temp_lag5 <- NA
-  hauls$mean_sst_temp_lag6 <- NA
-  hauls$mean_sst_temp_lag7 <- NA
-  hauls$mean_sst_temp_lag8 <- NA
-  hauls$mean_sst_temp_lag9 <- NA
-  hauls$mean_sst_temp_lag10 <- NA
+  #All column names I'll need
+  #new columns
+  temp.vars <- c("mean", "max", "min", "seas")
+  raw.lag.sst.col.names <- CJ(temp.vars, 1:10)[, paste(temp.vars, 1:10, sep ="_sst_temp_lag")]
   
-  hauls$max_sst_temp_lag1 <- NA
-  hauls$max_sst_temp_lag2 <- NA
-  hauls$max_sst_temp_lag3 <- NA
-  hauls$max_sst_temp_lag4 <- NA
-  hauls$max_sst_temp_lag5 <- NA
-  hauls$max_sst_temp_lag6 <- NA
-  hauls$max_sst_temp_lag7 <- NA
-  hauls$max_sst_temp_lag8 <- NA
-  hauls$max_sst_temp_lag9 <- NA
-  hauls$max_sst_temp_lag10 <- NA
-  
-  hauls$min_sst_temp_lag1 <- NA
-  hauls$min_sst_temp_lag2 <- NA
-  hauls$min_sst_temp_lag3 <- NA
-  hauls$min_sst_temp_lag4 <- NA
-  hauls$min_sst_temp_lag5 <- NA
-  hauls$min_sst_temp_lag6 <- NA
-  hauls$min_sst_temp_lag7 <- NA
-  hauls$min_sst_temp_lag8 <- NA
-  hauls$min_sst_temp_lag9 <- NA
-  hauls$min_sst_temp_lag10 <- NA
-  
-  hauls$seas_sst_temp_lag1 <- NA
-  hauls$seas_sst_temp_lag2 <- NA
-  hauls$seas_sst_temp_lag3 <- NA
-  hauls$seas_sst_temp_lag4 <- NA
-  hauls$seas_sst_temp_lag5 <- NA
-  hauls$seas_sst_temp_lag6 <- NA
-  hauls$seas_sst_temp_lag7 <- NA
-  hauls$seas_sst_temp_lag8 <- NA
-  hauls$seas_sst_temp_lag9 <- NA
-  hauls$seas_sst_temp_lag10 <- NA
+  #loop to make new column names
+  hauls[ ,raw.lag.sst.col.names[1:40]:=numeric(.N) ]
+  #ended here
  
   
   #change
@@ -347,15 +312,15 @@ hauls$region <- as.factor(hauls$region)
   
 i=1
 for (i in 1:nrow(hauls)) {
-  this_month_julian <- hauls$month_julian[i]
-  this_region <- hauls$region[i]
-  monthstosubtract <- seq(from = 11, by = 12, length.out = 11)
+  this_month_julian <- hauls$month_julian[i] #identify month/year
+  this_region <- hauls$region[i] #identify region
+  monthstosubtract <- seq(from = 11, by = 12, length.out = 11) 
   
-  this_month_julian_reverse <- NA
+  this_month_julian_reverse <- NA #month/year combo back in time
   for (j in 1:length(monthstosubtract)){
     this_month_julian_reverse[j] <- this_month_julian-monthstosubtract[j]
   }
-  #surface
+  #surface raw
   subset_sst <- soda_sst_monthavg[region == this_region & month_julian >= this_month_julian_reverse[1] & soda_sst_monthavg$month_julian <= this_month_julian]
   mean_sst_temp <- mean(subset_sst$sst_mean)
   max_sst_temp <- max(subset_sst$sst_mean)
@@ -369,23 +334,20 @@ for (i in 1:nrow(hauls)) {
   hauls$seas_sst_temp[i] <- seas_sst_temp
   
   #surface raw lags 
-  hauls$mean_sst_temp_lag1
+  for (j in 2:length(this_month_julian_reverse)) {
+  subset_sst <- soda_sst_monthavg[region == this_region & month_julian >= this_month_julian_reverse[j] & month_julian <= this_month_julian_reverse[j-1]]
   
-  subset_sst <- soda_sst_monthavg[region == this_region & month_julian >= this_month_julian_reverse[2] & soda_sst_monthavg$month_julian <= this_month_julian_reverse[1]]
-  mean_sst_temp_lag1 <- mean(subset_sst$sst_mean)
-  max_sst_temp_lag1 <- max(subset_sst$sst_mean)
-  min_sst_temp_lag1 <- min(subset_sst$sst_mean)
+  indx <- which(colnames(hauls) == paste0("mean_sst_temp_lag", j-1)) #finds column number with right name
+  hauls[(i),(indx) := mean(subset_sst$sst_mean)] #assigns value to that cell
+  indx <- which(colnames(hauls) == paste0("max_sst_temp_lag", j-1))
+  hauls[(i),(indx) := max(subset_sst$sst_mean)]
+  indx <- which(colnames(hauls) == paste0("min_sst_temp_lag", j-1))
+  hauls[(i),(indx) := min(subset_sst$sst_mean)]
+  indx <- which(colnames(hauls) == paste0("seas_sst_temp_lag", j-1))
+  hauls[(i),(indx) := (get(paste0("max_sst_temp_lag", j-1))-get(paste0("min_sst_temp_lag", j-1)))]
+  }
   
-  seas_sst_temp_lag1 <- max_sst_temp - min_sst_temp
-  
-  hauls$mean_sst_temp[i] <- mean_sst_temp
-  hauls$max_sst_temp[i] <- max_sst_temp
-  hauls$min_sst_temp[i] <- min_sst_temp
-  hauls$seas_sst_temp[i] <- seas_sst_temp
-  
-  
-  
-  
+  #surface raw change
   
 }
 ```
