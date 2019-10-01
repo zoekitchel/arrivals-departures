@@ -184,10 +184,10 @@ hauls$region <- as.factor(hauls$region)
 #new columns for loop
 #surface
 #raw
-  hauls$mean_sst_temp <- NA
-  hauls$max_sst_temp <- NA
-  hauls$min_sst_temp <- NA
-  hauls$seas_sst_temp <- NA
+  hauls[,mean_sst_temp :=numeric(.N)]
+  hauls[,max_sst_temp :=numeric(.N)]
+  hauls[,min_sst_temp :=numeric(.N)]
+  hauls[,seas_sst_temp :=numeric(.N)]
   
   
   #lag raw
@@ -202,58 +202,23 @@ hauls$region <- as.factor(hauls$region)
  
   
   #change
-  hauls$mean_sst_temp_change <- NA
-  hauls$max_sst_temp_change <- NA
-  hauls$min_sst_temp_change <- NA
-  hauls$seas_sst_temp_change <- NA
+  hauls[,mean_sst_temp_change :=numeric(.N)]
+  hauls[,max_sst_temp_change :=numeric(.N)]
+  hauls[,min_sst_temp_change :=numeric(.N)]
+  hauls[,seas_sst_temp_change :=numeric(.N)]
+
 
   
   #lag change
-  hauls$mean_sst_temp_change_lag1 <- NA
-  hauls$mean_sst_temp_change_lag2 <- NA
-  hauls$mean_sst_temp_change_lag3 <- NA
-  hauls$mean_sst_temp_change_lag4 <- NA
-  hauls$mean_sst_temp_change_lag5 <- NA
-  hauls$mean_sst_temp_change_lag6 <- NA
-  hauls$mean_sst_temp_change_lag7 <- NA
-  hauls$mean_sst_temp_change_lag8 <- NA
-  hauls$mean_sst_temp_change_lag9 <- NA
-  hauls$mean_sst_temp_change_lag10 <- NA
+   #All column names I'll need
+  #new columns
+  temp.vars <- c("mean", "max", "min", "seas")
+  change.lag.sst.col.names <- CJ(temp.vars, 1:10)[, paste(temp.vars, 1:10, sep ="_sst_temp_change_lag")]
   
-  hauls$max_sst_temp_change_lag1 <- NA
-  hauls$max_sst_temp_change_lag2 <- NA
-  hauls$max_sst_temp_change_lag3 <- NA
-  hauls$max_sst_temp_change_lag4 <- NA
-  hauls$max_sst_temp_change_lag5 <- NA
-  hauls$max_sst_temp_change_lag6 <- NA
-  hauls$max_sst_temp_change_lag7 <- NA
-  hauls$max_sst_temp_change_lag8 <- NA
-  hauls$max_sst_temp_change_lag9 <- NA
-  hauls$max_sst_temp_change_lag10 <- NA
+  #loop to make new column names
+  hauls[ ,change.lag.sst.col.names[1:40]:=numeric(.N) ]
   
-  hauls$min_sst_temp_change_lag1 <- NA
-  hauls$min_sst_temp_change_lag2 <- NA
-  hauls$min_sst_temp_change_lag3 <- NA
-  hauls$min_sst_temp_change_lag4 <- NA
-  hauls$min_sst_temp_change_lag5 <- NA
-  hauls$min_sst_temp_change_lag6 <- NA
-  hauls$min_sst_temp_change_lag7 <- NA
-  hauls$min_sst_temp_change_lag8 <- NA
-  hauls$min_sst_temp_change_lag9 <- NA
-  hauls$min_sst_temp_change_lag10 <- NA
-  
-  hauls$seas_sst_temp_change_lag1 <- NA
-  hauls$seas_sst_temp_change_lag2 <- NA
-  hauls$seas_sst_temp_change_lag3 <- NA
-  hauls$seas_sst_temp_change_lag4 <- NA
-  hauls$seas_sst_temp_change_lag5 <- NA
-  hauls$seas_sst_temp_change_lag6 <- NA
-  hauls$seas_sst_temp_change_lag7 <- NA
-  hauls$seas_sst_temp_change_lag8 <- NA
-  hauls$seas_sst_temp_change_lag9 <- NA
-  hauls$seas_sst_temp_change_lag10 <- NA
-  
-  
+#stopped here
   #abs change
   hauls$mean_sst_temp_change_abs <- NA
   hauls$max_sst_temp_change_abs <- NA
@@ -333,7 +298,11 @@ for (i in 1:nrow(hauls)) {
   hauls$min_sst_temp[i] <- min_sst_temp
   hauls$seas_sst_temp[i] <- seas_sst_temp
   
+  #here I saved hauls as it is
+  save(hauls, file = "col_ext/hauls_930.Rdata")
+  
   #surface raw lags 
+  sst_raw_lags <- data.table(lag = raw.lag.sst.col.names, temp = NA)
   for (j in 2:length(this_month_julian_reverse)) {
   subset_sst <- soda_sst_monthavg[region == this_region & month_julian >= this_month_julian_reverse[j] & month_julian <= this_month_julian_reverse[j-1]]
   
@@ -348,7 +317,22 @@ for (i in 1:nrow(hauls)) {
   }
   
   #surface raw change
+  indx <- which(colnames(hauls) == paste0("mean_sst_temp_change"))
+  hauls[(i),mean_sst_temp_change :=  mean_sst_temp_lag1[i]-mean_sst_temp[i]]
+  hauls[(i),max_sst_temp_change :=  max_sst_temp_lag1[i]-max_sst_temp[i]]
+  hauls[(i),min_sst_temp_change :=  min_sst_temp_lag1[i]-min_sst_temp[i]]
+  hauls[(i),seas_sst_temp_change :=  seas_sst_temp_lag1[i]-seas_sst_temp[i]]
+    
+    
+    
+    
+    
+    
+    
+    
+    
   
+  #surface lag change
 }
 ```
 
