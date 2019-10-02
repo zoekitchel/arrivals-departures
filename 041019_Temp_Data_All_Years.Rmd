@@ -512,19 +512,6 @@ for (i in 1:nrow(hauls)) {
 }
 ```
 
-To fix
-
-only first value shows, STILL, this is happening
-mean_sst_temp_change
-max_sst_temp_change
-min_sst_temp_change 
-seas_sst_temp_change 
-mean_sst_temp_change_abs
-max_sst_temp_change_abs 
-min_sst_temp_change_abs 
-seas_sst_temp_change_abs
-
-
 I currently have mean monthly values for a ton of GPS points within a region.
 For temperature values, I will first take a mean for each month over the whole region, so then I have a mean month/year value. region_*month*_mean_sst
 Then, I will take mean of mean month/year of year of trawl to get a YEARLY mean to represent the whole region. region_year_mean_sst
