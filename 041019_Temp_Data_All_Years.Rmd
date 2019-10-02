@@ -206,6 +206,7 @@ hauls$region <- as.factor(hauls$region)
     hauls[, max_sst_temp_change := numeric(.N)]
     hauls[, min_sst_temp_change := numeric(.N)]
     hauls[, seas_sst_temp_change := numeric(.N)]
+
     
     #lag change
       #new columns
@@ -337,6 +338,7 @@ for (i in 1:nrow(hauls)) {
     }
     
     print(i)
+
 }
 ```
 
