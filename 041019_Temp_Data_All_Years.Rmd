@@ -70,10 +70,37 @@ system.time(temp_values_sst <- raster::extract(soda_surface, locations))
 #column bind
 latlon_temp_values_sbt <- cbind(latlongyear.u, temp_values_sbt)
 latlon_temp_values_sst <- cbind(latlongyear.u, temp_values_sst)
-
 ```
 
-I need a data.table in long format. This takes a while.
+TROUBLE SHOOTING
+#which rows are NA?
+
+latlon_temp_values_sbt[is.na(X2002.07.01),]
+#no data from 1980 ONWARDS for DFO_SoGulf
+
+##############I'll fix this at some point, but for now, I will exclude them from avg
+
+1: 47.80000 -65.58333 DFO_SoGulf
+2: 47.91667 -65.61667 DFO_SoGulf
+3: 47.91667 -65.51667 DFO_SoGulf
+4: 47.93333 -65.63333 DFO_SoGulf
+5: 47.95000 -65.80000 DFO_SoGulf
+6: 47.98333 -65.88333 DFO_SoGulf
+7: 48.00000 -65.60000 DFO_SoGulf
+
+#no data before 1980 for DFO_SoGulf and a few AFSC_GOA sites
+
+1: 45.92100  -63.50167 DFO_SoGulf         
+2: 45.93683  -63.57550 DFO_SoGulf         
+3: 45.95000  -63.53333 DFO_SoGulf          
+4: 45.99750  -63.58583 DFO_SoGulf          
+5: 55.69430 -133.45270   AFSC_GOA       
+6: 55.80966 -133.42730   AFSC_GOA        
+7: 57.53769 -156.01590   AFSC_GOA     
+
+-----
+
+I need a data.table in long format. This (sometimes) takes a while.
 
 ```{r melt temp data}
 #surface
@@ -117,13 +144,15 @@ First is to average over all points in a region for every month/year combo. This
 
 #average over year
   #surface
-  soda_sst_monthavg <- df_long_sst[,list(sst_mean=mean(temp)),by=c("region", "year", "month")]
+  soda_sst_monthavg <- df_long_sst[,list(sst_mean=mean(temp, na.rm=TRUE)),by=c("region", "year", "month")]
   #bottom
-  soda_sbt_monthavg <- df_long_sbt[,list(sbt_mean=mean(temp)),by=c("region", "year", "month")]
+  soda_sbt_monthavg <- df_long_sbt[,list(sbt_mean=mean(temp,na.rm=TRUE)),by=c("region", "year", "month")]
   
   #good time to save
 
 save(soda_sst_monthavg, soda_sbt_monthavg, file = "col_ext/soda_avg_monthly_temps.Rdata")
+
+#for some reason, we're getting NA's for DFO_SoGulf and AFSC_GOA
 ```
 
 It seems as though the best way to speak to the trawls data set and ask it to look for a specific year/month and then go back from that date by a specified interval is to turn all months into julian months, to eliminate year variable.
@@ -241,6 +270,7 @@ for (i in 1:nrow(hauls)) {
     for (j in 1:length(monthstosubtract)){
       this_month_julian_reverse[j] <- this_month_julian-monthstosubtract[j]
     }
+    
   #surface raw
     subset_sst <- soda_sst_monthavg[region == this_region & month_julian >= this_month_julian_reverse[1] & soda_sst_monthavg$month_julian <= this_month_julian]
     
@@ -250,25 +280,25 @@ for (i in 1:nrow(hauls)) {
     hauls[(i),seas_sst_temp := max_sst_temp - min_sst_temp] #seasonality over the past 12 months
     
   #surface raw lags 
-    for (j in 2:length(this_month_julian_reverse)) {
-      
-      subset_sst <- soda_sst_monthavg[region == this_region & month_julian >= this_month_julian_reverse[j] & month_julian < this_month_julian_reverse[j-1]] #subsets to correct year
-      
-      indx <- which(colnames(hauls) == paste0("mean_sst_temp_lag", j-1)) #finds column number with right name
-      hauls[(i),(indx) := mean(subset_sst$sst_mean)] #assigns value to that cell
-      indx <- which(colnames(hauls) == paste0("max_sst_temp_lag", j-1))
-      hauls[(i),(indx) := max(subset_sst$sst_mean)]
-      indx <- which(colnames(hauls) == paste0("min_sst_temp_lag", j-1))
-      hauls[(i),(indx) := min(subset_sst$sst_mean)]
-      indx <- which(colnames(hauls) == paste0("seas_sst_temp_lag", j-1))
-      hauls[(i),(indx) := (get(paste0("max_sst_temp_lag", j-1))-get(paste0("min_sst_temp_lag", j-1)))]
-    }
+      for (j in 2:length(this_month_julian_reverse)) {
+        
+        subset_sst <- soda_sst_monthavg[region == this_region & month_julian >= this_month_julian_reverse[j] & month_julian < this_month_julian_reverse[j-1]] #subsets to correct year
+        
+        indx <- which(colnames(hauls) == paste0("mean_sst_temp_lag", j-1)) #finds column number with right name
+        hauls[(i),(indx) := mean(subset_sst$sst_mean)] #assigns value to that cell
+        indx <- which(colnames(hauls) == paste0("max_sst_temp_lag", j-1))
+        hauls[(i),(indx) := max(subset_sst$sst_mean)]
+        indx <- which(colnames(hauls) == paste0("min_sst_temp_lag", j-1))
+        hauls[(i),(indx) := min(subset_sst$sst_mean)]
+        indx <- which(colnames(hauls) == paste0("seas_sst_temp_lag", j-1))
+        hauls[(i),(indx) := (get(paste0("max_sst_temp_lag", j-1))-get(paste0("min_sst_temp_lag", j-1)))]
+      }
     
     #surface change
-    hauls[(i),mean_sst_temp_change :=  mean_sst_temp[i]-mean_sst_temp_lag1[i]]
-    hauls[(i),max_sst_temp_change :=  max_sst_temp[i]-max_sst_temp_lag1[i]]
-    hauls[(i),min_sst_temp_change :=  min_sst_temp[i]-min_sst_temp_lag1[i]]
-    hauls[(i),seas_sst_temp_change :=  seas_sst_temp[i]-seas_sst_temp_lag1[i]]
+    hauls[(i),mean_sst_temp_change :=  mean_sst_temp-mean_sst_temp_lag1]
+    hauls[(i),max_sst_temp_change :=  max_sst_temp-max_sst_temp_lag1]
+    hauls[(i),min_sst_temp_change :=  min_sst_temp-min_sst_temp_lag1]
+    hauls[(i),seas_sst_temp_change :=  seas_sst_temp-seas_sst_temp_lag1]
       
     #surface lag change
     for (j in 1:9) {
@@ -337,14 +367,14 @@ for (i in 1:nrow(hauls)) {
       hauls[(i), (indx_abs) := temp_change_abs]
     }
     
-    print(i)
+    print(paste(i, nrow(hauls), sep = "/"))
 
 }
 ```
 
 To fix
 
-only first value shows:
+only first value shows, STILL, this is happening
 mean_sst_temp_change
 max_sst_temp_change
 min_sst_temp_change 
