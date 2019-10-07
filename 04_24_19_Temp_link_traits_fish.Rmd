@@ -45,55 +45,52 @@ library(dplyr)
 library(tidyr)
 library(faraway)
 traits <- read.csv("traits_formanip.csv")
-load("date_ssttemp_avg_SODA_withlags.Rdata")
-load("spp_master.RData")
+load("col_ext/hauls.Rdata")
+load("col_ext/spp_master.RData")
 
 ```
+
 Let's link species data from spp_master to temp data with lags and changes
 
-```{r}
+```{r link species data to temp data}
 #match region names between two data tables
 reg <- levels(as.factor(spp_master$reg))
 region <- c("AFSC_Aleutians","AFSC_EBS", "SEFSC_GOMex", "AFSC_GOA", "NEFSC_NEUS", "DFO_Newfoundland", "SCDNR_SEUS", "DFO_ScotianShelf", "AFSC_WCTri")
 regions.dt <- data.table(reg, region)
 
-date_temp_reg_avg_withlags.naomit <- date_temp_reg_avg_withlags.naomit[regions.dt, nomatch = 0, on = c("region")]
+hauls <- hauls[regions.dt, nomatch = 0, on = c("region")]
 
-date_temp_reg_avg_withlags.naomit$reg <- as.factor(date_temp_reg_avg_withlags.naomit$reg)
-#colnames(date_temp_reg_avg_withlags.naomit)[colnames(date_temp_reg_avg_withlags.naomit) == "region"] <- "reg"
+hauls[, reg := as.factor(reg)] #make region a factor in hauls
 
-date_temp_reg_avg_withlags.naomit$year <- as.numeric(date_temp_reg_avg_withlags.naomit$year)
 ```
+Just realizing now that I currently have data from 12 months before each trawl event. This isn't appropriate, as my colonization/extinction data is per year. FOR NOW (before I speak with Malin), I will just use earlier month in each year. 
+
+```{r only keep earlier year temp data}
+#keep one line of data for each year/region combo, and pick it based on smaller month value
+hauls2 <- hauls[hauls[, .I[1], by = c("year", "region")]$V1]
+cols <- c(5,38:286)
+hauls2.r <- hauls2[, ..cols] #.. pulls in variable
+
+```
+
 
 ```{r combine species data with temp data}
+#make sure data type for reg and year in both are consistent
+hauls2.r$year <- as.numeric(as.character(hauls2.r$year))
+spp_master[, reg := as.factor(reg)]
 #r combine species data with temp data
-spp_master_ztemp <- spp_master[date_temp_reg_avg_withlags.naomit, by = c("reg", "year")]
+spp_master_ztemp <- spp_master[hauls2.r, nomatch = 0, on = c("reg", "year")]
 
 ```
-#Below Running from Amphiprion Output
+
+
 First, let's ignore traits, and just look at temperature as predictors of yes no colonization and yes no extinction
 Colonization in this year: col
 Goes extinct in this year (here last year, gone now) : now_ext
-Mean temp: region year mean sst
-Max temp:region year max sst
-Min temp: region year min sst
-Seasonality: region year seas sst
-```{r import amphiprion output}
-readRDS("/Users/zoekitchel/Documents/grad school/Rutgers/LabWork/Colonization_Extinction/spp_master_ztemp.rds")
-#eliminate regions not in Ryan's paper
-date_temp_reg_avg_withlags.naomit.r <- date_temp_reg_avg_withlags.naomit[reg %in% c("AFSC_Aleutians","AFSC_EBS","AFSC_GOA","AFSC_WCTri","DFO_Newfoundland","DFO_ScotianShelf","NEFSC_NEUS","SCDNR_SEUS","SEFSC_GOMex")]
-
-```
-```{r where are col and ext happening, and how often}
-spp_master_summary <- spp_master %>%
-  group_by(reg) %>%
-  summarise(number_col = sum(col)/n(), number_ext = sum(now_ext)/n())
-
-ggplot(data=spp_master_summary, aes(x=reg)) +
-  geom_bar
-```
-
-
+Mean temp: mean_sbt_temp
+Max temp: max_sbt_temp
+Min temp: min_sbt_temp
+Seasonality: seas_sbt_temp
 
 ```{r get to know temperature data better}
 #temperature through time
@@ -108,117 +105,69 @@ levels(date_temp_reg_avg_withlags.naomit.r$reg)
 
 What about correlations among temperature variables?
 ```{r r-correlations between temperature variables }
-res <- cor(date_temp_reg_avg_withlags[,3:6])
+#surface
+res <- cor(spp_master_ztemp[,45:48])
 res
-```
 
-Colonization base mod
-```{r}
-col_mod <- glmer(col ~ region_year_mean_sst + region_year_max_sst + region_year_min_sst + region_year_seas_sst + (1|reg) + (1|year), data = spp_master_ztemp, family = binomial)
-summary(col_mod)
-AICc(col_mod)
+#bottom
+
+```
+Surface
+              mean_sst_temp max_sst_temp min_sst_temp seas_sst_temp
+mean_sst_temp     1.0000000    0.9673832   0.96748430    0.18164518
+max_sst_temp      0.9673832    1.0000000   0.87800968    0.41934324
+min_sst_temp      0.9674843    0.8780097   1.00000000   -0.06633786
+seas_sst_temp     0.1816452    0.4193432  -0.06633786    1.00000000
+
+Mean is well correlated with max, and min both (0.96)
+Max and medium are medium correlated, but I'll still keep it in (0.87)
+
+I will use max, min, seas
+
+Bottom
+              mean_sbt_temp max_sbt_temp min_sbt_temp seas_sbt_temp
+mean_sbt_temp     1.0000000    0.9935599    0.9869266     0.8085135
+max_sbt_temp      0.9935599    1.0000000    0.9655348     0.8669641
+min_sbt_temp      0.9869266    0.9655348    1.0000000     0.7073712
+seas_sbt_temp     0.8085135    0.8669641    0.7073712     1.0000000
+
+Mean is well correlated with max (0.99) and min (0.98)
+Max and min are well correlated with each other (0.96)
+Seasonality is most correlated with max (0.86), and then mean (0.80) and then min (0.70)
+
+I will use min, and seas (least correlated)
+
+___
+Colonization base mod surface
+```{r base colonization model surface}
+col_mod_base_sst <- glmer(col ~ max_sst_temp + min_sst_temp + seas_sst_temp + (1|year) + (1|reg), data = spp_master_ztemp, family = "binomial")
+#rank deficient, so dropping a column
+summary(col_mod_base_sst)
+AICc(col_mod_base_sst)
 ```
 
 Extinction base mod
 ```{r}
-ext_mod <- glmer(now_ext ~ region_year_mean_sst + region_year_max_sst + region_year_min_sst + region_year_seas_sst + (1|reg) + (1|year), data = spp_master_ztemp, family = binomial)
-summary(ext_mod)
-AICc(ext_mod)
+ext_mod_base_sst <- glmer(now_ext ~ max_sst_temp + min_sst_temp + seas_sst_temp + (1|reg) + (1|year), data = spp_master_ztemp, family = binomial)
+summary(ext_mod_base_sst)
+AICc(ext_mod_base_sst)
 ```
-The above models perform really poorly, but this doesn't really surprise me. I think change in temperature is a bigger deal, although I am surprised that seasonality doesn't do anything. 
-
-However, this is more for extinction. It's worth it to look at lags for extinction for these means as this model has the lowest AIC in compared to change in temp, and absolute change in temp.
-
-```{r}
-ext_mod_lag1 <- glmer(now_ext ~ lag1.region_year_mean_sst + lag1.region_year_max_sst + lag1.region_year_min_sst + lag1.region_year_seas_sst + (1|reg) + (1|year), data = spp_master_ztemp, family = binomial)
-summary(ext_mod_lag1)
-
-ext_mod_lag2 <- glmer(now_ext ~ lag2.region_year_mean_sst + lag2.region_year_max_sst + lag2.region_year_min_sst + lag2.region_year_seas_sst + (1|reg) + (1|year), data = spp_master_ztemp, family = binomial)
-summary(ext_mod_lag2)
-AICc(ext_mod_lag2)
-
-ext_mod_lag3 <- glmer(now_ext ~ lag3.region_year_mean_sst + lag3.region_year_max_sst + lag3.region_year_min_sst + lag3.region_year_seas_sst + (1|reg) + (1|year), data = spp_master_ztemp, family = binomial)
-summary(ext_mod_lag3)
-AICc(ext_mod_lag3)
-```
-
-Let's now take a look at change only 
-
-```{r}
-col_mod_change <- glmer(col ~ sst_mean_change + sst_max_change + sst_min_change + sst_seas_change + (1|reg) + (1|year), data = spp_master_ztemp, family = binomial)
-summary(col_mod_change)
-AICc(col_mod_change)
-
-ext_mod_change <- glmer(now_ext ~ sst_mean_change + sst_max_change + sst_min_change + sst_seas_change + (1|reg) + (1|year), data = spp_master_ztemp, family = binomial)
-
-#what about change with a lag
-ext_mod_change_lag1 <- glmer(now_ext ~ sst_mean_change_lag1 + sst_max_change_lag1 + sst_min_change_lag1 + sst_seas_change_lag1 + (1|reg) + (1|year), data = spp_master_ztemp, family = binomial)
-AICc(ext_mod_change_lag1)
-
-#lag 2
-ext_mod_change_lag2 <- glmer(now_ext ~ sst_mean_change_lag2 + sst_max_change_lag2 + sst_min_change_lag2 + sst_seas_change_lag2 + (1|reg) + (1|year), data = spp_master_ztemp, family = binomial)
-AICc(ext_mod_change_lag2)
-
-#lag 3
-ext_mod_change_lag3 <- glmer(now_ext ~ sst_mean_change_lag3 + sst_max_change_lag3 + sst_min_change_lag3 + sst_seas_change_lag3 + (1|reg) + (1|year), data = spp_master_ztemp, family = binomial)
-AICc(ext_mod_change_lag3)
-
-#lag 4
-ext_mod_change_lag4 <- glmer(now_ext ~ sst_mean_change_lag4 + sst_max_change_lag4 + sst_min_change_lag4 + sst_seas_change_lag4 + (1|reg) + (1|year), data = spp_master_ztemp, family = binomial)
-AICc(ext_mod_change_lag4)
-
-summary(ext_mod_change)
-```
-
-Let's now take a look at absolute value of temp change from previous year only
-```{r}
-col_mod_change_abs <- glmer(col ~ sst_mean_change_abs + sst_max_change_abs + sst_min_change_abs + sst_seas_change_abs + (1|reg) + (1|year), data = spp_master_ztemp, family = binomial)
-summary(col_mod_change_abs)
-AICc(col_mod_change, col_mod, col_mod_change_abs)
-```
-This one above actually gives really good results, this is exciting!
-When absolute change in max yearly temperature INCREASES, likelihood of colonization increase
-When absolute change in seasonality INCREASES, likelihood of colonizations decreases
-When absolute change in mean yearly temperature INCREASES, likelihood of colonization increases
-
-How do we feel about the mixed effects? Let's compare AIC
-```{r}
-options(na.action = "na.omit")
-col_mod_change_abs_regasrandom <- glmer(col ~ sst_mean_change_abs + sst_max_change_abs + sst_min_change_abs + sst_seas_change_abs + (1|reg), data = spp_master_ztemp, family = binomial)
-col_mod_change_abs_yearasrandom <- glmer(col ~ sst_mean_change_abs + sst_max_change_abs + sst_min_change_abs + sst_seas_change_abs + (1|year), data = spp_master_ztemp, family = binomial)
-col_mod_change_abs_norandom <- glm(col ~ sst_mean_change_abs + sst_max_change_abs + sst_min_change_abs + sst_seas_change_abs, data = spp_master_ztemp, family = binomial)
-AICc(col_mod_change_abs, col_mod_change_abs_regasrandom,col_mod_change_abs_yearasrandom, col_mod_change_abs_norandom)
-```
-Best with both random effects!!
-
-
-```{r}
-ext_mod_change_abs <- glmer(now_ext ~ sst_mean_change_abs + sst_max_change_abs + sst_min_change_abs + sst_seas_change_abs + (1|reg) + (1|year), data = spp_master_ztemp, family = binomial)
-summary(ext_mod_change_abs)
-AICc(ext_mod_change_abs)
-```
-Not as exciting as colonizations, but not surprised.
-When absolute change in mean yearly temperature INCREASES, likelihood of extinction ALSO increases
-
-Again, how do we feel about the mixed effects in our extinction model? Let's compare AIC
-```{r}
-options(na.action = "na.omit")
-ext_mod_change_abs_regasrandom <- glmer(now_ext ~ sst_mean_change_abs + sst_max_change_abs + sst_min_change_abs + sst_seas_change_abs + (1|reg), data = spp_master_ztemp, family = binomial)
-ext_mod_change_abs_yearasrandom <- glmer(now_ext ~ sst_mean_change_abs + sst_max_change_abs + sst_min_change_abs + sst_seas_change_abs + (1|year), data = spp_master_ztemp, family = binomial)
-ext_mod_change_abs_norandom <- glm(now_ext ~ sst_mean_change_abs + sst_max_change_abs + sst_min_change_abs + sst_seas_change_abs, data = spp_master_ztemp, family = binomial)
-AICc(ext_mod_change_abs, ext_mod_change_abs_regasrandom,ext_mod_change_abs_yearasrandom, ext_mod_change_abs_norandom)
-```
-Best with both random effects!!
+The above models perform really poorly, but this doesn't really surprise me. I think change in temperature is a bigger deal.
 
 #START HERE
-Now, let's play around with lags a bit using dredge, 
+Now, let's play around with dredge.
 ```{r dredge colonization}
 #I want to look at columns 89:136 as possible predictors
-dredgesubset <- spp_master_ztemp_naomit[,c(1:3,6,45:164)] # this will have to change
+dredgesubset <- spp_master_ztemp[,c(1:3,6,45:292)] # this will have to change
 #let's set the NA setting correctly
 options(na.action = "na.fail")
 #fitting global model
-fm1_col <- glmer(col ~ . + (1|reg) + (1|year), family = binomial, data = dredgesubset) #fixed-effect model matrix is rank deficient so dropping 51 columns / coefficients
+fm1_col <- glmer(col ~ . + (1|reg) + (1|year), family = binomial, data = dredgesubset)
+#fixed-effect model matrix is rank deficient so dropping 102 columns / coefficients
+#I have to trick model here so that it doesn't think it's rank deficient
+vars <- colnames(spp_master_ztemp[,45:292])
+form<-formula(paste0('col~',paste0(vars,collapse='+'),'+(1|reg)+(1|year)'))
+attr(fm1_col@frame,"formula")<-form
 
 #include only models with 1 term (and intercept)
 dd <- dredge(fm1_col, m.lim = c(0, 1))
