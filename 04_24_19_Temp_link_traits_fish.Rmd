@@ -44,6 +44,7 @@ library(lme4)
 library(dplyr)
 library(tidyr)
 library(faraway)
+library(data.table)
 traits <- read.csv("traits_formanip.csv")
 load("col_ext/hauls.Rdata")
 load("col_ext/spp_master.RData")
@@ -63,13 +64,13 @@ hauls <- hauls[regions.dt, nomatch = 0, on = c("region")]
 hauls[, reg := as.factor(reg)] #make region a factor in hauls
 
 ```
-Just realizing now that I currently have data from 12 months before each trawl event. This isn't appropriate, as my colonization/extinction data is per year. FOR NOW (before I speak with Malin), I will just use earlier month in each year. 
+Just realizing now that I currently have data from 12 months before each trawl event. This isn't appropriate, as my colonization/extinction data is per year. FOR NOW (before I speak with Malin), I will just use earliest month in each year. 
 
 ```{r only keep earlier year temp data}
 #keep one line of data for each year/region combo, and pick it based on smaller month value
 hauls2 <- hauls[hauls[, .I[1], by = c("year", "region")]$V1]
 cols <- c(5,38:286)
-hauls2.r <- hauls2[, ..cols] #.. pulls in variable
+hauls2.r <- hauls2[, ..cols] #.. pulls in variable vs column name
 
 ```
 
@@ -80,7 +81,7 @@ hauls2.r$year <- as.numeric(as.character(hauls2.r$year))
 spp_master[, reg := as.factor(reg)]
 #r combine species data with temp data
 spp_master_ztemp <- spp_master[hauls2.r, nomatch = 0, on = c("reg", "year")]
-
+head(spp_master_ztemp)
 ```
 
 
@@ -93,13 +94,22 @@ Min temp: min_sbt_temp
 Seasonality: seas_sbt_temp
 
 ```{r get to know temperature data better}
+library(ggplot2)
 #temperature through time
-ggplot(data=date_temp_reg_avg_withlags.naomit, aes(x=year, y=region_year_mean_sst, col = reg)) +
+ggplot(data=spp_master_ztemp, aes(x=year, y=mean_sst_temp, col = reg)) +
   geom_point() +
   labs(x="Year", y="Mean Annual Surface Temperature (˚C)") +
-  geom_smooth(aes(col = reg), se = F, method = "lm")
+  ylim(0,25) +
+  geom_smooth(aes(col = reg), se = F, method = "lm") +
+  theme_bw()
 
-levels(date_temp_reg_avg_withlags.naomit.r$reg)
+#temperature through time
+ggplot(data=spp_master_ztemp, aes(x=year, y=mean_sbt_temp, col = reg)) +
+  geom_point() +
+  labs(x="Year", y="Mean Annual Bottom Temperature (˚C)") +
+  ylim(0,25) +
+  geom_smooth(aes(col = reg), se = F, method = "lm") +
+  theme_bw()
 
 ```
 
@@ -108,8 +118,9 @@ What about correlations among temperature variables?
 #surface
 res <- cor(spp_master_ztemp[,45:48])
 res
-
 #bottom
+res2 <- cor(spp_master_ztemp[,169:172])
+res2
 
 ```
 Surface
@@ -120,7 +131,7 @@ min_sst_temp      0.9674843    0.8780097   1.00000000   -0.06633786
 seas_sst_temp     0.1816452    0.4193432  -0.06633786    1.00000000
 
 Mean is well correlated with max, and min both (0.96)
-Max and medium are medium correlated, but I'll still keep it in (0.87)
+Max and min are medium correlated, but I'll still keep it in (0.87)
 
 I will use max, min, seas
 
@@ -153,12 +164,15 @@ summary(ext_mod_base_sst)
 AICc(ext_mod_base_sst)
 ```
 The above models perform really poorly, but this doesn't really surprise me. I think change in temperature is a bigger deal.
+```{r}
+colnames(spp_master_ztemp)
+```
 
 #START HERE
 Now, let's play around with dredge.
 ```{r dredge colonization}
-#I want to look at columns 89:136 as possible predictors
-dredgesubset <- spp_master_ztemp[,c(1:3,6,45:292)] # this will have to change
+#I want to look at possible predictors
+dredgesubset <- spp_master_ztemp[,c(1:3,6,45:168)] # this will have to change
 #let's set the NA setting correctly
 options(na.action = "na.fail")
 #fitting global model
@@ -191,7 +205,7 @@ summary(get.models(dd.col, 1)[[1]])
 Now a dredge for extinction
 ```{r dredge extinction}
 #fitting global model
-fm1_ext <- glmm(now_ext ~ . + (1|reg) + (1|year), family = binomial, data = dredgesubset)
+fm1_ext <- glmm(now_ext ~  + (1|reg) + (1|year), family = binomial, data = dredgesubset)
 dd.ext <- dredge(fm1_ext)
 
 subset(dd.ext, delta < 2)
@@ -210,6 +224,130 @@ model.avg(dd.ext, subset = cumsum(weight) <= .95) # get averaged coefficients
 #'Best' model
 summary(get.models(dd.ext, 1)[[1]])
 ```
+
+
+
+
+
+
+*******
+```{r surface colonization comparison}
+#playing with year as factor
+#can't get dredge to run above, so trying here with fewer variables
+spp_master_ztemp[,year_factor := as.factor(year)]
+
+#going to make loop to make all models I need to look at with single variables
+surface_variables <- colnames(spp_master_ztemp[,45:168])
+surface_colonization_model_comparison <- as.data.table(matrix(nrow = length(surface_variables)))
+surface_colonization_model_comparison[, variable:=as.factor(V1)][, coef:=as.numeric(V1)][, p_value:=as.numeric(V1)][, AICc:=as.numeric(V1)]
+surface_colonization_model_comparison[, V1 := NULL]
+
+for (i in 1:length(surface_variables)){
+  mod <- glmer(col ~ get(surface_variables[i]) + (1|reg) + (1|year_factor), family = binomial, data = spp_master_ztemp)
+  surface_colonization_model_comparison[i,variable := surface_variables[i]]
+  surface_colonization_model_comparison[i,coef := coef(summary(mod))[,"Estimate"][2]]
+  surface_colonization_model_comparison[i,p_value := coef(summary(mod))[,"Pr(>|z|)"][2]]
+  surface_colonization_model_comparison[i,AICc := AICc(mod)]
+  
+  print(paste(i, length(surface_variables), sep = "/"))
+    
+}
+
+#21, 37 failed to converge
+head(surface_colonization_model_comparison)
+
+```
+
+Here, looking at surface extinction
+```{r surface extinction comparison}
+#looping through all possible extinction variables with single variables
+surface_variables <- colnames(spp_master_ztemp[,45:168]) #same as above
+
+surface_extinction_model_comparison <- as.data.table(matrix(nrow = length(surface_variables)))
+surface_extinction_model_comparison[, variable:=as.factor(V1)][, coef:=as.numeric(V1)][, p_value:=as.numeric(V1)][, AICc:=as.numeric(V1)]
+surface_extinction_model_comparison[, V1 := NULL]
+
+for (i in 1:length(surface_variables)){
+  mod <- glmer(now_ext ~ get(surface_variables[i]) + (1|reg) + (1|year_factor), family = binomial, data = spp_master_ztemp)
+  surface_extinction_model_comparison[i,variable := surface_variables[i]]
+  surface_extinction_model_comparison[i,coef := coef(summary(mod))[,"Estimate"][2]]
+  surface_extinction_model_comparison[i,p_value := coef(summary(mod))[,"Pr(>|z|)"][2]]
+  surface_extinction_model_comparison[i,AICc := AICc(mod)]
+  
+  print(paste(i, length(surface_variables), sep = "/"))
+    
+}
+```
+Here, looking at bottom temp colonization
+```{r bottom colonization comparison}
+#looping through all possible extinction variables with single variables
+bottom_variables <- colnames(spp_master_ztemp[,169:292]) #same as above
+
+bottom_colonization_model_comparison <- as.data.table(matrix(nrow = length(bottom_variables)))
+bottom_colonization_model_comparison[, variable:=as.factor(V1)][, coef:=as.numeric(V1)][, p_value:=as.numeric(V1)][, AICc:=as.numeric(V1)]
+bottom_colonization_model_comparison[, V1 := NULL]
+
+for (i in 1:length(bottom_variables)){
+  mod <- glmer(col ~ get(bottom_variables[i]) + (1|reg) + (1|year_factor), family = binomial, data = spp_master_ztemp)
+  bottom_colonization_model_comparison[i,variable := bottom_variables[i]]
+  bottom_colonization_model_comparison[i,coef := coef(summary(mod))[,"Estimate"][2]]
+  bottom_colonization_model_comparison[i,p_value := coef(summary(mod))[,"Pr(>|z|)"][2]]
+  bottom_colonization_model_comparison[i,AICc := AICc(mod)]
+  
+  print(paste(i, length(bottom_variables), sep = "/"))
+    
+}
+```
+Finally, looking at bottom temp extinction
+```{r bottom extinction comparison}
+#looping through all possible extinction variables with single variables
+bottom_variables <- colnames(spp_master_ztemp[,169:292]) #same as above
+
+bottom_extinction_model_comparison <- as.data.table(matrix(nrow = length(bottom_variables)))
+bottom_extinction_model_comparison[, variable:=as.factor(V1)][, coef:=as.numeric(V1)][, p_value:=as.numeric(V1)][, AICc:=as.numeric(V1)]
+bottom_extinction_model_comparison[, V1 := NULL]
+
+for (i in 1:length(bottom_variables)){
+  mod <- glmer(now_ext ~ get(bottom_variables[i]) + (1|reg) + (1|year_factor), family = binomial, data = spp_master_ztemp)
+  bottom_extinction_model_comparison[i,variable := bottom_variables[i]]
+  bottom_extinction_model_comparison[i,coef := coef(summary(mod))[,"Estimate"][2]]
+  bottom_extinction_model_comparison[i,p_value := coef(summary(mod))[,"Pr(>|z|)"][2]]
+  bottom_extinction_model_comparison[i,AICc := AICc(mod)]
+  
+  print(paste(i, length(bottom_variables), sep = "/"))
+    
+}
+```
+
+Testing, as some models between colonization and extinction have the same coefficients
+
+
+----------
+Top models with single variables
+```{r best surface colonization models}
+head(surface_colonization_model_comparison[order(AICc)])
+
+#mean highly correlated with max, so looking just at max, lag1 and lag8 are best
+```
+Merge surface and bottom for colonization
+```{r merge surface and bottom for colonization}
+colonization_model_comparisons <- rbind(bottom_colonization_model_comparison, surface_colonization_model_comparison)
+#lowest AICc
+head(colonization_model_comparisons[order(AICc)], 30)
+
+```
+Merge surface and bottom for extinction
+```{r merge surface and bottom for extinction}
+extinction_model_comparisons <- rbind(bottom_extinction_model_comparison, surface_extinction_model_comparison)
+head(extinction_model_comparisons[order(AICc)], 30)
+
+```
+Seems that something is going on with seas_sbt_temp_change_abs_lag9
+```{r seas_sbt_temp_change_abs_lag9}
+plot(spp_master_ztemp$year, spp_master_ztemp$seas_sbt_temp_change_abs_lag9)
+plot(spp_master_ztemp$year, spp_master_ztemp$seas_sst_temp_change_abs_lag9)
+```
+
 ********
 ##Below I'm doing a more"organic" and less perscriptive dredge
 
