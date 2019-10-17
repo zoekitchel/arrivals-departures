@@ -33,16 +33,18 @@ summary(mod)
 They have a R^2 value of 0.42, so, worth it to try both. 
 
 Let's link species
+
+First, let's see if there are any errors?
 ```{r linking species}
-load("spp_master.Rdata")
-spp_master_spp <- data.frame(spp = unique(spp_master$spp), origin = "spp_master")
+load("spp_master_ztemp.Rdata")
+spp_master_spp <- data.frame(spp = unique(spp_master_ztemp$spp), origin = "spp_master")
 traits_spp <- data.frame(spp = unique(traits$taxon), origin = "traits")
 spp_all <- rbind(spp_master_spp, traits_spp)
 spp_all$spp <- as.character(spp_all$spp)
 spp_all.u <- spp_all[!duplicated(spp_all$spp),]
 ```
 
-Species to fix
+#Species to fix
 
 species | location
 
@@ -70,7 +72,7 @@ Etrumeus teres | traits
 Etrumeus teres(sadina) | spp_master
 *change spp_master to Etrumeus teres
 ```{r Etrumeus teres}
-spp_master[spp == "Etrumeus teres(sadina)", spp := "Etrumeus teres"]
+spp_master_ztemp[spp == "Etrumeus teres(sadina)", spp := "Etrumeus teres"]
 
 ```
 
@@ -92,7 +94,7 @@ Macroramphosus scolopax | traits
 Macrorhamphosus scolopax | spp_master
 *spelling error in spp_master, change to Macroramphosus scolopax
 ```{r Macroramphosus scolopax}
-spp_master[spp == "Macrorhamphosus scolopax", spp := "Macroramphosus scolopax"]
+spp_master_ztemp[spp == "Macrorhamphosus scolopax", spp := "Macroramphosus scolopax"]
 ```
 
 Mullus barbatus barbatus | traits
@@ -102,7 +104,7 @@ Myliobatis freminvillei | traits
 Myliobatis freminvillii | spp_master
 *spelling error in spp_master, change to Myliobatis freminvillei
 ```{r Myliobatis freminvillei}
-spp_master[spp == "Myliobatis freminvillii", spp := "Myliobatis freminvillei"]
+spp_master_ztemp[spp == "Myliobatis freminvillii", spp := "Myliobatis freminvillei"]
 ```
 
 
@@ -119,7 +121,7 @@ Polydactylus octoemus | spp_master
 Polydactylus octonemus | traits
 *spelling error in spp_master, change to Polydactylus octonemus
 ```{r Polydactylus octonemus}
-spp_master[spp == "Polydactylus octoemus", spp := "Polydactylus octonemus"]
+spp_master_ztemp[spp == "Polydactylus octoemus", spp := "Polydactylus octonemus"]
 ```
 
 
@@ -133,7 +135,7 @@ Stichaeus punctatus | spp_master
 Stichaeus punctatus punctatus | traits
 *delte one punctatus from traits
 ```{r Stichaeus punctatus}
-traits[taxon == "Stichaeus punctatus punctatus", taxon := "Stichaeus punctatus"][species == "punctatus punctatus", species := "punctatus"]
+traits.u[taxon == "Stichaeus punctatus punctatus", taxon := "Stichaeus punctatus"][species == "punctatus punctatus", species := "punctatus"]
 
 ```
 
@@ -146,7 +148,7 @@ Symphurus civitatium | traits
 Symphurus civitatum | spp_master
 *spelling error in spp_master, change to Symphurus civitatium
 ```{r Symphurus civitatium}
-spp_master[spp == "Symphurus civitatum", spp := "Symphurus civitatium"]
+spp_master_ztemp[spp == "Symphurus civitatum", spp := "Symphurus civitatium"]
 
 ```
 
@@ -155,7 +157,19 @@ Zenopsis conchifer | traits
 Zenopsis conchifera | spp_master
 *spelling error in spp_master, change to Zenopsis conchifer
 ```{r Zenopsis conchifer}
-spp_master[spp == "Zenopsis conchifera", spp := "Zenopsis conchifer"]
+spp_master_ztemp[spp == "Zenopsis conchifera", spp := "Zenopsis conchifer"]
 
+```
+
+Okay, now we can go forward. Let's link traits to spp_master with temp data
+
+```{r link traits to haul data}
+traits.u[, spp := taxon][, taxon := NULL]
+spp_master_ztemp.traits <- spp_master_ztemp[traits.u, nomatch = 0, on = c("spp")]
+```
+
+Now to save updated data.table with traits for species we have traits for
+```{r save}
+save(spp_master_ztemp.traits, file = "spp_master_ztemp.traits.Rdata")
 ```
 
