@@ -1,0 +1,161 @@
+---
+title: "Looking at Traits"
+output: html_notebook
+---
+
+Going to look at some patterns in traits
+```{r setup}
+library(ggplot2)
+library(data.table)
+
+
+traits <- read.csv("TraitCollectionFishNAtlanticNEPacificContShelf (3).csv")
+traits <- data.table(traits)
+
+#remove duplicates
+traits.u <- unique(traits, by = c('taxon'))
+```
+
+```{r trait patterns}
+ggplot(aes(x=age.max), data = traits) +
+  geom_histogram()
+#I'll use this variable, better data
+
+ggplot(aes(x=age.maturity), data = traits) +
+  geom_histogram()
+
+ggplot(aes(x=log(age.maturity), y=log(age.max)), data = traits) +
+  geom_point()
+
+mod <- lm(log(age.max) ~ log(age.maturity), data = traits)
+summary(mod)
+```
+They have a R^2 value of 0.42, so, worth it to try both. 
+
+Let's link species
+```{r linking species}
+load("spp_master.Rdata")
+spp_master_spp <- data.frame(spp = unique(spp_master$spp), origin = "spp_master")
+traits_spp <- data.frame(spp = unique(traits$taxon), origin = "traits")
+spp_all <- rbind(spp_master_spp, traits_spp)
+spp_all$spp <- as.character(spp_all$spp)
+spp_all.u <- spp_all[!duplicated(spp_all$spp),]
+```
+
+Species to fix
+
+species | location
+
+Arctozenus risso | spp_master
+Arctozenus risso kroyeri | spp_master
+*Arctozenus risso in traits, so best to apply same to both Arctozenus and Artozenus risso kroyeri in spp_master
+```{r Arctozenus risso}
+row <- traits.u[taxon == "Arctozenus risso",]
+row[,taxon := "Arctozenus risso kroyeri"][, species := "risso kroyeri"]
+traits.u <- rbind(traits.u, row)
+```
+
+Myoxocephalus scorpioides | spp_master
+Myoxocephalus scorpius | spp_master
+*yes, these are different!
+
+Auxis rochei rochei | traits
+*ignore, not in our hauls
+
+Diplecogaster bimaculata | traits
+Diplecogaster bimaculata bimaculata | traits
+*ignore, not in our hauls
+
+Etrumeus teres | traits
+Etrumeus teres(sadina) | spp_master
+*change spp_master to Etrumeus teres
+```{r Etrumeus teres}
+spp_master[spp == "Etrumeus teres(sadina)", spp := "Etrumeus teres"]
+
+```
+
+Eualus gaimardii gaimardii | spp_master
+*ignore, not in trait database
+
+Gasterosteus aculeatus | traits
+Gasterosteus aculeatus williamsoni | traits
+*ignore, not in our hauls
+
+Lestidiops jayakari | traits
+Lestidiops jayakari jayakari | traits
+*ignore, not in our hauls
+
+Liparis liparis liparis | traits
+*ignore, not in our hauls
+
+Macroramphosus scolopax | traits
+Macrorhamphosus scolopax | spp_master
+*spelling error in spp_master, change to Macroramphosus scolopax
+```{r Macroramphosus scolopax}
+spp_master[spp == "Macrorhamphosus scolopax", spp := "Macroramphosus scolopax"]
+```
+
+Mullus barbatus barbatus | traits
+*ignore, not in our hauls
+
+Myliobatis freminvillei | traits
+Myliobatis freminvillii | spp_master
+*spelling error in spp_master, change to Myliobatis freminvillei
+```{r Myliobatis freminvillei}
+spp_master[spp == "Myliobatis freminvillii", spp := "Myliobatis freminvillei"]
+```
+
+
+Nicholsina usta usta | traits
+*ignore, not in our hauls
+
+Notoscopelus elongatus kroyeri | traits
+*ignore, not in our hauls
+
+Oxyporhamphus micropterus micropterus | traits
+*ignore, not in our hauls
+
+Polydactylus octoemus | spp_master
+Polydactylus octonemus | traits
+*spelling error in spp_master, change to Polydactylus octonemus
+```{r Polydactylus octonemus}
+spp_master[spp == "Polydactylus octoemus", spp := "Polydactylus octonemus"]
+```
+
+
+Salmo trutta trutta | traits
+*ignore, not in our hauls
+
+Scomberesox saurus saurus | traits
+*ignore, not in our hauls
+
+Stichaeus punctatus | spp_master
+Stichaeus punctatus punctatus | traits
+*delte one punctatus from traits
+```{r Stichaeus punctatus}
+traits[taxon == "Stichaeus punctatus punctatus", taxon := "Stichaeus punctatus"][species == "punctatus punctatus", species := "punctatus"]
+
+```
+
+
+Stomias boa boa | traits
+Stomias boa ferox | traits
+*ignore, not in our trawls
+
+Symphurus civitatium | traits
+Symphurus civitatum | spp_master
+*spelling error in spp_master, change to Symphurus civitatium
+```{r Symphurus civitatium}
+spp_master[spp == "Symphurus civitatum", spp := "Symphurus civitatium"]
+
+```
+
+
+Zenopsis conchifer | traits
+Zenopsis conchifera | spp_master
+*spelling error in spp_master, change to Zenopsis conchifer
+```{r Zenopsis conchifer}
+spp_master[spp == "Zenopsis conchifera", spp := "Zenopsis conchifer"]
+
+```
+
