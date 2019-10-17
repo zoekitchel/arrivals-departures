@@ -286,6 +286,51 @@ ggplot(aes(x=age.max), data = spp_master_ztemp.traits.na) +
 
 Let's look at some other traits maybe?
   Trophic level? (tl)
+  
+Colonizatino Trophic Level
+```{r colonization with trophic level}
+hist(spp_master_ztemp.traits$tl)
+
+
+#First, how does this model do with only rows that we actually have trait data for?
+spp_master_ztemp.traits.na.tl <- na.omit(spp_master_ztemp.traits, cols="tl")
+spp_master_ztemp.traits.na.tl[,year_factor := as.factor(year)]
+
+#does it hold up with this limited data set?
+mod.c.tl.0 <- glmer(col ~ max_sbt_temp_change_abs + (1|reg) + (1|year_factor), family = binomial, data = spp_master_ztemp.traits.na.tl)
+summary(mod.c.tl.0)
+AICc(mod.c.tl.0)
+
+#max_sbt_temp_change_abs	      0.18510 0.0022	4527.742
+
+#max_sbt_temp_change_abs and age.max
+mod.c.tl.1 <- glmer(col ~ max_sbt_temp_change_abs + tl + (1|reg) + (1|year_factor), family = binomial, data = spp_master_ztemp.traits.na.tl)
+summary(mod.c.tl.1)
+AICc(mod.c.tl.0, mod.c.tl.1)
+
+
+  #max_sbt_temp_change_abs and             0.155462 0.0127  4515.642
+      #                       tl      -0.36865 0.000158	
+
+#interaction?
+mod.c.tl.2 <- glmer(col ~ max_sbt_temp_change_abs * tl + (1|reg) + (1|year_factor), family = binomial, data = spp_master_ztemp.traits.na.tl)
+summary(mod.c.tl.2)
+  #yes, appears that trophic level impacts interaction with temperature (p=0.003700), and it's the best model, AICc = 4509.615
+
+AICc(mod.c.tl.0, mod.c.tl.1, mod.c.tl.2)
+
+#what about only max age?
+mod.c.tl.3 <- glmer(col ~ tl + (1|reg) + (1|year_factor), family = binomial, data = spp_master_ztemp.traits.na.tl)
+AICc(mod.c.tl.3) # 4522.709
+  #better with temperature as well
+
+#one more... what about both tl and max age? are they correlated? they should be
+
+lm <- lm(spp_master_ztemp.traits$tl ~ spp_master_ztemp.traits$age.max)
+summary(lm)
+plot(spp_master_ztemp.traits$tl, spp_master_ztemp.traits$age.max)
+```
+  
 Split by region?
   build individual models in regions? or make different plots for different regions?
 ```{r regional differences in col and ext}
