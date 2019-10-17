@@ -173,3 +173,141 @@ Now to save updated data.table with traits for species we have traits for
 save(spp_master_ztemp.traits, file = "spp_master_ztemp.traits.Rdata")
 ```
 
+*******
+Now, what happens if we add traits to our models?
+
+Let's just look at our best models
+
+Colonization
+
+max_sbt_temp_change_abs	      0.23859896	4.768169e-06	6878.288
+
+```{r col best models with traits too}
+#First, how does this model do with only rows that we actually have trait data for?
+spp_master_ztemp.traits.na <- na.omit(spp_master_ztemp.traits, cols="age.max")
+spp_master_ztemp.traits.na[,year_factor := as.factor(year)]
+
+#does it hold up with this limited data set?
+mod.c.t.0 <- glmer(col ~ max_sbt_temp_change_abs + (1|reg) + (1|year_factor), family = binomial, data = spp_master_ztemp.traits.na)
+
+#max_sbt_temp_change_abs	      0.16256 	0.00915	4242.65
+
+#max_sbt_temp_change_abs and age.max
+mod.c.t.1 <- glmer(col ~ max_sbt_temp_change_abs + age.max + (1|reg) + (1|year_factor), family = binomial, data = spp_master_ztemp.traits.na)
+summary(mod.c.t.1)
+
+
+  #max_sbt_temp_change_abs and             0.155462 0.0127  4204.059
+      #                       age.max      -0.025250 1.42e-08	
+
+#interaction?
+mod.c.t.2 <- glmer(col ~ max_sbt_temp_change_abs * age.max + (1|reg) + (1|year_factor), family = binomial, data = spp_master_ztemp.traits.na)
+summary(mod.c.t.2)
+  #yes, appears that max age impacts interaction with temperature
+
+AICc(mod.c.t.0, mod.c.t.1, mod.c.t.2)
+
+#what about only max age?
+mod.c.t.3 <- glmer(col ~ age.max + (1|reg) + (1|year_factor), family = binomial, data = spp_master_ztemp.traits.na)
+AICc(mod.c.t.3) # 4208.04
+
+```
+This tells us that as maximum age increases, the log odds of colonizing decreases
+
+
+*****
+
+Extinction
+
+seas_sbt_temp_change_abs_lag9	0.16783102	0.002379916	6207.213	
+min_sst_temp_change_lag2	    -0.09468652	0.010582502	6209.860	
+min_sbt_temp_change_lag7	    -0.11564632	0.010589365	6210.022	
+
+```{r ext best models with traits too}
+#does it hold up with this limited data set?
+mod.e.t.0 <- glmer(now_ext ~ seas_sbt_temp_change_abs_lag9 + (1|reg) + (1|year_factor), family = binomial, data = spp_master_ztemp.traits.na)
+summary(mod.e.t.0)
+AICc(mod.e.t.0)
+
+#seas_sbt_temp_change_abs_lag9	      0.08436 	0.222 	3937.797 * not significant any more
+
+mod.e.t.0.1 <- glmer(now_ext ~ min_sst_temp_change_lag2 + (1|reg) + (1|year_factor), family = binomial, data = spp_master_ztemp.traits.na)
+summary(mod.e.t.0.1)
+AICc(mod.e.t.0.1)
+
+#min_sst_temp_change_lag2	             -0.14436 	0.00304 	3930.58
+
+mod.e.t.0.2 <- glmer(now_ext ~ min_sbt_temp_change_lag7 + (1|reg) + (1|year_factor), family = binomial, data = spp_master_ztemp.traits.na)
+summary(mod.e.t.0.2)
+AICc(mod.e.t.0.2)
+
+#min_sbt_temp_change_lag7	             -0.09232 	0.107 	3936.804 * not significant any more
+
+
+#seas_sbt_temp_change_abs_lag9 and age.max
+mod.e.t.1 <- glmer(now_ext ~ seas_sbt_temp_change_abs_lag9 + age.max + (1|reg) + (1|year_factor), family = binomial, data = spp_master_ztemp.traits.na)
+summary(mod.e.t.1)
+AICc(mod.e.t.0, mod.e.t.1)
+
+  #seas_sbt_temp_change_abs_lag9             0.08138 0.237  3896.723
+      #                       age.max      -0.02914 4.86e-09
+
+#min_sst_temp_change_lag2 and age.max
+mod.e.t.1.1 <- glmer(now_ext ~ min_sst_temp_change_lag2 + age.max + (1|reg) + (1|year_factor), family = binomial, data = spp_master_ztemp.traits.na)
+summary(mod.e.t.1.1)
+AICc(mod.e.t.0.1, mod.e.t.1.1)
+
+  #min_sst_temp_change_lag2 and             -0.144548 0.048814  3889.425
+      #                       age.max      -0.029182 4.7e-09
+
+#min_sbt_temp_change_lag7 and age.max
+mod.e.t.1.2 <- glmer(now_ext ~ min_sbt_temp_change_lag7 + age.max + (1|reg) + (1|year_factor), family = binomial, data = spp_master_ztemp.traits.na)
+summary(mod.e.t.1.2)
+AICc(mod.e.t.0.2, mod.e.t.1.2)
+
+  #min_sbt_temp_change_lag7 and             -0.092419 0.106  3895.634	
+      #                       age.max      -0.029175 4.75e-09
+
+```
+This tells us that as maximum age increases, the log odds of going extinct decreases.
+
+
+In all cases, adding age.max decreased the AIC value from not using. The negative, is that we lose 6000 observations. `spp_master_ztemp` = 18932, `spp_master_ztemp_traits` = 13296 and `spp_master_ztemp_traits.na` (has age.max) = 12594
+
+NEXT STEPS
+Can we make a plot for how likelihood of colonization and extinction changes with age.max?
+```{r age.max region bias?}
+ggplot(aes(x=age.max), data = spp_master_ztemp.traits.na) +
+  geom_histogram() +
+  facet_wrap(~reg)
+
+#appears to be similar across regions? just many more in neus
+```
+
+Let's look at some other traits maybe?
+  Trophic level? (tl)
+Split by region?
+  build individual models in regions? or make different plots for different regions?
+```{r regional differences in col and ext}
+#total counts in each region
+spp_master_ztemp %>%
+  group_by(reg) %>%
+  summarise(n())
+
+spp_master_ztemp %>%
+  group_by(reg) %>%
+  summarise(sum(col)/n()) #quite even percents, NEUS a little high at 8% events are colonizations
+
+spp_master_ztemp %>%
+  group_by(reg) %>%
+  summarise(sum(col)) #NEUS and EBS both high, AI very small 
+
+spp_master_ztemp %>%
+  group_by(reg) %>%
+  summarise(sum(now_ext)/n()) #again, NEUS is very high, all others similar
+
+spp_master_ztemp %>%
+  group_by(reg) %>%
+  summarise(sum(now_ext)) #Again, EBS, NEUS, and SA all high... why more events in these regions?
+```
+  

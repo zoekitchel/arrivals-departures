@@ -232,6 +232,8 @@ summary(get.models(dd.ext, 1)[[1]])
 
 
 *******
+
+Can't get dredge to work, so doing model by model instead.
 ```{r surface colonization comparison}
 #playing with year as factor
 #can't get dredge to run above, so trying here with fewer variables
