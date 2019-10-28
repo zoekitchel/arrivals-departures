@@ -53,6 +53,8 @@ ggplot(aes(x=reg, y = value, fill = variable), data = region_summaries.m) +
 ```
 
 Now, let's do the same process as we did in 04_24_19_Temp_link_traits_fish BUT region specific
+
+#Surface colonization comparison by region
 ```{r surface colonization comparison by region}
 #playing with year as factor
 spp_master_ztemp[,year_factor := as.factor(year)]
@@ -280,9 +282,9 @@ Now, I'll merge all surface colonization models
 surface_colonization_model_comparison_byregion <- rbind(surface_colonization_model_comparison_ai, surface_colonization_model_comparison_ebs, surface_colonization_model_comparison_gmex, surface_colonization_model_comparison_goa, surface_colonization_model_comparison_neus, surface_colonization_model_comparison_newf, surface_colonization_model_comparison_sa, surface_colonization_model_comparison_shelf, surface_colonization_model_comparison_wctri)
 ```
 
-Best few models per region
+Best surface colonization models per region
 
-```{r best models per region}
+```{r best surface colonization models per region}
 surface_colonization_model_comparison_byregion %>%
   filter(converge == TRUE, !grepl("mean", variable)) %>% #ignoring mean for now, and get rid of those that didn't converge
   group_by(reg) %>% #group by region
@@ -291,3 +293,246 @@ surface_colonization_model_comparison_byregion %>%
   
 ```
 
+*******
+#Bottom colonization comparison by region
+```{r bottom colonization comparison by region}
+bottom_variables <- colnames(spp_master_ztemp[,169:292])
+  
+#regions
+
+#ai (101, 110 fail to converge)
+bottom_colonization_model_comparison_ai <- as.data.table(matrix(nrow = length(bottom_variables)))
+bottom_colonization_model_comparison_ai[, variable:=as.factor(V1)][, coef:=as.numeric(V1)][, p_value:=as.numeric(V1)][, AICc:=as.numeric(V1)]
+bottom_colonization_model_comparison_ai[, V1 := NULL]
+  
+  for (i in 1:length(bottom_variables)){
+    mod <- glmer(col ~ get(bottom_variables[i]) + (1|year_factor), family = binomial, data = spp_master_ztemp[reg == "ai"])
+    bottom_colonization_model_comparison_ai[i,variable := bottom_variables[i]]
+    bottom_colonization_model_comparison_ai[i,coef := coef(summary(mod))[,"Estimate"][2]]
+    bottom_colonization_model_comparison_ai[i,p_value := coef(summary(mod))[,"Pr(>|z|)"][2]]
+    bottom_colonization_model_comparison_ai[i,AICc := AICc(mod)]
+    
+    print(paste(i, length(bottom_variables), sep = "/"))
+      
+  }
+  #add column for those that didn't converge
+  bottom_colonization_model_comparison_ai$converge <- T
+  bottom_colonization_model_comparison_ai$converge[c(101, 110)] <- F
+  
+  #add column to designate region 
+  bottom_colonization_model_comparison_ai$reg <- "ai"
+  
+#ebs (10 did not converge)
+
+bottom_colonization_model_comparison_ebs <- as.data.table(matrix(nrow = length(bottom_variables)))
+bottom_colonization_model_comparison_ebs[, variable:=as.factor(V1)][, coef:=as.numeric(V1)][, p_value:=as.numeric(V1)][, AICc:=as.numeric(V1)]
+bottom_colonization_model_comparison_ebs[, V1 := NULL]
+  
+  for (i in 1:length(bottom_variables)){
+    mod <- glmer(col ~ get(bottom_variables[i]) + (1|year_factor), family = binomial, data = spp_master_ztemp[reg == "ebs"])
+    bottom_colonization_model_comparison_ebs[i,variable := bottom_variables[i]]
+    bottom_colonization_model_comparison_ebs[i,coef := coef(summary(mod))[,"Estimate"][2]]
+    bottom_colonization_model_comparison_ebs[i,p_value := coef(summary(mod))[,"Pr(>|z|)"][2]]
+    bottom_colonization_model_comparison_ebs[i,AICc := AICc(mod)]
+    
+    print(paste(i, length(bottom_variables), sep = "/"))
+      
+  }
+  #add column for those that didn't converge
+  bottom_colonization_model_comparison_ebs$converge <- T
+  bottom_colonization_model_comparison_ebs$converge[c(10)] <- F
+  
+  #add column to designate region 
+  bottom_colonization_model_comparison_ebs$reg <- "ebs"
+  
+#gmex (1, 6, 10, 13, 15, 18, 19, 20, 23, 24, 25, 26, 28, 29, 30, 31 fail to converge)
+
+bottom_colonization_model_comparison_gmex <- as.data.table(matrix(nrow = length(bottom_variables)))
+bottom_colonization_model_comparison_gmex[, variable:=as.factor(V1)][, coef:=as.numeric(V1)][, p_value:=as.numeric(V1)][, AICc:=as.numeric(V1)]
+bottom_colonization_model_comparison_gmex[, V1 := NULL]
+  
+  for (i in 1:length(bottom_variables)){
+    mod <- glmer(col ~ get(bottom_variables[i]) + (1|year_factor), family = binomial, data = spp_master_ztemp[reg == "gmex"])
+    mod1 <- glmer(col ~ get(bottom_variables[i]) + (1|year_factor), family = binomial, data = spp_master_ztemp[reg == "gmex"])
+    bottom_colonization_model_comparison_gmex[i,variable := bottom_variables[i]]
+    bottom_colonization_model_comparison_gmex[i,coef := coef(summary(mod))[,"Estimate"][2]]
+    bottom_colonization_model_comparison_gmex[i,p_value := coef(summary(mod))[,"Pr(>|z|)"][2]]
+    bottom_colonization_model_comparison_gmex[i,AICc := AICc(mod)]
+    
+    print(paste(i, length(bottom_variables), sep = "/"))
+      
+  }
+  #add column for those that didn't converge
+  bottom_colonization_model_comparison_gmex$converge <- T
+  bottom_colonization_model_comparison_gmex$converge[c(1, 6, 10, 13, 15, 18, 19, 20, 23, 24, 25, 26, 28, 29, 30, 31)] <- F
+  
+  #add column to designate region 
+  bottom_colonization_model_comparison_gmex$reg <- "gmex"
+
+#goa (all converge)
+
+bottom_colonization_model_comparison_goa <- as.data.table(matrix(nrow = length(bottom_variables)))
+bottom_colonization_model_comparison_goa[, variable:=as.factor(V1)][, coef:=as.numeric(V1)][, p_value:=as.numeric(V1)][, AICc:=as.numeric(V1)]
+bottom_colonization_model_comparison_goa[, V1 := NULL]
+  
+  for (i in 1:length(bottom_variables)){
+    mod <- glmer(col ~ get(bottom_variables[i]) + (1|year_factor), family = binomial, data = spp_master_ztemp[reg == "goa"])
+    bottom_colonization_model_comparison_goa[i,variable := bottom_variables[i]]
+    bottom_colonization_model_comparison_goa[i,coef := coef(summary(mod))[,"Estimate"][2]]
+    bottom_colonization_model_comparison_goa[i,p_value := coef(summary(mod))[,"Pr(>|z|)"][2]]
+    bottom_colonization_model_comparison_goa[i,AICc := AICc(mod)]
+    
+    print(paste(i, length(bottom_variables), sep = "/"))
+      
+  }
+  #add column for those that didn't converge
+  bottom_colonization_model_comparison_goa$converge <- T
+  
+  #add column to designate region 
+  bottom_colonization_model_comparison_goa$reg <- "goa"
+
+#neus (3, 4, 7, 8, 10, 12, 13, 18, 21, 23, 29, 30, 31, 38, 39, 40 failed to converge)
+
+bottom_colonization_model_comparison_neus <- as.data.table(matrix(nrow = length(bottom_variables)))
+bottom_colonization_model_comparison_neus[, variable:=as.factor(V1)][, coef:=as.numeric(V1)][, p_value:=as.numeric(V1)][, AICc:=as.numeric(V1)]
+bottom_colonization_model_comparison_neus[, V1 := NULL]
+  
+  for (i in 1:length(bottom_variables)){
+    mod <- glmer(col ~ get(bottom_variables[i]) + (1|year_factor), family = binomial, data = spp_master_ztemp[reg == "neus"])
+    bottom_colonization_model_comparison_neus[i,variable := bottom_variables[i]]
+    bottom_colonization_model_comparison_neus[i,coef := coef(summary(mod))[,"Estimate"][2]]
+    bottom_colonization_model_comparison_neus[i,p_value := coef(summary(mod))[,"Pr(>|z|)"][2]]
+    bottom_colonization_model_comparison_neus[i,AICc := AICc(mod)]
+    
+    print(paste(i, length(bottom_variables), sep = "/"))
+      
+  }
+#add column for those that didn't converge
+bottom_colonization_model_comparison_neus$converge <- T
+bottom_colonization_model_comparison_neus$converge[c(3, 4, 7, 8, 10, 12, 13, 18, 21, 23, 29, 30, 31, 38, 39, 40)] <- F
+
+#add column to designate region 
+  bottom_colonization_model_comparison_neus$reg <- "neus"
+
+#newf (10, 20, 40, 53, 54, 62, 63, 71, 80, 81, 88, 97,  failed to converge)
+
+bottom_colonization_model_comparison_newf <- as.data.table(matrix(nrow = length(bottom_variables)))
+bottom_colonization_model_comparison_newf[, variable:=as.factor(V1)][, coef:=as.numeric(V1)][, p_value:=as.numeric(V1)][, AICc:=as.numeric(V1)]
+bottom_colonization_model_comparison_newf[, V1 := NULL]
+  
+  for (i in 1:length(bottom_variables)){
+    mod <- glmer(col ~ get(bottom_variables[i]) + (1|year_factor), family = binomial, data = spp_master_ztemp[reg == "newf"])
+    bottom_colonization_model_comparison_newf[i,variable := bottom_variables[i]]
+    bottom_colonization_model_comparison_newf[i,coef := coef(summary(mod))[,"Estimate"][2]]
+    bottom_colonization_model_comparison_newf[i,p_value := coef(summary(mod))[,"Pr(>|z|)"][2]]
+    bottom_colonization_model_comparison_newf[i,AICc := AICc(mod)]
+    
+    print(paste(i, length(bottom_variables), sep = "/"))
+      
+  }
+
+#add column for those that didn't converge
+bottom_colonization_model_comparison_newf$converge <- T
+bottom_colonization_model_comparison_newf$converge[c(10, 20, 40, 53, 54, 62, 63, 71, 80, 81, 88, 97)] <- F
+
+#add column to designate region 
+  bottom_colonization_model_comparison_newf$reg <- "newf"
+
+
+#shelf (none didn't converge)
+
+bottom_colonization_model_comparison_shelf <- as.data.table(matrix(nrow = length(bottom_variables)))
+bottom_colonization_model_comparison_shelf[, variable:=as.factor(V1)][, coef:=as.numeric(V1)][, p_value:=as.numeric(V1)][, AICc:=as.numeric(V1)]
+bottom_colonization_model_comparison_shelf[, V1 := NULL]
+  
+  for (i in 1:length(bottom_variables)){
+    mod <- glmer(col ~ get(bottom_variables[i]) + (1|year_factor), family = binomial, data = spp_master_ztemp[reg == "shelf"])
+    bottom_colonization_model_comparison_shelf[i,variable := bottom_variables[i]]
+    bottom_colonization_model_comparison_shelf[i,coef := coef(summary(mod))[,"Estimate"][2]]
+    bottom_colonization_model_comparison_shelf[i,p_value := coef(summary(mod))[,"Pr(>|z|)"][2]]
+    bottom_colonization_model_comparison_shelf[i,AICc := AICc(mod)]
+    
+    print(paste(i, length(bottom_variables), sep = "/"))
+      
+  }
+
+#add column for those that didn't converge
+bottom_colonization_model_comparison_shelf$converge <- T
+
+#add column to designate region 
+  bottom_colonization_model_comparison_shelf$reg <- "shelf"
+
+
+#sa (all are singularities??)
+
+bottom_colonization_model_comparison_sa <- as.data.table(matrix(nrow = length(bottom_variables)))
+bottom_colonization_model_comparison_sa[, variable:=as.factor(V1)][, coef:=as.numeric(V1)][, p_value:=as.numeric(V1)][, AICc:=as.numeric(V1)]
+bottom_colonization_model_comparison_sa[, V1 := NULL]
+  
+  for (i in 1:length(bottom_variables)){
+    mod <- glmer(col ~ get(bottom_variables[i]) + (1|year_factor), family = binomial, data = spp_master_ztemp[reg == "sa"])
+    bottom_colonization_model_comparison_sa[i,variable := bottom_variables[i]]
+    bottom_colonization_model_comparison_sa[i,coef := coef(summary(mod))[,"Estimate"][2]]
+    bottom_colonization_model_comparison_sa[i,p_value := coef(summary(mod))[,"Pr(>|z|)"][2]]
+    bottom_colonization_model_comparison_sa[i,AICc := AICc(mod)]
+    
+    print(paste(i, length(bottom_variables), sep = "/"))
+      
+  }
+
+#add column for those that didn't converge
+bottom_colonization_model_comparison_sa$converge <- T
+bottom_colonization_model_comparison_sa$converge[c(1:124)] <- F
+
+#add column to designate region 
+  bottom_colonization_model_comparison_sa$reg <- "sa"
+
+
+#wctri (14, 23, 33, 49, 51, 52, 56, 58, 60, 65, 76, 78, 89, 93, 98, 104, 109, 112, 113, 115, 119 failed to converge)
+
+bottom_colonization_model_comparison_wctri <- as.data.table(matrix(nrow = length(bottom_variables)))
+bottom_colonization_model_comparison_wctri[, variable:=as.factor(V1)][, coef:=as.numeric(V1)][, p_value:=as.numeric(V1)][, AICc:=as.numeric(V1)]
+bottom_colonization_model_comparison_wctri[, V1 := NULL]
+  
+  for (i in 1:length(bottom_variables)){
+    mod <- glmer(col ~ get(bottom_variables[i]) + (1|year_factor), family = binomial, data = spp_master_ztemp[reg == "wctri"])
+    bottom_colonization_model_comparison_wctri[i,variable := bottom_variables[i]]
+    bottom_colonization_model_comparison_wctri[i,coef := coef(summary(mod))[,"Estimate"][2]]
+    bottom_colonization_model_comparison_wctri[i,p_value := coef(summary(mod))[,"Pr(>|z|)"][2]]
+    bottom_colonization_model_comparison_wctri[i,AICc := AICc(mod)]
+    
+    print(paste(i, length(bottom_variables), sep = "/"))
+      
+  }
+
+#add column for those that didn't converge
+bottom_colonization_model_comparison_wctri$converge <- T
+bottom_colonization_model_comparison_wctri$converge[c(14, 23, 33, 49, 51, 52, 56, 58, 60, 65, 76, 78, 89, 93, 98, 104, 109, 112, 113, 115, 119)] <- F
+
+#add column to designate region 
+  bottom_colonization_model_comparison_wctri$reg <- "wctri"
+
+```
+
+Now, I'll merge all bottom colonization models
+```{r merge bottom colonization models}
+bottom_colonization_model_comparison_byregion <- rbind(bottom_colonization_model_comparison_ai, bottom_colonization_model_comparison_ebs, bottom_colonization_model_comparison_gmex, bottom_colonization_model_comparison_goa, bottom_colonization_model_comparison_neus, bottom_colonization_model_comparison_newf, bottom_colonization_model_comparison_sa, bottom_colonization_model_comparison_shelf, bottom_colonization_model_comparison_wctri)
+```
+
+Best bottom colonization models per region
+
+```{r best bottom colonization models per region}
+bottom_colonization_model_comparison_byregion %>%
+  filter(converge == TRUE, !grepl("mean", variable)) %>% #ignoring mean for now, and get rid of those that didn't converge
+  group_by(reg) %>% #group by region
+  arrange(AICc) %>% #arrange by AICc
+  top_n(-5, AICc) #take 5 best models (lowest AICc)
+  
+```
+
+
+*******
+#Surface extinction comparison by region
+
+*******
+#Bottom extinction comparison by region

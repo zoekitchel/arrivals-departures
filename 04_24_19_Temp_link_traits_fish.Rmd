@@ -64,7 +64,7 @@ hauls <- hauls[regions.dt, nomatch = 0, on = c("region")]
 hauls[, reg := as.factor(reg)] #make region a factor in hauls
 
 ```
-Just realizing now that I currently have data from 12 months before each trawl event. This isn't appropriate, as my colonization/extinction data is per year. FOR NOW (before I speak with Malin), I will just use earliest month in each year. 
+Just realizing now that I currently have data from 12 months before each trawl event. This isn't appropriate, as my colonization/extinction data is per year. FOR NOW (before I speak with Malin, update spoke to Malin he agreed that this worked), I will just use earliest month in each year. 
 
 ```{r only keep earlier year temp data}
 #keep one line of data for each year/region combo, and pick it based on smaller month value
@@ -321,9 +321,6 @@ for (i in 1:length(bottom_variables)){
     
 }
 ```
-
-Testing, as some models between colonization and extinction have the same coefficients
-
 
 ----------
 Top models with single variables
