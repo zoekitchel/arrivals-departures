@@ -14,23 +14,22 @@ traits <- data.table(traits)
 
 #remove duplicates
 traits.u <- unique(traits, by = c('taxon'))
-```
 
+```
+Interested in looking at max age, trophic level, and age of maturity
 ```{r trait patterns}
 ggplot(aes(x=age.max), data = traits) +
   geom_histogram()
-#I'll use this variable, better data
 
 ggplot(aes(x=age.maturity), data = traits) +
   geom_histogram()
 
-ggplot(aes(x=log(age.maturity), y=log(age.max)), data = traits) +
-  geom_point()
+ggplot(aes(x=tl), data = traits) +
+  geom_histogram()
 
-mod <- lm(log(age.max) ~ log(age.maturity), data = traits)
-summary(mod)
-```
-They have a R^2 value of 0.42, so, worth it to try both. 
+cor(na.omit(traits[,c(10, 17, 22)]))
+``` 
+They have a R^2 value of 0.53, so, worth it to try both. 
 
 Let's link species
 
@@ -182,6 +181,7 @@ Colonization
 
 max_sbt_temp_change_abs	      0.23859896	4.768169e-06	6878.288
 
+
 ```{r col best models with traits too}
 #First, how does this model do with only rows that we actually have trait data for?
 spp_master_ztemp.traits.na <- na.omit(spp_master_ztemp.traits, cols="age.max")
@@ -189,7 +189,7 @@ spp_master_ztemp.traits.na[,year_factor := as.factor(year)]
 
 #does it hold up with this limited data set?
 mod.c.t.0 <- glmer(col ~ max_sbt_temp_change_abs + (1|reg) + (1|year_factor), family = binomial, data = spp_master_ztemp.traits.na)
-
+summary(mod.c.t.0)
 #max_sbt_temp_change_abs	      0.16256 	0.00915	4242.65
 
 #max_sbt_temp_change_abs and age.max
@@ -209,10 +209,12 @@ AICc(mod.c.t.0, mod.c.t.1, mod.c.t.2)
 
 #what about only max age?
 mod.c.t.3 <- glmer(col ~ age.max + (1|reg) + (1|year_factor), family = binomial, data = spp_master_ztemp.traits.na)
-AICc(mod.c.t.3) # 4208.04
+AICc(mod.c.t.0, mod.c.t.1, mod.c.t.2, mod.c.t.3)
+
+summary(mod.c.t.3)
 
 ```
-This tells us that as maximum age increases, the log odds of colonizing decreases
+This tells us that as maximum age increases, the log odds of colonizing decreases.
 
 
 *****
@@ -259,6 +261,10 @@ AICc(mod.e.t.0.1, mod.e.t.1.1)
 
   #min_sst_temp_change_lag2 and             -0.144548 0.048814  3889.425
       #                       age.max      -0.029182 4.7e-09
+          #interaction?
+                mod.e.t.1.1.i <- glmer(now_ext ~ min_sst_temp_change_lag2 * age.max + (1|reg) + (1|year_factor), family = binomial, data = spp_master_ztemp.traits.na)
+                summary(mod.e.t.1.1.i)
+                AICc(mod.e.t.0.1, mod.e.t.1.1.i) #3890.142
 
 #min_sbt_temp_change_lag7 and age.max
 mod.e.t.1.2 <- glmer(now_ext ~ min_sbt_temp_change_lag7 + age.max + (1|reg) + (1|year_factor), family = binomial, data = spp_master_ztemp.traits.na)
@@ -267,6 +273,12 @@ AICc(mod.e.t.0.2, mod.e.t.1.2)
 
   #min_sbt_temp_change_lag7 and             -0.092419 0.106  3895.634	
       #                       age.max      -0.029175 4.75e-09
+
+
+#model with only age max
+mod.e.t.1.r <- glmer(now_ext ~ age.max + (1|reg) + (1|year_factor), family = binomial, data = spp_master_ztemp.traits.na)
+summary(mod.e.t.1.r)
+AICc(mod.e.t.1.r)
 
 ```
 This tells us that as maximum age increases, the log odds of going extinct decreases.
@@ -287,7 +299,7 @@ ggplot(aes(x=age.max), data = spp_master_ztemp.traits.na) +
 Let's look at some other traits maybe?
   Trophic level? (tl)
   
-Colonizatino Trophic Level
+Colonization Trophic Level
 ```{r colonization with trophic level}
 hist(spp_master_ztemp.traits$tl)
 
@@ -319,7 +331,7 @@ summary(mod.c.tl.2)
 
 AICc(mod.c.tl.0, mod.c.tl.1, mod.c.tl.2)
 
-#what about only max age?
+#what about only trophic level?
 mod.c.tl.3 <- glmer(col ~ tl + (1|reg) + (1|year_factor), family = binomial, data = spp_master_ztemp.traits.na.tl)
 AICc(mod.c.tl.3) # 4522.709
   #better with temperature as well
@@ -356,3 +368,10 @@ spp_master_ztemp %>%
   summarise(sum(now_ext)) #Again, EBS, NEUS, and SA all high... why more events in these regions?
 ```
   
+Age at maturity
+```{r age at maturity}
+spp_master_ztemp.traits.na.age.maturity <- na.omit(spp_master_ztemp.traits, cols="age.maturity")
+ #to do
+
+```
+
