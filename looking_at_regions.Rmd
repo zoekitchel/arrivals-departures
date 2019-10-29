@@ -533,6 +533,475 @@ bottom_colonization_model_comparison_byregion %>%
 
 *******
 #Surface extinction comparison by region
+```{r surface extinction comparison by region}
+#regions
+
+#ai (1, 7, 13, 23, 37, 40, 50, 52, 56, 65, 71, 74, 78, 79, 80, 93, 94, 99, 107, 119, 120, 121 fail to converge)
+surface_extinction_model_comparison_ai <- as.data.table(matrix(nrow = length(surface_variables)))
+surface_extinction_model_comparison_ai[, variable:=as.factor(V1)][, coef:=as.numeric(V1)][, p_value:=as.numeric(V1)][, AICc:=as.numeric(V1)]
+surface_extinction_model_comparison_ai[, V1 := NULL]
+  
+  for (i in 1:length(surface_variables)){
+    mod <- glmer(now_ext ~ get(surface_variables[i]) + (1|year_factor), family = binomial, data = spp_master_ztemp[reg == "ai"])
+    surface_extinction_model_comparison_ai[i,variable := surface_variables[i]]
+    surface_extinction_model_comparison_ai[i,coef := coef(summary(mod))[,"Estimate"][2]]
+    surface_extinction_model_comparison_ai[i,p_value := coef(summary(mod))[,"Pr(>|z|)"][2]]
+    surface_extinction_model_comparison_ai[i,AICc := AICc(mod)]
+    
+    print(paste(i, length(surface_variables), sep = "/"))
+      
+  }
+  #add column for those that didn't converge
+  surface_extinction_model_comparison_ai$converge <- T
+  surface_extinction_model_comparison_ai$converge[c(1, 7, 13, 23, 37, 40, 50, 52, 56, 65, 71, 74, 78, 79, 80, 93, 94, 99, 107, 119, 120, 121)] <- F
+  
+  #add column to designate region 
+  surface_extinction_model_comparison_ai$reg <- "ai"
+  
+#ebs (4, 18, 41 did not converge)
+
+surface_extinction_model_comparison_ebs <- as.data.table(matrix(nrow = length(surface_variables)))
+surface_extinction_model_comparison_ebs[, variable:=as.factor(V1)][, coef:=as.numeric(V1)][, p_value:=as.numeric(V1)][, AICc:=as.numeric(V1)]
+surface_extinction_model_comparison_ebs[, V1 := NULL]
+  
+  for (i in 1:length(surface_variables)){
+    mod <- glmer(now_ext ~ get(surface_variables[i]) + (1|year_factor), family = binomial, data = spp_master_ztemp[reg == "ebs"])
+    surface_extinction_model_comparison_ebs[i,variable := surface_variables[i]]
+    surface_extinction_model_comparison_ebs[i,coef := coef(summary(mod))[,"Estimate"][2]]
+    surface_extinction_model_comparison_ebs[i,p_value := coef(summary(mod))[,"Pr(>|z|)"][2]]
+    surface_extinction_model_comparison_ebs[i,AICc := AICc(mod)]
+    
+    print(paste(i, length(surface_variables), sep = "/"))
+      
+  }
+  #add column for those that didn't converge
+  surface_extinction_model_comparison_ebs$converge <- T
+  surface_extinction_model_comparison_ebs$converge[c(4, 18, 41)] <- F
+  
+  #add column to designate region 
+  surface_extinction_model_comparison_ebs$reg <- "ebs"
+  
+#gmex (1:24, 31, 32, 33, 34, 37, 40, 41, 42, 44, 47, 51, 54, 55, 56, 57, 61, 62, 64, 71, 72, 73, 78, 80, 81, 91, 94, 95, 96, 100, 102, 114, 117  fail to converge)
+
+surface_extinction_model_comparison_gmex <- as.data.table(matrix(nrow = length(surface_variables)))
+surface_extinction_model_comparison_gmex[, variable:=as.factor(V1)][, coef:=as.numeric(V1)][, p_value:=as.numeric(V1)][, AICc:=as.numeric(V1)]
+surface_extinction_model_comparison_gmex[, V1 := NULL]
+  
+  for (i in 1:length(surface_variables)){
+    mod <- glmer(now_ext ~ get(surface_variables[i]) + (1|year_factor), family = binomial, data = spp_master_ztemp[reg == "gmex"])
+    mod1 <- glmer(now_ext ~ get(surface_variables[i]) + (1|year_factor), family = binomial, data = spp_master_ztemp[reg == "gmex"])
+    surface_extinction_model_comparison_gmex[i,variable := surface_variables[i]]
+    surface_extinction_model_comparison_gmex[i,coef := coef(summary(mod))[,"Estimate"][2]]
+    surface_extinction_model_comparison_gmex[i,p_value := coef(summary(mod))[,"Pr(>|z|)"][2]]
+    surface_extinction_model_comparison_gmex[i,AICc := AICc(mod)]
+    
+    print(paste(i, length(surface_variables), sep = "/"))
+      
+  }
+  #add column for those that didn't converge
+  surface_extinction_model_comparison_gmex$converge <- T
+  surface_extinction_model_comparison_gmex$converge[c(1:24, 31, 32, 33, 34, 37, 40, 41, 42, 44, 47, 51, 54, 55, 56, 57, 61, 62, 64, 71, 72, 73, 78, 80, 81, 91, 94, 95, 96, 100, 102, 114, 117)] <- F
+  
+  #add column to designate region 
+  surface_extinction_model_comparison_gmex$reg <- "gmex"
+
+#goa (99 doesn't converge)
+
+surface_extinction_model_comparison_goa <- as.data.table(matrix(nrow = length(surface_variables)))
+surface_extinction_model_comparison_goa[, variable:=as.factor(V1)][, coef:=as.numeric(V1)][, p_value:=as.numeric(V1)][, AICc:=as.numeric(V1)]
+surface_extinction_model_comparison_goa[, V1 := NULL]
+  
+  for (i in 1:length(surface_variables)){
+    mod <- glmer(now_ext ~ get(surface_variables[i]) + (1|year_factor), family = binomial, data = spp_master_ztemp[reg == "goa"])
+    surface_extinction_model_comparison_goa[i,variable := surface_variables[i]]
+    surface_extinction_model_comparison_goa[i,coef := coef(summary(mod))[,"Estimate"][2]]
+    surface_extinction_model_comparison_goa[i,p_value := coef(summary(mod))[,"Pr(>|z|)"][2]]
+    surface_extinction_model_comparison_goa[i,AICc := AICc(mod)]
+    
+    print(paste(i, length(surface_variables), sep = "/"))
+      
+  }
+  #add column for those that didn't converge
+  surface_extinction_model_comparison_goa$converge <- T
+  surface_extinction_model_comparison_goa$converge[c(99)] <- T
+  
+  #add column to designate region 
+  surface_extinction_model_comparison_goa$reg <- "goa"
+
+#neus (1, 4, 6, 7, 10, 11, 17, 18, 22, 27, 28, 29, 31, 33, 34, 38, 40,  failed to converge)
+#***START HERE***
+surface_extinction_model_comparison_neus <- as.data.table(matrix(nrow = length(surface_variables)))
+surface_extinction_model_comparison_neus[, variable:=as.factor(V1)][, coef:=as.numeric(V1)][, p_value:=as.numeric(V1)][, AICc:=as.numeric(V1)]
+surface_extinction_model_comparison_neus[, V1 := NULL]
+  
+  for (i in 1:length(surface_variables)){
+    mod <- glmer(now_ext ~ get(surface_variables[i]) + (1|year_factor), family = binomial, data = spp_master_ztemp[reg == "neus"])
+    surface_extinction_model_comparison_neus[i,variable := surface_variables[i]]
+    surface_extinction_model_comparison_neus[i,coef := coef(summary(mod))[,"Estimate"][2]]
+    surface_extinction_model_comparison_neus[i,p_value := coef(summary(mod))[,"Pr(>|z|)"][2]]
+    surface_extinction_model_comparison_neus[i,AICc := AICc(mod)]
+    
+    print(paste(i, length(surface_variables), sep = "/"))
+      
+  }
+#add column for those that didn't converge
+surface_extinction_model_comparison_neus$converge <- T
+surface_extinction_model_comparison_neus$converge[c(1, 4, 6, 7, 10, 11, 17, 18, 22, 27, 28, 29, 31, 33, 34, 38, 40)] <- F
+
+#add column to designate region 
+  surface_extinction_model_comparison_neus$reg <- "neus"
+
+#newf (ALL failed to converge (all singularities) )
+
+surface_extinction_model_comparison_newf <- as.data.table(matrix(nrow = length(surface_variables)))
+surface_extinction_model_comparison_newf[, variable:=as.factor(V1)][, coef:=as.numeric(V1)][, p_value:=as.numeric(V1)][, AICc:=as.numeric(V1)]
+surface_extinction_model_comparison_newf[, V1 := NULL]
+  
+  for (i in 1:length(surface_variables)){
+    mod <- glmer(now_ext ~ get(surface_variables[i]) + (1|year_factor), family = binomial, data = spp_master_ztemp[reg == "newf"])
+    surface_extinction_model_comparison_newf[i,variable := surface_variables[i]]
+    surface_extinction_model_comparison_newf[i,coef := coef(summary(mod))[,"Estimate"][2]]
+    surface_extinction_model_comparison_newf[i,p_value := coef(summary(mod))[,"Pr(>|z|)"][2]]
+    surface_extinction_model_comparison_newf[i,AICc := AICc(mod)]
+    
+    print(paste(i, length(surface_variables), sep = "/"))
+      
+  }
+
+#add column for those that didn't converge
+surface_extinction_model_comparison_newf$converge <- T
+surface_extinction_model_comparison_newf$converge[c(1:124)] <- F
+
+#add column to designate region 
+  surface_extinction_model_comparison_newf$reg <- "newf"
+
+
+#shelf (4 didn't converge)
+
+surface_extinction_model_comparison_shelf <- as.data.table(matrix(nrow = length(surface_variables)))
+surface_extinction_model_comparison_shelf[, variable:=as.factor(V1)][, coef:=as.numeric(V1)][, p_value:=as.numeric(V1)][, AICc:=as.numeric(V1)]
+surface_extinction_model_comparison_shelf[, V1 := NULL]
+  
+  for (i in 1:length(surface_variables)){
+    mod <- glmer(now_ext ~ get(surface_variables[i]) + (1|year_factor), family = binomial, data = spp_master_ztemp[reg == "shelf"])
+    surface_extinction_model_comparison_shelf[i,variable := surface_variables[i]]
+    surface_extinction_model_comparison_shelf[i,coef := coef(summary(mod))[,"Estimate"][2]]
+    surface_extinction_model_comparison_shelf[i,p_value := coef(summary(mod))[,"Pr(>|z|)"][2]]
+    surface_extinction_model_comparison_shelf[i,AICc := AICc(mod)]
+    
+    print(paste(i, length(surface_variables), sep = "/"))
+      
+  }
+
+#add column for those that didn't converge
+surface_extinction_model_comparison_shelf$converge <- T
+surface_extinction_model_comparison_shelf$converge[c(4)] <- F
+
+#add column to designate region 
+  surface_extinction_model_comparison_shelf$reg <- "shelf"
+
+
+#sa (2, 5, 6, 7,8,9,10,11,12,13,14,15,17, 19, 20, 21, 22, 32, 42, 64, 73, 89, 101, 103, 113, 122 didn't converge)
+
+surface_extinction_model_comparison_sa <- as.data.table(matrix(nrow = length(surface_variables)))
+surface_extinction_model_comparison_sa[, variable:=as.factor(V1)][, coef:=as.numeric(V1)][, p_value:=as.numeric(V1)][, AICc:=as.numeric(V1)]
+surface_extinction_model_comparison_sa[, V1 := NULL]
+  
+  for (i in 1:length(surface_variables)){
+    mod <- glmer(now_ext ~ get(surface_variables[i]) + (1|year_factor), family = binomial, data = spp_master_ztemp[reg == "sa"])
+    surface_extinction_model_comparison_sa[i,variable := surface_variables[i]]
+    surface_extinction_model_comparison_sa[i,coef := coef(summary(mod))[,"Estimate"][2]]
+    surface_extinction_model_comparison_sa[i,p_value := coef(summary(mod))[,"Pr(>|z|)"][2]]
+    surface_extinction_model_comparison_sa[i,AICc := AICc(mod)]
+    
+    print(paste(i, length(surface_variables), sep = "/"))
+      
+  }
+
+#add column for those that didn't converge
+surface_extinction_model_comparison_sa$converge <- T
+surface_extinction_model_comparison_sa$converge[c(2, 5, 6, 7,8,9,10,11,12,13,14,15,17, 19, 20, 21, 22, 32, 42, 64, 73, 89, 101, 103, 113, 122)] <- F
+
+#add column to designate region 
+  surface_extinction_model_comparison_sa$reg <- "sa"
+
+
+#wctri (5, 6, 7, 10, 14:20, 21:23, 27, 29,230, 31, 32, 33, 34, 35, 36, 39, 40, 42, 43, 44, 45, 48, 51, 52, 53, 54, 59, 60, 61, 63, 64, 66, 68:75, 77, 79:80, 82, 83, 84, 85, 87, 88, 89, 90, 91, 92, 95, 96, 98, 99, 100, 102, 103, 104, 106, 107, 108, 109, 111, 112, 113, 114, 116, 118, 119, 121, 122, 123, 124 failed to converge)
+
+surface_extinction_model_comparison_wctri <- as.data.table(matrix(nrow = length(surface_variables)))
+surface_extinction_model_comparison_wctri[, variable:=as.factor(V1)][, coef:=as.numeric(V1)][, p_value:=as.numeric(V1)][, AICc:=as.numeric(V1)]
+surface_extinction_model_comparison_wctri[, V1 := NULL]
+  
+  for (i in 1:length(surface_variables)){
+    mod <- glmer(now_ext ~ get(surface_variables[i]) + (1|year_factor), family = binomial, data = spp_master_ztemp[reg == "wctri"])
+    surface_extinction_model_comparison_wctri[i,variable := surface_variables[i]]
+    surface_extinction_model_comparison_wctri[i,coef := coef(summary(mod))[,"Estimate"][2]]
+    surface_extinction_model_comparison_wctri[i,p_value := coef(summary(mod))[,"Pr(>|z|)"][2]]
+    surface_extinction_model_comparison_wctri[i,AICc := AICc(mod)]
+    
+    print(paste(i, length(surface_variables), sep = "/"))
+      
+  }
+
+#add column for those that didn't converge
+surface_extinction_model_comparison_wctri$converge <- T
+surface_extinction_model_comparison_wctri$converge[c(5, 6, 7, 10, 14:20, 21:23, 27, 29,230, 31, 32, 33, 34, 35, 36, 39, 40, 42, 43, 44, 45, 48, 51, 52, 53, 54, 59, 60, 61, 63, 64, 66, 68:75, 77, 79:80, 82, 83, 84, 85, 87, 88, 89, 90, 91, 92, 95, 96, 98, 99, 100, 102, 103, 104, 106, 107, 108, 109, 111, 112, 113, 114, 116, 118, 119, 121, 122, 123, 124)] <- F
+
+#add column to designate region 
+  surface_extinction_model_comparison_wctri$reg <- "wctri"
+
+```
+
+Now, I'll merge all surface extinction models
+```{r merge surface extinction models}
+surface_extinction_model_comparison_byregion <- rbind(surface_extinction_model_comparison_ai, surface_extinction_model_comparison_ebs, surface_extinction_model_comparison_gmex, surface_extinction_model_comparison_goa, surface_extinction_model_comparison_neus, surface_extinction_model_comparison_newf, surface_extinction_model_comparison_sa, surface_extinction_model_comparison_shelf, surface_extinction_model_comparison_wctri)
+```
+
+Best surface extinction models per region
+
+```{r best surface extinction models per region}
+surface_extinction_model_comparison_byregion %>%
+  filter(converge == TRUE, !grepl("mean", variable)) %>% #ignoring mean for now, and get rid of those that didn't converge
+  group_by(reg) %>% #group by region
+  arrange(AICc) %>% #arrange by AICc
+  top_n(-5, AICc) #take 5 best models (lowest AICc)
+  
+```
 
 *******
 #Bottom extinction comparison by region
+```{r bottom extinction comparison by region}
+bottom_variables <- colnames(spp_master_ztemp[,169:292])
+  
+#regions
+
+#ai (1:3, 15, 24, 44, 45, 47, 55, 57 fail to converge)
+bottom_extinction_model_comparison_ai <- as.data.table(matrix(nrow = length(bottom_variables)))
+bottom_extinction_model_comparison_ai[, variable:=as.factor(V1)][, coef:=as.numeric(V1)][, p_value:=as.numeric(V1)][, AICc:=as.numeric(V1)]
+bottom_extinction_model_comparison_ai[, V1 := NULL]
+  
+  for (i in 1:length(bottom_variables)){
+    mod <- glmer(now_ext ~ get(bottom_variables[i]) + (1|year_factor), family = binomial, data = spp_master_ztemp[reg == "ai"])
+    bottom_extinction_model_comparison_ai[i,variable := bottom_variables[i]]
+    bottom_extinction_model_comparison_ai[i,coef := coef(summary(mod))[,"Estimate"][2]]
+    bottom_extinction_model_comparison_ai[i,p_value := coef(summary(mod))[,"Pr(>|z|)"][2]]
+    bottom_extinction_model_comparison_ai[i,AICc := AICc(mod)]
+    
+    print(paste(i, length(bottom_variables), sep = "/"))
+      
+  }
+  #add column for those that didn't converge
+  bottom_extinction_model_comparison_ai$converge <- T
+  bottom_extinction_model_comparison_ai$converge[c(1:3, 15, 24, 44, 45, 47, 55, 57)] <- F
+  
+  #add column to designate region 
+  bottom_extinction_model_comparison_ai$reg <- "ai"
+  
+#ebs (23 did not converge)
+
+bottom_extinction_model_comparison_ebs <- as.data.table(matrix(nrow = length(bottom_variables)))
+bottom_extinction_model_comparison_ebs[, variable:=as.factor(V1)][, coef:=as.numeric(V1)][, p_value:=as.numeric(V1)][, AICc:=as.numeric(V1)]
+bottom_extinction_model_comparison_ebs[, V1 := NULL]
+  
+  for (i in 1:length(bottom_variables)){
+    mod <- glmer(now_ext ~ get(bottom_variables[i]) + (1|year_factor), family = binomial, data = spp_master_ztemp[reg == "ebs"])
+    bottom_extinction_model_comparison_ebs[i,variable := bottom_variables[i]]
+    bottom_extinction_model_comparison_ebs[i,coef := coef(summary(mod))[,"Estimate"][2]]
+    bottom_extinction_model_comparison_ebs[i,p_value := coef(summary(mod))[,"Pr(>|z|)"][2]]
+    bottom_extinction_model_comparison_ebs[i,AICc := AICc(mod)]
+    
+    print(paste(i, length(bottom_variables), sep = "/"))
+      
+  }
+  #add column for those that didn't converge
+  bottom_extinction_model_comparison_ebs$converge <- T
+  bottom_extinction_model_comparison_ebs$converge[c(23)] <- F
+  
+  #add column to designate region 
+  bottom_extinction_model_comparison_ebs$reg <- "ebs"
+  
+#gmex (5, 6, 7, 8, 13, 15, 17, 18, 20, 21, 23, 24, 25, 27, 28, 31, 32, 34, 36, 40:44, 46:48, 52, 56, 57, 60, 61, 63, 67, 70, 75, 80, 90, 92, 99, 110, 113,  fail to converge)
+
+bottom_extinction_model_comparison_gmex <- as.data.table(matrix(nrow = length(bottom_variables)))
+bottom_extinction_model_comparison_gmex[, variable:=as.factor(V1)][, coef:=as.numeric(V1)][, p_value:=as.numeric(V1)][, AICc:=as.numeric(V1)]
+bottom_extinction_model_comparison_gmex[, V1 := NULL]
+  
+  for (i in 1:length(bottom_variables)){
+    mod <- glmer(now_ext ~ get(bottom_variables[i]) + (1|year_factor), family = binomial, data = spp_master_ztemp[reg == "gmex"])
+    mod1 <- glmer(now_ext ~ get(bottom_variables[i]) + (1|year_factor), family = binomial, data = spp_master_ztemp[reg == "gmex"])
+    bottom_extinction_model_comparison_gmex[i,variable := bottom_variables[i]]
+    bottom_extinction_model_comparison_gmex[i,coef := coef(summary(mod))[,"Estimate"][2]]
+    bottom_extinction_model_comparison_gmex[i,p_value := coef(summary(mod))[,"Pr(>|z|)"][2]]
+    bottom_extinction_model_comparison_gmex[i,AICc := AICc(mod)]
+    
+    print(paste(i, length(bottom_variables), sep = "/"))
+      
+  }
+  #add column for those that didn't converge
+  bottom_extinction_model_comparison_gmex$converge <- T
+  bottom_extinction_model_comparison_gmex$converge[c(5, 6, 7, 8, 13, 15, 17, 18, 20, 21, 23, 24, 25, 27, 28, 31, 32, 34, 36, 40:44, 46:48, 52, 56, 57, 60, 61, 63, 67, 70, 75, 80, 90, 92, 99, 110, 113)] <- F
+  
+  #add column to designate region 
+  bottom_extinction_model_comparison_gmex$reg <- "gmex"
+
+#goa (62 doesn't converge)
+
+bottom_extinction_model_comparison_goa <- as.data.table(matrix(nrow = length(bottom_variables)))
+bottom_extinction_model_comparison_goa[, variable:=as.factor(V1)][, coef:=as.numeric(V1)][, p_value:=as.numeric(V1)][, AICc:=as.numeric(V1)]
+bottom_extinction_model_comparison_goa[, V1 := NULL]
+  
+  for (i in 1:length(bottom_variables)){
+    mod <- glmer(now_ext ~ get(bottom_variables[i]) + (1|year_factor), family = binomial, data = spp_master_ztemp[reg == "goa"])
+    bottom_extinction_model_comparison_goa[i,variable := bottom_variables[i]]
+    bottom_extinction_model_comparison_goa[i,coef := coef(summary(mod))[,"Estimate"][2]]
+    bottom_extinction_model_comparison_goa[i,p_value := coef(summary(mod))[,"Pr(>|z|)"][2]]
+    bottom_extinction_model_comparison_goa[i,AICc := AICc(mod)]
+    
+    print(paste(i, length(bottom_variables), sep = "/"))
+      
+  }
+  #add column for those that didn't converge
+  bottom_extinction_model_comparison_goa$converge <- T
+  bottom_extinction_model_comparison_goa$converge[c(62)] <- T
+  
+  #add column to designate region 
+  bottom_extinction_model_comparison_goa$reg <- "goa"
+
+#neus (1, 4, 9, 10, 12, 16:19, 22, 24, 27, 28, 29, 32, 33, 36, 37, 39, 40, 43,  failed to converge)
+
+bottom_extinction_model_comparison_neus <- as.data.table(matrix(nrow = length(bottom_variables)))
+bottom_extinction_model_comparison_neus[, variable:=as.factor(V1)][, coef:=as.numeric(V1)][, p_value:=as.numeric(V1)][, AICc:=as.numeric(V1)]
+bottom_extinction_model_comparison_neus[, V1 := NULL]
+  
+  for (i in 1:length(bottom_variables)){
+    mod <- glmer(now_ext ~ get(bottom_variables[i]) + (1|year_factor), family = binomial, data = spp_master_ztemp[reg == "neus"])
+    bottom_extinction_model_comparison_neus[i,variable := bottom_variables[i]]
+    bottom_extinction_model_comparison_neus[i,coef := coef(summary(mod))[,"Estimate"][2]]
+    bottom_extinction_model_comparison_neus[i,p_value := coef(summary(mod))[,"Pr(>|z|)"][2]]
+    bottom_extinction_model_comparison_neus[i,AICc := AICc(mod)]
+    
+    print(paste(i, length(bottom_variables), sep = "/"))
+      
+  }
+#add column for those that didn't converge
+bottom_extinction_model_comparison_neus$converge <- T
+bottom_extinction_model_comparison_neus$converge[c(1, 4, 9, 10, 12, 16:19, 22, 24, 27, 28, 29, 32, 33, 36, 37, 39, 40, 43)] <- F
+
+#add column to designate region 
+  bottom_extinction_model_comparison_neus$reg <- "neus"
+
+#newf (ALL failed to converge (all singularities) )
+
+bottom_extinction_model_comparison_newf <- as.data.table(matrix(nrow = length(bottom_variables)))
+bottom_extinction_model_comparison_newf[, variable:=as.factor(V1)][, coef:=as.numeric(V1)][, p_value:=as.numeric(V1)][, AICc:=as.numeric(V1)]
+bottom_extinction_model_comparison_newf[, V1 := NULL]
+  
+  for (i in 1:length(bottom_variables)){
+    mod <- glmer(now_ext ~ get(bottom_variables[i]) + (1|year_factor), family = binomial, data = spp_master_ztemp[reg == "newf"])
+    bottom_extinction_model_comparison_newf[i,variable := bottom_variables[i]]
+    bottom_extinction_model_comparison_newf[i,coef := coef(summary(mod))[,"Estimate"][2]]
+    bottom_extinction_model_comparison_newf[i,p_value := coef(summary(mod))[,"Pr(>|z|)"][2]]
+    bottom_extinction_model_comparison_newf[i,AICc := AICc(mod)]
+    
+    print(paste(i, length(bottom_variables), sep = "/"))
+      
+  }
+
+#add column for those that didn't converge
+bottom_extinction_model_comparison_newf$converge <- T
+bottom_extinction_model_comparison_newf$converge[c(1:124)] <- F
+
+#add column to designate region 
+  bottom_extinction_model_comparison_newf$reg <- "newf"
+
+
+#shelf (none didn't converge)
+
+bottom_extinction_model_comparison_shelf <- as.data.table(matrix(nrow = length(bottom_variables)))
+bottom_extinction_model_comparison_shelf[, variable:=as.factor(V1)][, coef:=as.numeric(V1)][, p_value:=as.numeric(V1)][, AICc:=as.numeric(V1)]
+bottom_extinction_model_comparison_shelf[, V1 := NULL]
+  
+  for (i in 1:length(bottom_variables)){
+    mod <- glmer(now_ext ~ get(bottom_variables[i]) + (1|year_factor), family = binomial, data = spp_master_ztemp[reg == "shelf"])
+    bottom_extinction_model_comparison_shelf[i,variable := bottom_variables[i]]
+    bottom_extinction_model_comparison_shelf[i,coef := coef(summary(mod))[,"Estimate"][2]]
+    bottom_extinction_model_comparison_shelf[i,p_value := coef(summary(mod))[,"Pr(>|z|)"][2]]
+    bottom_extinction_model_comparison_shelf[i,AICc := AICc(mod)]
+    
+    print(paste(i, length(bottom_variables), sep = "/"))
+      
+  }
+
+#add column for those that didn't converge
+bottom_extinction_model_comparison_shelf$converge <- T
+
+#add column to designate region 
+  bottom_extinction_model_comparison_shelf$reg <- "shelf"
+
+
+#sa (12, 31, 35, 55, 63, 72, 82, 87, 92, 96, 123 didn't converge)
+
+bottom_extinction_model_comparison_sa <- as.data.table(matrix(nrow = length(bottom_variables)))
+bottom_extinction_model_comparison_sa[, variable:=as.factor(V1)][, coef:=as.numeric(V1)][, p_value:=as.numeric(V1)][, AICc:=as.numeric(V1)]
+bottom_extinction_model_comparison_sa[, V1 := NULL]
+  
+  for (i in 1:length(bottom_variables)){
+    mod <- glmer(now_ext ~ get(bottom_variables[i]) + (1|year_factor), family = binomial, data = spp_master_ztemp[reg == "sa"])
+    bottom_extinction_model_comparison_sa[i,variable := bottom_variables[i]]
+    bottom_extinction_model_comparison_sa[i,coef := coef(summary(mod))[,"Estimate"][2]]
+    bottom_extinction_model_comparison_sa[i,p_value := coef(summary(mod))[,"Pr(>|z|)"][2]]
+    bottom_extinction_model_comparison_sa[i,AICc := AICc(mod)]
+    
+    print(paste(i, length(bottom_variables), sep = "/"))
+      
+  }
+
+#add column for those that didn't converge
+bottom_extinction_model_comparison_sa$converge <- T
+bottom_extinction_model_comparison_sa$converge[c(12, 31, 35, 55, 63, 72, 82, 87, 92, 96, 123)] <- F
+
+#add column to designate region 
+  bottom_extinction_model_comparison_sa$reg <- "sa"
+
+
+#wctri (1, 2, 3, 5:10, 15:20, 25:29, 36, 38:42, 44, 47, 49, 52, 54, 55, 56, 58:65, 68:75, 79: 83, 85:87, 89, 90, 94:98, 100, 102:106, 109:111, 113:116, 119, 121, 124 failed to converge)
+
+bottom_extinction_model_comparison_wctri <- as.data.table(matrix(nrow = length(bottom_variables)))
+bottom_extinction_model_comparison_wctri[, variable:=as.factor(V1)][, coef:=as.numeric(V1)][, p_value:=as.numeric(V1)][, AICc:=as.numeric(V1)]
+bottom_extinction_model_comparison_wctri[, V1 := NULL]
+  
+  for (i in 1:length(bottom_variables)){
+    mod <- glmer(now_ext ~ get(bottom_variables[i]) + (1|year_factor), family = binomial, data = spp_master_ztemp[reg == "wctri"])
+    bottom_extinction_model_comparison_wctri[i,variable := bottom_variables[i]]
+    bottom_extinction_model_comparison_wctri[i,coef := coef(summary(mod))[,"Estimate"][2]]
+    bottom_extinction_model_comparison_wctri[i,p_value := coef(summary(mod))[,"Pr(>|z|)"][2]]
+    bottom_extinction_model_comparison_wctri[i,AICc := AICc(mod)]
+    
+    print(paste(i, length(bottom_variables), sep = "/"))
+      
+  }
+
+#add column for those that didn't converge
+bottom_extinction_model_comparison_wctri$converge <- T
+bottom_extinction_model_comparison_wctri$converge[c(1, 2, 3, 5:10, 15:20, 25:29, 36, 38:42, 44, 47, 49, 52, 54, 55, 56, 58:65, 68:75, 79: 83, 85:87, 89, 90, 94:98, 100, 102:106, 109:111, 113:116, 119, 121, 124)] <- F
+
+#add column to designate region 
+  bottom_extinction_model_comparison_wctri$reg <- "wctri"
+
+```
+
+Now, I'll merge all bottom extinction models
+```{r merge bottom extinction models}
+bottom_extinction_model_comparison_byregion <- rbind(bottom_extinction_model_comparison_ai, bottom_extinction_model_comparison_ebs, bottom_extinction_model_comparison_gmex, bottom_extinction_model_comparison_goa, bottom_extinction_model_comparison_neus, bottom_extinction_model_comparison_newf, bottom_extinction_model_comparison_sa, bottom_extinction_model_comparison_shelf, bottom_extinction_model_comparison_wctri)
+```
+
+Best bottom extinction models per region
+
+```{r best bottom extinction models per region}
+bottom_extinction_model_comparison_byregion %>%
+  filter(converge == TRUE, !grepl("mean", variable)) %>% #ignoring mean for now, and get rid of those that didn't converge
+  group_by(reg) %>% #group by region
+  arrange(AICc) %>% #arrange by AICc
+  top_n(-5, AICc) #take 5 best models (lowest AICc)
+  
+```
