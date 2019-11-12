@@ -184,10 +184,58 @@ max_sbt_temp_change_abs	      0.23859896	4.768169e-06	6878.288
 
 ```{r col best models with traits too}
 #First, how does this model do with only rows that we actually have trait data for?
-spp_master_ztemp.traits.na <- na.omit(spp_master_ztemp.traits, cols="age.max")
-spp_master_ztemp.traits.na[,year_factor := as.factor(year)]
+spp_master_ztemp.traits.na.age.max <- na.omit(spp_master_ztemp.traits, cols="age.max")
+spp_master_ztemp.traits.na.age.max[,year_factor := as.factor(year)]
+```
 
-#does it hold up with this limited data set?
+Does it hold up with this limited data set?
+Now, I need to run all models again with this restricted data set
+```{r run colonizatino models again with restricted data set to only age.max species}
+#going to make loop to make all models I need to look at with single SURFACE variables
+surface_variables <- colnames(spp_master_ztemp.traits.na.age.max[,45:168])
+surface_colonization_model_comparison.maxage <- as.data.table(matrix(nrow = length(surface_variables)))
+surface_colonization_model_comparison.maxage[, variable:=as.factor(V1)][, coef:=as.numeric(V1)][, p_value:=as.numeric(V1)][, AICc:=as.numeric(V1)]
+surface_colonization_model_comparison.maxage[, V1 := NULL]
+
+for (i in 1:length(surface_variables)){
+  mod <- glmer(col ~ get(surface_variables[i]) + (1|reg) + (1|year_factor), family = binomial, data = spp_master_ztemp.traits.na.age.max)
+  surface_colonization_model_comparison.maxage[i,variable := surface_variables[i]]
+  surface_colonization_model_comparison.maxage[i,coef := coef(summary(mod))[,"Estimate"][2]]
+  surface_colonization_model_comparison.maxage[i,p_value := coef(summary(mod))[,"Pr(>|z|)"][2]]
+  surface_colonization_model_comparison.maxage[i,AICc := AICc(mod)]
+  
+  print(paste(i, length(surface_variables), sep = "/"))
+    
+}
+
+#looping through all possible colonization variables with single BOTTOM variables
+bottom_variables <- colnames(spp_master_ztemp.traits.na.age.max[,169:292]) #same as above
+
+bottom_colonization_model_comparison.maxage <- as.data.table(matrix(nrow = length(bottom_variables)))
+bottom_colonization_model_comparison.maxage[, variable:=as.factor(V1)][, coef:=as.numeric(V1)][, p_value:=as.numeric(V1)][, AICc:=as.numeric(V1)]
+bottom_colonization_model_comparison.maxage[, V1 := NULL]
+
+for (i in 1:length(bottom_variables)){
+  mod <- glmer(col ~ get(bottom_variables[i]) + (1|reg) + (1|year_factor), family = binomial, data = spp_master_ztemp.traits.na.age.max)
+  bottom_colonization_model_comparison.maxage[i,variable := bottom_variables[i]]
+  bottom_colonization_model_comparison.maxage[i,coef := coef(summary(mod))[,"Estimate"][2]]
+  bottom_colonization_model_comparison.maxage[i,p_value := coef(summary(mod))[,"Pr(>|z|)"][2]]
+  bottom_colonization_model_comparison.maxage[i,AICc := AICc(mod)]
+  
+  print(paste(i, length(bottom_variables), sep = "/"))
+    
+}
+
+#merge surface and bottom for colonization
+colonization_model_comparisons.maxage <- rbind(bottom_colonization_model_comparison.maxage, surface_colonization_model_comparison.maxage)
+#lowest AICc
+head(colonization_model_comparisons.maxage[order(AICc)], 30)
+```
+This is telling me that previous best model (max sbt temp change abs) is still good, but not the best... Therefore, it seems like we shoould be ignoring traits for now. Future analyses...
+
+```{r}
+
+
 mod.c.t.0 <- glmer(col ~ max_sbt_temp_change_abs + (1|reg) + (1|year_factor), family = binomial, data = spp_master_ztemp.traits.na)
 summary(mod.c.t.0)
 #max_sbt_temp_change_abs	      0.16256 	0.00915	4242.65
@@ -226,6 +274,7 @@ min_sst_temp_change_lag2	    -0.09468652	0.010582502	6209.860
 min_sbt_temp_change_lag7	    -0.11564632	0.010589365	6210.022	
 
 ```{r ext best models with traits too}
+#what's the best model now? #START HERE, run whole thing with restricted data set
 #does it hold up with this limited data set?
 mod.e.t.0 <- glmer(now_ext ~ seas_sbt_temp_change_abs_lag9 + (1|reg) + (1|year_factor), family = binomial, data = spp_master_ztemp.traits.na)
 summary(mod.e.t.0)
@@ -295,6 +344,44 @@ ggplot(aes(x=age.max), data = spp_master_ztemp.traits.na) +
 
 #appears to be similar across regions? just many more in neus
 ```
+Age of Maturity for Colonization
+```{r colonization with age of maturity}
+hist(spp_master_ztemp.traits$age.maturity)
+
+
+#First, how does this model do with only rows that we actually have trait data for?
+spp_master_ztemp.traits.na.age.maturity <- na.omit(spp_master_ztemp.traits, cols="age.maturity")
+spp_master_ztemp.traits.na.age.maturity[,year_factor := as.factor(year)]
+
+#does it hold up with this limited data set?
+mod.c.age.maturity.0 <- glmer(col ~ max_sbt_temp_change_abs + (1|reg) + (1|year_factor), family = binomial, data = spp_master_ztemp.traits.na.age.maturity)
+summary(mod.c.age.maturity.0)
+AICc(mod.c.age.maturity.0)
+
+#max_sbt_temp_change_abs  0.14627  0.0233 ** 	4069.372
+
+#max_sbt_temp_change_abs and age.maturity
+mod.c.age.maturity.1 <- glmer(col ~ max_sbt_temp_change_abs + age.maturity + (1|reg) + (1|year_factor), family = binomial, data = spp_master_ztemp.traits.na.age.maturity)
+summary(mod.c.age.maturity.1)
+AICc(mod.c.age.maturity.0, mod.c.age.maturity.1)
+
+
+  #max_sbt_temp_change_abs and             0.155462 0.0127  4515.642
+      #                       tl      -0.36865 0.000158	
+
+#interaction?
+mod.c.age.maturity.2 <- glmer(col ~ max_sbt_temp_change_abs * age.maturity + (1|reg) + (1|year_factor), family = binomial, data = spp_master_ztemp.traits.na.age.maturity)
+summary(mod.c.tl.2)
+  #yes, appears that trophic level impacts interaction with temperature (p=0.003700), and it's the best model, AICc = 4509.615
+
+AICc(mod.c.age.maturity.0, mod.c.age.maturity.1, mod.c.age.maturity.2)
+
+#what about only age maturity?
+mod.c.age.maturity.3 <- glmer(col ~ age.maturity + (1|reg) + (1|year_factor), family = binomial, data = spp_master_ztemp.traits.na.age.maturity)
+AICc(mod.c.age.maturity.3) 
+  #better with temperature as well
+
+```
 
 Let's look at some other traits maybe?
   Trophic level? (tl)
@@ -342,7 +429,7 @@ lm <- lm(spp_master_ztemp.traits$tl ~ spp_master_ztemp.traits$age.max)
 summary(lm)
 plot(spp_master_ztemp.traits$tl, spp_master_ztemp.traits$age.max)
 ```
-  
+
 Split by region?
   build individual models in regions? or make different plots for different regions?
 ```{r regional differences in col and ext}

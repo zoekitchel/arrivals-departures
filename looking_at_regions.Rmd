@@ -274,7 +274,6 @@ surface_colonization_model_comparison_wctri$converge[c(16, 27, 37, 38, 51, 52, 6
 
 #add column to designate region 
   surface_colonization_model_comparison_wctri$reg <- "wctri"
-
 ```
 
 Now, I'll merge all surface colonization models
