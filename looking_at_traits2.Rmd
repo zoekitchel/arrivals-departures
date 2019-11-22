@@ -7,7 +7,8 @@ Going to look at some patterns in traits
 ```{r setup}
 library(ggplot2)
 library(data.table)
-
+library(lme4)
+library(MuMIn)
 
 traits <- read.csv("TraitCollectionFishNAtlanticNEPacificContShelf (3).csv")
 traits <- data.table(traits)
@@ -508,57 +509,45 @@ head(colonization_model_comparisons.tl[order(AICc)], 30)
 ```
 Do top models hold up? This is telling me that previous best model (max sbt temp change abs) is still good, but not the best... Malin says it's okay, as long as similar models are coming out on top
 
-seas_sst_temp_change_abs	0.17121179	0.0005599279	4525.486	
-max_sbt_temp_change_abs_lag3	0.19678089	0.0013246068	4526.919	
-max_sbt_temp_change_abs	0.18509626	0.0021952362	4527.742	
-max_sst_temp_change_abs_lag1	-0.25709293	0.0033255361	4527.955	
-seas_sbt_temp_change_abs	0.15728890	0.0034775899	4528.408	
-max_sbt_temp_change_abs_lag1	0.16544380	0.0096094080	4530.271	
-seas_sbt_temp_change_abs_lag1	0.13431316	0.0183946976	4531.309	
-seas_sbt_temp_change_abs_lag4	0.13162107	0.0232351577	4531.668	
-min_sbt_temp_change_abs	0.17182671	0.0196874934	4531.795
-max_sst_temp_change_abs_lag8	0.16963749	0.0255186622	4532.091	
-min_sbt_temp_change_abs_lag5	-0.20316841	0.0397350249	4532.176	
-max_sst_temp_change_abs_lag6	-0.18049426	0.0381593586	4532.251	
-seas_sst_temp_change_lag5	-0.07645147	0.0360758538	4532.280	
-max_sst_temp_change_abs	0.20292370	0.0327597085	4532.339	
-min_sst_temp_change_abs	0.13663573	0.0333662358	4532.452	
-
 variable | coefficient | p | AICc | rank above | coef above
 |---------|-------------|----|-----|---|---|
-| 1 | seas_sst_temp_change_abs	0.17121179	0.0005599279	4525.486	
+| 1 | seas_sst_temp_change_abs |	0.17121179 |	0.0005599279 |	4525.486 |	12 | 0.10 |
+| 2 | max_sbt_temp_change_abs_lag3 |	0.19678089 |	0.0013246068 |	4526.919 | 4 | 0.17 |
+| 3 | max_sbt_temp_change_abs |	0.18509626 |	0.0021952362 |	4527.742 | 1 | 0.24
+| 4 | max_sst_temp_change_abs_lag1 |	-0.25709293 |	0.0033255361 |	4527.955 | 2 | -0.24
+| 5 | seas_sbt_temp_change_abs |	0.15728890 |	0.0034775899 |	4528.408 |	5 | 0.14
+| 6 | max_sbt_temp_change_abs_lag1 |	0.16544380 |	0.0096094080 |	4530.271 |	11 | 0.14
+| 7 | seas_sbt_temp_change_abs_lag1 |	0.13431316 |	0.0183946976 |	4531.309 |	10 | 0.13
+| 8 | seas_sbt_temp_change_abs_lag4 |	0.13162107 |	0.0232351577 |	4531.668 |	8 | 0.14
+| 9 | min_sbt_temp_change_abs |	0.17182671 |	0.0196874934 |	4531.795 | not in top 15 ||
+| 10 | max_sst_temp_change_abs_lag8 |	0.16963749 |	0.0255186622 |	4532.091 |	6 | 0.19 |
+| 11 | min_sbt_temp_change_abs_lag5 |	-0.20316841 |	0.0397350249 |	4532.176 |	3 | -0.24 |
+| 12 | max_sst_temp_change_abs_lag6 |	-0.18049426 |	0.0381593586 |	4532.251 | not in top 15 ||
+| 13 | seas_sst_temp_change_lag5 |	-0.07645147 |	0.0360758538 |	4532.280 |	not in top 15 ||
+| 14 | max_sst_temp_change_abs |	0.20292370 |	0.0327597085 |	4532.339 |	14 | 0.17|
+| 15 | min_sst_temp_change_abs |	0.13663573 |	0.0333662358 |	4532.452 |	not in top 15||
 
-| 2 | max_sbt_temp_change_abs_lag3	0.19678089	0.0013246068	4526.919	
-
-| 3 | max_sbt_temp_change_abs	0.18509626	0.0021952362	4527.742	
-
-| 4 | max_sst_temp_change_abs_lag1	-0.25709293	0.0033255361	4527.955	
-| 5 | seas_sbt_temp_change_abs	0.15728890	0.0034775899	4528.408	
-
-| 6 | max_sbt_temp_change_abs_lag1	0.16544380	0.0096094080	4530.271	
-
-| 7 |
-| 9 | 
-| 10 |
-| 11 |
-| 12 |
-| 13 |	
-| 14 |
-| 15 |
+Of top 15, 11 are shared between the two. 
 
 Now we will check to see if including trophic level improves best models.
 ```{r colonization trophic level does adding trophic level improve models: new base model}
 
 #new base model (best model with no traits added)
-mod.c.t.0 <- glmer(col ~ max_sbt_temp_change_abs + (1|reg) + (1|year_factor), family = binomial, data = spp_master_ztemp.traits.na.tl)
-summary(mod.c.t.0)
+mod.c.tl.0 <- glmer(col ~ max_sbt_temp_change_abs + (1|reg) + (1|year_factor), family = binomial, data = spp_master_ztemp.traits.na.tl)
+summary(mod.c.tl.0)
+AICc(mod.c.tl.0)
+#max_sbt_temp_change_abs  0.18510  0.0022 4527.742
 ```
 
 
 ```{r colonization trophic level does adding trophic level improve models:adding trophic level}
 #max_sbt_temp_change_abs and tl
-mod.c.t.1 <- glmer(col ~ max_sbt_temp_change_abs + tl + (1|reg) + (1|year_factor), family = binomial, data = spp_master_ztemp.traits.na.tl)
-summary(mod.c.t.1)
+mod.c.tl.1 <- glmer(col ~ max_sbt_temp_change_abs + tl + (1|reg) + (1|year_factor), family = binomial, data = spp_master_ztemp.traits.na.tl)
+summary(mod.c.tl.1)
+AICc(mod.c.tl.1)
+
+#max_sbt_temp_change_abs  0.18636   0.002102 4515.642
+#tl                      -0.36865   0.000158
 
 
 ```
@@ -566,23 +555,31 @@ summary(mod.c.t.1)
 
 ```{r colonization trophic level does adding trophic level improve models:adding trophic level with interaction}
 #interaction?
-mod.c.t.2 <- glmer(col ~ max_sbt_temp_change_abs * tl + (1|reg) + (1|year_factor), family = binomial, data = spp_master_ztemp.traits.na.tl)
-summary(mod.c.t.2)
+mod.c.tl.2 <- glmer(col ~ max_sbt_temp_change_abs * tl + (1|reg) + (1|year_factor), family = binomial, data = spp_master_ztemp.traits.na.tl)
+summary(mod.c.tl.2)
+AICc(mod.c.tl.2)
+
+#max_sbt_temp_change_abs     0.93859   0.000332 4509.615
+#tl                         -0.14904   0.226275    
+#max_sbt_temp_change_abs:tl -0.20651   0.003700 
 ```
 
 
 ```{r colonization trophic level does adding trophic level improve models:only trophic level}
 #what about only trophic level?
-mod.c.t.3 <- glmer(col ~ tl + (1|reg) + (1|year_factor), family = binomial, data = spp_master_ztemp.traits.na)
-summary(mod.c.t.3)
+mod.c.tl.3 <- glmer(col ~ tl + (1|reg) + (1|year_factor), family = binomial, data = spp_master_ztemp.traits.na.tl)
+summary(mod.c.tl.3)
+AICc(mod.c.tl.3)
+
+#tl          -0.36778  0.000165 4522.709
 
 ```
 Comparing above options (no trait, yes trait, yes trait with interaction, only trait)
 ```{r colonization trophic level does adding trophic level improve models: comparing all models}
-AICc(mod.c.t.0, mod.c.t.1, mod.c.t.2, mod.c.t.3)
+AICc(mod.c.tl.0, mod.c.tl.1, mod.c.tl.2, mod.c.tl.3)
 ```
-
-This tells us that as trophic level increases,....
+Best model includes interaction, in addition to temp and trophic level. 
+This tells us that as trophic level increases, log odds of colonization decreases. Also, as trophic level increases, effect of temperature on colonization decreases.
 
 Can we make a plot for how likelihood of colonization and extinction changes with tl?
 ```{r tl region bias?}
