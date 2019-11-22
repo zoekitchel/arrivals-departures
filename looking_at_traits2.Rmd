@@ -1,0 +1,920 @@
+---
+title: "Looking at Traits"
+output: html_notebook
+---
+
+Going to look at some patterns in traits
+```{r setup}
+library(ggplot2)
+library(data.table)
+
+
+traits <- read.csv("TraitCollectionFishNAtlanticNEPacificContShelf (3).csv")
+traits <- data.table(traits)
+
+#remove duplicates
+traits.u <- unique(traits, by = c('taxon'))
+
+```
+Interested in looking at max age, trophic level, and age of maturity
+```{r trait patterns}
+ggplot(aes(x=age.max), data = traits) +
+  geom_histogram()
+
+ggplot(aes(x=age.maturity), data = traits) +
+  geom_histogram()
+
+ggplot(aes(x=tl), data = traits) +
+  geom_histogram()
+
+cor(na.omit(traits[,c(10, 17, 22)]))
+``` 
+They have a R^2 value of 0.53, so, worth it to try both. 
+
+Let's link species
+
+First, let's see if there are any errors?
+```{r linking species}
+load("spp_master_ztemp.Rdata")
+spp_master_spp <- data.frame(spp = unique(spp_master_ztemp$spp), origin = "spp_master")
+traits_spp <- data.frame(spp = unique(traits$taxon), origin = "traits")
+spp_all <- rbind(spp_master_spp, traits_spp)
+spp_all$spp <- as.character(spp_all$spp)
+spp_all.u <- spp_all[!duplicated(spp_all$spp),]
+```
+
+#Species to fix
+
+species | location
+
+Arctozenus risso | spp_master
+Arctozenus risso kroyeri | spp_master
+*Arctozenus risso in traits, so best to apply same to both Arctozenus and Artozenus risso kroyeri in spp_master
+```{r Arctozenus risso}
+row <- traits.u[taxon == "Arctozenus risso",]
+row[,taxon := "Arctozenus risso kroyeri"][, species := "risso kroyeri"]
+traits.u <- rbind(traits.u, row)
+```
+
+Myoxocephalus scorpioides | spp_master
+Myoxocephalus scorpius | spp_master
+*yes, these are different!
+
+Auxis rochei rochei | traits
+*ignore, not in our hauls
+
+Diplecogaster bimaculata | traits
+Diplecogaster bimaculata bimaculata | traits
+*ignore, not in our hauls
+
+Etrumeus teres | traits
+Etrumeus teres(sadina) | spp_master
+*change spp_master to Etrumeus teres
+```{r Etrumeus teres}
+spp_master_ztemp[spp == "Etrumeus teres(sadina)", spp := "Etrumeus teres"]
+
+```
+
+Eualus gaimardii gaimardii | spp_master
+*ignore, not in trait database
+
+Gasterosteus aculeatus | traits
+Gasterosteus aculeatus williamsoni | traits
+*ignore, not in our hauls
+
+Lestidiops jayakari | traits
+Lestidiops jayakari jayakari | traits
+*ignore, not in our hauls
+
+Liparis liparis liparis | traits
+*ignore, not in our hauls
+
+Macroramphosus scolopax | traits
+Macrorhamphosus scolopax | spp_master
+*spelling error in spp_master, change to Macroramphosus scolopax
+```{r Macroramphosus scolopax}
+spp_master_ztemp[spp == "Macrorhamphosus scolopax", spp := "Macroramphosus scolopax"]
+```
+
+Mullus barbatus barbatus | traits
+*ignore, not in our hauls
+
+Myliobatis freminvillei | traits
+Myliobatis freminvillii | spp_master
+*spelling error in spp_master, change to Myliobatis freminvillei
+```{r Myliobatis freminvillei}
+spp_master_ztemp[spp == "Myliobatis freminvillii", spp := "Myliobatis freminvillei"]
+```
+
+
+Nicholsina usta usta | traits
+*ignore, not in our hauls
+
+Notoscopelus elongatus kroyeri | traits
+*ignore, not in our hauls
+
+Oxyporhamphus micropterus micropterus | traits
+*ignore, not in our hauls
+
+Polydactylus octoemus | spp_master
+Polydactylus octonemus | traits
+*spelling error in spp_master, change to Polydactylus octonemus
+```{r Polydactylus octonemus}
+spp_master_ztemp[spp == "Polydactylus octoemus", spp := "Polydactylus octonemus"]
+```
+
+
+Salmo trutta trutta | traits
+*ignore, not in our hauls
+
+Scomberesox saurus saurus | traits
+*ignore, not in our hauls
+
+Stichaeus punctatus | spp_master
+Stichaeus punctatus punctatus | traits
+*delte one punctatus from traits
+```{r Stichaeus punctatus}
+traits.u[taxon == "Stichaeus punctatus punctatus", taxon := "Stichaeus punctatus"][species == "punctatus punctatus", species := "punctatus"]
+
+```
+
+
+Stomias boa boa | traits
+Stomias boa ferox | traits
+*ignore, not in our trawls
+
+Symphurus civitatium | traits
+Symphurus civitatum | spp_master
+*spelling error in spp_master, change to Symphurus civitatium
+```{r Symphurus civitatium}
+spp_master_ztemp[spp == "Symphurus civitatum", spp := "Symphurus civitatium"]
+
+```
+
+
+Zenopsis conchifer | traits
+Zenopsis conchifera | spp_master
+*spelling error in spp_master, change to Zenopsis conchifer
+```{r Zenopsis conchifer}
+spp_master_ztemp[spp == "Zenopsis conchifera", spp := "Zenopsis conchifer"]
+
+```
+
+Okay, now we can go forward. Let's link traits to spp_master with temp data
+
+```{r link traits to haul data}
+traits.u[, spp := taxon][, taxon := NULL]
+spp_master_ztemp.traits <- spp_master_ztemp[traits.u, nomatch = 0, on = c("spp")]
+```
+
+Now to save updated data.table with traits for species we have traits for
+```{r save}
+save(spp_master_ztemp.traits, file = "spp_master_ztemp.traits.Rdata")
+```
+
+*******
+#Now, what happens if we add traits to our models?
+
+Let's just look at our best models
+
+Best colonization models without traits:
+
+variable | coefficient | p | AICc
+---------|-------------|----|-----|
+| 1 | max_sbt_temp_change_abs | 	0.23859896	| 4.768169e-06	| 6878.288 |	
+| 2 | max_sst_temp_change_abs_lag1	| -0.23972849	| 7.626257e-04	| 6887.400 |	
+| 3 | min_sbt_temp_change_abs_lag5	| -0.24444356	| 2.224470e-03	| 6888.859 |	
+| 4 | max_sbt_temp_change_abs_lag3 | 	0.17106664	| 1.235113e-03	| 6888.938 |	
+| 5 | seas_sbt_temp_change_abs | 	0.14237610	| 1.832988e-03	| 6889.498 |	
+| 6 | max_sst_temp_change_abs_lag8 | 	0.19094887	| 2.065176e-03	| 6889.901 |	
+| 7 | seas_sst_temp_change_abs_lag8 | 	0.12714037	| 3.919052e-03	| 6890.941 |
+| 8 | seas_sbt_temp_change_abs_lag4 |	0.13592310 |	5.378231e-03 |	6891.397 |	
+| 9 | max_sbt_temp_change_lag8 |	-0.11479683	| 6.230307e-03 |	6891.566	|
+| 10 | seas_sbt_temp_change_abs_lag1 |	0.12614156 |	7.121969e-03 |	6891.960 |	
+| 11 | max_sbt_temp_change_abs_lag1 |	0.13913884 |	9.612377e-03 |	6892.510 |	
+| 12 | seas_sst_temp_change_abs |	0.10400362 |	1.380557e-02 |	6893.210 |	
+| 13 | max_sst_temp_change_abs_lag3 |	0.15225482 |	1.668734e-02 |	6893.417 |	
+| 14 | max_sst_temp_change_abs |	0.16851906 |	2.258119e-02 |	6893.968 |	
+| 15 | min_sst_temp_change_lag5 |	0.07967662 |	2.537698e-02 |	6894.026 |	
+
+Now, I need to run all models again with this restricted data set. Do the models hold up? Then, I will see how adding traits changes things.
+
+##Maximum age and colonization
+```{r run colonization models again with restricted data set to only age.max species do models hold up}
+#restrict to rows with age max data
+spp_master_ztemp.traits.na.age.max <- na.omit(spp_master_ztemp.traits, cols="age.max")
+spp_master_ztemp.traits.na.age.max[,year_factor := as.factor(year)]
+
+#going to make loop to make all models I need to look at with single SURFACE variables
+surface_variables <- colnames(spp_master_ztemp.traits.na.age.max[,45:168])
+surface_colonization_model_comparison.maxage <- as.data.table(matrix(nrow = length(surface_variables)))
+surface_colonization_model_comparison.maxage[, variable:=as.factor(V1)][, coef:=as.numeric(V1)][, p_value:=as.numeric(V1)][, AICc:=as.numeric(V1)]
+surface_colonization_model_comparison.maxage[, V1 := NULL]
+
+for (i in 1:length(surface_variables)){
+  mod <- glmer(col ~ get(surface_variables[i]) + (1|reg) + (1|year_factor), family = binomial, data = spp_master_ztemp.traits.na.age.max)
+  surface_colonization_model_comparison.maxage[i,variable := surface_variables[i]]
+  surface_colonization_model_comparison.maxage[i,coef := coef(summary(mod))[,"Estimate"][2]]
+  surface_colonization_model_comparison.maxage[i,p_value := coef(summary(mod))[,"Pr(>|z|)"][2]]
+  surface_colonization_model_comparison.maxage[i,AICc := AICc(mod)]
+  
+  print(paste(i, length(surface_variables), sep = "/"))
+    
+}
+
+#looping through all possible colonization variables with single BOTTOM variables
+bottom_variables <- colnames(spp_master_ztemp.traits.na.age.max[,169:292]) #same as above
+
+bottom_colonization_model_comparison.maxage <- as.data.table(matrix(nrow = length(bottom_variables)))
+bottom_colonization_model_comparison.maxage[, variable:=as.factor(V1)][, coef:=as.numeric(V1)][, p_value:=as.numeric(V1)][, AICc:=as.numeric(V1)]
+bottom_colonization_model_comparison.maxage[, V1 := NULL]
+
+for (i in 1:length(bottom_variables)){
+  mod <- glmer(col ~ get(bottom_variables[i]) + (1|reg) + (1|year_factor), family = binomial, data = spp_master_ztemp.traits.na.age.max)
+  bottom_colonization_model_comparison.maxage[i,variable := bottom_variables[i]]
+  bottom_colonization_model_comparison.maxage[i,coef := coef(summary(mod))[,"Estimate"][2]]
+  bottom_colonization_model_comparison.maxage[i,p_value := coef(summary(mod))[,"Pr(>|z|)"][2]]
+  bottom_colonization_model_comparison.maxage[i,AICc := AICc(mod)]
+  
+  print(paste(i, length(bottom_variables), sep = "/"))
+    
+}
+
+#merge surface and bottom for colonization
+colonization_model_comparisons.maxage <- rbind(bottom_colonization_model_comparison.maxage, surface_colonization_model_comparison.maxage)
+#lowest AICc
+head(colonization_model_comparisons.maxage[order(AICc)], 30)
+```
+Do top models hold up? This is telling me that previous best model (max sbt temp change abs) is still good, but not the best... Malin says it's okay, as long as similar models are coming out on top. 11/15 top models shared. 
+
+variable | coefficient | p | AICc | rank above | coef above
+---------|-------------|----|-----|---|---|
+| 1 | seas_sst_temp_change_abs |	0.16747228 |	0.001059902 |	4239.108 |	12 | 0.104 |
+| 2 | max_sbt_temp_change_abs_lag3 |	0.19569357 |	0.001885719 |	4239.951 | 4	| 0.171 |
+| 3 | max_sst_temp_change_abs_lag1 |	-0.26280961 |	0.003919178 |	4240.645 | 2 | -0.24 |
+| 4 | max_sbt_temp_change_abs |	0.16256132 |	0.009148480 |	4242.650 | 1 | 0.239 |
+| 5 | max_sbt_temp_change_abs_lag1 |	0.16616085 |	0.010718533 |	4242.893 | 11 | 0.14 | 
+| 6 | seas_sbt_temp_change_abs |	0.13226661 |	0.016386407 |	4243.561 | 5 | 0.14 
+| 7 | seas_sbt_temp_change_abs_lag4 |	0.14075757 |	0.019188279 |	4243.750 | 8 | 0.14
+| 8 | max_sst_temp_change_abs_lag6 |	-0.20512821 |	0.024157883 |	4243.823 |	not in top 15 | |
+| 9 | seas_sbt_temp_change_abs_lag1 |	0.12951678 |	0.026914136 |	4244.384 | 9 | 0.13 |	
+| 10 | max_sst_temp_change_abs_lag8 |	0.17240059 |	0.028828987 |	4244.709 | 6 |	0.19
+| 11 | seas_sst_temp_change_abs_lag6 |	-0.12608343 |	0.043620010 |	4244.899 | not in top 15 | |	
+| 12 | max_sst_temp_change_abs |	0.19930194 |	0.042940256 |	4245.196 | 14 | 0.17 |	
+| 13 | seas_sst_temp_change_lag5 |	-0.07459168 |	0.049345998 |	4245.232 | not in top 15 | |	
+| 14 | seas_sbt_temp_lag10 |	0.08104661 |	0.048357908 |	4245.336 | not in top 15 | |	
+| 15 | min_sbt_temp_change_abs_lag5 |	-0.18602894 |	0.060853920 |	4245.388 | 3 | -0.24 |	
+
+Now we will check to see if including max age improves best models.
+```{r colonization maximum age does adding max age improve models: new base model}
+
+#new base model (best model with no traits added)
+mod.c.agemax.0 <- glmer(col ~ max_sbt_temp_change_abs + (1|reg) + (1|year_factor), family = binomial, data = spp_master_ztemp.traits.na.age.max)
+summary(mod.c.agemax.0)
+AICc(mod.c.agemax.0)
+
+#max_sbt_temp_change_abs	      0.16256 	0.00915	4242.65
+```
+
+
+```{r colonization maximum age does adding max age improve models:adding max.age}
+#max_sbt_temp_change_abs and age.max
+mod.c.agemax.1 <- glmer(col ~ max_sbt_temp_change_abs + age.max + (1|reg) + (1|year_factor), family = binomial, data = spp_master_ztemp.traits.na.age.max)
+summary(mod.c.agemax.1)
+AICc(mod.c.agemax.1)
+
+
+  #max_sbt_temp_change_abs and             0.155462 0.0127  4204.059
+      #                       age.max      -0.025250 1.42e-08	
+
+```
+
+
+```{r colonization maximum age does adding max age improve models:adding max.age with interaction}
+#interaction?
+mod.c.agemax.2 <- glmer(col ~ max_sbt_temp_change_abs * age.max + (1|reg) + (1|year_factor), family = binomial, data = spp_master_ztemp.traits.na.age.max)
+summary(mod.c.agemax.2)
+AICc(mod.c.agemax.2)
+
+  #max_sbt_temp_change_abs          0.055470   0.088216   0.629   0.5295    
+    #age.max                         -0.031236   0.005892  -5.301 1.15e-07 ***
+    #max_sbt_temp_change_abs:age.max  0.008543   0.005074   1.684   0.0922 .  
+  #yes, appears that max age impacts interaction with temperature.
+```
+The interaction is significant. As maximum age increases, the effect of temp on liklihood of colonization increases.
+
+```{r colonization maximum age does adding max age improve models:only max.age}
+#what about only max age?
+mod.c.agemax.3 <- glmer(col ~ age.max + (1|reg) + (1|year_factor), family = binomial, data = spp_master_ztemp.traits.na.age.max)
+summary(mod.c.agemax.3)
+AICc(mod.c.agemax.3)
+
+  #4208.04
+
+```
+Comparing above options (no trait, yes trait, yes trait with interaction, only trait)
+```{r colonization maximum age does adding max age improve models: comparing all models}
+AICc(mod.c.agemax.0, mod.c.agemax.1, mod.c.agemax.2, mod.c.agemax.3)
+```
+Best model (Δ = 1.34, w/ interaction)
+
+This tells us that as maximum age increases, the log odds of colonizing decreases. As max absolute change in sbt experienced in the past year increases, log odds of colonization increases. Additionally, as max age increases, the effect of temp on log odds of colonization increases.
+
+Can we make a plot for how likelihood of colonization and extinction changes with age.max?
+```{r age.max region bias?}
+ggplot(aes(x=age.max), data = spp_master_ztemp.traits.na.age.max) +
+  geom_histogram() +
+  facet_wrap(~reg)
+
+#appears to be similar across regions? just many more in neus
+```
+
+##Age of Maturity for Colonization
+```{r run colonization models again with restricted data set to only age.maturity species do models hold up}
+#restrict to rows with maturity data
+spp_master_ztemp.traits.na.age.maturity <- na.omit(spp_master_ztemp.traits, cols="age.maturity")
+spp_master_ztemp.traits.na.age.maturity[,year_factor := as.factor(year)]
+
+#going to make loop to make all models I need to look at with single SURFACE variables
+surface_variables <- colnames(spp_master_ztemp.traits.na.age.maturity[,45:168])
+surface_colonization_model_comparison.maturityage <- as.data.table(matrix(nrow = length(surface_variables)))
+surface_colonization_model_comparison.maturityage[, variable:=as.factor(V1)][, coef:=as.numeric(V1)][, p_value:=as.numeric(V1)][, AICc:=as.numeric(V1)]
+surface_colonization_model_comparison.maturityage[, V1 := NULL]
+
+for (i in 1:length(surface_variables)){
+  mod <- glmer(col ~ get(surface_variables[i]) + (1|reg) + (1|year_factor), family = binomial, data = spp_master_ztemp.traits.na.age.maturity)
+  surface_colonization_model_comparison.maturityage[i,variable := surface_variables[i]]
+  surface_colonization_model_comparison.maturityage[i,coef := coef(summary(mod))[,"Estimate"][2]]
+  surface_colonization_model_comparison.maturityage[i,p_value := coef(summary(mod))[,"Pr(>|z|)"][2]]
+  surface_colonization_model_comparison.maturityage[i,AICc := AICc(mod)]
+  
+  print(paste(i, length(surface_variables), sep = "/"))
+    
+}
+
+#looping through all possible colonization variables with single BOTTOM variables
+bottom_variables <- colnames(spp_master_ztemp.traits.na.age.maturity[,169:292]) #same as above
+
+bottom_colonization_model_comparison.maturityage <- as.data.table(matrix(nrow = length(bottom_variables)))
+bottom_colonization_model_comparison.maturityage[, variable:=as.factor(V1)][, coef:=as.numeric(V1)][, p_value:=as.numeric(V1)][, AICc:=as.numeric(V1)]
+bottom_colonization_model_comparison.maturityage[, V1 := NULL]
+
+for (i in 1:length(bottom_variables)){
+  mod <- glmer(col ~ get(bottom_variables[i]) + (1|reg) + (1|year_factor), family = binomial, data = spp_master_ztemp.traits.na.age.maturity)
+  bottom_colonization_model_comparison.maturityage[i,variable := bottom_variables[i]]
+  bottom_colonization_model_comparison.maturityage[i,coef := coef(summary(mod))[,"Estimate"][2]]
+  bottom_colonization_model_comparison.maturityage[i,p_value := coef(summary(mod))[,"Pr(>|z|)"][2]]
+  bottom_colonization_model_comparison.maturityage[i,AICc := AICc(mod)]
+  
+  print(paste(i, length(bottom_variables), sep = "/"))
+    
+}
+
+#merge surface and bottom for colonization
+colonization_model_comparisons.maturityage <- rbind(bottom_colonization_model_comparison.maturityage, surface_colonization_model_comparison.maturityage)
+#lowest AICc
+head(colonization_model_comparisons.maturityage[order(AICc)], 30)
+```
+Do top models hold up? This is telling me that previous best model (max sbt temp change abs) is still good, but not the best... Malin says it's okay, as long as similar models are coming out on top
+
+variable | coefficient | p | AICc | rank above | coef above
+---------|-------------|----|-----|---|---|
+| 1 | seas_sst_temp_change_abs | 	0.16732168 |	0.001055896 |	4237.134 | 12 | 0.10	| 
+| 2 | max_sst_temp_change_abs_lag1	 | -0.26275332 |	0.004143103 |	4238.738 | 2 | -0.24 |
+| 3 | max_sbt_temp_change_abs_lag3 | 	0.18628409 |	0.003083958 |	4238.804 | 4 | 0.17 |
+| 4 | max_sst_temp_change_abs_lag6	 | -0.22361557 |	0.014782142 |	4240.889 | not in top 15 | |
+| 5 | max_sbt_temp_change_abs | 	0.15801135 |	0.011635865 |	4241.039 | 1 | 0.24 |
+| 6 | max_sst_temp_change_abs_lag8 | 	0.19598072 |	0.012668985 |	4241.366 | 6 | 0.19 |
+| 7 | max_sbt_temp_change_abs_lag1 | 	0.15825795 |	0.014922452 |	4241.440 | 11 | 0.14 |
+| 9 | seas_sbt_temp_change_abs | 	0.13079589 |	0.017830284 |	4241.690 | 5 | 0.14 | 
+| 10 | seas_sbt_temp_change_abs_lag4 | 	0.13424702 |	0.024563505 |	4242.176 | 8 | 0.14 |
+| 11 | seas_sst_temp_change_abs_lag6	 | -0.13386926 |	0.033532762 |	4242.414 | not in top 15 | |
+| 12 | seas_sbt_temp_change_abs_lag1 | 	0.12498712 |	0.031649631 |	4242.646 | 10 | 0.13 |
+| 13 | 	min_sbt_temp_change_abs_lag5	 | -0.19180573 |	0.054000799 |	4243.150 | 3 | -0.24 |
+| 14 | seas_sst_temp_change_lag5	 | -0.07497315 |	0.049187743 |	4243.216 |	not in top 15 | |
+| 15 | seas_sbt_temp_lag10 | 	0.07724898 |	0.059318089 |	4243.639 | not in top 15 ||
+
+In top 15, 11/15 shared. 
+
+Now we will check to see if including age at maturity improves best models.
+```{r colonization age at maturity does adding age at maturity improve models: new base model}
+
+#new base model (best model with no traits added)
+mod.c.agematurity.0 <- glmer(col ~ max_sbt_temp_change_abs + (1|reg) + (1|year_factor), family = binomial, data = spp_master_ztemp.traits.na.age.maturity)
+summary(mod.c.agematurity.0)
+AICc(mod.c.agematurity.0)
+  #max_sbt_temp_change_abs  0.15801  0.0116 4241.039  
+```
+
+
+```{r colonization age at maturity does adding age at maturity improve models:adding age at maturity}
+#max_sbt_temp_change_abs and age.maturity
+mod.c.agematurity.1 <- glmer(col ~ max_sbt_temp_change_abs + age.maturity + (1|reg) + (1|year_factor), family = binomial, data = spp_master_ztemp.traits.na.age.maturity)
+summary(mod.c.agematurity.1)
+AICc(mod.c.agematurity.1)
+
+#max_sbt_temp_change_abs  0.15503   0.0132 4236.753
+#age.maturity            -0.03818   0.0171 
+
+
+```
+
+
+```{r colonization age at maturity does adding age at maturity improve models:adding age at maturity with interaction}
+#interaction?
+mod.c.agematurity.2 <- glmer(col ~ max_sbt_temp_change_abs * age.maturity + (1|reg) + (1|year_factor), family = binomial, data = spp_master_ztemp.traits.na.age.maturity)
+summary(mod.c.agematurity.2)
+AICc(mod.c.agematurity.2)
+
+#max_sbt_temp_change_abs               0.16781  0.0385 4238.693 
+#age.maturity                         -0.03490  0.0911  
+#max_sbt_temp_change_abs:age.maturity -0.00451  0.8063  
+```
+Interaction is NOT significant
+
+```{r colonization age at maturity does adding age at maturity improve models:only age at maturity}
+#what about only age at maturity?
+mod.c.agematurity.3 <- glmer(col ~ age.maturity + (1|reg) + (1|year_factor), family = binomial, data = spp_master_ztemp.traits.na.age.maturity)
+summary(mod.c.agematurity.3)
+AICc(mod.c.agematurity.3)
+
+#age.maturity -0.03886 0.0155 4240.648  
+
+```
+
+
+Comparing above options (no trait, yes trait, yes trait with interaction, only trait)
+```{r colonization age at maturity does adding age at maturity improve models: comparing all models}
+AICc(mod.c.agematurity.0, mod.c.agematurity.1, mod.c.agematurity.2, mod.c.agematurity.3)
+```
+Best model is with age maturity and temperature, but NO interaction.
+
+This tells us that as age at maturity increases, log odds of colonization decreases. As absolute value of change in max temp experienced in the past year increases, log odds of colonization increases. Age at maturity does not impact relationship between temp and colonization.
+
+Can we make a plot for how likelihood of colonization and extinction changes with age.maturity?
+```{r age.maturity region bias?}
+ggplot(aes(x=age.maturity), data = spp_master_ztemp.traits.na.age.maturity) +
+  geom_histogram() +
+  facet_wrap(~reg)
+
+```
+  
+  
+##Colonization Trophic Level
+```{r run colonization models again with restricted data set to only tl species do models hold up}
+#restrict to rows with trophic level data
+spp_master_ztemp.traits.na.tl <- na.omit(spp_master_ztemp.traits, cols="tl")
+spp_master_ztemp.traits.na.tl[,year_factor := as.factor(year)]
+
+#going to make loop to make all models I need to look at with single SURFACE variables
+surface_variables <- colnames(spp_master_ztemp.traits.na.tl[,45:168])
+surface_colonization_model_comparison.tl <- as.data.table(matrix(nrow = length(surface_variables)))
+surface_colonization_model_comparison.tl[, variable:=as.factor(V1)][, coef:=as.numeric(V1)][, p_value:=as.numeric(V1)][, AICc:=as.numeric(V1)]
+surface_colonization_model_comparison.tl[, V1 := NULL]
+
+for (i in 1:length(surface_variables)){
+  mod <- glmer(col ~ get(surface_variables[i]) + (1|reg) + (1|year_factor), family = binomial, data = spp_master_ztemp.traits.na.tl)
+  surface_colonization_model_comparison.tl[i,variable := surface_variables[i]]
+  surface_colonization_model_comparison.tl[i,coef := coef(summary(mod))[,"Estimate"][2]]
+  surface_colonization_model_comparison.tl[i,p_value := coef(summary(mod))[,"Pr(>|z|)"][2]]
+  surface_colonization_model_comparison.tl[i,AICc := AICc(mod)]
+  
+  print(paste(i, length(surface_variables), sep = "/"))
+    
+}
+
+#looping through all possible colonization variables with single BOTTOM variables
+bottom_variables <- colnames(spp_master_ztemp.traits.na.tl[,169:292]) #same as above
+
+bottom_colonization_model_comparison.tl <- as.data.table(matrix(nrow = length(bottom_variables)))
+bottom_colonization_model_comparison.tl[, variable:=as.factor(V1)][, coef:=as.numeric(V1)][, p_value:=as.numeric(V1)][, AICc:=as.numeric(V1)]
+bottom_colonization_model_comparison.tl[, V1 := NULL]
+
+for (i in 1:length(bottom_variables)){
+  mod <- glmer(col ~ get(bottom_variables[i]) + (1|reg) + (1|year_factor), family = binomial, data = spp_master_ztemp.traits.na.tl)
+  bottom_colonization_model_comparison.tl[i,variable := bottom_variables[i]]
+  bottom_colonization_model_comparison.tl[i,coef := coef(summary(mod))[,"Estimate"][2]]
+  bottom_colonization_model_comparison.tl[i,p_value := coef(summary(mod))[,"Pr(>|z|)"][2]]
+  bottom_colonization_model_comparison.tl[i,AICc := AICc(mod)]
+  
+  print(paste(i, length(bottom_variables), sep = "/"))
+    
+}
+
+#merge surface and bottom for colonization
+colonization_model_comparisons.tl <- rbind(bottom_colonization_model_comparison.tl, surface_colonization_model_comparison.tl)
+#lowest AICc
+head(colonization_model_comparisons.tl[order(AICc)], 30)
+```
+Do top models hold up? This is telling me that previous best model (max sbt temp change abs) is still good, but not the best... Malin says it's okay, as long as similar models are coming out on top
+
+seas_sst_temp_change_abs	0.17121179	0.0005599279	4525.486	
+max_sbt_temp_change_abs_lag3	0.19678089	0.0013246068	4526.919	
+max_sbt_temp_change_abs	0.18509626	0.0021952362	4527.742	
+max_sst_temp_change_abs_lag1	-0.25709293	0.0033255361	4527.955	
+seas_sbt_temp_change_abs	0.15728890	0.0034775899	4528.408	
+max_sbt_temp_change_abs_lag1	0.16544380	0.0096094080	4530.271	
+seas_sbt_temp_change_abs_lag1	0.13431316	0.0183946976	4531.309	
+seas_sbt_temp_change_abs_lag4	0.13162107	0.0232351577	4531.668	
+min_sbt_temp_change_abs	0.17182671	0.0196874934	4531.795
+max_sst_temp_change_abs_lag8	0.16963749	0.0255186622	4532.091	
+min_sbt_temp_change_abs_lag5	-0.20316841	0.0397350249	4532.176	
+max_sst_temp_change_abs_lag6	-0.18049426	0.0381593586	4532.251	
+seas_sst_temp_change_lag5	-0.07645147	0.0360758538	4532.280	
+max_sst_temp_change_abs	0.20292370	0.0327597085	4532.339	
+min_sst_temp_change_abs	0.13663573	0.0333662358	4532.452	
+
+variable | coefficient | p | AICc | rank above | coef above
+|---------|-------------|----|-----|---|---|
+| 1 | seas_sst_temp_change_abs	0.17121179	0.0005599279	4525.486	
+
+| 2 | max_sbt_temp_change_abs_lag3	0.19678089	0.0013246068	4526.919	
+
+| 3 | max_sbt_temp_change_abs	0.18509626	0.0021952362	4527.742	
+
+| 4 | max_sst_temp_change_abs_lag1	-0.25709293	0.0033255361	4527.955	
+| 5 | seas_sbt_temp_change_abs	0.15728890	0.0034775899	4528.408	
+
+| 6 | max_sbt_temp_change_abs_lag1	0.16544380	0.0096094080	4530.271	
+
+| 7 |
+| 9 | 
+| 10 |
+| 11 |
+| 12 |
+| 13 |	
+| 14 |
+| 15 |
+
+Now we will check to see if including trophic level improves best models.
+```{r colonization trophic level does adding trophic level improve models: new base model}
+
+#new base model (best model with no traits added)
+mod.c.t.0 <- glmer(col ~ max_sbt_temp_change_abs + (1|reg) + (1|year_factor), family = binomial, data = spp_master_ztemp.traits.na.tl)
+summary(mod.c.t.0)
+```
+
+
+```{r colonization trophic level does adding trophic level improve models:adding trophic level}
+#max_sbt_temp_change_abs and tl
+mod.c.t.1 <- glmer(col ~ max_sbt_temp_change_abs + tl + (1|reg) + (1|year_factor), family = binomial, data = spp_master_ztemp.traits.na.tl)
+summary(mod.c.t.1)
+
+
+```
+
+
+```{r colonization trophic level does adding trophic level improve models:adding trophic level with interaction}
+#interaction?
+mod.c.t.2 <- glmer(col ~ max_sbt_temp_change_abs * tl + (1|reg) + (1|year_factor), family = binomial, data = spp_master_ztemp.traits.na.tl)
+summary(mod.c.t.2)
+```
+
+
+```{r colonization trophic level does adding trophic level improve models:only trophic level}
+#what about only trophic level?
+mod.c.t.3 <- glmer(col ~ tl + (1|reg) + (1|year_factor), family = binomial, data = spp_master_ztemp.traits.na)
+summary(mod.c.t.3)
+
+```
+Comparing above options (no trait, yes trait, yes trait with interaction, only trait)
+```{r colonization trophic level does adding trophic level improve models: comparing all models}
+AICc(mod.c.t.0, mod.c.t.1, mod.c.t.2, mod.c.t.3)
+```
+
+This tells us that as trophic level increases,....
+
+Can we make a plot for how likelihood of colonization and extinction changes with tl?
+```{r tl region bias?}
+ggplot(aes(x=tl), data = spp_master_ztemp.traits.na) +
+  geom_histogram() +
+  facet_wrap(~reg)
+
+```
+____________
+###Traits and extinction models.
+
+Best Extinction Models Without Traits
+
+Variable | coef | p | AICc
+seas_sbt_temp_change_abs_lag9 |	0.16783102	| 0.002379916 |	6207.213	
+min_sst_temp_change_lag2 |	-0.09468652	| 0.010582502 |	6209.860	
+min_sbt_temp_change_lag7 |	-0.11564632	| 0.010589365 |	6210.022	
+seas_sbt_temp_change_abs |	0.11602173	| 0.012974657 |	6210.184	
+max_sbt_temp_change_lag7 |	-0.09962557	| 0.014665739 |	6210.285	
+seas_sbt_temp_lag9 |	0.08732228	| 0.016700078 |	6210.766	
+seas_sst_temp_change_lag2 |	0.06949214	| 0.019648883 |	6210.908	
+
+##Maximum Age for Extinction
+
+```{r run extinction models again with restricted data set to only age.max species}
+surface_variables <- colnames(spp_master_ztemp.traits.na.age.max[,45:168]) #same as above
+
+#going to make loop to make all models I need to look at with single SURFACE variables
+surface_extinction_model_comparison.maxage <- as.data.table(matrix(nrow = length(surface_variables)))
+surface_extinction_model_comparison.maxage[, variable:=as.factor(V1)][, coef:=as.numeric(V1)][, p_value:=as.numeric(V1)][, AICc:=as.numeric(V1)]
+surface_extinction_model_comparison.maxage[, V1 := NULL]
+
+for (i in 1:length(surface_variables)){
+  mod <- glmer(now_ext ~ get(surface_variables[i]) + (1|reg) + (1|year_factor), family = binomial, data = spp_master_ztemp.traits.na.age.max)
+  surface_extinction_model_comparison.maxage[i,variable := surface_variables[i]]
+  surface_extinction_model_comparison.maxage[i,coef := coef(summary(mod))[,"Estimate"][2]]
+  surface_extinction_model_comparison.maxage[i,p_value := coef(summary(mod))[,"Pr(>|z|)"][2]]
+  surface_extinction_model_comparison.maxage[i,AICc := AICc(mod)]
+  
+  print(paste(i, length(surface_variables), sep = "/"))
+    
+}
+
+#looping through all possible colonization variables with single BOTTOM variables
+bottom_variables <- colnames(spp_master_ztemp.traits.na.age.max[,169:292]) #same as above
+
+bottom_extinction_model_comparison.maxage <- as.data.table(matrix(nrow = length(bottom_variables)))
+bottom_extinction_model_comparison.maxage[, variable:=as.factor(V1)][, coef:=as.numeric(V1)][, p_value:=as.numeric(V1)][, AICc:=as.numeric(V1)]
+bottom_extinction_model_comparison.maxage[, V1 := NULL]
+
+for (i in 1:length(bottom_variables)){
+  mod <- glmer(now_ext ~ get(bottom_variables[i]) + (1|reg) + (1|year_factor), family = binomial, data = spp_master_ztemp.traits.na.age.max)
+  bottom_extinction_model_comparison.maxage[i,variable := bottom_variables[i]]
+  bottom_extinction_model_comparison.maxage[i,coef := coef(summary(mod))[,"Estimate"][2]]
+  bottom_extinction_model_comparison.maxage[i,p_value := coef(summary(mod))[,"Pr(>|z|)"][2]]
+  bottom_extinction_model_comparison.maxage[i,AICc := AICc(mod)]
+  
+  print(paste(i, length(bottom_variables), sep = "/"))
+    
+}
+
+#merge surface and bottom for extinction
+extinction_model_comparisons.maxage <- rbind(bottom_extinction_model_comparison.maxage, surface_extinction_model_comparison.maxage)
+#lowest AICc
+head(extinction_model_comparisons.maxage[order(AICc)], 30)
+```
+Are similar models coming out on top for extinction by including maximum age?
+
+variable | coefficient | p | AICc | rank above | coef above
+---------|-------------|----|-----|---|---|
+| 1 | 
+| 2 | 
+| 3 | 
+| 4 | 
+| 5 | 
+| 6 | 
+| 7 |
+| 9 | 
+| 10 |
+| 11 |
+| 12 |
+| 13 |	
+| 14 |
+| 15 |
+
+
+Now we will check to see if including maximum age improves best extinction models.
+```{r extinction maximum age does adding maximum age improve models: new base model}
+
+#new base model (best model with no traits added)
+mod.e.t.0 <- glmer(now_ext ~ max_sbt_temp_change_abs + (1|reg) + (1|year_factor), family = binomial, data = spp_master_ztemp.traits.na.age.max)
+summary(mod.e.t.0)
+```
+
+
+```{r extinction maximum age does adding maximum age improve models:adding maximum age}
+#max_sbt_temp_change_abs and age.max
+mod.e.t.1 <- glmer(now_ext ~ max_sbt_temp_change_abs + age.max + (1|reg) + (1|year_factor), family = binomial, data = spp_master_ztemp.traits.na.age.max)
+summary(mod.e.t.1)
+
+
+```
+
+
+```{r extinction maximum age does adding maximum age improve models:adding maximum age with interaction}
+#interaction?
+mod.e.t.2 <- glmer(now_ext ~ max_sbt_temp_change_abs * age.max + (1|reg) + (1|year_factor), family = binomial, data = spp_master_ztemp.traits.na.age.max)
+summary(mod.e.t.2)
+```
+
+
+```{r extinction maximum age does adding maximum age improve models:only maximum age}
+#what about only maximum age?
+mod.e.t.3 <- glmer(now_ext ~ age.max + (1|reg) + (1|year_factor), family = binomial, data = spp_master_ztemp.traits.na)
+summary(mod.e.t.3)
+
+```
+Comparing above options (no trait, yes trait, yes trait with interaction, only trait)
+```{r extinction maximum age does adding maximum age improve models: comparing all models}
+AICc(mod.e.t.0, mod.e.t.1, mod.e.t.2, mod.e.t.3)
+```
+
+This tells us that as maximum age increases,....
+
+
+##Age of Maturity for Extinction
+```{r extinction with age of maturity}
+
+#going to make loop to make all models I need to look at with single SURFACE variables
+surface_extinction_model_comparison.maturityage <- as.data.table(matrix(nrow = length(surface_variables)))
+surface_extinction_model_comparison.maturityage[, variable:=as.factor(V1)][, coef:=as.numeric(V1)][, p_value:=as.numeric(V1)][, AICc:=as.numeric(V1)]
+surface_extinction_model_comparison.maturityage[, V1 := NULL]
+
+for (i in 1:length(surface_variables)){
+  mod <- glmer(now_ext ~ get(surface_variables[i]) + (1|reg) + (1|year_factor), family = binomial, data = spp_master_ztemp.traits.na.age.maturity)
+  surface_extinction_model_comparison.maturityage[i,variable := surface_variables[i]]
+  surface_extinction_model_comparison.maturityage[i,coef := coef(summary(mod))[,"Estimate"][2]]
+  surface_extinction_model_comparison.maturityage[i,p_value := coef(summary(mod))[,"Pr(>|z|)"][2]]
+  surface_extinction_model_comparison.maturityage[i,AICc := AICc(mod)]
+  
+  print(paste(i, length(surface_variables), sep = "/"))
+    
+}
+
+#looping through all possible extinction variables with single BOTTOM variables
+
+bottom_extinction_model_comparison.maturityage <- as.data.table(matrix(nrow = length(bottom_variables)))
+bottom_extinction_model_comparison.maturityage[, variable:=as.factor(V1)][, coef:=as.numeric(V1)][, p_value:=as.numeric(V1)][, AICc:=as.numeric(V1)]
+bottom_extinction_model_comparison.maturityage[, V1 := NULL]
+
+for (i in 1:length(bottom_variables)){
+  mod <- glmer(now_ext ~ get(bottom_variables[i]) + (1|reg) + (1|year_factor), family = binomial, data = spp_master_ztemp.traits.na.age.maturity)
+  bottom_extinction_model_comparison.maturityage[i,variable := bottom_variables[i]]
+  bottom_extinction_model_comparison.maturityage[i,coef := coef(summary(mod))[,"Estimate"][2]]
+  bottom_extinction_model_comparison.maturityage[i,p_value := coef(summary(mod))[,"Pr(>|z|)"][2]]
+  bottom_extinction_model_comparison.maturityage[i,AICc := AICc(mod)]
+  
+  print(paste(i, length(bottom_variables), sep = "/"))
+    
+}
+
+#merge surface and bottom for extinction
+extinction_model_comparisons.maturityage <- rbind(bottom_extinction_model_comparison.maturityage, surface_extinction_model_comparison.maturityage)
+#lowest AICc
+head(extinction_model_comparisons.maturityage[order(AICc)], 30)
+
+```
+Are similar models coming out on top for extinction by including age at maturity?
+
+variable | coefficient | p | AICc | rank above | coef above
+---------|-------------|----|-----|---|---|
+| 1 | 
+| 2 | 
+| 3 | 
+| 4 | 
+| 5 | 
+| 6 | 
+| 7 |
+| 9 | 
+| 10 |
+| 11 |
+| 12 |
+| 13 |	
+| 14 |
+| 15 |
+
+
+Now we will check to see if including age at maturity improves best extinction models.
+```{r extinction age at maturity does adding age at maturity improve models: new base model}
+
+#new base model (best model with no traits added)
+mod.e.t.0 <- glmer(now_ext ~ max_sbt_temp_change_abs + (1|reg) + (1|year_factor), family = binomial, data = spp_master_ztemp.traits.na.age.maturity)
+summary(mod.e.t.0)
+```
+
+
+```{r extinction age at maturity does adding age at maturity improve models:adding age at maturity}
+#max_sbt_temp_change_abs and age.maturity
+mod.e.t.1 <- glmer(now_ext ~ max_sbt_temp_change_abs + age.maturity + (1|reg) + (1|year_factor), family = binomial, data = spp_master_ztemp.traits.na.age.maturity)
+summary(mod.e.t.1)
+
+
+```
+
+
+```{r extinction age at maturity does adding age at maturity improve models:adding age at maturity with interaction}
+#interaction?
+mod.e.t.2 <- glmer(now_ext ~ max_sbt_temp_change_abs * age.maturity + (1|reg) + (1|year_factor), family = binomial, data = spp_master_ztemp.traits.na.age.maturity)
+summary(mod.e.t.2)
+```
+
+
+```{r extinction age at maturity does adding age at maturity improve models:only age at maturity}
+#what about only age at maturity?
+mod.e.t.3 <- glmer(now_ext ~ age.maturity + (1|reg) + (1|year_factor), family = binomial, data = spp_master_ztemp.traits.na)
+summary(mod.e.t.3)
+
+```
+Comparing above options (no trait, yes trait, yes trait with interaction, only trait)
+```{r extinction age at maturity does adding age at maturity improve models: comparing all models}
+AICc(mod.e.t.0, mod.e.t.1, mod.e.t.2, mod.e.t.3)
+```
+
+This tells us that as age at maturity increases,....
+
+
+##Trophic Level for Extinction
+```{r extinction with trophic level}
+
+#going to make loop to make all models I need to look at with single SURFACE variables
+surface_extinction_model_comparison.trophiclevel <- as.data.table(matrix(nrow = length(surface_variables)))
+surface_extinction_model_comparison.trophiclevel[, variable:=as.factor(V1)][, coef:=as.numeric(V1)][, p_value:=as.numeric(V1)][, AICc:=as.numeric(V1)]
+surface_extinction_model_comparison.trophiclevel[, V1 := NULL]
+
+for (i in 1:length(surface_variables)){
+  mod <- glmer(now_ext ~ get(surface_variables[i]) + (1|reg) + (1|year_factor), family = binomial, data = spp_master_ztemp.traits.na.tl)
+  surface_extinction_model_comparison.trophiclevel[i,variable := surface_variables[i]]
+  surface_extinction_model_comparison.trophiclevel[i,coef := coef(summary(mod))[,"Estimate"][2]]
+  surface_extinction_model_comparison.trophiclevel[i,p_value := coef(summary(mod))[,"Pr(>|z|)"][2]]
+  surface_extinction_model_comparison.trophiclevel[i,AICc := AICc(mod)]
+  
+  print(paste(i, length(surface_variables), sep = "/"))
+    
+}
+
+#looping through all possible extinction variables with single BOTTOM variables
+
+bottom_extinction_model_comparison.trophiclevel <- as.data.table(matrix(nrow = length(bottom_variables)))
+bottom_extinction_model_comparison.trophiclevel[, variable:=as.factor(V1)][, coef:=as.numeric(V1)][, p_value:=as.numeric(V1)][, AICc:=as.numeric(V1)]
+bottom_extinction_model_comparison.trophiclevel[, V1 := NULL]
+
+for (i in 1:length(bottom_variables)){
+  mod <- glmer(now_ext ~ get(bottom_variables[i]) + (1|reg) + (1|year_factor), family = binomial, data = spp_master_ztemp.traits.na.tl)
+  bottom_extinction_model_comparison.trophiclevel[i,variable := bottom_variables[i]]
+  bottom_extinction_model_comparison.trophiclevel[i,coef := coef(summary(mod))[,"Estimate"][2]]
+  bottom_extinction_model_comparison.trophiclevel[i,p_value := coef(summary(mod))[,"Pr(>|z|)"][2]]
+  bottom_extinction_model_comparison.trophiclevel[i,AICc := AICc(mod)]
+  
+  print(paste(i, length(bottom_variables), sep = "/"))
+    
+}
+
+#merge surface and bottom for extinction
+extinction_model_comparisons.trophiclevel <- rbind(surface_extinction_model_comparison.trophiclevel, surface_extinction_model_comparison.trophiclevel)
+#lowest AICc
+head(extinction_model_comparisons.trophiclevel[order(AICc)], 30)
+
+```
+Are similar models coming out on top for extinction by including trophic level?
+
+
+
+Now we will check to see if including trophic level improves best extinction models.
+```{r extinction trophic level does adding trophic level improve models: new base model}
+
+#new base model (best model with no traits added)
+mod.e.t.0 <- glmer(now_ext ~ max_sbt_temp_change_abs + (1|reg) + (1|year_factor), family = binomial, data = spp_master_ztemp.traits.na.tl)
+summary(mod.e.t.0)
+```
+
+
+```{r extinction trophic level does adding trophic level improve models:adding trophic level}
+#max_sbt_temp_change_abs and tl
+mod.e.t.1 <- glmer(now_ext ~ max_sbt_temp_change_abs + tl + (1|reg) + (1|year_factor), family = binomial, data = spp_master_ztemp.traits.na.tl)
+summary(mod.e.t.1)
+
+
+```
+
+
+```{r extinction trophic level does adding trophic level improve models:adding trophic level with interaction}
+#interaction?
+mod.e.t.2 <- glmer(now_ext ~ max_sbt_temp_change_abs * tl + (1|reg) + (1|year_factor), family = binomial, data = spp_master_ztemp.traits.na.tl)
+summary(mod.e.t.2)
+```
+
+
+```{r extinction trophic level does adding trophic level improve models:only trophic level}
+#what about only trophic level?
+mod.e.t.3 <- glmer(now_ext ~ tl + (1|reg) + (1|year_factor), family = binomial, data = spp_master_ztemp.traits.na)
+summary(mod.e.t.3)
+
+```
+Comparing above options (no trait, yes trait, yes trait with interaction, only trait)
+```{r extinction trophic level does adding trophic level improve models: comparing all models}
+AICc(mod.e.t.0, mod.e.t.1, mod.e.t.2, mod.e.t.3)
+```
+
+This tells us that as trophic level increases,....
+_______________
+###Regional variability?
+```{r regional differences in col and ext}
+#total counts in each region
+spp_master_ztemp %>%
+  group_by(reg) %>%
+  summarise(n())
+
+spp_master_ztemp %>%
+  group_by(reg) %>%
+  summarise(sum(col)/n()) #quite even percents, NEUS a little high at 8% events are colonizations
+
+spp_master_ztemp %>%
+  group_by(reg) %>%
+  summarise(sum(col)) #NEUS and EBS both high, AI very small 
+
+spp_master_ztemp %>%
+  group_by(reg) %>%
+  summarise(sum(now_ext)/n()) #again, NEUS is very high, all others similar
+
+spp_master_ztemp %>%
+  group_by(reg) %>%
+  summarise(sum(now_ext)) #Again, EBS, NEUS, and SA all high... why more events in these regions?
+```
+
+

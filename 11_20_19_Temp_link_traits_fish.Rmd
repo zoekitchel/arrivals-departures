@@ -1,0 +1,823 @@
+---
+title: "Modeling individual instances of colonizations and extinctions"
+output: html_notebook
+---
+Question: do species traits intereact with changes in temperature (current or past) to determine whether or not a given species colonizes a new region in a given year?
+
+binomial regressions:
+
+colonization in a given year? (yes/no) ~ mean temp of year of trawl x traits + max temp of year of trawl x traits + min temp of year of trawl x traits + change in mean temp from last year x traits + lags + traits
+
+extinction in a given year? (yes/no) ~ mean temp of year of trawl x traits + max temp of year of trawl x traits + min temp of year of trawl x traits + change in mean temp from last year x traits + lags + traits
+
+Traits to use?
+  Ideal:
+  generalism
+  dispersal syndrome
+  longevity
+  body size
+  generation time
+  trophic level
+  current range size
+  mobility (fish, yes/no)
+
+What we actually have from Tim: (** = ideal)
+  trophic level:
+    feeding.mode (generalism?)**
+    tl (trophic level)**
+  Reproduction: (probably whichever we have more data for)
+    spawning.type (open_water/substratum, etc. )**
+    egg.size**
+  Growth:
+    Linf (body size)
+    Lmax (body size)*
+    K (growth rate, 1/y)
+    Lm (length at maturity)**
+    Tmax (maximum age)
+    tm (age maturity)**
+
+*NB: I'm noticing that some species have multiple records in Tim's database, and that some stats are not quite matching up with what I find on fishbase.org (ie BSB max size and such)*
+
+```{r setup}
+library(MuMIn)
+library(lme4)
+library(dplyr)
+library(tidyr)
+library(faraway)
+library(data.table)
+traits <- read.csv("traits_formanip.csv")
+load("~/Documents/grad school/Rutgers/LabWork/Colonization_Extinction/hauls_fulltempdata.Rdata")
+load("~/Documents/grad school/Rutgers/LabWork/Colonization_Extinction/spp_master_ztemp.Rdata")
+
+```
+
+Let's link species data from spp_master to temp data with lags and changes
+
+```{r link species data to temp data}
+#match region names between two data tables
+reg <- levels(as.factor(spp_master$reg))
+region <- c("AFSC_Aleutians","AFSC_EBS", "SEFSC_GOMex", "AFSC_GOA", "NEFSC_NEUS", "DFO_Newfoundland", "SCDNR_SEUS", "DFO_ScotianShelf", "AFSC_WCTri")
+regions.dt <- data.table(reg, region)
+
+hauls <- hauls[regions.dt, nomatch = 0, on = c("region")]
+
+hauls[, reg := as.factor(reg)] #make region a factor in hauls
+
+```
+Just realizing now that I currently have data from 12 months before each trawl event. This isn't appropriate, as my colonization/extinction data is per year. FOR NOW (before I speak with Malin, update spoke to Malin he agreed that this worked), I will just use earliest month in each year. 
+
+```{r only keep earlier year temp data}
+#keep one line of data for each year/region combo, and pick it based on smaller month value
+hauls2 <- hauls[hauls[, .I[1], by = c("year", "region")]$V1]
+cols <- c(5,38:286)
+hauls2.r <- hauls2[, ..cols] #.. pulls in variable vs column name
+
+```
+
+
+```{r combine species data with temp data}
+#make sure data type for reg and year in both are consistent
+hauls2.r$year <- as.numeric(as.character(hauls2.r$year))
+spp_master[, reg := as.factor(reg)]
+#r combine species data with temp data
+spp_master_ztemp <- spp_master[hauls2.r, nomatch = 0, on = c("reg", "year")]
+head(spp_master_ztemp)
+save(spp_master_ztemp, file = "spp_master_ztemp.Rdata")
+```
+
+
+First, let's ignore traits, and just look at temperature as predictors of yes no colonization and yes no extinction
+Colonization in this year: col
+Goes extinct in this year (here last year, gone now) : now_ext
+Mean temp: mean_sbt_temp
+Max temp: max_sbt_temp
+Min temp: min_sbt_temp
+Seasonality: seas_sbt_temp
+
+```{r get to know temperature data better}
+library(ggplot2)
+#temperature through time
+ggplot(data=spp_master_ztemp, aes(x=year, y=mean_sst_temp, col = reg)) +
+  geom_point() +
+  labs(x="Year", y="Mean Annual Surface Temperature (˚C)") +
+  ylim(0,25) +
+  geom_smooth(aes(col = reg), se = F, method = "lm") +
+  theme_bw()
+
+#temperature through time
+ggplot(data=spp_master_ztemp, aes(x=year, y=mean_sbt_temp, col = reg)) +
+  geom_point() +
+  labs(x="Year", y="Mean Annual Bottom Temperature (˚C)") +
+  ylim(0,25) +
+  geom_smooth(aes(col = reg), se = F, method = "lm") +
+  theme_bw()
+
+```
+
+What about correlations among temperature variables?
+```{r r-correlations between temperature variables }
+#surface
+res <- cor(spp_master_ztemp[,45:48])
+res
+#bottom
+res2 <- cor(spp_master_ztemp[,169:172])
+res2
+
+```
+Surface
+              mean_sst_temp max_sst_temp min_sst_temp seas_sst_temp
+mean_sst_temp     1.0000000    0.9673832   0.96748430    0.18164518
+max_sst_temp      0.9673832    1.0000000   0.87800968    0.41934324
+min_sst_temp      0.9674843    0.8780097   1.00000000   -0.06633786
+seas_sst_temp     0.1816452    0.4193432  -0.06633786    1.00000000
+
+Mean is well correlated with max, and min both (0.96)
+Max and min are medium correlated, but I'll still keep it in (0.87)
+
+I will use max, min, seas
+
+Bottom
+              mean_sbt_temp max_sbt_temp min_sbt_temp seas_sbt_temp
+mean_sbt_temp     1.0000000    0.9935599    0.9869266     0.8085135
+max_sbt_temp      0.9935599    1.0000000    0.9655348     0.8669641
+min_sbt_temp      0.9869266    0.9655348    1.0000000     0.7073712
+seas_sbt_temp     0.8085135    0.8669641    0.7073712     1.0000000
+
+Mean is well correlated with max (0.99) and min (0.98)
+Max and min are well correlated with each other (0.96)
+Seasonality is most correlated with max (0.86), and then mean (0.80) and then min (0.70)
+
+I will use min, and seas (least correlated)
+
+___
+Colonization base mod surface
+```{r base colonization model surface}
+col_mod_base_sst <- glmer(col ~ max_sst_temp + min_sst_temp + seas_sst_temp + (1|year) + (1|reg), data = spp_master_ztemp, family = "binomial")
+#rank deficient, so dropping a column
+summary(col_mod_base_sst)
+AICc(col_mod_base_sst)
+```
+
+Extinction base mod
+```{r}
+ext_mod_base_sst <- glmer(now_ext ~ max_sst_temp + min_sst_temp + seas_sst_temp + (1|reg) + (1|year), data = spp_master_ztemp, family = binomial)
+summary(ext_mod_base_sst)
+AICc(ext_mod_base_sst)
+```
+The above models perform really poorly, but this doesn't really surprise me. I think change in temperature is a bigger deal.
+```{r}
+colnames(spp_master_ztemp)
+```
+
+#START HERE
+Now, let's play around with dredge.
+```{r dredge colonization}
+#I want to look at possible predictors
+dredgesubset <- spp_master_ztemp[,c(1:3,6,45:168)] # this will have to change
+#let's set the NA setting correctly
+options(na.action = "na.fail")
+#fitting global model
+fm1_col <- glmer(col ~ . + (1|reg) + (1|year), family = binomial, data = dredgesubset)
+#fixed-effect model matrix is rank deficient so dropping 102 columns / coefficients
+#I have to trick model here so that it doesn't think it's rank deficient
+vars <- colnames(spp_master_ztemp[,45:292])
+form<-formula(paste0('col~',paste0(vars,collapse='+'),'+(1|reg)+(1|year)'))
+attr(fm1_col@frame,"formula")<-form
+
+#include only models with 1 term (and intercept)
+dd <- dredge(fm1_col, m.lim = c(0, 1))
+
+subset(dd, delta < 2)
+
+# Visualize the model selection table:
+
+par(mar = c(3,5,6,4))
+plot(dd.col, labAsExpr = TRUE)
+
+# Model average models with delta AICc < 2
+model.avg(dd.col, subset = delta < 2)
+
+#or as a 95% confidence set:
+model.avg(dd.col, subset = cumsum(weight) <= .95) # get averaged coefficients
+
+#'Best' model
+summary(get.models(dd.col, 1)[[1]])
+```
+Now a dredge for extinction
+```{r dredge extinction}
+#fitting global model
+fm1_ext <- glmm(now_ext ~  + (1|reg) + (1|year), family = binomial, data = dredgesubset)
+dd.ext <- dredge(fm1_ext)
+
+subset(dd.ext, delta < 2)
+
+# Visualize the model selection table:
+
+par(mar = c(3,5,6,4))
+plot(dd.ext, labAsExpr = TRUE)
+
+# Model average models with delta AICc < 2
+model.avg(dd.ext, subset = delta < 2)
+
+#or as a 95% confidence set:
+model.avg(dd.ext, subset = cumsum(weight) <= .95) # get averaged coefficients
+
+#'Best' model
+summary(get.models(dd.ext, 1)[[1]])
+```
+
+
+
+
+
+
+*******
+
+Can't get dredge to work, so doing model by model instead.
+```{r surface colonization comparison}
+#playing with year as factor
+#can't get dredge to run above, so trying here with fewer variables
+spp_master_ztemp[,year_factor := as.factor(year)]
+
+#going to make loop to make all models I need to look at with single variables
+surface_variables <- colnames(spp_master_ztemp[,45:168])
+surface_colonization_model_comparison <- as.data.table(matrix(nrow = length(surface_variables)))
+surface_colonization_model_comparison[, variable:=as.factor(V1)][, coef:=as.numeric(V1)][, p_value:=as.numeric(V1)][, AICc:=as.numeric(V1)]
+surface_colonization_model_comparison[, V1 := NULL]
+
+for (i in 1:length(surface_variables)){
+  mod <- glmer(col ~ get(surface_variables[i]) + (1|reg) + (1|year_factor), family = binomial, data = spp_master_ztemp)
+  surface_colonization_model_comparison[i,variable := surface_variables[i]]
+  surface_colonization_model_comparison[i,coef := coef(summary(mod))[,"Estimate"][2]]
+  surface_colonization_model_comparison[i,p_value := coef(summary(mod))[,"Pr(>|z|)"][2]]
+  surface_colonization_model_comparison[i,AICc := AICc(mod)]
+  
+  print(paste(i, length(surface_variables), sep = "/"))
+    
+}
+
+#21, 37 failed to converge
+head(surface_colonization_model_comparison)
+
+```
+
+
+
+Here, looking at surface extinction
+```{r surface extinction comparison}
+#looping through all possible extinction variables with single variables
+surface_variables <- colnames(spp_master_ztemp[,45:168]) #same as above
+
+surface_extinction_model_comparison <- as.data.table(matrix(nrow = length(surface_variables)))
+surface_extinction_model_comparison[, variable:=as.factor(V1)][, coef:=as.numeric(V1)][, p_value:=as.numeric(V1)][, AICc:=as.numeric(V1)]
+surface_extinction_model_comparison[, V1 := NULL]
+
+for (i in 1:length(surface_variables)){
+  mod <- glmer(now_ext ~ get(surface_variables[i]) + (1|reg) + (1|year_factor), family = binomial, data = spp_master_ztemp)
+  surface_extinction_model_comparison[i,variable := surface_variables[i]]
+  surface_extinction_model_comparison[i,coef := coef(summary(mod))[,"Estimate"][2]]
+  surface_extinction_model_comparison[i,p_value := coef(summary(mod))[,"Pr(>|z|)"][2]]
+  surface_extinction_model_comparison[i,AICc := AICc(mod)]
+  
+  print(paste(i, length(surface_variables), sep = "/"))
+    
+}
+```
+Here, looking at bottom temp colonization
+```{r bottom colonization comparison}
+#looping through all possible colonization variables with single variables
+bottom_variables <- colnames(spp_master_ztemp[,169:292]) #same as above
+
+bottom_colonization_model_comparison <- as.data.table(matrix(nrow = length(bottom_variables)))
+bottom_colonization_model_comparison[, variable:=as.factor(V1)][, coef:=as.numeric(V1)][, p_value:=as.numeric(V1)][, AICc:=as.numeric(V1)]
+bottom_colonization_model_comparison[, V1 := NULL]
+
+for (i in 1:length(bottom_variables)){
+  mod <- glmer(col ~ get(bottom_variables[i]) + (1|reg) + (1|year_factor), family = binomial, data = spp_master_ztemp)
+  bottom_colonization_model_comparison[i,variable := bottom_variables[i]]
+  bottom_colonization_model_comparison[i,coef := coef(summary(mod))[,"Estimate"][2]]
+  bottom_colonization_model_comparison[i,p_value := coef(summary(mod))[,"Pr(>|z|)"][2]]
+  bottom_colonization_model_comparison[i,AICc := AICc(mod)]
+  
+  print(paste(i, length(bottom_variables), sep = "/"))
+    
+}
+```
+Finally, looking at bottom temp extinction
+```{r bottom extinction comparison}
+#looping through all possible extinction variables with single variables
+bottom_variables <- colnames(spp_master_ztemp[,169:292]) #same as above
+
+bottom_extinction_model_comparison <- as.data.table(matrix(nrow = length(bottom_variables)))
+bottom_extinction_model_comparison[, variable:=as.factor(V1)][, coef:=as.numeric(V1)][, p_value:=as.numeric(V1)][, AICc:=as.numeric(V1)]
+bottom_extinction_model_comparison[, V1 := NULL]
+
+for (i in 1:length(bottom_variables)){
+  mod <- glmer(now_ext ~ get(bottom_variables[i]) + (1|reg) + (1|year_factor), family = binomial, data = spp_master_ztemp)
+  bottom_extinction_model_comparison[i,variable := bottom_variables[i]]
+  bottom_extinction_model_comparison[i,coef := coef(summary(mod))[,"Estimate"][2]]
+  bottom_extinction_model_comparison[i,p_value := coef(summary(mod))[,"Pr(>|z|)"][2]]
+  bottom_extinction_model_comparison[i,AICc := AICc(mod)]
+  
+  print(paste(i, length(bottom_variables), sep = "/"))
+    
+}
+```
+
+----------
+Top models with single variables
+```{r best surface colonization models}
+head(surface_colonization_model_comparison[order(AICc)], 10)
+
+#mean highly correlated with max, so looking just at max, lag1 and lag8 are best
+```
+Merge surface and bottom for colonization
+```{r merge surface and bottom for colonization}
+colonization_model_comparisons <- rbind(bottom_colonization_model_comparison, surface_colonization_model_comparison)
+#lowest AICc
+head(colonization_model_comparisons[order(AICc)], 30)
+
+```
+Now, I should look at relative variable importance:
+
+* Burnham and Anderson (2002), Page 169: This ballancing puts each variable on equal footing.
+* Akaike weights are can be used in model averaging. They represent the relative likelihood of a model. To calculate them, for each model first calculate the relative likelihood of the model, which is just exp( -0.5 * ∆AIC score for that model). The Akaike weight for a model is this value divided by the sum of these values across all models.
+```{r colonizations relative variable importance}
+#get rid of mean
+colonization_model_comparisons <- colonization_model_comparisons %>%
+  filter(!grepl("mean", variable))
+
+colonization_model_comparisons <- data.table(colonization_model_comparisons)
+
+#add ∆AIC to tables
+min_col_AICc <- min(colonization_model_comparisons[, AICc])
+colonization_model_comparisons[,"deltaAICc" := (AICc - min_col_AICc)]
+
+#add relative likelihood exp( -0.5 * ∆AIC score for that model)
+colonization_model_comparisons[,"rel_likelihood" := exp((-0.5 * deltaAICc))]
+#sum relative likelihoods across all models
+colonization_model_comparisons.likelihoodsum <- sum(colonization_model_comparisons[, rel_likelihood])
+#Akaike weight for a model is this rel_likelihood devided by the sum of these values across all models
+colonization_model_comparisons[,"akaike_weight" := rel_likelihood/colonization_model_comparisons.likelihoodsum]
+
+#I want to look at relative importance FOR 
+#bottom/surface (bottom = includes sbt, grepl("sbt", variable))
+col_bottom_importance <- sum(colonization_model_comparisons[grep("sbt", variable), ]$akaike_weight)
+col_surface_importance <- sum(colonization_model_comparisons[grep("sst", variable), ]$akaike_weight)
+
+#lag/not lagged (grepl("lag", variable))
+col_lag_importance <- sum(colonization_model_comparisons[grep("lag", variable), ]$akaike_weight)
+
+#absolute (grepl("abs", variable))
+col_abs_importance <- sum(colonization_model_comparisons[grep("abs", variable), ]$akaike_weight)
+
+#raw (!grepl("change"))
+col_raw_importance <- sum(colonization_model_comparisons[!grep("change", variable), ]$akaike_weight)
+
+#change (grepl("change", variable), (!grepl("abs")))
+col_change_importance <- (1 - (col_abs_importance + col_raw_importance))
+
+```
+Surface importance = 0.02
+Bottom importance = 0.97
+Lag importance = 0.03
+Absolute change importance = 0.99
+Raw temp importance = 0.003
+Change importance (no abs) = 0.005
+
+
+Merge surface and bottom for extinction
+```{r merge surface and bottom for extinction}
+extinction_model_comparisons <- rbind(bottom_extinction_model_comparison, surface_extinction_model_comparison)
+head(extinction_model_comparisons[order(AICc)], 30)
+
+```
+
+Relative variable importance for extinction models
+```{r extinctions relative variable importance}
+#get rid of mean
+extinction_model_comparisons <- extinction_model_comparisons %>%
+  filter(!grepl("mean", variable))
+
+extinction_model_comparisons <- data.table(extinction_model_comparisons)
+
+#add ∆AIC to tables
+min_ext_AICc <- min(extinction_model_comparisons[, AICc])
+extinction_model_comparisons[,"deltaAICc" := (AICc - min_ext_AICc)]
+
+#add relative likelihood exp( -0.5 * ∆AIC score for that model)
+extinction_model_comparisons[,"rel_likelihood" := exp((-0.5 * deltaAICc))]
+#sum relative likelihoods across all models
+extinction_model_comparisons.likelihoodsum <- sum(extinction_model_comparisons[, rel_likelihood])
+#Akaike weight for a model is this rel_likelihood devided by the sum of these values across all models
+extinction_model_comparisons[,"akaike_weight" := rel_likelihood/extinction_model_comparisons.likelihoodsum]
+
+#I want to look at relative importance FOR 
+#bottom/surface (bottom = includes sbt, grepl("sbt", variable))
+ext_bottom_importance <- sum(extinction_model_comparisons[grep("sbt", variable), ]$akaike_weight)
+ext_surface_importance <- sum(extinction_model_comparisons[grep("sst", variable), ]$akaike_weight)
+
+#lag/not lagged (grepl("lag", variable))
+ext_lag_importance <- sum(extinction_model_comparisons[grep("lag", variable), ]$akaike_weight)
+
+#absolute (grepl("abs", variable))
+ext_abs_importance <- sum(extinction_model_comparisons[grep("abs", variable), ]$akaike_weight)
+
+#raw (!grepl("change"))
+ext_raw_importance <- sum(extinction_model_comparisons[!grep("change", variable), ]$akaike_weight)
+
+#change (grepl("change", variable), (!grepl("abs")))
+ext_change_importance <- (1 - (ext_abs_importance + ext_raw_importance))
+
+```
+Surface importance = 0.37
+Bottom importance = 0.63
+Lag importance = 0.90
+Absolute change importance = 0.47
+Raw temp importance = 0.20
+Change importance (no abs) = 0.34
+
+Let's see how the RVI importance varies by looking at specific lag values
+```{r make a plot here for variability across lag values}
+#first, table for lags
+lags_v_RVI <- data.table(col_lag = c(0:9), col_RVI = 0, ext_RVI = 0)
+#colonization
+lags_v_RVI[1,2] <- 1-sum(colonization_model_comparisons[grep("lag", variable), ]$akaike_weight)
+lags_v_RVI[2,2] <- sum(colonization_model_comparisons[grep("lag1", variable), ]$akaike_weight)
+lags_v_RVI[3,2] <- sum(colonization_model_comparisons[grep("lag2", variable), ]$akaike_weight)
+lags_v_RVI[4,2] <- sum(colonization_model_comparisons[grep("lag3", variable), ]$akaike_weight)
+lags_v_RVI[5,2] <- sum(colonization_model_comparisons[grep("lag4", variable), ]$akaike_weight)
+lags_v_RVI[6,2] <- sum(colonization_model_comparisons[grep("lag5", variable), ]$akaike_weight)
+lags_v_RVI[7,2] <- sum(colonization_model_comparisons[grep("lag6", variable), ]$akaike_weight)
+lags_v_RVI[8,2] <- sum(colonization_model_comparisons[grep("lag7", variable), ]$akaike_weight)
+lags_v_RVI[9,2] <- sum(colonization_model_comparisons[grep("lag8", variable), ]$akaike_weight)
+lags_v_RVI[10,2] <- sum(colonization_model_comparisons[grep("lag9", variable), ]$akaike_weight)
+#extinction
+lags_v_RVI[1,3] <- 1-sum(extinction_model_comparisons[grep("lag", variable), ]$akaike_weight)
+lags_v_RVI[2,3] <- sum(extinction_model_comparisons[grep("lag1", variable), ]$akaike_weight)
+lags_v_RVI[3,3] <- sum(extinction_model_comparisons[grep("lag2", variable), ]$akaike_weight)
+lags_v_RVI[4,3] <- sum(extinction_model_comparisons[grep("lag3", variable), ]$akaike_weight)
+lags_v_RVI[5,3] <- sum(extinction_model_comparisons[grep("lag4", variable), ]$akaike_weight)
+lags_v_RVI[6,3] <- sum(extinction_model_comparisons[grep("lag5", variable), ]$akaike_weight)
+lags_v_RVI[7,3] <- sum(extinction_model_comparisons[grep("lag6", variable), ]$akaike_weight)
+lags_v_RVI[8,3] <- sum(extinction_model_comparisons[grep("lag7", variable), ]$akaike_weight)
+lags_v_RVI[9,3] <- sum(extinction_model_comparisons[grep("lag8", variable), ]$akaike_weight)
+lags_v_RVI[10,3] <- sum(extinction_model_comparisons[grep("lag9", variable), ]$akaike_weight)
+
+ggplot(data = lags_v_RVI, aes(x = col_lag)) +
+  geom_line(aes(y = col_RVI), col = "blue") +
+  geom_line(aes(y = ext_RVI), col = "red") +
+  labs(x = "Lag", y = "Relative Variable Importance") +
+  scale_color_discrete() + #how to make a legend
+  theme_bw()
+```
+
+********
+##Below I'm doing a more"organic" and less perscriptive dredge
+
+What model performs better? a model with changes in the past year? or a model with changes in the year before last?
+
+First, let's make a model with changes from the year before last for colonization
+```{r}
+col_mod_change_abs_lag1 <- glmer(col ~ sst_mean_change_lag1_abs + sst_max_change_lag1_abs + sst_min_change_lag1_abs + sst_seas_change_lag1_abs + (1|reg) + (1|year), data = spp_master_ztemp, family = binomial)
+summary(col_mod_change_abs_lag1)
+AICc(col_mod_change_abs_lag1)
+```
+Not much info from summary, but let's compare using AICc with other model
+```{r}
+AICc(col_mod_change_abs, col_mod_change_abs_lag1)
+```
+
+Poor results here! What about extinction?
+```{r}
+ext_mod_change_abs_lag1 <- glmer(now_ext ~ sst_mean_change_lag1_abs + sst_max_change_lag1_abs + sst_min_change_lag1_abs + sst_seas_change_lag1_abs + (1|reg) + (1|year), data = spp_master_ztemp, family = binomial)
+summary(ext_mod_change_abs_lag1)
+AICc(ext_mod_change_abs_lag1)
+```
+For extinction and lag 1 of changes, both absolute value of change in mean experienced last year and absolute value of change in max temp experienced last year appear significant
+As absolute value of change in mean experienced last year increases, likelihood of extinction decreases
+As absolute value of change in max temp experienced last year increases, likelihood of extinction increases
+
+But what about comparing this to other model?
+```{r}
+AICc(ext_mod_change_abs, ext_mod_change_abs_lag1)
+```
+Here, unlike colonization, it appears that changes experienced LAST year are better than changes experienced this year at predicting extinction
+
+Let's go back once more in time for each for kicks
+
+Colonization based on changes in temp experienced between 2-3 years ago
+```{r}
+col_mod_change_abs_lag2 <- glmer(col ~ sst_mean_change_lag2_abs + sst_max_change_lag2_abs + sst_min_change_lag2_abs + sst_seas_change_lag2_abs + (1|reg) + (1|year), data = spp_master_ztemp, family = binomial)
+summary(col_mod_change_abs_lag2)
+AICc(col_mod_change_abs_lag2)
+```
+This is still bad, but what about one more lag
+```{r}
+col_mod_change_abs_lag3 <- glmer(col ~ sst_mean_change_lag3_abs + sst_max_change_lag3_abs + sst_min_change_lag3_abs + sst_seas_change_lag3_abs + (1|reg) + (1|year), data = spp_master_ztemp, family = binomial)
+summary(col_mod_change_abs_lag3)
+AICc(col_mod_change_abs_lag3)
+```
+And compare this using AICc to other models
+```{r}
+AICc(col_mod_change_abs, col_mod_change_abs_lag1, col_mod_change_abs_lag2, col_mod_change_abs_lag3)
+```
+Both incorporating lags in changes are equally poor for colonization, so we'll stick with most recent changes in temp variables. 
+
+Next step, I will take away variables and see what's best for colonization using AIC. For dredge, I will check all combinations.
+```{r}
+summary(col_mod_change_abs)
+```
+
+```{r}
+#remember, variables with best P values for colonization ARE seas, and then max, and then mean (min not significant)
+#three variables, 4 models
+col_mod_change_abs_3_var <- glmer(col ~ sst_mean_change_abs + sst_max_change_abs + sst_seas_change_abs + (1 | reg) + (1 | year), family = binomial, data = spp_master_ztemp)
+col_mod_change_abs_3_var2 <- glmer(col ~ sst_mean_change_abs + sst_min_change_abs + sst_seas_change_abs + (1 | reg) + (1 | year), family = binomial, data = spp_master_ztemp)
+col_mod_change_abs_3_var3 <- glmer(col ~ sst_mean_change_abs + sst_max_change_abs + sst_min_change_abs + (1 | reg) + (1 | year), family = binomial, data = spp_master_ztemp)
+col_mod_change_abs_3_var4 <- glmer(col ~ sst_seas_change_abs + sst_max_change_abs + sst_seas_change_abs + (1 | reg) + (1 | year), family = binomial, data = spp_master_ztemp)
+
+AICc(col_mod_change_abs_3_var, col_mod_change_abs_3_var2, col_mod_change_abs_3_var3, col_mod_change_abs_3_var4)
+
+#two variables, 6 models
+col_mod_change_abs_2_var <- glmer(col ~ sst_max_change_abs + sst_seas_change_abs + (1 | reg) + (1 | year), family = binomial, data = spp_master_ztemp)
+col_mod_change_abs_2_var2 <- glmer(col ~ sst_max_change_abs + sst_min_change_abs + (1 | reg) + (1 | year), family = binomial, data = spp_master_ztemp)
+col_mod_change_abs_2_var3 <- glmer(col ~ sst_max_change_abs + sst_mean_change_abs + (1 | reg) + (1 | year), family = binomial, data = spp_master_ztemp)
+col_mod_change_abs_2_var4 <- glmer(col ~ sst_seas_change_abs + sst_min_change_abs + (1 | reg) + (1 | year), family = binomial, data = spp_master_ztemp)
+col_mod_change_abs_2_var5 <- glmer(col ~ sst_seas_change_abs + sst_mean_change_abs + (1 | reg) + (1 | year), family = binomial, data = spp_master_ztemp)
+col_mod_change_abs_2_var6 <- glmer(col ~ sst_min_change_abs + sst_mean_change_abs + (1 | reg) + (1 | year), family = binomial, data = spp_master_ztemp)
+
+AICc(col_mod_change_abs_2_var, col_mod_change_abs_2_var2, col_mod_change_abs_2_var3, col_mod_change_abs_2_var4, col_mod_change_abs_2_var5, col_mod_change_abs_2_var6)
+
+#one variable, 4 models
+col_mod_change_abs_1_var <- glmer(col ~ sst_seas_change_abs + (1 | reg) + (1 | year), family = binomial, data = spp_master_ztemp)
+col_mod_change_abs_1_var2 <- glmer(col ~ sst_mean_change_abs + (1 | reg) + (1 | year), family = binomial, data = spp_master_ztemp)
+col_mod_change_abs_1_var3 <- glmer(col ~ sst_min_change_abs + (1 | reg) + (1 | year), family = binomial, data = spp_master_ztemp)
+col_mod_change_abs_1_var4 <- glmer(col ~ sst_max_change_abs + (1 | reg) + (1 | year), family = binomial, data = spp_master_ztemp)
+
+AICc(col_mod_change_abs_1_var, col_mod_change_abs_1_var2, col_mod_change_abs_1_var3, col_mod_change_abs_1_var4)
+
+AICc(col_mod_change_abs_1_var, col_mod_change_abs_2_var, col_mod_change_abs_3_var, col_mod_change_abs)
+summary(col_mod_change_abs_3_var)
+```
+**The best model uses only seasonality as a predictor**
+col_mod_change_abs_1_var <- glmer(col ~ sst_seas_change_abs + (1 | reg) + (1 | year), family = binomial, data = spp_master_ztemp)
+
+Extinction based on changes in temp experienced between 2-3 years ago
+```{r}
+ext_mod_change_abs_lag2 <- glmer(now_ext ~ sst_mean_change_lag2_abs + sst_max_change_lag2_abs + sst_min_change_lag2_abs + sst_seas_change_lag2_abs + (1|reg) + (1|year), data = spp_master_ztemp, family = binomial)
+summary(ext_mod_change_abs_lag3)
+AICc(ext_mod_change_abs, ext_mod_change_abs_lag1, ext_mod_change_abs_lag2, ext_mod_change_abs_lag3)
+```
+And compare this using AICc to other models
+```{r}
+AICc(ext_mod_change_abs, ext_mod_change_abs_lag1, ext_mod_change_abs_lag2)
+```
+Both lags improve model, so I'll go another level back in changes are equally poor, so we'll stick with most recent changes. 
+```{r}
+ext_mod_change_abs_lag3 <- glmer(now_ext ~ sst_mean_change_lag3_abs + sst_max_change_lag3_abs + sst_min_change_lag3_abs + sst_seas_change_lag3_abs + (1|reg) + (1|year), data = spp_master_ztemp, family = binomial)
+summary(ext_mod_change_abs_lag3)
+AICc(ext_mod_change_abs, ext_mod_change_abs_lag1, ext_mod_change_abs_lag2, ext_mod_change_abs_lag3)
+```
+The best is lag 2, so the change from 2-3 years ago is best at determining extinction probability
+
+Next step, I will take away variables and see what's best for extinction using AIC. For dredge, I will check all combinations.
+
+```{r}
+summary(ext_mod_change_abs_lag2)
+```
+
+```{r}
+#remember, variables with best P values for extinction with 2 lag are max change lag 2 abs, mean change lag 2 abs, seas change lag 2 abs, and last min change lag 2 abs
+
+#for three variables (four models)
+ext_mod_change_lag2_abs_3_var <- glmer(now_ext ~ sst_mean_change_lag2_abs + sst_max_change_lag2_abs + sst_seas_change_lag2_abs + (1 | reg) + (1 | year), family = binomial, data = spp_master_ztemp)
+ext_mod_change_lag2_abs_3_var2 <- glmer(now_ext ~ sst_mean_change_lag2_abs + sst_min_change_lag2_abs + sst_seas_change_lag2_abs + (1 | reg) + (1 | year), family = binomial, data = spp_master_ztemp)
+ext_mod_change_lag2_abs_3_var3 <- glmer(now_ext ~ sst_min_change_lag2_abs + sst_max_change_lag2_abs + sst_seas_change_lag2_abs + (1 | reg) + (1 | year), family = binomial, data = spp_master_ztemp)
+ext_mod_change_lag2_abs_3_var4 <- glmer(now_ext ~ sst_mean_change_lag2_abs + sst_max_change_lag2_abs + sst_min_change_lag2_abs + (1 | reg) + (1 | year), family = binomial, data = spp_master_ztemp)
+AICc(ext_mod_change_lag2_abs_3_var2, ext_mod_change_lag2_abs_3_var3, ext_mod_change_lag2_abs_3_var4, ext_mod_change_lag2_abs_3_var)
+
+#for two variables (six models)
+ext_mod_change_lag2_abs_2_var <- glmer(now_ext ~ sst_mean_change_lag2_abs + sst_max_change_lag2_abs + (1 | reg) + (1 | year), family = binomial, data = spp_master_ztemp)
+ext_mod_change_lag2_abs_2_var2 <- glmer(now_ext ~ sst_mean_change_lag2_abs + sst_min_change_lag2_abs + (1 | reg) + (1 | year), family = binomial, data = spp_master_ztemp)
+ext_mod_change_lag2_abs_2_var3 <- glmer(now_ext ~ sst_mean_change_lag2_abs + sst_seas_change_lag2_abs + (1 | reg) + (1 | year), family = binomial, data = spp_master_ztemp)
+ext_mod_change_lag2_abs_2_var4 <- glmer(now_ext ~ sst_max_change_lag2_abs + sst_min_change_lag2_abs + (1 | reg) + (1 | year), family = binomial, data = spp_master_ztemp)
+ext_mod_change_lag2_abs_2_var5 <- glmer(now_ext ~ sst_max_change_lag2_abs + sst_seas_change_lag2_abs + (1 | reg) + (1 | year), family = binomial, data = spp_master_ztemp)
+ext_mod_change_lag2_abs_2_var6 <- glmer(now_ext ~ sst_min_change_lag2_abs + sst_seas_change_lag2_abs + (1 | reg) + (1 | year), family = binomial, data = spp_master_ztemp)
+
+AICc(ext_mod_change_lag2_abs_2_var, ext_mod_change_lag2_abs_2_var2,ext_mod_change_lag2_abs_2_var3,ext_mod_change_lag2_abs_2_var4,ext_mod_change_lag2_abs_2_var5,ext_mod_change_lag2_abs_2_var6)
+
+#for one variable (four models)
+ext_mod_change_lag2_abs_1_var <- glmer(now_ext ~ sst_max_change_lag2_abs + (1 | reg) + (1 | year), family = binomial, data = spp_master_ztemp)
+ext_mod_change_lag2_abs_1_var2 <- glmer(now_ext ~ sst_mean_change_lag2_abs + (1 | reg) + (1 | year), family = binomial, data = spp_master_ztemp)
+ext_mod_change_lag2_abs_1_var3 <- glmer(now_ext ~ sst_min_change_lag2_abs + (1 | reg) + (1 | year), family = binomial, data = spp_master_ztemp)
+ext_mod_change_lag2_abs_1_var4 <- glmer(now_ext ~ sst_seas_change_lag2_abs + (1 | reg) + (1 | year), family = binomial, data = spp_master_ztemp)
+
+AICc(ext_mod_change_lag2_abs_1_var,ext_mod_change_lag2_abs_1_var2,ext_mod_change_lag2_abs_1_var3,ext_mod_change_lag2_abs_1_var4)
+
+#Now comparing best of each level of variables
+AICc(ext_mod_change_lag2_abs_3_var, ext_mod_change_lag2_abs_1_var, ext_mod_change_lag2_abs_2_var, ext_mod_change_abs_lag2)
+AICc()
+summary(ext_mod_change_lag2_abs_3_var)
+```
+The best model is less clear here, ext_mod_change_lag2_abs_2_var has the lowest AICc, but, it's not substantially lower, and ext_mod_change_lag2_abs_1_var has fewer predictors, so let's go with that
+**ext_mod_change_lag2_abs_1_var <- glmer(now_ext ~ sst_max_change_lag2_abs + (1 | reg) + (1 | year), family = binomial, data = spp_master_ztemp)**: best model for extinction
+```{r}
+summary(ext_mod_change_lag2_abs_1_var)
+```
+We're able to explain 12% of variation in extinction from the change in maximum temperature between 2-3 years ago (extinction debt?)
+
+**col_mod_change_abs_1_var <- glmer(col ~ sst_seas_change_abs + (1 | reg) + (1 | year), family = binomial, data = spp_master_ztemp)**: best model for colonization
+```{r}
+summary(col_mod_change_abs_1_var)
+```
+We're able to explain 13% of the variation in colonization with change in seasonality from last year
+
+_______________
+
+Can we plot what we have so far?
+
+Colonization: col_mod_change_abs_1_var <- glmer(col ~ sst_seas_change_abs + (1 | reg) + (1 | year), family = binomial, data = spp_master_ztemp)
+
+x axis: absolute change in seasonality this past year
+y axis: likelihood of colonization in this year
+
+```{r}
+#probability density function for colonization
+x <- c(seq(0,1, by=0.001))
+k <- sum(spp_master_ztemp$col)
+n <- length(complete.cases(spp_master_ztemp$col))
+bdist <- dbeta(x,k+1,n-k+1)
+
+                                                
+plot(x,bdist, ylab="Density Distribution", xlab="Proportion Of Year/Species Combos Undergoing Colonization", pch='.')
+
+p <- c(0.025,0.975)
+confint <- qbeta(p,k+1,n-k+1)
+abline(v=confint,col="red",lty=2)
+
+min(spp_master_ztemp$sst_seas_change_abs, na.rm = T)
+max(spp_master_ztemp$sst_seas_change_abs, na.rm = T)
+
+w <- seq(0,7,0.01)
+
+plot(x=spp_master_ztemp$sst_seas_change_abs, y=spp_master_ztemp$col)
+lines(x=w, y=ilogit(-3.33061+0.12645*w))
+```
+For each degree increase in temperature change of seasonality, log odds of extinction is predicted to change by 0.12645, or we can say that for a one unit increase in temp change, the odds of having colonization (versus not colonizing) increase by a factor of 1.13.
+
+
+Extinction: ext_mod_change_lag2_abs_1_var <- glmer(now_ext ~ sst_max_change_lag2_abs + (1 | reg) + (1 | year), family = binomial, data = spp_master_ztemp)
+
+x axis: absolute change in maximum temperature between 2 and 3 years ago
+y axis: likelihood of extinction in this year
+
+```{r}
+#probability density function for colonization
+x <- c(seq(0,1, by=0.001))
+k <- sum(spp_master_ztemp$now_ext)
+n <- length(complete.cases(spp_master_ztemp$now_ext))
+bdist <- dbeta(x,k+1,n-k+1)
+
+                                                
+plot(x,bdist, ylab="Density Distribution", xlab="Proportion Of Year/Species Combos Undergoing Extinction", pch='.')
+
+p <- c(0.025,0.975)
+confint <- qbeta(p,k+1,n-k+1)
+abline(v=confint,col="red",lty=2)
+
+min(spp_master_ztemp$sst_max_change_abs, na.rm = T)
+max(spp_master_ztemp$sst_max_change_abs, na.rm = T)
+
+w <- seq(0,8,0.01)
+
+plot(x=spp_master_ztemp$sst_max_change_abs, y=spp_master_ztemp$now_ext)
+lines(x=w, y=ilogit(-4.25266+0.11950*w))
+```
+For each degree increase in temperature change of max, log odds of extinction is predicted to change by 0.11950, or we can say that for a one unit increase in temp change, the odds of having extinction (versus not becoming extinct) increase by a factor of 1.12.
+
+Hard to interpret, these graphs are pretty lame, but big take aways are:
+1. temperature change is better predictor than plain temperature
+1. absolute value of temperature change is better predictor than just change
+1. for colonization, temp change over past year is best predictor
+1. for extinction, temp change experienced 2-3 years ago is best predictor
+1. for colonization, of temp variables, change in seasonality is best predictor
+1. for extinction, of temp variables, change in maximum temperature is best predictor
+_______________
+
+Now we will see if adding traits can improve the model, we only have traits for fish at this point, so we only care about fish so let's go back to earlier code to extract fish only
+
+```{r}
+load("fish_nofishkey.RData")
+```
+
+We will now limit spp_master_z to fish
+
+```{r}
+spp_master_ztemp_fishnofish <- left_join(spp_master_ztemp, fish_nofishkey, by = c("reg", "spp"))
+spp_master_ztemp_fishnofish$fish <- as.factor(spp_master_ztemp_fishnofish$fish)
+spp_master_ztemp_fishonly <- spp_master_ztemp_fishnofish %>%
+  filter(fish == "Y")
+?filter
+summary(spp_master_ztemp_fishnofish$fish) # I have NA's but I will ignore for now
+```
+Let's now link to traits!
+```{r}
+traits <- read.csv("traits_formanip.csv")
+traits$spp <- paste(traits$genus, traits$species, sep = " ")
+#restrict to LME 1:9 and 54 according to https://www.st.nmfs.noaa.gov/ecosystems/lme/
+levels(as.factor(traits$lme))
+traits_NA <- traits %>%
+  dplyr::filter(lme < 10 | lme == 54) %>%
+  group_by(spp) %>%
+  filter(row_number() == 1) #this means we only have one observation per species
+
+spp_master_ztemp_fishonly_traits <- left_join(spp_master_ztemp_fishonly, traits_NA, by = "spp")
+```
+
+Traits that actually look reasonable to use
+
+feeding.mode: benthivorous, generalist, herbivorous, piscivorous, planktivorous
+  *maybe make this into generalist or specialist? (only 2 NA's) --> $generalist
+
+tl: 2-4.65 (no NA's)
+
+egg.size: 
+  *(looks like I need to make this numeric or something) 111 NA's
+  
+spawning.type ( open_water-substratum, guarder, nonguarder, internal_bearer, external_bearer) 63 NA's
+
+Lmax (2.5-1520) only 1 NA!
+
+tmax (0.55 - 223) 181 NA's
+
+tm (156 NA's) 
+
+Lm (712 NA's) *exclude
+
+
+Let's simplify feeding.mode to just generalist vs. specialist
+```{r}
+spp_master_ztemp_fishonly_traits$generalist <- NA
+spp_master_ztemp_fishonly_traits$generalist[spp_master_ztemp_fishonly_traits$feeding.mode == "generalists"] <- 1
+spp_master_ztemp_fishonly_traits$generalist[spp_master_ztemp_fishonly_traits$feeding.mode != "generalists"] <- 0
+```
+Let's look at egg size
+```{r}
+spp_master_ztemp_fishonly_traits$egg.size <- as.numeric(spp_master_ztemp_fishonly_traits$egg.size)
+summary(spp_master_ztemp_fishonly_traits$egg.size)
+#much better
+```
+For this analysis, I'm just going to look at trait values we have a lot of
+generalist
+tl
+spawning.type
+Lmax
+
+Let's first run best models now that we're looking only at fish
+reminders of best models:
+col_mod_change_abs_1_var <- glmer(col ~ sst_seas_change_abs + (1 | reg) + (1 | year), family = binomial, data = spp_master_ztemp)
+ext_mod_change_lag2_abs_1_var <- glmer(now_ext ~ sst_max_change_lag2_abs + (1 | reg) + (1 | year), family = binomial, data = spp_master_ztemp)
+
+First colonization
+```{r}
+col_mod_change_abs_1_var_fishonly <- glmer(col ~ sst_seas_change_abs + (1 | reg) + (1 | year), family = binomial, data = spp_master_ztemp_fishonly_traits)
+summary(col_mod_change_abs_1_var_fishonly)
+AICc(col_mod_change_abs_1_var_fishonly, col_mod_change_abs_1_var)
+#unclear, but the AICc value for the fish only model is much better even though it appears dismal interms of p value, let's try with all variables again
+col_mod_change_abs_fishonly <- glmer(col ~ sst_mean_change_abs + sst_max_change_abs + sst_min_change_abs + sst_seas_change_abs + (1|reg) + (1|year), data = spp_master_ztemp_fishonly_traits, family = binomial)
+summary(col_mod_change_abs_fishonly) #nothing is significant
+#still we'll try to add in traits
+col_mod_change_abs_1_var_fishonly_wtraits <- glmer(col ~ sst_seas_change_abs*generalist + (1 | reg) + (1 | year), family = binomial, data = spp_master_ztemp_fishonly_traits)
+summary(col_mod_change_abs_1_var_fishonly_wtraits)
+summary(col_mod_change_abs_1_var_fishonly)
+AICc(col_mod_change_abs_1_var_fishonly_wtraits, col_mod_change_abs_1_var_fishonly)
+```
+Let's try the same with extinction
+```{r}
+ext_mod_change_lag2_abs_1_var_fishonly_wtraits <- glmer(now_ext ~ sst_max_change_lag2_abs*generalist + (1 | reg) + (1 | year), family = binomial, data = spp_master_ztemp_fishonly_traits)
+summary(ext_mod_change_lag2_abs_1_var_fishonly_wtraits)
+```
+
+
+One idea would just be to seperate by mobility as Malin did in Nature 2019
+Reminder, best Model Colonization:
+col_mod_change_abs_1_var <- glmer(col ~ sst_seas_change_abs + (1 | reg) + (1 | year), family = binomial, data = spp_master_ztemp)
+
+```{r}
+#import Malin's dataset
+mobility_traits <- read.csv("dataset_1_traits_nature.csv")
+spp_master_ztemp_fishnofish_mobility <- inner_join(spp_master_ztemp_fishnofish, mobility_traits, by = "spp")
+col_mod_change_abs_1_var_mobility <- glmer(col ~ sst_seas_change_abs*fish + (1 | reg) + (1 | year), family = binomial, data = spp_master_ztemp_fishnofish)
+summary(col_mod_change_abs_1_var_sessilemobile)
+AICc(col_mod_change_abs_1_var_sessilemobile, col_mod_change_abs_1_var)
+```
+Including sessile/mobile improves our ability to predict likelihood of colonization
+
+What about extinction?
+```{r}
+ext_mod_change_lag2_abs_1_var_sessilemobile <- glmer(now_ext ~ sst_max_change_lag2_abs*fish + (1 | reg) + (1 | year), family = binomial, data = spp_master_ztemp_fishnofish)
+summary(ext_mod_change_lag2_abs_1_var_sessilemobile)
+AICc(ext_mod_change_lag2_abs_1_var, ext_mod_change_lag2_abs_1_var_sessilemobile)
+```
+Here, sessile/mobile also improves fit and also the interaction with change in maximum temperature. The role of mobility changes with the size of the change in temperature between years. 
