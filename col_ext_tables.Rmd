@@ -65,4 +65,6 @@ Comparison in lags between colonizations and extinctions
 load("RVI_lags.Rdata")
 RVI_lags
 ```
+Simple barplot for ALL RVI values in colonization vs extinction
 
+Traits
