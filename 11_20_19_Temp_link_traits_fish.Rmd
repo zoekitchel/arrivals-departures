@@ -46,8 +46,8 @@ library(tidyr)
 library(faraway)
 library(data.table)
 traits <- read.csv("traits_formanip.csv")
-load("~/Documents/grad school/Rutgers/LabWork/Colonization_Extinction/hauls_fulltempdata.Rdata")
-load("~/Documents/grad school/Rutgers/LabWork/Colonization_Extinction/spp_master_ztemp.Rdata")
+load("~/Documents/grad school/Rutgers/Repositories/Col_Ext/hauls_fulltempdata.Rdata")
+load("~/Documents/grad school/Rutgers/Repositories/Col_Ext/spp_master_ztemp.Rdata")
 
 ```
 

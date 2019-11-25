@@ -594,13 +594,21 @@ ____________
 Best Extinction Models Without Traits
 
 Variable | coef | p | AICc
-seas_sbt_temp_change_abs_lag9 |	0.16783102	| 0.002379916 |	6207.213	
-min_sst_temp_change_lag2 |	-0.09468652	| 0.010582502 |	6209.860	
-min_sbt_temp_change_lag7 |	-0.11564632	| 0.010589365 |	6210.022	
-seas_sbt_temp_change_abs |	0.11602173	| 0.012974657 |	6210.184	
-max_sbt_temp_change_lag7 |	-0.09962557	| 0.014665739 |	6210.285	
-seas_sbt_temp_lag9 |	0.08732228	| 0.016700078 |	6210.766	
-seas_sst_temp_change_lag2 |	0.06949214	| 0.019648883 |	6210.908	
+| 1 | seas_sbt_temp_change_abs_lag9 |	0.16783102	| 0.002379916 |	6207.213 |	
+| 2 | min_sst_temp_change_lag2 |	-0.09468652	| 0.010582502 |	6209.860 |	
+| 3 | min_sbt_temp_change_lag7 |	-0.11564632	| 0.010589365 |	6210.022 |	
+| 4 | seas_sbt_temp_change_abs |	0.11602173	| 0.012974657 |	6210.184 |	
+| 5 | max_sbt_temp_change_lag7 |	-0.09962557	| 0.014665739 |	6210.285 |	
+| 6 | seas_sbt_temp_lag9 |	0.08732228	| 0.016700078 |	6210.766 |	
+| 7 | seas_sst_temp_change_lag2 |	0.06949214	| 0.019648883 |	6210.908 |	
+| 8 | max_sbt_temp_change_abs_lag9 |	0.17729188	| 0.027635910 |	6211.488 |	
+| 9 | max_sst_temp_change_lag1 |	-0.09801938	| 0.038291169 |	6212.029	|
+| 10 | max_sbt_temp_change_abs_lag3 |	0.11650881	| 0.043016403 |	6212.264	|
+| 11 | min_sst_temp_change_lag7 |	-0.07228131	| 0.050914778 |	6212.501	|
+| 12 | seas_sst_temp_lag2 |	0.06150102	| 0.040450419 |	6212.509	|
+| 13 | min_sbt_temp_change_abs |	-0.15365730	| 0.066163532 |	6212.677	|
+| 14 | seas_sbt_temp_change_abs_lag3 |	0.09513369	| 0.058900682 |	6212.732	|
+| 15 | min_sst_temp_change_abs_lag7 |	0.10668148	| 0.056469788 |	6212.755	|
 
 ##Maximum Age for Extinction
 
@@ -650,56 +658,53 @@ Are similar models coming out on top for extinction by including maximum age?
 
 variable | coefficient | p | AICc | rank above | coef above
 ---------|-------------|----|-----|---|---|
-| 1 | 
-| 2 | 
-| 3 | 
-| 4 | 
-| 5 | 
-| 6 | 
-| 7 |
-| 9 | 
-| 10 |
-| 11 |
-| 12 |
-| 13 |	
-| 14 |
-| 15 |
-
+| 1 | min_sst_temp_change_lag2	-0.14436022	0.003038827	3930.580	
+| 2 |  seas_sbt_temp_change_lag9	0.12993554	0.005210505	3931.628	
+| 3 |  seas_sbt_temp_lag9	0.10972665	0.013229764	3933.519	
+| 4 |  max_sbt_temp_change_abs	0.15427483	0.017742274	3933.821	
+| 5 |  min_sst_temp_change_abs_lag6	0.16578612	0.020123707	3934.268	
+| 6 |  min_sbt_temp_change_abs_lag5	-0.23173199	0.036076360	3934.596	
+| 7 | seas_sbt_temp_change_abs	0.12245319	0.032188793	3934.761	
+| 9 |  max_sbt_temp_change_lag9	0.11439746	0.035588475	3934.905	
+| 10 | seas_sst_temp	-0.09460166	0.050126076	3935.655	
+| 11 | min_sst_temp_change_abs_lag5	-0.15868171	0.063866384	3935.761	
+| 12 | seas_sst_temp_lag2	0.07970154	0.044236722	3935.820	
+| 13 |	 seas_sst_temp_change_abs_lag5	-0.11465158	0.071676787	3935.918	
+| 14 | seas_sst_temp_change_lag2	0.06818593	0.069610050	3936.028	
+| 15 | seas_sst_temp_change	-0.07118644	0.077429810	3936.153	
 
 Now we will check to see if including maximum age improves best extinction models.
 ```{r extinction maximum age does adding maximum age improve models: new base model}
 
 #new base model (best model with no traits added)
-mod.e.t.0 <- glmer(now_ext ~ max_sbt_temp_change_abs + (1|reg) + (1|year_factor), family = binomial, data = spp_master_ztemp.traits.na.age.max)
-summary(mod.e.t.0)
+mod.e.agemax.0 <- glmer(now_ext ~ max_sbt_temp_change_abs + (1|reg) + (1|year_factor), family = binomial, data = spp_master_ztemp.traits.na.age.max)
+summary(mod.e.agemax.0)
 ```
 
 
 ```{r extinction maximum age does adding maximum age improve models:adding maximum age}
 #max_sbt_temp_change_abs and age.max
-mod.e.t.1 <- glmer(now_ext ~ max_sbt_temp_change_abs + age.max + (1|reg) + (1|year_factor), family = binomial, data = spp_master_ztemp.traits.na.age.max)
-summary(mod.e.t.1)
-
-
+mod.e.agemax.1 <- glmer(now_ext ~ max_sbt_temp_change_abs + age.max + (1|reg) + (1|year_factor), family = binomial, data = spp_master_ztemp.traits.na.age.max)
+summary(mod.e.agemax.1)
 ```
 
 
 ```{r extinction maximum age does adding maximum age improve models:adding maximum age with interaction}
 #interaction?
 mod.e.t.2 <- glmer(now_ext ~ max_sbt_temp_change_abs * age.max + (1|reg) + (1|year_factor), family = binomial, data = spp_master_ztemp.traits.na.age.max)
-summary(mod.e.t.2)
+summary(mod.e.agemax.2)
 ```
 
 
 ```{r extinction maximum age does adding maximum age improve models:only maximum age}
 #what about only maximum age?
-mod.e.t.3 <- glmer(now_ext ~ age.max + (1|reg) + (1|year_factor), family = binomial, data = spp_master_ztemp.traits.na)
-summary(mod.e.t.3)
+mod.e.agemax.3 <- glmer(now_ext ~ age.max + (1|reg) + (1|year_factor), family = binomial, data = spp_master_ztemp.traits.na)
+summary(mod.e.agemax.3)
 
 ```
 Comparing above options (no trait, yes trait, yes trait with interaction, only trait)
 ```{r extinction maximum age does adding maximum age improve models: comparing all models}
-AICc(mod.e.t.0, mod.e.t.1, mod.e.t.2, mod.e.t.3)
+AICc(mod.e.agemax.0, mod.e.agemax.1, mod.e.agemax.2, mod.e.agemax.3)
 ```
 
 This tells us that as maximum age increases,....
@@ -771,36 +776,39 @@ Now we will check to see if including age at maturity improves best extinction m
 ```{r extinction age at maturity does adding age at maturity improve models: new base model}
 
 #new base model (best model with no traits added)
-mod.e.t.0 <- glmer(now_ext ~ max_sbt_temp_change_abs + (1|reg) + (1|year_factor), family = binomial, data = spp_master_ztemp.traits.na.age.maturity)
-summary(mod.e.t.0)
+mod.e.agematurity.0 <- glmer(now_ext ~ max_sbt_temp_change_abs + (1|reg) + (1|year_factor), family = binomial, data = spp_master_ztemp.traits.na.age.maturity)
+summary(mod.e.agematurity.0)
+AICc(mod.e.agematurity.0)
 ```
 
 
 ```{r extinction age at maturity does adding age at maturity improve models:adding age at maturity}
 #max_sbt_temp_change_abs and age.maturity
-mod.e.t.1 <- glmer(now_ext ~ max_sbt_temp_change_abs + age.maturity + (1|reg) + (1|year_factor), family = binomial, data = spp_master_ztemp.traits.na.age.maturity)
-summary(mod.e.t.1)
-
+mod.e.agematurity.1 <- glmer(now_ext ~ max_sbt_temp_change_abs + age.maturity + (1|reg) + (1|year_factor), family = binomial, data = spp_master_ztemp.traits.na.age.maturity)
+summary(mod.e.agematurity.1)
+AICc(mod.e.agematurity.1)
 
 ```
 
 
 ```{r extinction age at maturity does adding age at maturity improve models:adding age at maturity with interaction}
 #interaction?
-mod.e.t.2 <- glmer(now_ext ~ max_sbt_temp_change_abs * age.maturity + (1|reg) + (1|year_factor), family = binomial, data = spp_master_ztemp.traits.na.age.maturity)
-summary(mod.e.t.2)
+mod.e.agematurity.2 <- glmer(now_ext ~ max_sbt_temp_change_abs * age.maturity + (1|reg) + (1|year_factor), family = binomial, data = spp_master_ztemp.traits.na.age.maturity)
+summary(mod.e.agematurity.2)
+AICc(mod.e.agematurity.2)
 ```
 
 
 ```{r extinction age at maturity does adding age at maturity improve models:only age at maturity}
 #what about only age at maturity?
-mod.e.t.3 <- glmer(now_ext ~ age.maturity + (1|reg) + (1|year_factor), family = binomial, data = spp_master_ztemp.traits.na)
-summary(mod.e.t.3)
+mod.e.agematurity.3 <- glmer(now_ext ~ age.maturity + (1|reg) + (1|year_factor), family = binomial, data = spp_master_ztemp.traits.na)
+summary(mod.e.agematurity.3)
+AICc(mod.e.agematurity.3)
 
 ```
 Comparing above options (no trait, yes trait, yes trait with interaction, only trait)
 ```{r extinction age at maturity does adding age at maturity improve models: comparing all models}
-AICc(mod.e.t.0, mod.e.t.1, mod.e.t.2, mod.e.t.3)
+AICc(mod.e.agematurity.0, mod.e.agematurity.1, mod.e.agematurity.2, mod.e.agematurity.3)
 ```
 
 This tells us that as age at maturity increases,....
@@ -856,36 +864,39 @@ Now we will check to see if including trophic level improves best extinction mod
 ```{r extinction trophic level does adding trophic level improve models: new base model}
 
 #new base model (best model with no traits added)
-mod.e.t.0 <- glmer(now_ext ~ max_sbt_temp_change_abs + (1|reg) + (1|year_factor), family = binomial, data = spp_master_ztemp.traits.na.tl)
-summary(mod.e.t.0)
+mod.e.tl.0 <- glmer(now_ext ~ max_sbt_temp_change_abs + (1|reg) + (1|year_factor), family = binomial, data = spp_master_ztemp.traits.na.tl)
+summary(mod.e.tl.0)
+AICc(mod.e.tl.0)
 ```
 
 
 ```{r extinction trophic level does adding trophic level improve models:adding trophic level}
 #max_sbt_temp_change_abs and tl
-mod.e.t.1 <- glmer(now_ext ~ max_sbt_temp_change_abs + tl + (1|reg) + (1|year_factor), family = binomial, data = spp_master_ztemp.traits.na.tl)
-summary(mod.e.t.1)
-
+mod.e.tl.1 <- glmer(now_ext ~ max_sbt_temp_change_abs + tl + (1|reg) + (1|year_factor), family = binomial, data = spp_master_ztemp.traits.na.tl)
+summary(mod.e.tl.1)
+AICc(mod.e.tl.1)
 
 ```
 
 
 ```{r extinction trophic level does adding trophic level improve models:adding trophic level with interaction}
 #interaction?
-mod.e.t.2 <- glmer(now_ext ~ max_sbt_temp_change_abs * tl + (1|reg) + (1|year_factor), family = binomial, data = spp_master_ztemp.traits.na.tl)
-summary(mod.e.t.2)
+mod.e.tl.2 <- glmer(now_ext ~ max_sbt_temp_change_abs * tl + (1|reg) + (1|year_factor), family = binomial, data = spp_master_ztemp.traits.na.tl)
+summary(mod.e.tl.2)
+AICc(mod.e.tl.2)
 ```
 
 
 ```{r extinction trophic level does adding trophic level improve models:only trophic level}
 #what about only trophic level?
-mod.e.t.3 <- glmer(now_ext ~ tl + (1|reg) + (1|year_factor), family = binomial, data = spp_master_ztemp.traits.na)
-summary(mod.e.t.3)
+mod.e.tl.3 <- glmer(now_ext ~ tl + (1|reg) + (1|year_factor), family = binomial, data = spp_master_ztemp.traits.na)
+summary(mod.e.tl.3)
+AICc(mod.e.tl.3)
 
 ```
 Comparing above options (no trait, yes trait, yes trait with interaction, only trait)
 ```{r extinction trophic level does adding trophic level improve models: comparing all models}
-AICc(mod.e.t.0, mod.e.t.1, mod.e.t.2, mod.e.t.3)
+AICc(mod.e.tl.0, mod.e.tl.1, mod.e.tl.2, mod.e.tl.3)
 ```
 
 This tells us that as trophic level increases,....
