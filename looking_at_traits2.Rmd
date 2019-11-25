@@ -992,38 +992,48 @@ First, let's get some regional statistics
 #count colonizations by region
 col <- spp_master_ztemp %>%
   group_by(reg) %>%
-  summarise(sum(col))
+  summarise(n.col = sum(col))
 
 #count extinctions by region
 ext <- spp_master_ztemp %>%
   group_by(reg) %>%
-  summarise(sum(now_ext))
+  summarise(n.ext = sum(now_ext))
 
 #count observations by region
 count <- spp_master_ztemp %>%
   group_by(reg) %>%
-  summarise(n())
+  summarise(n = n())
+
+#count % colonizations by region
+col_per <- spp_master_ztemp %>%
+  group_by(reg) %>%
+  summarise(col.p = round(sum(col)/n(), 2))
+
+#count % extinctions by region
+ext_per <- spp_master_ztemp %>%
+  group_by(reg) %>%
+  summarise(ext.p = round(sum(now_ext)/n(), 2))
 
 #first year
 year.first <- spp_master_ztemp %>%
   group_by(reg) %>%
-  summarise(min(year))
+  summarise(year.first = min(year))
 #last year
 year.last <- spp_master_ztemp %>%
   group_by(reg) %>%
-  summarise(max(year))
+  summarise(year.last = max(year))
 
-region_summaries <- cbind(count, col[,2], ext[,2], year.first[,2], year.last[,2])
-colnames(region_summaries) <- c("reg", "n", "n.col", "n.ext", "year.first","year.last")
+region_summaries <- cbind(count, col[,2], col_per[,2], ext[,2], ext_per[,2], year.first[,2], year.last[,2])
 ```
 Now we'll visualize regions in a plot
 ```{r region plot}
 #manipulate data
-region_summaries.m <- melt(region_summaries[,1:4], id.vars = "reg")
+region_summaries.m <- melt(region_summaries[,c(1:3,5)], id.vars = "reg")
 
 ggplot(aes(x=reg, y = value, fill = variable), data = region_summaries.m) +
   geom_bar(stat = "identity", position = "dodge") +
-  labs(x = "Region", y = "Counts")
-
+  labs(x = "Region", y = "Observations")
+  
+region_summaries.m
 ```
 This shows that no specific region is monopolizing the patterns we see. 

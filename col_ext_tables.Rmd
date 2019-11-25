@@ -1,0 +1,68 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+```{r setup}
+
+library(data.table)
+
+
+load(file = "colonization_model_comparisons_dataframe.Rdata")
+```
+
+```{r manipulating colonization models}
+#only use top 13 models
+colonization_model_comparisons.r <- colonization_model_comparisons.nomean[order(AICc)][1:13,]
+cols <- names(colonization_model_comparisons.r)[2:5]
+colonization_model_comparisons.r[,(cols) := round(.SD,3), .SDcols=cols]
+colonization_model_comparisons.r
+```
+
+
+Colonization Models
+
+variable | coefficient | p | AICc | $\Delta$ AICc |
+---------|-------------|----|-----|---|---|
+| max_sbt_temp_change_abs |	0.239 |	0.000 |	6878.288 |	0.000 |
+| max_sst_temp_change_abs_lag1 |	-0.240 |	0.001 |	6887.400 |	9.112 |
+| min_sbt_temp_change_abs_lag5 |	-0.244 |	0.002 |	6888.859 |	10.572 |
+| max_sbt_temp_change_abs_lag3 |	0.171 |	0.001 |	6888.938 |	10.650 |
+| seas_sbt_temp_change_abs |	0.142 |	0.002 |	6889.498 |	11.211 |
+| max_sst_temp_change_abs_lag8 |	0.191 |	0.002 |	6889.901 |	11.614 |
+| seas_sst_temp_change_abs_lag8 |	0.127 |	0.004 |	6890.941 |	12.654 |
+| seas_sbt_temp_change_abs_lag4 |	0.136 |	0.005 |	6891.397 |	13.109 |
+| max_sbt_temp_change_lag8 |	-0.115 |	0.006 |	6891.566 |	13.279 |
+| seas_sbt_temp_change_abs_lag1 |	0.126 |	0.007 |	6891.960 |	13.672 |
+
+Relative Variable Importance: Calculated Akaike Weight for each model, divided by sum of all weights to get a value for relative model importance. Then, summed values for all models including the following variables. This only works when each variable is equally represented.
+
+* Surface (n = 93) importance = 0.02 **versus** Bottom (n = 93) importance = 0.97
+* Non lagged (n = 18) importance = 0.96 **versus** Lag (n = 168) importance = 0.03 (despite difference in n)
+* Absolute change (n = 60) importance = 0.99 **versus** Raw temp (n = 66) importance = 0.003 **versus** change (n = 60) = 0.005
+
+
+Extinction Models
+
+variable | coefficient | p | AICc | $\Delta$ AICc |
+---------|-------------|----|-----|---|---|
+| seas_sbt_temp_change_abs_lag9 |	0.168 |	0.002 |	6207.213 |	0.000 |
+| min_sst_temp_change_lag2 |	-0.095 |	0.011 |	6209.860 |	2.647 |
+| min_sbt_temp_change_lag7 |	-0.116 |	0.011 |	6210.022 |	2.808 |
+| seas_sbt_temp_change_abs |	0.116 |	0.013 |	6210.184 |		2.971 |
+| max_sbt_temp_change_lag7 |	-0.100 |	0.015 |	6210.285 |	3.072 |
+| seas_sbt_temp_lag9 |	0.087 |	0.017 |	6210.766 |	3.553 |
+| seas_sst_temp_change_lag2 |	0.069 |	0.020 |	6210.908 |	3.695 |
+| max_sbt_temp_change_abs_lag9 |	0.177 |	0.028 |	6211.488 |	4.275 |
+| max_sst_temp_change_lag1 |	-0.098 |	0.038 |	6212.029 |	4.816 |
+| max_sbt_temp_change_abs_lag3 |	0.117 |	0.043 |	6212.264 |	5.050 |
+
+* Surface (n = 93) importance = 0.37 **versus** Bottom (n = 93) importance = 0.63
+* Non lagged (n = 18) importance = 0.10 **versus** Lag (n = 168) importance = 0.90 (keep in mind change in n)
+* Absolute change (n = 60) importance = 0.47 **versus** Raw temp (n = 66) importance = 0.20 **versus** change (n = 60) = 0.34
+
+Comparison in lags between colonizations and extinctions
+```{r RVI lags}
+load("RVI_lags.Rdata")
+RVI_lags
+```
+

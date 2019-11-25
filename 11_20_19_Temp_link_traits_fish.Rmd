@@ -338,6 +338,21 @@ colonization_model_comparisons <- rbind(bottom_colonization_model_comparison, su
 head(colonization_model_comparisons[order(AICc)], 30)
 
 ```
+Colonization model comparison table
+```{r colonization model ranking table}
+#get rid of means
+colonization_model_comparisons.nomean <- colonization_model_comparisons[!grepl("mean", variable),]
+min_col_AICc <- min(colonization_model_comparisons.nomean[,AICc])
+colonization_model_comparisons.nomean[, deltaAICc := AICc - min_col_AICc]
+save(colonization_model_comparisons.nomean, file = "colonization_model_comparisons_dataframe.Rdata")
+#only use top 13 models
+colonization_model_comparisons.r <- colonization_model_comparisons.nomean[order(AICc)][1:13,]
+cols <- names(colonization_model_comparisons.r)[2:5]
+colonization_model_comparisons.r[,(cols) := round(.SD,3), .SDcols=cols]
+colonization_model_comparisons.r
+write.table(colonization_model_comparisons.r, "colonization_model_comparisons.txt")
+```
+
 Now, I should look at relative variable importance:
 
 * Burnham and Anderson (2002), Page 169: This ballancing puts each variable on equal footing.
@@ -367,6 +382,7 @@ col_surface_importance <- sum(colonization_model_comparisons[grep("sst", variabl
 
 #lag/not lagged (grepl("lag", variable))
 col_lag_importance <- sum(colonization_model_comparisons[grep("lag", variable), ]$akaike_weight)
+col_nolag_importance <- sum(colonization_model_comparisons[!grep("lag", variable), ]$akaike_weight)
 
 #absolute (grepl("abs", variable))
 col_abs_importance <- sum(colonization_model_comparisons[grep("abs", variable), ]$akaike_weight)
@@ -375,7 +391,7 @@ col_abs_importance <- sum(colonization_model_comparisons[grep("abs", variable), 
 col_raw_importance <- sum(colonization_model_comparisons[!grep("change", variable), ]$akaike_weight)
 
 #change (grepl("change", variable), (!grepl("abs")))
-col_change_importance <- (1 - (col_abs_importance + col_raw_importance))
+col_change_importance <- sum(colonization_model_comparisons[grep("change", variable), ][!grep("abs", variable),]$akaike_weight)
 
 ```
 Surface importance = 0.02
@@ -385,13 +401,28 @@ Absolute change importance = 0.99
 Raw temp importance = 0.003
 Change importance (no abs) = 0.005
 
-
-Merge surface and bottom for extinction
+------------
+Merge surface and bottom models for extinction
 ```{r merge surface and bottom for extinction}
 extinction_model_comparisons <- rbind(bottom_extinction_model_comparison, surface_extinction_model_comparison)
 head(extinction_model_comparisons[order(AICc)], 30)
 
 ```
+Extinction model comparison table
+```{r extinction model ranking table}
+#get rid of means
+extinction_model_comparisons.nomean <- extinction_model_comparisons[!grepl("mean", variable),]
+min_ext_AICc <- min(extinction_model_comparisons.nomean[,AICc])
+extinction_model_comparisons.nomean[,deltaAICc := AICc - min_ext_AICc]
+save(extinction_model_comparisons.nomean, file = "extinction_model_comparisons_dataframe.Rdata")
+#only use top 13 models
+extinction_model_comparisons.r <- extinction_model_comparisons.nomean[order(AICc)][1:10,]
+cols <- names(extinction_model_comparisons.r)[2:5]
+extinction_model_comparisons.r[,(cols) := round(.SD,3), .SDcols=cols]
+extinction_model_comparisons.r
+write.table(extinction_model_comparisons.r, "extinction_model_comparisons.txt")
+```
+
 
 Relative variable importance for extinction models
 ```{r extinctions relative variable importance}
@@ -399,32 +430,33 @@ Relative variable importance for extinction models
 extinction_model_comparisons <- extinction_model_comparisons %>%
   filter(!grepl("mean", variable))
 
-extinction_model_comparisons <- data.table(extinction_model_comparisons)
+extinction_model_comparisons.nomean <- data.table(extinction_model_comparisons.nomean)
 
 #add ∆AIC to tables
-min_ext_AICc <- min(extinction_model_comparisons[, AICc])
-extinction_model_comparisons[,"deltaAICc" := (AICc - min_ext_AICc)]
+min_ext_AICc <- min(extinction_model_comparisons.nomean[, AICc])
+extinction_model_comparisons.nomean[,"deltaAICc" := (AICc - min_ext_AICc)]
 
 #add relative likelihood exp( -0.5 * ∆AIC score for that model)
-extinction_model_comparisons[,"rel_likelihood" := exp((-0.5 * deltaAICc))]
+extinction_model_comparisons.nomean[,"rel_likelihood" := exp((-0.5 * deltaAICc))]
 #sum relative likelihoods across all models
-extinction_model_comparisons.likelihoodsum <- sum(extinction_model_comparisons[, rel_likelihood])
+extinction_model_comparisons.likelihoodsum <- sum(extinction_model_comparisons.nomean[, rel_likelihood])
 #Akaike weight for a model is this rel_likelihood devided by the sum of these values across all models
-extinction_model_comparisons[,"akaike_weight" := rel_likelihood/extinction_model_comparisons.likelihoodsum]
+extinction_model_comparisons.nomean[,"akaike_weight" := rel_likelihood/extinction_model_comparisons.likelihoodsum]
 
 #I want to look at relative importance FOR 
 #bottom/surface (bottom = includes sbt, grepl("sbt", variable))
-ext_bottom_importance <- sum(extinction_model_comparisons[grep("sbt", variable), ]$akaike_weight)
-ext_surface_importance <- sum(extinction_model_comparisons[grep("sst", variable), ]$akaike_weight)
+ext_bottom_importance <- sum(extinction_model_comparisons.nomean[grep("sbt", variable), ]$akaike_weight)
+ext_surface_importance <- sum(extinction_model_comparisons.nomean[grep("sst", variable), ]$akaike_weight)
 
 #lag/not lagged (grepl("lag", variable))
-ext_lag_importance <- sum(extinction_model_comparisons[grep("lag", variable), ]$akaike_weight)
+ext_lag_importance <- sum(extinction_model_comparisons.nomean[grep("lag", variable), ]$akaike_weight)
+ext_nolag_importance <- sum(extinction_model_comparisons.nomean[!grep("lag", variable), ]$akaike_weight)
 
 #absolute (grepl("abs", variable))
-ext_abs_importance <- sum(extinction_model_comparisons[grep("abs", variable), ]$akaike_weight)
+ext_abs_importance <- sum(extinction_model_comparisons.nomean[grep("abs", variable), ]$akaike_weight)
 
 #raw (!grepl("change"))
-ext_raw_importance <- sum(extinction_model_comparisons[!grep("change", variable), ]$akaike_weight)
+ext_raw_importance <- sum(extinction_model_comparisons.nomean[!grep("change", variable), ]$akaike_weight)
 
 #change (grepl("change", variable), (!grepl("abs")))
 ext_change_importance <- (1 - (ext_abs_importance + ext_raw_importance))
@@ -433,6 +465,7 @@ ext_change_importance <- (1 - (ext_abs_importance + ext_raw_importance))
 Surface importance = 0.37
 Bottom importance = 0.63
 Lag importance = 0.90
+No lag importance = 0.10
 Absolute change importance = 0.47
 Raw temp importance = 0.20
 Change importance (no abs) = 0.34
@@ -442,34 +475,36 @@ Let's see how the RVI importance varies by looking at specific lag values
 #first, table for lags
 lags_v_RVI <- data.table(col_lag = c(0:9), col_RVI = 0, ext_RVI = 0)
 #colonization
-lags_v_RVI[1,2] <- 1-sum(colonization_model_comparisons[grep("lag", variable), ]$akaike_weight)
-lags_v_RVI[2,2] <- sum(colonization_model_comparisons[grep("lag1", variable), ]$akaike_weight)
-lags_v_RVI[3,2] <- sum(colonization_model_comparisons[grep("lag2", variable), ]$akaike_weight)
-lags_v_RVI[4,2] <- sum(colonization_model_comparisons[grep("lag3", variable), ]$akaike_weight)
-lags_v_RVI[5,2] <- sum(colonization_model_comparisons[grep("lag4", variable), ]$akaike_weight)
-lags_v_RVI[6,2] <- sum(colonization_model_comparisons[grep("lag5", variable), ]$akaike_weight)
-lags_v_RVI[7,2] <- sum(colonization_model_comparisons[grep("lag6", variable), ]$akaike_weight)
-lags_v_RVI[8,2] <- sum(colonization_model_comparisons[grep("lag7", variable), ]$akaike_weight)
-lags_v_RVI[9,2] <- sum(colonization_model_comparisons[grep("lag8", variable), ]$akaike_weight)
-lags_v_RVI[10,2] <- sum(colonization_model_comparisons[grep("lag9", variable), ]$akaike_weight)
+lags_v_RVI[1,2] <- 1-sum(colonization_model_comparisons.nomean[grep("lag", variable), ]$akaike_weight)
+lags_v_RVI[2,2] <- sum(colonization_model_comparisons.nomean[grep("lag1", variable), ]$akaike_weight)
+lags_v_RVI[3,2] <- sum(colonization_model_comparisons.nomean[grep("lag2", variable), ]$akaike_weight)
+lags_v_RVI[4,2] <- sum(colonization_model_comparisons.nomean[grep("lag3", variable), ]$akaike_weight)
+lags_v_RVI[5,2] <- sum(colonization_model_comparisons.nomean[grep("lag4", variable), ]$akaike_weight)
+lags_v_RVI[6,2] <- sum(colonization_model_comparisons.nomean[grep("lag5", variable), ]$akaike_weight)
+lags_v_RVI[7,2] <- sum(colonization_model_comparisons.nomean[grep("lag6", variable), ]$akaike_weight)
+lags_v_RVI[8,2] <- sum(colonization_model_comparisons.nomean[grep("lag7", variable), ]$akaike_weight)
+lags_v_RVI[9,2] <- sum(colonization_model_comparisons.nomean[grep("lag8", variable), ]$akaike_weight)
+lags_v_RVI[10,2] <- sum(colonization_model_comparisons.nomean[grep("lag9", variable), ]$akaike_weight)
 #extinction
-lags_v_RVI[1,3] <- 1-sum(extinction_model_comparisons[grep("lag", variable), ]$akaike_weight)
-lags_v_RVI[2,3] <- sum(extinction_model_comparisons[grep("lag1", variable), ]$akaike_weight)
-lags_v_RVI[3,3] <- sum(extinction_model_comparisons[grep("lag2", variable), ]$akaike_weight)
-lags_v_RVI[4,3] <- sum(extinction_model_comparisons[grep("lag3", variable), ]$akaike_weight)
-lags_v_RVI[5,3] <- sum(extinction_model_comparisons[grep("lag4", variable), ]$akaike_weight)
-lags_v_RVI[6,3] <- sum(extinction_model_comparisons[grep("lag5", variable), ]$akaike_weight)
-lags_v_RVI[7,3] <- sum(extinction_model_comparisons[grep("lag6", variable), ]$akaike_weight)
-lags_v_RVI[8,3] <- sum(extinction_model_comparisons[grep("lag7", variable), ]$akaike_weight)
-lags_v_RVI[9,3] <- sum(extinction_model_comparisons[grep("lag8", variable), ]$akaike_weight)
-lags_v_RVI[10,3] <- sum(extinction_model_comparisons[grep("lag9", variable), ]$akaike_weight)
+lags_v_RVI[1,3] <- 1-sum(extinction_model_comparisons.nomean[grep("lag", variable), ]$akaike_weight)
+lags_v_RVI[2,3] <- sum(extinction_model_comparisons.nomean[grep("lag1", variable), ]$akaike_weight)
+lags_v_RVI[3,3] <- sum(extinction_model_comparisons.nomean[grep("lag2", variable), ]$akaike_weight)
+lags_v_RVI[4,3] <- sum(extinction_model_comparisons.nomean[grep("lag3", variable), ]$akaike_weight)
+lags_v_RVI[5,3] <- sum(extinction_model_comparisons.nomean[grep("lag4", variable), ]$akaike_weight)
+lags_v_RVI[6,3] <- sum(extinction_model_comparisons.nomean[grep("lag5", variable), ]$akaike_weight)
+lags_v_RVI[7,3] <- sum(extinction_model_comparisons.nomean[grep("lag6", variable), ]$akaike_weight)
+lags_v_RVI[8,3] <- sum(extinction_model_comparisons.nomean[grep("lag7", variable), ]$akaike_weight)
+lags_v_RVI[9,3] <- sum(extinction_model_comparisons.nomean[grep("lag8", variable), ]$akaike_weight)
+lags_v_RVI[10,3] <- sum(extinction_model_comparisons.nomean[grep("lag9", variable), ]$akaike_weight)
 
-ggplot(data = lags_v_RVI, aes(x = col_lag)) +
+RVI_lags <- ggplot(data = lags_v_RVI, aes(x = col_lag)) +
   geom_line(aes(y = col_RVI), col = "blue") +
   geom_line(aes(y = ext_RVI), col = "red") +
   labs(x = "Lag", y = "Relative Variable Importance") +
   scale_color_discrete() + #how to make a legend
   theme_bw()
+
+save(RVI_lags, file = "RVI_lags.Rdata")
 ```
 
 ********
