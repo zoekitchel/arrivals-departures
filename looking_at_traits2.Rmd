@@ -583,7 +583,7 @@ This tells us that as trophic level increases, log odds of colonization decrease
 
 Can we make a plot for how likelihood of colonization and extinction changes with tl?
 ```{r tl region bias?}
-ggplot(aes(x=tl), data = spp_master_ztemp.traits.na) +
+ggplot(aes(x=tl), data = spp_master_ztemp.traits.na.tl) +
   geom_histogram() +
   facet_wrap(~reg)
 
