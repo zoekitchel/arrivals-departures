@@ -658,56 +658,77 @@ Are similar models coming out on top for extinction by including maximum age?
 
 variable | coefficient | p | AICc | rank above | coef above
 ---------|-------------|----|-----|---|---|
-| 1 | min_sst_temp_change_lag2	-0.14436022	0.003038827	3930.580	
-| 2 |  seas_sbt_temp_change_lag9	0.12993554	0.005210505	3931.628	
-| 3 |  seas_sbt_temp_lag9	0.10972665	0.013229764	3933.519	
-| 4 |  max_sbt_temp_change_abs	0.15427483	0.017742274	3933.821	
-| 5 |  min_sst_temp_change_abs_lag6	0.16578612	0.020123707	3934.268	
-| 6 |  min_sbt_temp_change_abs_lag5	-0.23173199	0.036076360	3934.596	
-| 7 | seas_sbt_temp_change_abs	0.12245319	0.032188793	3934.761	
-| 9 |  max_sbt_temp_change_lag9	0.11439746	0.035588475	3934.905	
-| 10 | seas_sst_temp	-0.09460166	0.050126076	3935.655	
-| 11 | min_sst_temp_change_abs_lag5	-0.15868171	0.063866384	3935.761	
-| 12 | seas_sst_temp_lag2	0.07970154	0.044236722	3935.820	
-| 13 |	 seas_sst_temp_change_abs_lag5	-0.11465158	0.071676787	3935.918	
-| 14 | seas_sst_temp_change_lag2	0.06818593	0.069610050	3936.028	
-| 15 | seas_sst_temp_change	-0.07118644	0.077429810	3936.153	
+| 1 | min_sst_temp_change_lag2 |	-0.14436022 |	0.003038827 |	3930.580 | 2 | -0.09 |	
+| 2 |  seas_sbt_temp_change_lag9 |	0.12993554 |	0.005210505 |	3931.628 | not in top 15 | |	
+| 3 |  seas_sbt_temp_lag9 |	0.10972665 |	0.013229764 |	3933.519 | 6 | 0.09 |	
+| 4 |  max_sbt_temp_change_abs |	0.15427483 |	0.017742274 |	3933.821 | not in top 15 | |	
+| 5 |  min_sst_temp_change_abs_lag6 |	0.16578612 |	0.020123707 |	3934.268 | not in top 15 | |	
+| 6 |  min_sbt_temp_change_abs_lag5 |	-0.23173199 |	0.036076360 |	3934.596 | not in top 15| |	
+| 7 | seas_sbt_temp_change_abs |	0.12245319 |	0.032188793 |	3934.761 | 4 | 0.12 |	
+| 9 |  max_sbt_temp_change_lag9 |	0.11439746 |	0.035588475 |	3934.905 | not in top 15| |	
+| 10 | seas_sst_temp |	-0.09460166 |	0.050126076 |	3935.655 | not in top 15 | |	
+| 11 | min_sst_temp_change_abs_lag5 |	-0.15868171 |	0.063866384 |	3935.761 | not in top 15 | |	
+| 12 | seas_sst_temp_lag2 |	0.07970154 |	0.044236722 |	3935.820 | 12 |  0.06 |	
+| 13 |	seas_sst_temp_change_abs_lag5 |	-0.11465158 |	0.071676787 |	3935.918 | not in top 15 | |	
+| 14 | seas_sst_temp_change_lag2 |	0.06818593 |	0.069610050 |	3936.028 | 7 | 0.07 |	
+| 15 | seas_sst_temp_change |	-0.07118644 |	0.077429810 |	3936.153 | not in top 15 | |	
+
+Of top 15 models, they only share 6... this is a problem? Seems like *min_sst_temp_change_lag2* is best to continue with?
 
 Now we will check to see if including maximum age improves best extinction models.
 ```{r extinction maximum age does adding maximum age improve models: new base model}
 
 #new base model (best model with no traits added)
-mod.e.agemax.0 <- glmer(now_ext ~ max_sbt_temp_change_abs + (1|reg) + (1|year_factor), family = binomial, data = spp_master_ztemp.traits.na.age.max)
+mod.e.agemax.0 <- glmer(now_ext ~ min_sst_temp_change_lag2 + (1|reg) + (1|year_factor), family = binomial, data = spp_master_ztemp.traits.na.age.max)
 summary(mod.e.agemax.0)
+AICc(mod.e.agemax.0)
+
+#min_sst_temp_change_lag2 -0.14436  0.00304 3930.58
+
+#As the minimum temperature experienced between 2-3 years ago increases, the log odds of extinction decreases. 
+#-->THIS IS COUNTERINTUITIVE
 ```
 
 
 ```{r extinction maximum age does adding maximum age improve models:adding maximum age}
 #max_sbt_temp_change_abs and age.max
-mod.e.agemax.1 <- glmer(now_ext ~ max_sbt_temp_change_abs + age.max + (1|reg) + (1|year_factor), family = binomial, data = spp_master_ztemp.traits.na.age.max)
+mod.e.agemax.1 <- glmer(now_ext ~ min_sst_temp_change_lag2 + age.max + (1|reg) + (1|year_factor), family = binomial, data = spp_master_ztemp.traits.na.age.max)
 summary(mod.e.agemax.1)
-```
+AICc(mod.e.agemax.1)
 
+#min_sst_temp_change_lag2 -0.144548 0.00306 3889.425
+#age.max                  -0.029182 4.7e-09 
+```
+As maximum age increases, likelihood of going extinct decreases. 
 
 ```{r extinction maximum age does adding maximum age improve models:adding maximum age with interaction}
 #interaction?
-mod.e.t.2 <- glmer(now_ext ~ max_sbt_temp_change_abs * age.max + (1|reg) + (1|year_factor), family = binomial, data = spp_master_ztemp.traits.na.age.max)
+mod.e.agemax.2 <- glmer(now_ext ~ min_sst_temp_change_lag2 * age.max + (1|reg) + (1|year_factor), family = binomial, data = spp_master_ztemp.traits.na.age.max)
 summary(mod.e.agemax.2)
+AICc(mod.e.agemax.2)
+
+#min_sst_temp_change_lag2         -0.080449     0.279  3890.142   
+#age.max                          -0.030339  3.25e-09 
+#min_sst_temp_change_lag2:age.max -0.005597     0.247    
 ```
 
 
 ```{r extinction maximum age does adding maximum age improve models:only maximum age}
 #what about only maximum age?
-mod.e.agemax.3 <- glmer(now_ext ~ age.max + (1|reg) + (1|year_factor), family = binomial, data = spp_master_ztemp.traits.na)
+mod.e.agemax.3 <- glmer(now_ext ~ age.max + (1|reg) + (1|year_factor), family = binomial, data = spp_master_ztemp.traits.na.age.max)
 summary(mod.e.agemax.3)
+AICc(mod.e.agemax.3)
+
+#age.max     -0.029179  4.68e-09 3896.078
 
 ```
 Comparing above options (no trait, yes trait, yes trait with interaction, only trait)
 ```{r extinction maximum age does adding maximum age improve models: comparing all models}
 AICc(mod.e.agemax.0, mod.e.agemax.1, mod.e.agemax.2, mod.e.agemax.3)
 ```
+Best model does not include interaction, but is nearly impossible to distinguish from model with interaction. 
 
-This tells us that as maximum age increases,....
+This tells us that as maximum age increases, log odds of going extinct decreases. As change in min temperature experienced between 2-3 years ago increases (positive change, towards warmer), the log odds of extinction decreases.
 
 
 ##Age of Maturity for Extinction
@@ -756,62 +777,76 @@ Are similar models coming out on top for extinction by including age at maturity
 
 variable | coefficient | p | AICc | rank above | coef above
 ---------|-------------|----|-----|---|---|
-| 1 | 
-| 2 | 
-| 3 | 
-| 4 | 
-| 5 | 
-| 6 | 
-| 7 |
-| 9 | 
-| 10 |
-| 11 |
-| 12 |
-| 13 |	
-| 14 |
-| 15 |
+| 1 | min_sst_temp_change_lag2	| -0.14805497 |	0.002710857 |	3920.109 | 2 | -0.09 |	
+| 2 |  seas_sbt_temp_change_lag9	| 0.12861632 |	0.006329875 |	3921.697 | not in top 15 | |	
+| 3 |  seas_sbt_temp_lag9	| 0.11207541 |	0.011862688 |	3923.042 | 6 | 0.09 |	
+| 4 |  max_sbt_temp_change_abs	| 0.15619946 |	0.016642456 |	3923.456 | not in top 15  | |	
+| 5 |  min_sst_temp_change_abs_lag6	| 0.16612378 |	0.020897770 |	3924.076 | not in top 15 | |	
+| 6 |  min_sbt_temp_change_abs_lag5	| -0.23921218 |	0.032703088 |	3924.162 | not in top 15 | |	
+| 7 | seas_sbt_temp_change_abs	| 0.12215822 |	0.032750203 |	3924.536 | 4  | 0.12 |	
+| 9 |  seas_sst_temp_lag2	| 0.08894160 |	0.021276070 |	3924.730 | 12 | 0.06 |	
+| 10 | seas_sst_temp_change	| -0.07914067 |	0.053147439 |	3925.275 | not in top 15  | |	
+| 11 | max_sbt_temp_change_lag9	| 0.10522327 |	0.055746506 |	3925.392 | not in top 15 | |	
+| 12 | min_sst_temp_change_abs_lag5	| -0.16304438 |	0.059969373 |	3925.406 | not in top 15 | |	
+| 13 |	 seas_sst_temp_change_lag2	| 0.07202288 |	0.059464663 |	3925.501 | 7 | 0.07 |	
+| 14 | seas_sst_temp	| -0.09394699 |	0.055661858 |	3925.636 | not in top 15 | |	
+| 15 | min_sst_temp_change	| 0.09385684 |	0.072201812 |	3925.738 | not in top 15  | |	
+
+Of top 15, only 5 are shared
 
 
 Now we will check to see if including age at maturity improves best extinction models.
 ```{r extinction age at maturity does adding age at maturity improve models: new base model}
 
 #new base model (best model with no traits added)
-mod.e.agematurity.0 <- glmer(now_ext ~ max_sbt_temp_change_abs + (1|reg) + (1|year_factor), family = binomial, data = spp_master_ztemp.traits.na.age.maturity)
+mod.e.agematurity.0 <- glmer(now_ext ~ min_sst_temp_change_lag2 + (1|reg) + (1|year_factor), family = binomial, data = spp_master_ztemp.traits.na.age.maturity)
 summary(mod.e.agematurity.0)
 AICc(mod.e.agematurity.0)
+
+#min_sst_temp_change_lag2 -0.14805 0.00271 3920.109
 ```
 
 
 ```{r extinction age at maturity does adding age at maturity improve models:adding age at maturity}
 #max_sbt_temp_change_abs and age.maturity
-mod.e.agematurity.1 <- glmer(now_ext ~ max_sbt_temp_change_abs + age.maturity + (1|reg) + (1|year_factor), family = binomial, data = spp_master_ztemp.traits.na.age.maturity)
+mod.e.agematurity.1 <- glmer(now_ext ~ min_sst_temp_change_lag2 + age.maturity + (1|reg) + (1|year_factor), family = binomial, data = spp_master_ztemp.traits.na.age.maturity)
 summary(mod.e.agematurity.1)
 AICc(mod.e.agematurity.1)
+
+#min_sst_temp_change_lag2 -0.14810  0.002714 3906.268
+#age.maturity             -0.06855  0.000204 
 
 ```
 
 
 ```{r extinction age at maturity does adding age at maturity improve models:adding age at maturity with interaction}
 #interaction?
-mod.e.agematurity.2 <- glmer(now_ext ~ max_sbt_temp_change_abs * age.maturity + (1|reg) + (1|year_factor), family = binomial, data = spp_master_ztemp.traits.na.age.maturity)
+mod.e.agematurity.2 <- glmer(now_ext ~ min_sst_temp_change_lag2 * age.maturity + (1|reg) + (1|year_factor), family = binomial, data = spp_master_ztemp.traits.na.age.maturity)
 summary(mod.e.agematurity.2)
 AICc(mod.e.agematurity.2)
+
+#min_sst_temp_change_lag2              -0.162645 0.023862 3908.194 
+#age.maturity                          -0.067870 0.000259 
+#min_sst_temp_change_lag2:age.maturity  0.005069 0.781563 
 ```
 
 
 ```{r extinction age at maturity does adding age at maturity improve models:only age at maturity}
 #what about only age at maturity?
-mod.e.agematurity.3 <- glmer(now_ext ~ age.maturity + (1|reg) + (1|year_factor), family = binomial, data = spp_master_ztemp.traits.na)
+mod.e.agematurity.3 <- glmer(now_ext ~ age.maturity + (1|reg) + (1|year_factor), family = binomial, data = spp_master_ztemp.traits.na.age.maturity)
 summary(mod.e.agematurity.3)
 AICc(mod.e.agematurity.3)
+
+#age.maturity -0.06853 0.000205 3913.139
 
 ```
 Comparing above options (no trait, yes trait, yes trait with interaction, only trait)
 ```{r extinction age at maturity does adding age at maturity improve models: comparing all models}
 AICc(mod.e.agematurity.0, mod.e.agematurity.1, mod.e.agematurity.2, mod.e.agematurity.3)
 ```
+Best model includes both age at maturity and temp but not the interaction. 
 
-This tells us that as age at maturity increases,....
+This tells us that as age at maturity increases,log odds of extinction decrease. Also, as change in minimum temperature experienced between 2-3 years ago increases (towards positive), log odds of extinction decreases.
 
 
 ##Trophic Level for Extinction
@@ -851,55 +886,82 @@ for (i in 1:length(bottom_variables)){
 }
 
 #merge surface and bottom for extinction
-extinction_model_comparisons.trophiclevel <- rbind(surface_extinction_model_comparison.trophiclevel, surface_extinction_model_comparison.trophiclevel)
+extinction_model_comparisons.trophiclevel <- rbind(surface_extinction_model_comparison.trophiclevel, bottom_extinction_model_comparison.trophiclevel)
 #lowest AICc
 head(extinction_model_comparisons.trophiclevel[order(AICc)], 30)
 
 ```
 Are similar models coming out on top for extinction by including trophic level?
 
+|1 | min_sst_temp_change_lag2 |	-0.12605189 |	0.008882239 |	4205.455 |2	|-0.09|
+|2 | seas_sbt_temp_change_abs	| 0.13647286 | 	0.014522389	| 4206.321 |4 |0.12 | 	
+|3 | seas_sbt_temp_change_lag9 |	0.11068561 |	0.016010438 |	4206.530 |not in top 15 | |	
+|4 | seas_sbt_temp_lag9 |	0.10832214 |	0.014587647 |	4206.647 | 6 | 0.09 |	
+|5 | min_sst_temp_change_abs_lag6 |	0.17395683 |	0.014698403 |	4206.661 | not in top 15	||
+|6 | min_sbt_temp_change_abs_lag5 |	-0.25022141 |	0.023335227 |	4206.734 | not in top 15 | |	
+|7 | max_sbt_temp_change_abs |	0.15091446 |	0.018910307 |	4206.845 | not in top 15 | |	
+|8 |min_sst_temp_change_abs_lag7 |	0.16683645 |	0.017394540 |	4206.863 |15	|0.11|
+|9 | min_sst_temp_change_abs_lag5 |	-0.18898669 |	0.027881516 |	4207.251 |not in top 15	||
+|10| min_sbt_temp_change_lag7 |	-0.10660642 |	0.056611513 |	4208.757 | 3| -0.12|	
+|11|  seas_sst_temp_lag2 |	0.07887305 |	0.050759977 |	4208.927 |12	|0.07|
+|12 | seas_sst_temp_change_abs_lag5 |	-0.11074422 |	0.077570136 |	4208.999 |not in top 15	||
+|13 |  min_sst_temp_change |	0.08871614 |	0.078886342 |	4209.073 |not in top 15	||
+|14 |  seas_sst_temp |	-0.08790929 |	0.067876817 |	4209.092 |not in top 15	||
+|15 | max_sbt_temp_change_lag9 |	0.09267424 |	0.081161794 |	4209.182 |not in top 15 | |	
 
+Of top 15, only 6 are shared. 
 
 Now we will check to see if including trophic level improves best extinction models.
 ```{r extinction trophic level does adding trophic level improve models: new base model}
-
 #new base model (best model with no traits added)
-mod.e.tl.0 <- glmer(now_ext ~ max_sbt_temp_change_abs + (1|reg) + (1|year_factor), family = binomial, data = spp_master_ztemp.traits.na.tl)
+mod.e.tl.0 <- glmer(now_ext ~ min_sst_temp_change_lag2 + (1|reg) + (1|year_factor), family = binomial, data = spp_master_ztemp.traits.na.tl)
 summary(mod.e.tl.0)
 AICc(mod.e.tl.0)
+
+#min_sst_temp_change_lag2 -0.12605   0.00888 4205.455
 ```
 
 
 ```{r extinction trophic level does adding trophic level improve models:adding trophic level}
 #max_sbt_temp_change_abs and tl
-mod.e.tl.1 <- glmer(now_ext ~ max_sbt_temp_change_abs + tl + (1|reg) + (1|year_factor), family = binomial, data = spp_master_ztemp.traits.na.tl)
+mod.e.tl.1 <- glmer(now_ext ~ min_sst_temp_change_lag2 + tl + (1|reg) + (1|year_factor), family = binomial, data = spp_master_ztemp.traits.na.tl)
 summary(mod.e.tl.1)
 AICc(mod.e.tl.1)
 
+#min_sst_temp_change_lag2 -0.12635  0.0088 4192.295
+#tl                       -0.39633 8.55e-05 
+  
 ```
 
 
 ```{r extinction trophic level does adding trophic level improve models:adding trophic level with interaction}
 #interaction?
-mod.e.tl.2 <- glmer(now_ext ~ max_sbt_temp_change_abs * tl + (1|reg) + (1|year_factor), family = binomial, data = spp_master_ztemp.traits.na.tl)
+mod.e.tl.2 <- glmer(now_ext ~ min_sst_temp_change_lag2 * tl + (1|reg) + (1|year_factor), family = binomial, data = spp_master_ztemp.traits.na.tl)
 summary(mod.e.tl.2)
 AICc(mod.e.tl.2)
+
+# min_sst_temp_change_lag2    -0.03522    0.30747  -0.115    0.909 4194.209    
+# tl                          -0.40081    0.10198  -3.930 8.49e-05
+# min_sst_temp_change_lag2:tl -0.02460    0.08190  -0.300    0.764 
 ```
 
 
 ```{r extinction trophic level does adding trophic level improve models:only trophic level}
 #what about only trophic level?
-mod.e.tl.3 <- glmer(now_ext ~ tl + (1|reg) + (1|year_factor), family = binomial, data = spp_master_ztemp.traits.na)
+mod.e.tl.3 <- glmer(now_ext ~ tl + (1|reg) + (1|year_factor), family = binomial, data = spp_master_ztemp.traits.na.tl)
 summary(mod.e.tl.3)
 AICc(mod.e.tl.3)
 
+
+#tl           -0.3960  8.64e-05 4197.014
 ```
 Comparing above options (no trait, yes trait, yes trait with interaction, only trait)
 ```{r extinction trophic level does adding trophic level improve models: comparing all models}
 AICc(mod.e.tl.0, mod.e.tl.1, mod.e.tl.2, mod.e.tl.3)
 ```
+Best model includes both trophic level and temperature, but not an interaction. 
 
-This tells us that as trophic level increases,....
+This tells us that as trophic level increases, log odds of extinction decreases. As change in minimum temperature experienced between 2-3 years ago towards positive increases, the log odds of extinction decreases. 
 _______________
 ###Regional variability?
 ```{r regional differences in col and ext}
@@ -925,4 +987,43 @@ spp_master_ztemp %>%
   summarise(sum(now_ext)) #Again, EBS, NEUS, and SA all high... why more events in these regions?
 ```
 
+First, let's get some regional statistics
+```{r regional stats}
+#count colonizations by region
+col <- spp_master_ztemp %>%
+  group_by(reg) %>%
+  summarise(sum(col))
 
+#count extinctions by region
+ext <- spp_master_ztemp %>%
+  group_by(reg) %>%
+  summarise(sum(now_ext))
+
+#count observations by region
+count <- spp_master_ztemp %>%
+  group_by(reg) %>%
+  summarise(n())
+
+#first year
+year.first <- spp_master_ztemp %>%
+  group_by(reg) %>%
+  summarise(min(year))
+#last year
+year.last <- spp_master_ztemp %>%
+  group_by(reg) %>%
+  summarise(max(year))
+
+region_summaries <- cbind(count, col[,2], ext[,2], year.first[,2], year.last[,2])
+colnames(region_summaries) <- c("reg", "n", "n.col", "n.ext", "year.first","year.last")
+```
+Now we'll visualize regions in a plot
+```{r region plot}
+#manipulate data
+region_summaries.m <- melt(region_summaries[,1:4], id.vars = "reg")
+
+ggplot(aes(x=reg, y = value, fill = variable), data = region_summaries.m) +
+  geom_bar(stat = "identity", position = "dodge") +
+  labs(x = "Region", y = "Counts")
+
+```
+This shows that no specific region is monopolizing the patterns we see. 
