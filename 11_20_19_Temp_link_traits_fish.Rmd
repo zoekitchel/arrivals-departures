@@ -359,39 +359,38 @@ Now, I should look at relative variable importance:
 * Akaike weights are can be used in model averaging. They represent the relative likelihood of a model. To calculate them, for each model first calculate the relative likelihood of the model, which is just exp( -0.5 * ∆AIC score for that model). The Akaike weight for a model is this value divided by the sum of these values across all models.
 ```{r colonizations relative variable importance}
 #get rid of mean
-colonization_model_comparisons <- colonization_model_comparisons %>%
-  filter(!grepl("mean", variable))
+load("colonization_model_comparisons_dataframe.Rdata")
 
-colonization_model_comparisons <- data.table(colonization_model_comparisons)
+colonization_model_comparisons.nomean <- data.table(colonization_model_comparisons.nomean)
 
 #add ∆AIC to tables
-min_col_AICc <- min(colonization_model_comparisons[, AICc])
-colonization_model_comparisons[,"deltaAICc" := (AICc - min_col_AICc)]
+min_col_AICc <- min(colonization_model_comparisons.nomean[, AICc])
+colonization_model_comparisons.nomean[,"deltaAICc" := (AICc - min_col_AICc)]
 
 #add relative likelihood exp( -0.5 * ∆AIC score for that model)
-colonization_model_comparisons[,"rel_likelihood" := exp((-0.5 * deltaAICc))]
+colonization_model_comparisons.nomean[,"rel_likelihood" := exp((-0.5 * deltaAICc))]
 #sum relative likelihoods across all models
-colonization_model_comparisons.likelihoodsum <- sum(colonization_model_comparisons[, rel_likelihood])
+colonization_model_comparisons.nomean.likelihoodsum <- sum(colonization_model_comparisons.nomean[, rel_likelihood])
 #Akaike weight for a model is this rel_likelihood devided by the sum of these values across all models
-colonization_model_comparisons[,"akaike_weight" := rel_likelihood/colonization_model_comparisons.likelihoodsum]
+colonization_model_comparisons.nomean[,"akaike_weight" := rel_likelihood/colonization_model_comparisons.nomean.likelihoodsum]
 
 #I want to look at relative importance FOR 
 #bottom/surface (bottom = includes sbt, grepl("sbt", variable))
-col_bottom_importance <- sum(colonization_model_comparisons[grep("sbt", variable), ]$akaike_weight)
-col_surface_importance <- sum(colonization_model_comparisons[grep("sst", variable), ]$akaike_weight)
+col_bottom_importance <- sum(colonization_model_comparisons.nomean[grep("sbt", variable), ]$akaike_weight)
+col_surface_importance <- sum(colonization_model_comparisons.nomean[grep("sst", variable), ]$akaike_weight)
 
 #lag/not lagged (grepl("lag", variable))
-col_lag_importance <- sum(colonization_model_comparisons[grep("lag", variable), ]$akaike_weight)
-col_nolag_importance <- sum(colonization_model_comparisons[!grep("lag", variable), ]$akaike_weight)
+col_lag_importance <- sum(colonization_model_comparisons.nomean[grep("lag", variable), ]$akaike_weight)
+col_nolag_importance <- sum(colonization_model_comparisons.nomean[!grep("lag", variable), ]$akaike_weight)
 
 #absolute (grepl("abs", variable))
-col_abs_importance <- sum(colonization_model_comparisons[grep("abs", variable), ]$akaike_weight)
+col_abs_importance <- sum(colonization_model_comparisons.nomean[grep("abs", variable), ]$akaike_weight)
 
 #raw (!grepl("change"))
-col_raw_importance <- sum(colonization_model_comparisons[!grep("change", variable), ]$akaike_weight)
+col_raw_importance <- sum(colonization_model_comparisons.nomean[!grep("change", variable), ]$akaike_weight)
 
 #change (grepl("change", variable), (!grepl("abs")))
-col_change_importance <- sum(colonization_model_comparisons[grep("change", variable), ][!grep("abs", variable),]$akaike_weight)
+col_change_importance <- sum(colonization_model_comparisons.nomean[grep("change", variable), ][!grep("abs", variable),]$akaike_weight)
 
 ```
 Surface importance = 0.02
@@ -400,6 +399,15 @@ Lag importance = 0.03
 Absolute change importance = 0.99
 Raw temp importance = 0.003
 Change importance (no abs) = 0.005
+
+```{r put RVIs for extinction into data table}
+col_ext <- c("col","col","col","col","col", "col","col")
+type <- c("depth", "depth", "lag", "lag", "Change?", "Change?", "Change?")
+variable <- c("bottom", "surface", "no_lag", "lagged", "absolute_value_change", "change", "raw")
+value <- c(col_bottom_importance, col_surface_importance, col_nolag_importance, col_lag_importance, col_abs_importance, col_change_importance, col_raw_importance)
+
+RVI_col <- data.table(col_ext, type, variable, value)
+```
 
 ------------
 Merge surface and bottom models for extinction
@@ -426,9 +434,7 @@ write.table(extinction_model_comparisons.r, "extinction_model_comparisons.txt")
 
 Relative variable importance for extinction models
 ```{r extinctions relative variable importance}
-#get rid of mean
-extinction_model_comparisons <- extinction_model_comparisons %>%
-  filter(!grepl("mean", variable))
+load("extinction_model_comparisons_dataframe.Rdata")
 
 extinction_model_comparisons.nomean <- data.table(extinction_model_comparisons.nomean)
 
@@ -469,6 +475,56 @@ No lag importance = 0.10
 Absolute change importance = 0.47
 Raw temp importance = 0.20
 Change importance (no abs) = 0.34
+
+```{r put RVIs for extinction into data table}
+col_ext <- c("ext","ext","ext","ext","ext", "ext", "ext")
+type <- c("depth", "depth", "lag", "lag", "Change?", "Change?", "Change?")
+variable <- c("bottom", "surface", "no_lag", "lagged", "absolute_value_change", "change", "raw")
+value <- c(ext_bottom_importance, ext_surface_importance, ext_nolag_importance, ext_lag_importance, ext_abs_importance, ext_change_importance, ext_raw_importance)
+
+RVI_ext <- data.table(col_ext, type, variable, value)
+```
+
+Merge RVI tables for colonization and extinction, and then graph
+```{r merge RVI tables and plot}
+RVI_table <- as.data.table(rbind(RVI_col, RVI_ext))
+
+RVI_table.r <- RVI_table[!grep("surface", variable)][!grep("lagged", variable)]
+
+#change order of factor levels
+RVI_table.r[,"variable" := as.factor(variable)]
+RVI_table.r <- RVI_table.r %>% 
+  dplyr::mutate("variable" = factor(variable, 
+                                    levels = c("bottom", "no_lag", "raw", "change", "absolute_value_change")))
+
+save(RVI_table, file = "RVI_table.Rdata")
+
+ggplot(data = RVI_table.r, aes(x=variable, y = value, fill = col_ext)) +
+  geom_bar(stat = "identity", position = "dodge") +
+  scale_x_discrete(breaks = c("bottom", "no_lag", "raw", "change", "absolute_value_change"), labels = c("Bottom Temp", "No Lag", "Raw Temp", "Change in Temp", "| Change in Temp |")) +
+  labs(x = "Temperature Variables", y = "Relative Variable Importance")  +
+  theme_bw()
+
+```
+Another way to visualize is stacked bar plot.
+
+```{r RVI stacked plot}
+#put levels into correct order for viewing
+levels(RVI_table) <- c("bottom", "surface", "absolute_value_change", "change", "raw", "no_lag", "lagged")
+#make types factors as well
+RVI_table[,type := as.factor(type)]
+#colonization
+ggplot(data = RVI_table[col_ext == "col",], aes(x=type, y = value, fill = variable)) +
+  geom_bar(stat="identity") +
+  scale_x_discrete(breaks = c("Change?", "depth", "lag"), labels = c("Change in temp?", "Measurement Depth", "Lagged?")) +
+  labs(x = "Temperature Variables", y = "Relative Variable Importance")
+#extinction
+ggplot(data = RVI_table[col_ext == "ext",], aes(x=type, y = value, fill = variable)) +
+  geom_bar(stat="identity") +
+  scale_x_discrete(breaks = c("Change?", "depth", "lag"), labels = c("Change in temp?", "Measurement Depth", "Lagged?")) +
+  labs(x = "Temperature Variables", y = "Relative Variable Importance")
+```
+
 
 Let's see how the RVI importance varies by looking at specific lag values
 ```{r make a plot here for variability across lag values}

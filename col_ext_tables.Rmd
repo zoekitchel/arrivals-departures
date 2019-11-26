@@ -63,8 +63,12 @@ variable | coefficient | p | AICc | $\Delta$ AICc |
 Comparison in lags between colonizations and extinctions
 ```{r RVI lags}
 load("RVI_lags.Rdata")
-RVI_lags
+RVI_lags + scale_x_continuous(breaks = c(0:9))
 ```
 Simple barplot for ALL RVI values in colonization vs extinction
+```{r comparing all RVI in colonizations vs. extinctions}
+
+```
+
 
 Traits
