@@ -229,20 +229,16 @@ summary {
 <p>Going to look at some patterns in traits</p>
 <!-- rnb-text-end -->
 <!-- rnb-chunk-begin -->
-<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxubGlicmFyeShsbWU0KVxuXG5gYGAifQ== -->
-<pre class="r"><code>library(lme4)
-</code></pre>
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxubGlicmFyeShnZ3Bsb3QyKVxubGlicmFyeShkYXRhLnRhYmxlKVxubGlicmFyeShsbWU0KVxubGlicmFyeShNdU1JbilcbnRyYWl0cyA8LSByZWFkLmNzdihcIlRyYWl0Q29sbGVjdGlvbkZpc2hOQXRsYW50aWNORVBhY2lmaWNDb250U2hlbGYgKDMpLmNzdlwiKVxudHJhaXRzIDwtIGRhdGEudGFibGUodHJhaXRzKVxuI3JlbW92ZSBkdXBsaWNhdGVzXG50cmFpdHMudSA8LSB1bmlxdWUodHJhaXRzLCBieSA9IGMoJ3RheG9uJykpXG5gYGAifQ== -->
+<pre class="r"><code>library(ggplot2)
+library(data.table)
+library(lme4)
+library(MuMIn)
+traits &lt;- read.csv(&quot;TraitCollectionFishNAtlanticNEPacificContShelf (3).csv&quot;)
+traits &lt;- data.table(traits)
+#remove duplicates
+traits.u &lt;- unique(traits, by = c('taxon'))</code></pre>
 <!-- rnb-source-end -->
-<!-- rnb-output-begin eyJkYXRhIjoicGFja2FnZSDigJhsbWU04oCZIHdhcyBidWlsdCB1bmRlciBSIHZlcnNpb24gMy41LjJMb2FkaW5nIHJlcXVpcmVkIHBhY2thZ2U6IE1hdHJpeFxuIn0= -->
-<pre><code>package ‘lme4’ was built under R version 3.5.2Loading required package: Matrix</code></pre>
-<!-- rnb-output-end -->
-<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxubGlicmFyeShsbWU0KVxubGlicmFyeShNdU1JbilcbmBgYCJ9 -->
-<pre class="r"><code>library(lme4)
-library(MuMIn)</code></pre>
-<!-- rnb-source-end -->
-<!-- rnb-output-begin eyJkYXRhIjoicGFja2FnZSDigJhNdU1JbuKAmSB3YXMgYnVpbHQgdW5kZXIgUiB2ZXJzaW9uIDMuNS4yXG4ifQ== -->
-<pre><code>package ‘MuMIn’ was built under R version 3.5.2</code></pre>
-<!-- rnb-output-end -->
 <!-- rnb-chunk-end -->
 <!-- rnb-text-begin -->
 <p>Interested in looking at max age, trophic level, and age of maturity</p>
@@ -508,6 +504,14 @@ spp_master_ztemp.traits &lt;- spp_master_ztemp[traits.u, nomatch = 0, on = c(&qu
 <h2>Maximum age and colonization</h2>
 <!-- rnb-text-end -->
 <!-- rnb-chunk-begin -->
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuc3BwX21hc3Rlcl96dGVtcC50cmFpdHMubmEuYWdlLm1heCA8LSBuYS5vbWl0KHNwcF9tYXN0ZXJfenRlbXAudHJhaXRzLCBjb2xzPVwiYWdlLm1heFwiKVxuXG5gYGAifQ== -->
+<pre class="r"><code>spp_master_ztemp.traits.na.age.max &lt;- na.omit(spp_master_ztemp.traits, cols=&quot;age.max&quot;)
+</code></pre>
+<!-- rnb-source-end -->
+<!-- rnb-output-begin eyJkYXRhIjoiRXJyb3IgaW4gbmEub21pdChzcHBfbWFzdGVyX3p0ZW1wLnRyYWl0cywgY29scyA9IFwiYWdlLm1heFwiKSA6IFxuICBvYmplY3QgJ3NwcF9tYXN0ZXJfenRlbXAudHJhaXRzJyBub3QgZm91bmRcbiJ9 -->
+<pre><code>Error in na.omit(spp_master_ztemp.traits, cols = &quot;age.max&quot;) : 
+  object 'spp_master_ztemp.traits' not found</code></pre>
+<!-- rnb-output-end -->
 <!-- rnb-chunk-end -->
 <!-- rnb-text-begin -->
 <p>Do top models hold up? This is telling me that previous best model (max sbt temp change abs) is still good, but not the best… Malin says it’s okay, as long as similar models are coming out on top. 11/15 top models shared.</p>
@@ -684,17 +688,51 @@ AICc(mod.c.agemax.1)
 <!-- rnb-text-begin -->
 <!-- rnb-text-end -->
 <!-- rnb-chunk-begin -->
-<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuI2ludGVyYWN0aW9uP1xubW9kLmMuYWdlbWF4LjIgPC0gZ2xtZXIoY29sIH4gbWF4X3NidF90ZW1wX2NoYW5nZV9hYnMgKiBhZ2UubWF4ICsgKDF8cmVnKSArICgxfHllYXJfZmFjdG9yKSwgZmFtaWx5ID0gYmlub21pYWwsIGRhdGEgPSBzcHBfbWFzdGVyX3p0ZW1wLnRyYWl0cy5uYS5hZ2UubWF4KVxuc3VtbWFyeShtb2QuYy5hZ2VtYXguMilcbkFJQ2MobW9kLmMuYWdlbWF4LjIpXG5cbiAgI21heF9zYnRfdGVtcF9jaGFuZ2VfYWJzICAgICAgICAgIDAuMDU1NDcwICAgMC4wODgyMTYgICAwLjYyOSAgIDAuNTI5NSAgICBcbiAgICAjYWdlLm1heCAgICAgICAgICAgICAgICAgICAgICAgICAtMC4wMzEyMzYgICAwLjAwNTg5MiAgLTUuMzAxIDEuMTVlLTA3ICoqKlxuICAgICNtYXhfc2J0X3RlbXBfY2hhbmdlX2FiczphZ2UubWF4ICAwLjAwODU0MyAgIDAuMDA1MDc0ICAgMS42ODQgICAwLjA5MjIgLiAgXG4gICN5ZXMsIGFwcGVhcnMgdGhhdCBtYXggYWdlIGltcGFjdHMgaW50ZXJhY3Rpb24gd2l0aCB0ZW1wZXJhdHVyZS5cbmBgYCJ9 -->
-<pre class="r"><code>#interaction?
-mod.c.agemax.2 &lt;- glmer(col ~ max_sbt_temp_change_abs * age.max + (1|reg) + (1|year_factor), family = binomial, data = spp_master_ztemp.traits.na.age.max)
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxubW9kLmMuYWdlbWF4LjIgPC0gZ2xtZXIoY29sIH4gbWF4X3NidF90ZW1wX2NoYW5nZV9hYnMgKiBhZ2UubWF4ICsgKDF8cmVnKSArICgxfHllYXJfZmFjdG9yKSwgZmFtaWx5ID0gYmlub21pYWwsIGRhdGEgPSBzcHBfbWFzdGVyX3p0ZW1wLnRyYWl0cy5uYS5hZ2UubWF4KVxuc3VtbWFyeShtb2QuYy5hZ2VtYXguMilcblxuYGBgIn0= -->
+<pre class="r"><code>mod.c.agemax.2 &lt;- glmer(col ~ max_sbt_temp_change_abs * age.max + (1|reg) + (1|year_factor), family = binomial, data = spp_master_ztemp.traits.na.age.max)
 summary(mod.c.agemax.2)
-AICc(mod.c.agemax.2)
-
-  #max_sbt_temp_change_abs          0.055470   0.088216   0.629   0.5295    
-    #age.max                         -0.031236   0.005892  -5.301 1.15e-07 ***
-    #max_sbt_temp_change_abs:age.max  0.008543   0.005074   1.684   0.0922 .  
-  #yes, appears that max age impacts interaction with temperature.</code></pre>
+</code></pre>
 <!-- rnb-source-end -->
+<!-- rnb-output-begin eyJkYXRhIjoiR2VuZXJhbGl6ZWQgbGluZWFyIG1peGVkIG1vZGVsIGZpdCBieSBtYXhpbXVtIGxpa2VsaWhvb2QgKExhcGxhY2UgQXBwcm94aW1hdGlvbikgWydnbG1lck1vZCddXG4gRmFtaWx5OiBiaW5vbWlhbCAgKCBsb2dpdCApXG5Gb3JtdWxhOiBjb2wgfiBtYXhfc2J0X3RlbXBfY2hhbmdlX2FicyAqIGFnZS5tYXggKyAoMSB8IHJlZykgKyAoMSB8IHllYXJfZmFjdG9yKVxuICAgRGF0YTogc3BwX21hc3Rlcl96dGVtcC50cmFpdHMubmEuYWdlLm1heFxuXG4gICAgIEFJQyAgICAgIEJJQyAgIGxvZ0xpayBkZXZpYW5jZSBkZi5yZXNpZCBcbiAgNDIwMy40ICAgNDI0OC4wICAtMjA5NS43ICAgNDE5MS40ICAgIDEyNTg4IFxuXG5TY2FsZWQgcmVzaWR1YWxzOiBcbiAgICBNaW4gICAgICAxUSAgTWVkaWFuICAgICAgM1EgICAgIE1heCBcbiAtMC40MzcgIC0wLjIzMCAgLTAuMTc3ICAtMC4xNDcgMTU1LjI0NiBcblxuUmFuZG9tIGVmZmVjdHM6XG4gR3JvdXBzICAgICAgTmFtZSAgICAgICAgVmFyaWFuY2UgU3RkLkRldi5cbiB5ZWFyX2ZhY3RvciAoSW50ZXJjZXB0KSAwLjA4NjY0ICAwLjI5NDQgIFxuIHJlZyAgICAgICAgIChJbnRlcmNlcHQpIDAuMjI3MjAgIDAuNDc2NyAgXG5OdW1iZXIgb2Ygb2JzOiAxMjU5NCwgZ3JvdXBzOiAgeWVhcl9mYWN0b3IsIDQ1OyByZWcsIDlcblxuRml4ZWQgZWZmZWN0czpcbiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIEVzdGltYXRlIFN0ZC4gRXJyb3IgeiB2YWx1ZSBQcig+fHp8KSAgICBcbihJbnRlcmNlcHQpICAgICAgICAgICAgICAgICAgICAgLTMuMTcyODIzICAgMC4yMDQyNTggLTE1LjUzMyAgPCAyZS0xNiAqKipcbm1heF9zYnRfdGVtcF9jaGFuZ2VfYWJzICAgICAgICAgIDAuMDU1NDcwICAgMC4wODgyMTYgICAwLjYyOSAgIDAuNTI5NSAgICBcbmFnZS5tYXggICAgICAgICAgICAgICAgICAgICAgICAgLTAuMDMxMjM2ICAgMC4wMDU4OTIgIC01LjMwMSAxLjE1ZS0wNyAqKipcbm1heF9zYnRfdGVtcF9jaGFuZ2VfYWJzOmFnZS5tYXggIDAuMDA4NTQzICAgMC4wMDUwNzQgICAxLjY4NCAgIDAuMDkyMiAuICBcbi0tLVxuU2lnbmlmLiBjb2RlczogIDAg4oCYKioq4oCZIDAuMDAxIOKAmCoq4oCZIDAuMDEg4oCYKuKAmSAwLjA1IOKAmC7igJkgMC4xIOKAmCDigJkgMVxuXG5Db3JyZWxhdGlvbiBvZiBGaXhlZCBFZmZlY3RzOlxuICAgICAgICAgICAgKEludHIpIG14X19fXyBhZ2UubXhcbm14X3NidF90bV9fIC0wLjM0MiAgICAgICAgICAgICAgXG5hZ2UubWF4ICAgICAtMC4zOTUgIDAuNDQyICAgICAgIFxubXhfc2J0X19fOi4gIDAuMjUxIC0wLjcwOSAtMC42NDNcbiJ9 -->
+<pre><code>Generalized linear mixed model fit by maximum likelihood (Laplace Approximation) ['glmerMod']
+ Family: binomial  ( logit )
+Formula: col ~ max_sbt_temp_change_abs * age.max + (1 | reg) + (1 | year_factor)
+   Data: spp_master_ztemp.traits.na.age.max
+
+     AIC      BIC   logLik deviance df.resid 
+  4203.4   4248.0  -2095.7   4191.4    12588 
+
+Scaled residuals: 
+    Min      1Q  Median      3Q     Max 
+ -0.437  -0.230  -0.177  -0.147 155.246 
+
+Random effects:
+ Groups      Name        Variance Std.Dev.
+ year_factor (Intercept) 0.08664  0.2944  
+ reg         (Intercept) 0.22720  0.4767  
+Number of obs: 12594, groups:  year_factor, 45; reg, 9
+
+Fixed effects:
+                                 Estimate Std. Error z value Pr(&gt;|z|)    
+(Intercept)                     -3.172823   0.204258 -15.533  &lt; 2e-16 ***
+max_sbt_temp_change_abs          0.055470   0.088216   0.629   0.5295    
+age.max                         -0.031236   0.005892  -5.301 1.15e-07 ***
+max_sbt_temp_change_abs:age.max  0.008543   0.005074   1.684   0.0922 .  
+---
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+Correlation of Fixed Effects:
+            (Intr) mx____ age.mx
+mx_sbt_tm__ -0.342              
+age.max     -0.395  0.442       
+mx_sbt___:.  0.251 -0.709 -0.643</code></pre>
+<!-- rnb-output-end -->
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuQUlDYyhtb2QuYy5hZ2VtYXguMilcbmBgYCJ9 -->
+<pre class="r"><code>AICc(mod.c.agemax.2)</code></pre>
+<!-- rnb-source-end -->
+<!-- rnb-output-begin eyJkYXRhIjoiWzFdIDQyMDMuMzk5XG4ifQ== -->
+<pre><code>[1] 4203.399</code></pre>
+<!-- rnb-output-end -->
 <!-- rnb-chunk-end -->
 <!-- rnb-text-begin -->
 <p>The interaction is significant. As maximum age increases, the effect of temp on liklihood of colonization increases.</p>
@@ -879,39 +917,152 @@ AICc(mod.c.agemax.3)
 <p>Now we will check to see if including age at maturity improves best models.</p>
 <!-- rnb-text-end -->
 <!-- rnb-chunk-begin -->
-<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuXG4jbmV3IGJhc2UgbW9kZWwgKGJlc3QgbW9kZWwgd2l0aCBubyB0cmFpdHMgYWRkZWQpXG5tb2QuYy5hZ2VtYXR1cml0eS4wIDwtIGdsbWVyKGNvbCB+IG1heF9zYnRfdGVtcF9jaGFuZ2VfYWJzICsgKDF8cmVnKSArICgxfHllYXJfZmFjdG9yKSwgZmFtaWx5ID0gYmlub21pYWwsIGRhdGEgPSBzcHBfbWFzdGVyX3p0ZW1wLnRyYWl0cy5uYS5hZ2UubWF0dXJpdHkpXG5zdW1tYXJ5KG1vZC5jLmFnZW1hdHVyaXR5LjApXG5BSUNjKG1vZC5jLmFnZW1hdHVyaXR5LjApXG4gICNtYXhfc2J0X3RlbXBfY2hhbmdlX2FicyAgMC4xNTgwMSAgMC4wMTE2IDQyNDEuMDM5ICBcbmBgYCJ9 -->
-<pre class="r"><code>
-#new base model (best model with no traits added)
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuI25ldyBiYXNlIG1vZGVsIChiZXN0IG1vZGVsIHdpdGggbm8gdHJhaXRzIGFkZGVkKVxubW9kLmMuYWdlbWF0dXJpdHkuMCA8LSBnbG1lcihjb2wgfiBtYXhfc2J0X3RlbXBfY2hhbmdlX2FicyArICgxfHJlZykgKyAoMXx5ZWFyX2ZhY3RvciksIGZhbWlseSA9IGJpbm9taWFsLCBkYXRhID0gc3BwX21hc3Rlcl96dGVtcC50cmFpdHMubmEuYWdlLm1hdHVyaXR5KVxuc3VtbWFyeShtb2QuYy5hZ2VtYXR1cml0eS4wKVxuYGBgIn0= -->
+<pre class="r"><code>#new base model (best model with no traits added)
 mod.c.agematurity.0 &lt;- glmer(col ~ max_sbt_temp_change_abs + (1|reg) + (1|year_factor), family = binomial, data = spp_master_ztemp.traits.na.age.maturity)
-summary(mod.c.agematurity.0)
-AICc(mod.c.agematurity.0)
-  #max_sbt_temp_change_abs  0.15801  0.0116 4241.039  </code></pre>
+summary(mod.c.agematurity.0)</code></pre>
+<!-- rnb-source-end -->
+<!-- rnb-output-begin eyJkYXRhIjoiR2VuZXJhbGl6ZWQgbGluZWFyIG1peGVkIG1vZGVsIGZpdCBieSBtYXhpbXVtIGxpa2VsaWhvb2QgKExhcGxhY2UgQXBwcm94aW1hdGlvbikgWydnbG1lck1vZCddXG4gRmFtaWx5OiBiaW5vbWlhbCAgKCBsb2dpdCApXG5Gb3JtdWxhOiBjb2wgfiBtYXhfc2J0X3RlbXBfY2hhbmdlX2FicyArICgxIHwgcmVnKSArICgxIHwgeWVhcl9mYWN0b3IpXG4gICBEYXRhOiBzcHBfbWFzdGVyX3p0ZW1wLnRyYWl0cy5uYS5hZ2UubWF0dXJpdHlcblxuICAgICBBSUMgICAgICBCSUMgICBsb2dMaWsgZGV2aWFuY2UgZGYucmVzaWQgXG4gIDQyNDEuMCAgIDQyNzAuOCAgLTIxMTYuNSAgIDQyMzMuMCAgICAxMjc0MSBcblxuU2NhbGVkIHJlc2lkdWFsczogXG4gICAgTWluICAgICAgMVEgIE1lZGlhbiAgICAgIDNRICAgICBNYXggXG4tMC4zNzc1IC0wLjIzNDIgLTAuMTc2NiAtMC4xNDcxICA4LjcxNTggXG5cblJhbmRvbSBlZmZlY3RzOlxuIEdyb3VwcyAgICAgIE5hbWUgICAgICAgIFZhcmlhbmNlIFN0ZC5EZXYuXG4geWVhcl9mYWN0b3IgKEludGVyY2VwdCkgMC4wOTM2NyAgMC4zMDYxICBcbiByZWcgICAgICAgICAoSW50ZXJjZXB0KSAwLjIzMTYxICAwLjQ4MTMgIFxuTnVtYmVyIG9mIG9iczogMTI3NDUsIGdyb3VwczogIHllYXJfZmFjdG9yLCA0NTsgcmVnLCA5XG5cbkZpeGVkIGVmZmVjdHM6XG4gICAgICAgICAgICAgICAgICAgICAgICBFc3RpbWF0ZSBTdGQuIEVycm9yIHogdmFsdWUgUHIoPnx6fCkgICAgXG4oSW50ZXJjZXB0KSAgICAgICAgICAgICAtMy42ODAxMSAgICAwLjE4OTQwIC0xOS40MzAgICA8MmUtMTYgKioqXG5tYXhfc2J0X3RlbXBfY2hhbmdlX2FicyAgMC4xNTgwMSAgICAwLjA2MjYzICAgMi41MjMgICAwLjAxMTYgKiAgXG4tLS1cblNpZ25pZi4gY29kZXM6ICAwIOKAmCoqKuKAmSAwLjAwMSDigJgqKuKAmSAwLjAxIOKAmCrigJkgMC4wNSDigJgu4oCZIDAuMSDigJgg4oCZIDFcblxuQ29ycmVsYXRpb24gb2YgRml4ZWQgRWZmZWN0czpcbiAgICAgICAgICAgIChJbnRyKVxubXhfc2J0X3RtX18gLTAuMjU2XG4ifQ== -->
+<pre><code>Generalized linear mixed model fit by maximum likelihood (Laplace Approximation) ['glmerMod']
+ Family: binomial  ( logit )
+Formula: col ~ max_sbt_temp_change_abs + (1 | reg) + (1 | year_factor)
+   Data: spp_master_ztemp.traits.na.age.maturity
+
+     AIC      BIC   logLik deviance df.resid 
+  4241.0   4270.8  -2116.5   4233.0    12741 
+
+Scaled residuals: 
+    Min      1Q  Median      3Q     Max 
+-0.3775 -0.2342 -0.1766 -0.1471  8.7158 
+
+Random effects:
+ Groups      Name        Variance Std.Dev.
+ year_factor (Intercept) 0.09367  0.3061  
+ reg         (Intercept) 0.23161  0.4813  
+Number of obs: 12745, groups:  year_factor, 45; reg, 9
+
+Fixed effects:
+                        Estimate Std. Error z value Pr(&gt;|z|)    
+(Intercept)             -3.68011    0.18940 -19.430   &lt;2e-16 ***
+max_sbt_temp_change_abs  0.15801    0.06263   2.523   0.0116 *  
+---
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+Correlation of Fixed Effects:
+            (Intr)
+mx_sbt_tm__ -0.256</code></pre>
+<!-- rnb-output-end -->
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuQUlDYyhtb2QuYy5hZ2VtYXR1cml0eS4wKVxuYGBgIn0= -->
+<pre class="r"><code>AICc(mod.c.agematurity.0)</code></pre>
+<!-- rnb-source-end -->
+<!-- rnb-output-begin eyJkYXRhIjoiWzFdIDQyNDEuMDM5XG4ifQ== -->
+<pre><code>[1] 4241.039</code></pre>
+<!-- rnb-output-end -->
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuICAjbWF4X3NidF90ZW1wX2NoYW5nZV9hYnMgIDAuMTU4MDEgIDAuMDExNiA0MjQxLjAzOSAgXG5gYGAifQ== -->
+<pre class="r"><code>  #max_sbt_temp_change_abs  0.15801  0.0116 4241.039  </code></pre>
 <!-- rnb-source-end -->
 <!-- rnb-chunk-end -->
 <!-- rnb-text-begin -->
 <!-- rnb-text-end -->
 <!-- rnb-chunk-begin -->
-<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuI21heF9zYnRfdGVtcF9jaGFuZ2VfYWJzIGFuZCBhZ2UubWF0dXJpdHlcbm1vZC5jLmFnZW1hdHVyaXR5LjEgPC0gZ2xtZXIoY29sIH4gbWF4X3NidF90ZW1wX2NoYW5nZV9hYnMgKyBhZ2UubWF0dXJpdHkgKyAoMXxyZWcpICsgKDF8eWVhcl9mYWN0b3IpLCBmYW1pbHkgPSBiaW5vbWlhbCwgZGF0YSA9IHNwcF9tYXN0ZXJfenRlbXAudHJhaXRzLm5hLmFnZS5tYXR1cml0eSlcbnN1bW1hcnkobW9kLmMuYWdlbWF0dXJpdHkuMSlcbkFJQ2MobW9kLmMuYWdlbWF0dXJpdHkuMSlcblxuI21heF9zYnRfdGVtcF9jaGFuZ2VfYWJzICAwLjE1NTAzICAgMC4wMTMyIDQyMzYuNzUzXG4jYWdlLm1hdHVyaXR5ICAgICAgICAgICAgLTAuMDM4MTggICAwLjAxNzEgXG5cblxuYGBgIn0= -->
-<pre class="r"><code>#max_sbt_temp_change_abs and age.maturity
-mod.c.agematurity.1 &lt;- glmer(col ~ max_sbt_temp_change_abs + age.maturity + (1|reg) + (1|year_factor), family = binomial, data = spp_master_ztemp.traits.na.age.maturity)
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxubW9kLmMuYWdlbWF0dXJpdHkuMSA8LSBnbG1lcihjb2wgfiBtYXhfc2J0X3RlbXBfY2hhbmdlX2FicyArIGFnZS5tYXR1cml0eSArICgxfHJlZykgKyAoMXx5ZWFyX2ZhY3RvciksIGZhbWlseSA9IGJpbm9taWFsLCBkYXRhID0gc3BwX21hc3Rlcl96dGVtcC50cmFpdHMubmEuYWdlLm1hdHVyaXR5KVxuc3VtbWFyeShtb2QuYy5hZ2VtYXR1cml0eS4xKVxuXG5gYGAifQ== -->
+<pre class="r"><code>mod.c.agematurity.1 &lt;- glmer(col ~ max_sbt_temp_change_abs + age.maturity + (1|reg) + (1|year_factor), family = binomial, data = spp_master_ztemp.traits.na.age.maturity)
 summary(mod.c.agematurity.1)
-AICc(mod.c.agematurity.1)
-
-#max_sbt_temp_change_abs  0.15503   0.0132 4236.753
-#age.maturity            -0.03818   0.0171 
 </code></pre>
 <!-- rnb-source-end -->
+<!-- rnb-output-begin eyJkYXRhIjoiR2VuZXJhbGl6ZWQgbGluZWFyIG1peGVkIG1vZGVsIGZpdCBieSBtYXhpbXVtIGxpa2VsaWhvb2QgKExhcGxhY2UgQXBwcm94aW1hdGlvbikgWydnbG1lck1vZCddXG4gRmFtaWx5OiBiaW5vbWlhbCAgKCBsb2dpdCApXG5Gb3JtdWxhOiBjb2wgfiBtYXhfc2J0X3RlbXBfY2hhbmdlX2FicyArIGFnZS5tYXR1cml0eSArICgxIHwgcmVnKSArICgxIHwgICAgICB5ZWFyX2ZhY3RvcilcbiAgIERhdGE6IHNwcF9tYXN0ZXJfenRlbXAudHJhaXRzLm5hLmFnZS5tYXR1cml0eVxuXG4gICAgIEFJQyAgICAgIEJJQyAgIGxvZ0xpayBkZXZpYW5jZSBkZi5yZXNpZCBcbiAgNDIzNi43ICAgNDI3NC4wICAtMjExMy40ICAgNDIyNi43ICAgIDEyNzQwIFxuXG5TY2FsZWQgcmVzaWR1YWxzOiBcbiAgICBNaW4gICAgICAxUSAgTWVkaWFuICAgICAgM1EgICAgIE1heCBcbi0wLjQwMjMgLTAuMjMzNSAtMC4xNzU0IC0wLjE0NzAgMjkuMDk5NyBcblxuUmFuZG9tIGVmZmVjdHM6XG4gR3JvdXBzICAgICAgTmFtZSAgICAgICAgVmFyaWFuY2UgU3RkLkRldi5cbiB5ZWFyX2ZhY3RvciAoSW50ZXJjZXB0KSAwLjA5MzgzICAwLjMwNjMgIFxuIHJlZyAgICAgICAgIChJbnRlcmNlcHQpIDAuMjI2NTAgIDAuNDc1OSAgXG5OdW1iZXIgb2Ygb2JzOiAxMjc0NSwgZ3JvdXBzOiAgeWVhcl9mYWN0b3IsIDQ1OyByZWcsIDlcblxuRml4ZWQgZWZmZWN0czpcbiAgICAgICAgICAgICAgICAgICAgICAgIEVzdGltYXRlIFN0ZC4gRXJyb3IgeiB2YWx1ZSBQcig+fHp8KSAgICBcbihJbnRlcmNlcHQpICAgICAgICAgICAgIC0zLjUxOTUyICAgIDAuMTk4NzkgLTE3LjcwNSAgIDwyZS0xNiAqKipcbm1heF9zYnRfdGVtcF9jaGFuZ2VfYWJzICAwLjE1NTAzICAgIDAuMDYyNTcgICAyLjQ3OCAgIDAuMDEzMiAqICBcbmFnZS5tYXR1cml0eSAgICAgICAgICAgIC0wLjAzODE4ICAgIDAuMDE2MDEgIC0yLjM4NCAgIDAuMDE3MSAqICBcbi0tLVxuU2lnbmlmLiBjb2RlczogIDAg4oCYKioq4oCZIDAuMDAxIOKAmCoq4oCZIDAuMDEg4oCYKuKAmSAwLjA1IOKAmC7igJkgMC4xIOKAmCDigJkgMVxuXG5Db3JyZWxhdGlvbiBvZiBGaXhlZCBFZmZlY3RzOlxuICAgICAgICAgICAgKEludHIpIG14X19fX1xubXhfc2J0X3RtX18gLTAuMjUyICAgICAgIFxuYWdlLm1hdHVydHkgLTAuMzI1ICAwLjAxOVxuIn0= -->
+<pre><code>Generalized linear mixed model fit by maximum likelihood (Laplace Approximation) ['glmerMod']
+ Family: binomial  ( logit )
+Formula: col ~ max_sbt_temp_change_abs + age.maturity + (1 | reg) + (1 |      year_factor)
+   Data: spp_master_ztemp.traits.na.age.maturity
+
+     AIC      BIC   logLik deviance df.resid 
+  4236.7   4274.0  -2113.4   4226.7    12740 
+
+Scaled residuals: 
+    Min      1Q  Median      3Q     Max 
+-0.4023 -0.2335 -0.1754 -0.1470 29.0997 
+
+Random effects:
+ Groups      Name        Variance Std.Dev.
+ year_factor (Intercept) 0.09383  0.3063  
+ reg         (Intercept) 0.22650  0.4759  
+Number of obs: 12745, groups:  year_factor, 45; reg, 9
+
+Fixed effects:
+                        Estimate Std. Error z value Pr(&gt;|z|)    
+(Intercept)             -3.51952    0.19879 -17.705   &lt;2e-16 ***
+max_sbt_temp_change_abs  0.15503    0.06257   2.478   0.0132 *  
+age.maturity            -0.03818    0.01601  -2.384   0.0171 *  
+---
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+Correlation of Fixed Effects:
+            (Intr) mx____
+mx_sbt_tm__ -0.252       
+age.maturty -0.325  0.019</code></pre>
+<!-- rnb-output-end -->
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuQUlDYyhtb2QuYy5hZ2VtYXR1cml0eS4xKVxuYGBgIn0= -->
+<pre class="r"><code>AICc(mod.c.agematurity.1)</code></pre>
+<!-- rnb-source-end -->
+<!-- rnb-output-begin eyJkYXRhIjoiWzFdIDQyMzYuNzUzXG4ifQ== -->
+<pre><code>[1] 4236.753</code></pre>
+<!-- rnb-output-end -->
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuI21heF9zYnRfdGVtcF9jaGFuZ2VfYWJzICAwLjE1NTAzICAgMC4wMTMyIDQyMzYuNzUzXG4jYWdlLm1hdHVyaXR5ICAgICAgICAgICAgLTAuMDM4MTggICAwLjAxNzEgXG5gYGAifQ== -->
+<pre class="r"><code>#max_sbt_temp_change_abs  0.15503   0.0132 4236.753
+#age.maturity            -0.03818   0.0171 </code></pre>
+<!-- rnb-source-end -->
 <!-- rnb-chunk-end -->
 <!-- rnb-text-begin -->
 <!-- rnb-text-end -->
 <!-- rnb-chunk-begin -->
-<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuI2ludGVyYWN0aW9uP1xubW9kLmMuYWdlbWF0dXJpdHkuMiA8LSBnbG1lcihjb2wgfiBtYXhfc2J0X3RlbXBfY2hhbmdlX2FicyAqIGFnZS5tYXR1cml0eSArICgxfHJlZykgKyAoMXx5ZWFyX2ZhY3RvciksIGZhbWlseSA9IGJpbm9taWFsLCBkYXRhID0gc3BwX21hc3Rlcl96dGVtcC50cmFpdHMubmEuYWdlLm1hdHVyaXR5KVxuc3VtbWFyeShtb2QuYy5hZ2VtYXR1cml0eS4yKVxuQUlDYyhtb2QuYy5hZ2VtYXR1cml0eS4yKVxuXG4jbWF4X3NidF90ZW1wX2NoYW5nZV9hYnMgICAgICAgICAgICAgICAwLjE2NzgxICAwLjAzODUgNDIzOC42OTMgXG4jYWdlLm1hdHVyaXR5ICAgICAgICAgICAgICAgICAgICAgICAgIC0wLjAzNDkwICAwLjA5MTEgIFxuI21heF9zYnRfdGVtcF9jaGFuZ2VfYWJzOmFnZS5tYXR1cml0eSAtMC4wMDQ1MSAgMC44MDYzICBcbmBgYCJ9 -->
-<pre class="r"><code>#interaction?
-mod.c.agematurity.2 &lt;- glmer(col ~ max_sbt_temp_change_abs * age.maturity + (1|reg) + (1|year_factor), family = binomial, data = spp_master_ztemp.traits.na.age.maturity)
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxubW9kLmMuYWdlbWF0dXJpdHkuMiA8LSBnbG1lcihjb2wgfiBtYXhfc2J0X3RlbXBfY2hhbmdlX2FicyAqIGFnZS5tYXR1cml0eSArICgxfHJlZykgKyAoMXx5ZWFyX2ZhY3RvciksIGZhbWlseSA9IGJpbm9taWFsLCBkYXRhID0gc3BwX21hc3Rlcl96dGVtcC50cmFpdHMubmEuYWdlLm1hdHVyaXR5KVxuc3VtbWFyeShtb2QuYy5hZ2VtYXR1cml0eS4yKVxuXG5gYGAifQ== -->
+<pre class="r"><code>mod.c.agematurity.2 &lt;- glmer(col ~ max_sbt_temp_change_abs * age.maturity + (1|reg) + (1|year_factor), family = binomial, data = spp_master_ztemp.traits.na.age.maturity)
 summary(mod.c.agematurity.2)
-AICc(mod.c.agematurity.2)
+</code></pre>
+<!-- rnb-source-end -->
+<!-- rnb-output-begin eyJkYXRhIjoiR2VuZXJhbGl6ZWQgbGluZWFyIG1peGVkIG1vZGVsIGZpdCBieSBtYXhpbXVtIGxpa2VsaWhvb2QgKExhcGxhY2UgQXBwcm94aW1hdGlvbikgWydnbG1lck1vZCddXG4gRmFtaWx5OiBiaW5vbWlhbCAgKCBsb2dpdCApXG5Gb3JtdWxhOiBjb2wgfiBtYXhfc2J0X3RlbXBfY2hhbmdlX2FicyAqIGFnZS5tYXR1cml0eSArICgxIHwgcmVnKSArICgxIHwgICAgICB5ZWFyX2ZhY3RvcilcbiAgIERhdGE6IHNwcF9tYXN0ZXJfenRlbXAudHJhaXRzLm5hLmFnZS5tYXR1cml0eVxuXG4gICAgIEFJQyAgICAgIEJJQyAgIGxvZ0xpayBkZXZpYW5jZSBkZi5yZXNpZCBcbiAgNDIzOC43ICAgNDI4My40ICAtMjExMy4zICAgNDIyNi43ICAgIDEyNzM5IFxuXG5TY2FsZWQgcmVzaWR1YWxzOiBcbiAgICBNaW4gICAgICAxUSAgTWVkaWFuICAgICAgM1EgICAgIE1heCBcbi0wLjQwMzYgLTAuMjM0NyAtMC4xNzUyIC0wLjE0NzAgMjYuMDIyNCBcblxuUmFuZG9tIGVmZmVjdHM6XG4gR3JvdXBzICAgICAgTmFtZSAgICAgICAgVmFyaWFuY2UgU3RkLkRldi5cbiB5ZWFyX2ZhY3RvciAoSW50ZXJjZXB0KSAwLjA5NDE1ICAwLjMwNjggIFxuIHJlZyAgICAgICAgIChJbnRlcmNlcHQpIDAuMjI3MzIgIDAuNDc2OCAgXG5OdW1iZXIgb2Ygb2JzOiAxMjc0NSwgZ3JvdXBzOiAgeWVhcl9mYWN0b3IsIDQ1OyByZWcsIDlcblxuRml4ZWQgZWZmZWN0czpcbiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICBFc3RpbWF0ZSBTdGQuIEVycm9yIHogdmFsdWUgUHIoPnx6fCkgICAgXG4oSW50ZXJjZXB0KSAgICAgICAgICAgICAgICAgICAgICAgICAgLTMuNTMxNTIgICAgMC4yMDQ3MSAtMTcuMjUxICAgPDJlLTE2ICoqKlxubWF4X3NidF90ZW1wX2NoYW5nZV9hYnMgICAgICAgICAgICAgICAwLjE2NzgxICAgIDAuMDgxMDggICAyLjA3MCAgIDAuMDM4NSAqICBcbmFnZS5tYXR1cml0eSAgICAgICAgICAgICAgICAgICAgICAgICAtMC4wMzQ5MCAgICAwLjAyMDY1ICAtMS42OTAgICAwLjA5MTEgLiAgXG5tYXhfc2J0X3RlbXBfY2hhbmdlX2FiczphZ2UubWF0dXJpdHkgLTAuMDA0NTEgICAgMC4wMTg0MCAgLTAuMjQ1ICAgMC44MDYzICAgIFxuLS0tXG5TaWduaWYuIGNvZGVzOiAgMCDigJgqKirigJkgMC4wMDEg4oCYKirigJkgMC4wMSDigJgq4oCZIDAuMDUg4oCYLuKAmSAwLjEg4oCYIOKAmSAxXG5cbkNvcnJlbGF0aW9uIG9mIEZpeGVkIEVmZmVjdHM6XG4gICAgICAgICAgICAoSW50cikgbXhfX19fIGFnLm10clxubXhfc2J0X3RtX18gLTAuMzM3ICAgICAgICAgICAgICBcbmFnZS5tYXR1cnR5IC0wLjM5MiAgMC40MTUgICAgICAgXG5teF9zYnRfX186LiAgMC4yMzEgLTAuNjM2IC0wLjYzMFxuIn0= -->
+<pre><code>Generalized linear mixed model fit by maximum likelihood (Laplace Approximation) ['glmerMod']
+ Family: binomial  ( logit )
+Formula: col ~ max_sbt_temp_change_abs * age.maturity + (1 | reg) + (1 |      year_factor)
+   Data: spp_master_ztemp.traits.na.age.maturity
 
-#max_sbt_temp_change_abs               0.16781  0.0385 4238.693 
+     AIC      BIC   logLik deviance df.resid 
+  4238.7   4283.4  -2113.3   4226.7    12739 
+
+Scaled residuals: 
+    Min      1Q  Median      3Q     Max 
+-0.4036 -0.2347 -0.1752 -0.1470 26.0224 
+
+Random effects:
+ Groups      Name        Variance Std.Dev.
+ year_factor (Intercept) 0.09415  0.3068  
+ reg         (Intercept) 0.22732  0.4768  
+Number of obs: 12745, groups:  year_factor, 45; reg, 9
+
+Fixed effects:
+                                     Estimate Std. Error z value Pr(&gt;|z|)    
+(Intercept)                          -3.53152    0.20471 -17.251   &lt;2e-16 ***
+max_sbt_temp_change_abs               0.16781    0.08108   2.070   0.0385 *  
+age.maturity                         -0.03490    0.02065  -1.690   0.0911 .  
+max_sbt_temp_change_abs:age.maturity -0.00451    0.01840  -0.245   0.8063    
+---
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+Correlation of Fixed Effects:
+            (Intr) mx____ ag.mtr
+mx_sbt_tm__ -0.337              
+age.maturty -0.392  0.415       
+mx_sbt___:.  0.231 -0.636 -0.630</code></pre>
+<!-- rnb-output-end -->
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuQUlDYyhtb2QuYy5hZ2VtYXR1cml0eS4yKVxuYGBgIn0= -->
+<pre class="r"><code>AICc(mod.c.agematurity.2)</code></pre>
+<!-- rnb-source-end -->
+<!-- rnb-output-begin eyJkYXRhIjoiWzFdIDQyMzguNjkzXG4ifQ== -->
+<pre><code>[1] 4238.693</code></pre>
+<!-- rnb-output-end -->
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuI21heF9zYnRfdGVtcF9jaGFuZ2VfYWJzICAgICAgICAgICAgICAgMC4xNjc4MSAgMC4wMzg1IDQyMzguNjkzIFxuI2FnZS5tYXR1cml0eSAgICAgICAgICAgICAgICAgICAgICAgICAtMC4wMzQ5MCAgMC4wOTExICBcbiNtYXhfc2J0X3RlbXBfY2hhbmdlX2FiczphZ2UubWF0dXJpdHkgLTAuMDA0NTEgIDAuODA2MyAgXG5gYGAifQ== -->
+<pre class="r"><code>#max_sbt_temp_change_abs               0.16781  0.0385 4238.693 
 #age.maturity                         -0.03490  0.0911  
 #max_sbt_temp_change_abs:age.maturity -0.00451  0.8063  </code></pre>
 <!-- rnb-source-end -->
@@ -920,23 +1071,59 @@ AICc(mod.c.agematurity.2)
 <p>Interaction is NOT significant</p>
 <!-- rnb-text-end -->
 <!-- rnb-chunk-begin -->
-<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuI3doYXQgYWJvdXQgb25seSBhZ2UgYXQgbWF0dXJpdHk/XG5tb2QuYy5hZ2VtYXR1cml0eS4zIDwtIGdsbWVyKGNvbCB+IGFnZS5tYXR1cml0eSArICgxfHJlZykgKyAoMXx5ZWFyX2ZhY3RvciksIGZhbWlseSA9IGJpbm9taWFsLCBkYXRhID0gc3BwX21hc3Rlcl96dGVtcC50cmFpdHMubmEuYWdlLm1hdHVyaXR5KVxuc3VtbWFyeShtb2QuYy5hZ2VtYXR1cml0eS4zKVxuQUlDYyhtb2QuYy5hZ2VtYXR1cml0eS4zKVxuXG4jYWdlLm1hdHVyaXR5IC0wLjAzODg2IDAuMDE1NSA0MjQwLjY0OCAgXG5cbmBgYCJ9 -->
-<pre class="r"><code>#what about only age at maturity?
-mod.c.agematurity.3 &lt;- glmer(col ~ age.maturity + (1|reg) + (1|year_factor), family = binomial, data = spp_master_ztemp.traits.na.age.maturity)
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxubW9kLmMuYWdlbWF0dXJpdHkuMyA8LSBnbG1lcihjb2wgfiBhZ2UubWF0dXJpdHkgKyAoMXxyZWcpICsgKDF8eWVhcl9mYWN0b3IpLCBmYW1pbHkgPSBiaW5vbWlhbCwgZGF0YSA9IHNwcF9tYXN0ZXJfenRlbXAudHJhaXRzLm5hLmFnZS5tYXR1cml0eSlcbnN1bW1hcnkobW9kLmMuYWdlbWF0dXJpdHkuMylcblxuYGBgIn0= -->
+<pre class="r"><code>mod.c.agematurity.3 &lt;- glmer(col ~ age.maturity + (1|reg) + (1|year_factor), family = binomial, data = spp_master_ztemp.traits.na.age.maturity)
 summary(mod.c.agematurity.3)
-AICc(mod.c.agematurity.3)
-
-#age.maturity -0.03886 0.0155 4240.648  
 </code></pre>
 <!-- rnb-source-end -->
+<!-- rnb-output-begin eyJkYXRhIjoiR2VuZXJhbGl6ZWQgbGluZWFyIG1peGVkIG1vZGVsIGZpdCBieSBtYXhpbXVtIGxpa2VsaWhvb2QgKExhcGxhY2UgQXBwcm94aW1hdGlvbikgWydnbG1lck1vZCddXG4gRmFtaWx5OiBiaW5vbWlhbCAgKCBsb2dpdCApXG5Gb3JtdWxhOiBjb2wgfiBhZ2UubWF0dXJpdHkgKyAoMSB8IHJlZykgKyAoMSB8IHllYXJfZmFjdG9yKVxuICAgRGF0YTogc3BwX21hc3Rlcl96dGVtcC50cmFpdHMubmEuYWdlLm1hdHVyaXR5XG5cbiAgICAgQUlDICAgICAgQklDICAgbG9nTGlrIGRldmlhbmNlIGRmLnJlc2lkIFxuICA0MjQwLjYgICA0MjcwLjUgIC0yMTE2LjMgICA0MjMyLjYgICAgMTI3NDEgXG5cblNjYWxlZCByZXNpZHVhbHM6IFxuICAgIE1pbiAgICAgIDFRICBNZWRpYW4gICAgICAzUSAgICAgTWF4IFxuLTAuMzg0NSAtMC4yMzE1IC0wLjE3NzYgLTAuMTQ5MSAyOS40NTEyIFxuXG5SYW5kb20gZWZmZWN0czpcbiBHcm91cHMgICAgICBOYW1lICAgICAgICBWYXJpYW5jZSBTdGQuRGV2LlxuIHllYXJfZmFjdG9yIChJbnRlcmNlcHQpIDAuMDk0MDYgIDAuMzA2NyAgXG4gcmVnICAgICAgICAgKEludGVyY2VwdCkgMC4yNDAwNyAgMC40OTAwICBcbk51bWJlciBvZiBvYnM6IDEyNzQ1LCBncm91cHM6ICB5ZWFyX2ZhY3RvciwgNDU7IHJlZywgOVxuXG5GaXhlZCBlZmZlY3RzOlxuICAgICAgICAgICAgIEVzdGltYXRlIFN0ZC4gRXJyb3IgeiB2YWx1ZSBQcig+fHp8KSAgICBcbihJbnRlcmNlcHQpICAtMy40MDM3NSAgICAwLjE5NjcxIC0xNy4zMDMgICA8MmUtMTYgKioqXG5hZ2UubWF0dXJpdHkgLTAuMDM4ODYgICAgMC4wMTYwNSAgLTIuNDIxICAgMC4wMTU1ICogIFxuLS0tXG5TaWduaWYuIGNvZGVzOiAgMCDigJgqKirigJkgMC4wMDEg4oCYKirigJkgMC4wMSDigJgq4oCZIDAuMDUg4oCYLuKAmSAwLjEg4oCYIOKAmSAxXG5cbkNvcnJlbGF0aW9uIG9mIEZpeGVkIEVmZmVjdHM6XG4gICAgICAgICAgICAoSW50cilcbmFnZS5tYXR1cnR5IC0wLjMyOFxuIn0= -->
+<pre><code>Generalized linear mixed model fit by maximum likelihood (Laplace Approximation) ['glmerMod']
+ Family: binomial  ( logit )
+Formula: col ~ age.maturity + (1 | reg) + (1 | year_factor)
+   Data: spp_master_ztemp.traits.na.age.maturity
+
+     AIC      BIC   logLik deviance df.resid 
+  4240.6   4270.5  -2116.3   4232.6    12741 
+
+Scaled residuals: 
+    Min      1Q  Median      3Q     Max 
+-0.3845 -0.2315 -0.1776 -0.1491 29.4512 
+
+Random effects:
+ Groups      Name        Variance Std.Dev.
+ year_factor (Intercept) 0.09406  0.3067  
+ reg         (Intercept) 0.24007  0.4900  
+Number of obs: 12745, groups:  year_factor, 45; reg, 9
+
+Fixed effects:
+             Estimate Std. Error z value Pr(&gt;|z|)    
+(Intercept)  -3.40375    0.19671 -17.303   &lt;2e-16 ***
+age.maturity -0.03886    0.01605  -2.421   0.0155 *  
+---
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+Correlation of Fixed Effects:
+            (Intr)
+age.maturty -0.328</code></pre>
+<!-- rnb-output-end -->
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuQUlDYyhtb2QuYy5hZ2VtYXR1cml0eS4zKVxuYGBgIn0= -->
+<pre class="r"><code>AICc(mod.c.agematurity.3)</code></pre>
+<!-- rnb-source-end -->
+<!-- rnb-output-begin eyJkYXRhIjoiWzFdIDQyNDAuNjQ4XG4ifQ== -->
+<pre><code>[1] 4240.648</code></pre>
+<!-- rnb-output-end -->
 <!-- rnb-chunk-end -->
 <!-- rnb-text-begin -->
 <p>Comparing above options (no trait, yes trait, yes trait with interaction, only trait)</p>
 <!-- rnb-text-end -->
 <!-- rnb-chunk-begin -->
-<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuQUlDYyhtb2QuYy5hZ2VtYXR1cml0eS4wLCBtb2QuYy5hZ2VtYXR1cml0eS4xLCBtb2QuYy5hZ2VtYXR1cml0eS4yLCBtb2QuYy5hZ2VtYXR1cml0eS4zKVxuYGBgIn0= -->
-<pre class="r"><code>AICc(mod.c.agematurity.0, mod.c.agematurity.1, mod.c.agematurity.2, mod.c.agematurity.3)</code></pre>
-<!-- rnb-source-end -->
+<!-- rnb-frame-begin eyJtZXRhZGF0YSI6eyJjbGFzc2VzIjpbImRhdGEuZnJhbWUiXSwibmNvbCI6MiwibnJvdyI6NH0sInJkZiI6Ikg0c0lBQUFBQUFBQUEzVlJ2VTdETUJDK09tbFJJNmdxbGFHam44Q0NzakVGd2NMSzFBVWtrN2hWSkNlT0hQTzc4QUlJd2NqQ3hsYUpNTFB3QW9nWEtLL1M0cmcyaW9KcUtibTc3N3Z6ZlhjK09ScVBnbkVBQUFpOGRndVFwMTBmNlY4TGZPaFc5aHJBRzVnRWdGN0ZobjB3Sjl5MmRtaXR4Zi95eXFmdS9QbmxMU3p2UDM4MmgvT3dmSGkvbTMycHNIeDgvZjQ0V3pZYXRUT2Fza0k3ZmROc0JhSjRZajMvNFBnd2FwUjBwYmdpOVRMZkVvTlV4Q1FpZE1wU3FpNWtvbTdJem5wcWR6MDFXay90TmZWSG5CWk9pQU9EbUNwS0psSnIxTkdpVWJJaGNwV0lUQmVoYXNPZFJuRkxWamNZWUhYcTVHa2t1TWlTVzFyZGdMVXdUQlYyNG5Bc1dJRnBIQ2ZaOUIrWHBMa1Vsd3pya1JndjluRWswcHhLazhtNVJXdU5xMi9MV3IvbW85VXdhR21GZGF5d0RzdW1TY2JjVnBpVVFycUEwM1BHYmREVGoyZmVqdVM2dVhJTDAyaEJsRkRVNVFWNlVJZVlGY0xpRjlKbGtsdTJBZ0FBIn0= -->
+<div data-pagedtable="false">
+<script data-pagedtable-source type="application/json">
+{"columns":[{"label":[""],"name":["_rn_"],"type":[""],"align":["left"]},{"label":["df"],"name":[1],"type":["dbl"],"align":["right"]},{"label":["AICc"],"name":[2],"type":["dbl"],"align":["right"]}],"data":[{"1":"4","2":"4241.039","_rn_":"mod.c.agematurity.0"},{"1":"5","2":"4236.753","_rn_":"mod.c.agematurity.1"},{"1":"6","2":"4238.693","_rn_":"mod.c.agematurity.2"},{"1":"4","2":"4240.648","_rn_":"mod.c.agematurity.3"}],"options":{"columns":{"min":{},"max":[10],"total":[2]},"rows":{"min":[10],"max":[10],"total":[4]},"pages":{}}}
+  </script>
+</div>
+<!-- rnb-frame-end -->
 <!-- rnb-chunk-end -->
 <!-- rnb-text-begin -->
 <p>Best model is with age maturity and temperature, but NO interaction.</p>
@@ -1106,9 +1293,43 @@ AICc(mod.c.agematurity.3)
 <p>Now we will check to see if including trophic level improves best models.</p>
 <!-- rnb-text-end -->
 <!-- rnb-chunk-begin -->
-<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuQUlDYyhtb2QuYy50bC4wKVxuXG5gYGAifQ== -->
-<pre class="r"><code>AICc(mod.c.tl.0)
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxubW9kLmMudGwuMCA8LSBnbG1lcihjb2wgfiBtYXhfc2J0X3RlbXBfY2hhbmdlX2FicyArICgxfHJlZykgKyAoMXx5ZWFyX2ZhY3RvciksIGZhbWlseSA9IGJpbm9taWFsLCBkYXRhID0gc3BwX21hc3Rlcl96dGVtcC50cmFpdHMubmEudGwpXG5zdW1tYXJ5KG1vZC5jLnRsLjApXG5cbmBgYCJ9 -->
+<pre class="r"><code>mod.c.tl.0 &lt;- glmer(col ~ max_sbt_temp_change_abs + (1|reg) + (1|year_factor), family = binomial, data = spp_master_ztemp.traits.na.tl)
+summary(mod.c.tl.0)
 </code></pre>
+<!-- rnb-source-end -->
+<!-- rnb-output-begin eyJkYXRhIjoiR2VuZXJhbGl6ZWQgbGluZWFyIG1peGVkIG1vZGVsIGZpdCBieSBtYXhpbXVtIGxpa2VsaWhvb2QgKExhcGxhY2UgQXBwcm94aW1hdGlvbikgWydnbG1lck1vZCddXG4gRmFtaWx5OiBiaW5vbWlhbCAgKCBsb2dpdCApXG5Gb3JtdWxhOiBjb2wgfiBtYXhfc2J0X3RlbXBfY2hhbmdlX2FicyArICgxIHwgcmVnKSArICgxIHwgeWVhcl9mYWN0b3IpXG4gICBEYXRhOiBzcHBfbWFzdGVyX3p0ZW1wLnRyYWl0cy5uYS50bFxuXG4gICAgIEFJQyAgICAgIEJJQyAgIGxvZ0xpayBkZXZpYW5jZSBkZi5yZXNpZCBcbiAgNDUyNy43ICAgNDU1Ny43ICAtMjI1OS45ICAgNDUxOS43ICAgIDEzMjkyIFxuXG5TY2FsZWQgcmVzaWR1YWxzOiBcbiAgICBNaW4gICAgICAxUSAgTWVkaWFuICAgICAgM1EgICAgIE1heCBcbi0wLjM4ODggLTAuMjQ4MSAtMC4xNzQ4IC0wLjE0NzcgIDguNjkwMiBcblxuUmFuZG9tIGVmZmVjdHM6XG4gR3JvdXBzICAgICAgTmFtZSAgICAgICAgVmFyaWFuY2UgU3RkLkRldi5cbiB5ZWFyX2ZhY3RvciAoSW50ZXJjZXB0KSAwLjA3OTYzICAwLjI4MjIgIFxuIHJlZyAgICAgICAgIChJbnRlcmNlcHQpIDAuMjQ4OTIgIDAuNDk4OSAgXG5OdW1iZXIgb2Ygb2JzOiAxMzI5NiwgZ3JvdXBzOiAgeWVhcl9mYWN0b3IsIDQ1OyByZWcsIDlcblxuRml4ZWQgZWZmZWN0czpcbiAgICAgICAgICAgICAgICAgICAgICAgIEVzdGltYXRlIFN0ZC4gRXJyb3IgeiB2YWx1ZSBQcig+fHp8KSAgICBcbihJbnRlcmNlcHQpICAgICAgICAgICAgIC0zLjY5NTY1ICAgIDAuMTkyNTggLTE5LjE5MCAgIDwyZS0xNiAqKipcbm1heF9zYnRfdGVtcF9jaGFuZ2VfYWJzICAwLjE4NTEwICAgIDAuMDYwNDQgICAzLjA2MiAgIDAuMDAyMiAqKiBcbi0tLVxuU2lnbmlmLiBjb2RlczogIDAg4oCYKioq4oCZIDAuMDAxIOKAmCoq4oCZIDAuMDEg4oCYKuKAmSAwLjA1IOKAmC7igJkgMC4xIOKAmCDigJkgMVxuXG5Db3JyZWxhdGlvbiBvZiBGaXhlZCBFZmZlY3RzOlxuICAgICAgICAgICAgKEludHIpXG5teF9zYnRfdG1fXyAtMC4yNDVcbiJ9 -->
+<pre><code>Generalized linear mixed model fit by maximum likelihood (Laplace Approximation) ['glmerMod']
+ Family: binomial  ( logit )
+Formula: col ~ max_sbt_temp_change_abs + (1 | reg) + (1 | year_factor)
+   Data: spp_master_ztemp.traits.na.tl
+
+     AIC      BIC   logLik deviance df.resid 
+  4527.7   4557.7  -2259.9   4519.7    13292 
+
+Scaled residuals: 
+    Min      1Q  Median      3Q     Max 
+-0.3888 -0.2481 -0.1748 -0.1477  8.6902 
+
+Random effects:
+ Groups      Name        Variance Std.Dev.
+ year_factor (Intercept) 0.07963  0.2822  
+ reg         (Intercept) 0.24892  0.4989  
+Number of obs: 13296, groups:  year_factor, 45; reg, 9
+
+Fixed effects:
+                        Estimate Std. Error z value Pr(&gt;|z|)    
+(Intercept)             -3.69565    0.19258 -19.190   &lt;2e-16 ***
+max_sbt_temp_change_abs  0.18510    0.06044   3.062   0.0022 ** 
+---
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+Correlation of Fixed Effects:
+            (Intr)
+mx_sbt_tm__ -0.245</code></pre>
+<!-- rnb-output-end -->
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuQUlDYyhtb2QuYy50bC4wKVxuYGBgIn0= -->
+<pre class="r"><code>AICc(mod.c.tl.0)</code></pre>
 <!-- rnb-source-end -->
 <!-- rnb-output-begin eyJkYXRhIjoiWzFdIDQ1MjcuNzQyXG4ifQ== -->
 <pre><code>[1] 4527.742</code></pre>
@@ -1164,8 +1385,9 @@ tl          -0.877 -0.006</code></pre>
 <!-- rnb-text-begin -->
 <!-- rnb-text-end -->
 <!-- rnb-chunk-begin -->
-<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuc3VtbWFyeShtb2QuYy50bC4yKVxuXG5gYGAifQ== -->
-<pre class="r"><code>summary(mod.c.tl.2)
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxubW9kLmMudGwuMiA8LSBnbG1lcihjb2wgfiBtYXhfc2J0X3RlbXBfY2hhbmdlX2FicyAqIHRsICsgKDF8cmVnKSArICgxfHllYXJfZmFjdG9yKSwgZmFtaWx5ID0gYmlub21pYWwsIGRhdGEgPSBzcHBfbWFzdGVyX3p0ZW1wLnRyYWl0cy5uYS50bClcbnN1bW1hcnkobW9kLmMudGwuMilcblxuYGBgIn0= -->
+<pre class="r"><code>mod.c.tl.2 &lt;- glmer(col ~ max_sbt_temp_change_abs * tl + (1|reg) + (1|year_factor), family = binomial, data = spp_master_ztemp.traits.na.tl)
+summary(mod.c.tl.2)
 </code></pre>
 <!-- rnb-source-end -->
 <!-- rnb-output-begin eyJkYXRhIjoiR2VuZXJhbGl6ZWQgbGluZWFyIG1peGVkIG1vZGVsIGZpdCBieSBtYXhpbXVtIGxpa2VsaWhvb2QgKExhcGxhY2UgQXBwcm94aW1hdGlvbikgWydnbG1lck1vZCddXG4gRmFtaWx5OiBiaW5vbWlhbCAgKCBsb2dpdCApXG5Gb3JtdWxhOiBjb2wgfiBtYXhfc2J0X3RlbXBfY2hhbmdlX2FicyAqIHRsICsgKDEgfCByZWcpICsgKDEgfCB5ZWFyX2ZhY3RvcilcbiAgIERhdGE6IHNwcF9tYXN0ZXJfenRlbXAudHJhaXRzLm5hLnRsXG5cbiAgICAgQUlDICAgICAgQklDICAgbG9nTGlrIGRldmlhbmNlIGRmLnJlc2lkIFxuICA0NTA5LjYgICA0NTU0LjYgIC0yMjQ4LjggICA0NDk3LjYgICAgMTMyOTAgXG5cblNjYWxlZCByZXNpZHVhbHM6IFxuICAgIE1pbiAgICAgIDFRICBNZWRpYW4gICAgICAzUSAgICAgTWF4IFxuLTAuNzk5OSAtMC4yNDk4IC0wLjE3MTYgLTAuMTQ1MiAgOS4wNDY2IFxuXG5SYW5kb20gZWZmZWN0czpcbiBHcm91cHMgICAgICBOYW1lICAgICAgICBWYXJpYW5jZSBTdGQuRGV2LlxuIHllYXJfZmFjdG9yIChJbnRlcmNlcHQpIDAuMDgwOTEgIDAuMjg0NCAgXG4gcmVnICAgICAgICAgKEludGVyY2VwdCkgMC4yNTYxMyAgMC41MDYxICBcbk51bWJlciBvZiBvYnM6IDEzMjk2LCBncm91cHM6ICB5ZWFyX2ZhY3RvciwgNDU7IHJlZywgOVxuXG5GaXhlZCBlZmZlY3RzOlxuICAgICAgICAgICAgICAgICAgICAgICAgICAgRXN0aW1hdGUgU3RkLiBFcnJvciB6IHZhbHVlIFByKD58enwpICAgIFxuKEludGVyY2VwdCkgICAgICAgICAgICAgICAgLTMuMTM5ODUgICAgMC40OTI1NSAgLTYuMzc1IDEuODNlLTEwICoqKlxubWF4X3NidF90ZW1wX2NoYW5nZV9hYnMgICAgIDAuOTM4NTkgICAgMC4yNjE1NCAgIDMuNTg5IDAuMDAwMzMyICoqKlxudGwgICAgICAgICAgICAgICAgICAgICAgICAgLTAuMTQ5MDQgICAgMC4xMjMxNyAgLTEuMjEwIDAuMjI2Mjc1ICAgIFxubWF4X3NidF90ZW1wX2NoYW5nZV9hYnM6dGwgLTAuMjA2NTEgICAgMC4wNzExNSAgLTIuOTAzIDAuMDAzNzAwICoqIFxuLS0tXG5TaWduaWYuIGNvZGVzOiAgMCDigJgqKirigJkgMC4wMDEg4oCYKirigJkgMC4wMSDigJgq4oCZIDAuMDUg4oCYLuKAmSAwLjEg4oCYIOKAmSAxXG5cbkNvcnJlbGF0aW9uIG9mIEZpeGVkIEVmZmVjdHM6XG4gICAgICAgICAgICAoSW50cikgbXhfX19fIHRsICAgIFxubXhfc2J0X3RtX18gLTAuNTg1ICAgICAgICAgICAgICBcbnRsICAgICAgICAgIC0wLjkxOCAgMC42MTggICAgICAgXG5teF9zYnRfdF9fOiAgMC41NjcgLTAuOTcyIC0wLjYyM1xuIn0= -->
@@ -1880,9 +2102,45 @@ head(extinction_model_comparisons.maxage[order(AICc)], 30)</code></pre>
 <!-- rnb-text-begin -->
 <!-- rnb-text-end -->
 <!-- rnb-chunk-begin -->
-<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuQUlDYyhtb2QuZS5hZ2VtYXguMSlcblxuYGBgIn0= -->
-<pre class="r"><code>AICc(mod.e.agemax.1)
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxubW9kLmUuYWdlbWF4LjEgPC0gZ2xtZXIobm93X2V4dCB+IG1pbl9zc3RfdGVtcF9jaGFuZ2VfbGFnMiArIGFnZS5tYXggKyAoMXxyZWcpICsgKDF8eWVhcl9mYWN0b3IpLCBmYW1pbHkgPSBiaW5vbWlhbCwgZGF0YSA9IHNwcF9tYXN0ZXJfenRlbXAudHJhaXRzLm5hLmFnZS5tYXgpXG5zdW1tYXJ5KG1vZC5lLmFnZW1heC4xKVxuXG5gYGAifQ== -->
+<pre class="r"><code>mod.e.agemax.1 &lt;- glmer(now_ext ~ min_sst_temp_change_lag2 + age.max + (1|reg) + (1|year_factor), family = binomial, data = spp_master_ztemp.traits.na.age.max)
+summary(mod.e.agemax.1)
 </code></pre>
+<!-- rnb-source-end -->
+<!-- rnb-output-begin eyJkYXRhIjoiR2VuZXJhbGl6ZWQgbGluZWFyIG1peGVkIG1vZGVsIGZpdCBieSBtYXhpbXVtIGxpa2VsaWhvb2QgKExhcGxhY2UgQXBwcm94aW1hdGlvbikgWydnbG1lck1vZCddXG4gRmFtaWx5OiBiaW5vbWlhbCAgKCBsb2dpdCApXG5Gb3JtdWxhOiBub3dfZXh0IH4gbWluX3NzdF90ZW1wX2NoYW5nZV9sYWcyICsgYWdlLm1heCArICgxIHwgcmVnKSArICgxIHwgICAgICB5ZWFyX2ZhY3RvcilcbiAgIERhdGE6IHNwcF9tYXN0ZXJfenRlbXAudHJhaXRzLm5hLmFnZS5tYXhcblxuICAgICBBSUMgICAgICBCSUMgICBsb2dMaWsgZGV2aWFuY2UgZGYucmVzaWQgXG4gIDM4ODkuNCAgIDM5MjYuNiAgLTE5MzkuNyAgIDM4NzkuNCAgICAxMjU4OSBcblxuU2NhbGVkIHJlc2lkdWFsczogXG4gICAgTWluICAgICAgMVEgIE1lZGlhbiAgICAgIDNRICAgICBNYXggXG4tMC40NDgzIC0wLjIyNDIgLTAuMTY0NyAtMC4xMjkxIDE4Ljk1NDEgXG5cblJhbmRvbSBlZmZlY3RzOlxuIEdyb3VwcyAgICAgIE5hbWUgICAgICAgIFZhcmlhbmNlIFN0ZC5EZXYuXG4geWVhcl9mYWN0b3IgKEludGVyY2VwdCkgMC4xMzI1ICAgMC4zNjQwICBcbiByZWcgICAgICAgICAoSW50ZXJjZXB0KSAwLjMyNjYgICAwLjU3MTUgIFxuTnVtYmVyIG9mIG9iczogMTI1OTQsIGdyb3VwczogIHllYXJfZmFjdG9yLCA0NTsgcmVnLCA5XG5cbkZpeGVkIGVmZmVjdHM6XG4gICAgICAgICAgICAgICAgICAgICAgICAgIEVzdGltYXRlIFN0ZC4gRXJyb3IgeiB2YWx1ZSBQcig+fHp8KSAgICBcbihJbnRlcmNlcHQpICAgICAgICAgICAgICAtMy4zMzAyMjIgICAwLjIyODAxNiAtMTQuNjA1ICA8IDJlLTE2ICoqKlxubWluX3NzdF90ZW1wX2NoYW5nZV9sYWcyIC0wLjE0NDU0OCAgIDAuMDQ4ODE0ICAtMi45NjEgIDAuMDAzMDYgKiogXG5hZ2UubWF4ICAgICAgICAgICAgICAgICAgLTAuMDI5MTgyICAgMC4wMDQ5ODIgIC01Ljg1NyAgNC43ZS0wOSAqKipcbi0tLVxuU2lnbmlmLiBjb2RlczogIDAg4oCYKioq4oCZIDAuMDAxIOKAmCoq4oCZIDAuMDEg4oCYKuKAmSAwLjA1IOKAmC7igJkgMC4xIOKAmCDigJkgMVxuXG5Db3JyZWxhdGlvbiBvZiBGaXhlZCBFZmZlY3RzOlxuICAgICAgICAgICAgKEludHIpIG1fX19fMlxubW5fc3N0X3RfXzIgIDAuMDM1ICAgICAgIFxuYWdlLm1heCAgICAgLTAuMzA0ICAwLjAwMlxuIn0= -->
+<pre><code>Generalized linear mixed model fit by maximum likelihood (Laplace Approximation) ['glmerMod']
+ Family: binomial  ( logit )
+Formula: now_ext ~ min_sst_temp_change_lag2 + age.max + (1 | reg) + (1 |      year_factor)
+   Data: spp_master_ztemp.traits.na.age.max
+
+     AIC      BIC   logLik deviance df.resid 
+  3889.4   3926.6  -1939.7   3879.4    12589 
+
+Scaled residuals: 
+    Min      1Q  Median      3Q     Max 
+-0.4483 -0.2242 -0.1647 -0.1291 18.9541 
+
+Random effects:
+ Groups      Name        Variance Std.Dev.
+ year_factor (Intercept) 0.1325   0.3640  
+ reg         (Intercept) 0.3266   0.5715  
+Number of obs: 12594, groups:  year_factor, 45; reg, 9
+
+Fixed effects:
+                          Estimate Std. Error z value Pr(&gt;|z|)    
+(Intercept)              -3.330222   0.228016 -14.605  &lt; 2e-16 ***
+min_sst_temp_change_lag2 -0.144548   0.048814  -2.961  0.00306 ** 
+age.max                  -0.029182   0.004982  -5.857  4.7e-09 ***
+---
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+Correlation of Fixed Effects:
+            (Intr) m____2
+mn_sst_t__2  0.035       
+age.max     -0.304  0.002</code></pre>
+<!-- rnb-output-end -->
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuQUlDYyhtb2QuZS5hZ2VtYXguMSlcbmBgYCJ9 -->
+<pre class="r"><code>AICc(mod.e.agemax.1)</code></pre>
 <!-- rnb-source-end -->
 <!-- rnb-output-begin eyJkYXRhIjoiWzFdIDM4ODkuNDI1XG4ifQ== -->
 <pre><code>[1] 3889.425</code></pre>

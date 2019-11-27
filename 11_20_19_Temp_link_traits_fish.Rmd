@@ -400,7 +400,7 @@ Absolute change importance = 0.99
 Raw temp importance = 0.003
 Change importance (no abs) = 0.005
 
-```{r put RVIs for extinction into data table}
+```{r put RVIs for colonization into data table}
 col_ext <- c("col","col","col","col","col", "col","col")
 type <- c("depth", "depth", "lag", "lag", "Change?", "Change?", "Change?")
 variable <- c("bottom", "surface", "no_lag", "lagged", "absolute_value_change", "change", "raw")
@@ -514,15 +514,17 @@ levels(RVI_table) <- c("bottom", "surface", "absolute_value_change", "change", "
 #make types factors as well
 RVI_table[,type := as.factor(type)]
 #colonization
-ggplot(data = RVI_table[col_ext == "col",], aes(x=type, y = value, fill = variable)) +
+RVI_col_plot <- ggplot(data = RVI_table[col_ext == "col",], aes(x=type, y = value, fill = variable)) +
   geom_bar(stat="identity") +
   scale_x_discrete(breaks = c("Change?", "depth", "lag"), labels = c("Change in temp?", "Measurement Depth", "Lagged?")) +
-  labs(x = "Temperature Variables", y = "Relative Variable Importance")
+  labs(x = "Temperature Variables", y = "Relative Variable Importance") +
+  theme_classic()
 #extinction
-ggplot(data = RVI_table[col_ext == "ext",], aes(x=type, y = value, fill = variable)) +
+RVI_ext_plot <- ggplot(data = RVI_table[col_ext == "ext",], aes(x=type, y = value, fill = variable)) +
   geom_bar(stat="identity") +
   scale_x_discrete(breaks = c("Change?", "depth", "lag"), labels = c("Change in temp?", "Measurement Depth", "Lagged?")) +
-  labs(x = "Temperature Variables", y = "Relative Variable Importance")
+  labs(x = "Temperature Variables", y = "Relative Variable Importance") +
+  theme_classic()
 ```
 
 
@@ -560,7 +562,7 @@ RVI_lags <- ggplot(data = lags_v_RVI, aes(x = col_lag)) +
   scale_color_discrete() + #how to make a legend
   theme_bw()
 
-save(RVI_lags, file = "RVI_lags.Rdata")
+save(RVI_col_plot, RVI_ext_plot, RVI_lags, file = "RVI_plots.Rdata")
 ```
 
 ********
