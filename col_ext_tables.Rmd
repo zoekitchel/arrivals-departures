@@ -21,8 +21,8 @@ colonization_model_comparisons.r
 
 ##Colonization Models
 
-variable | coefficient | Pr(>|z|) | AICc | $\Delta$ AICc |
----------|-------------|----|-----|---|---|
+|Variable | coefficient | Pr(>|z|) | AICc | $\Delta$ AICc |
+|---------|-------------|----------|------------|---------|
 | max_sbt_temp_change_abs |	0.239 |	0.000 |	6878.288 |	0.000 |
 | max_sst_temp_change_abs_lag1 |	-0.240 |	0.001 |	6887.400 |	9.112 |
 | min_sbt_temp_change_abs_lag5 |	-0.244 |	0.002 |	6888.859 |	10.572 |
@@ -52,8 +52,8 @@ extinction_model_comparisons.r
 
 ##Extinction Models
 
-variable | coefficient | Pr(>|z|) | AICc | $\Delta$ AICc |
----------|-------------|----|-----|---|---|
+|Variable | coefficient | Pr(>|z|) | AICc | $\Delta$ AICc |
+|---------|-------------|----------|------------|---------|
 | seas_sbt_temp_change_abs_lag9 |	0.168 |	0.002 |	6207.213 |	0.000 |
 | min_sst_temp_change_lag2 |	-0.095 |	0.011 |	6209.860 |	2.647 |
 | min_sbt_temp_change_lag7 |	-0.116 |	0.011 |	6210.022 |	2.808 |
@@ -264,8 +264,8 @@ Best model includes temperature and trophic level, including interaction ((Δ = 
   
 Best Extinction Models
 
-| | Variable | Coefficient | Pr(>|z|) | AICc | Rank for Full Models | Coefficient for Full Models
-|---------|-------------|----------------|------------------|--------------|------------|
+| | Variable | Coefficient | Pr(>|z|) | AICc | Rank for Full Models | Coefficient for Full Models |
+|---------|-------------|----------------|------------------|--------------|------------|----|
 |*1 | min_sst_temp_change_lag2 |	-0.12605189 |	0.008882239 |	4205.455 |2	|-0.09|
 |2 | seas_sbt_temp_change_abs	| 0.13647286 | 	0.014522389	| 4206.321 |4 |0.12 | 	
 |3 | seas_sbt_temp_change_lag9 |	0.11068561 |	0.016010438 |	4206.530 |not in top 15 | |	
