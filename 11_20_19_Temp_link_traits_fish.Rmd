@@ -356,7 +356,7 @@ write.table(colonization_model_comparisons.r, "colonization_model_comparisons.tx
 Now, I should look at relative variable importance:
 
 * Burnham and Anderson (2002), Page 169: This ballancing puts each variable on equal footing.
-* Akaike weights are can be used in model averaging. They represent the relative likelihood of a model. To calculate them, for each model first calculate the relative likelihood of the model, which is just exp( -0.5 * ∆AIC score for that model). The Akaike weight for a model is this value divided by the sum of these values across all models.
+* Akaike weights can be used in model averaging. They represent the relative likelihood of a model. To calculate them, for each model first calculate the relative likelihood of the model, which is just exp( -0.5 * ∆AIC score for that model). The Akaike weight for a model is this value divided by the sum of these values across all models.
 ```{r colonizations relative variable importance}
 #get rid of mean
 load("colonization_model_comparisons_dataframe.Rdata")

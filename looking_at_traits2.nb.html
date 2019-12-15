@@ -229,12 +229,28 @@ summary {
 <p>Going to look at some patterns in traits</p>
 <!-- rnb-text-end -->
 <!-- rnb-chunk-begin -->
-<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxubGlicmFyeShnZ3Bsb3QyKVxubGlicmFyeShkYXRhLnRhYmxlKVxubGlicmFyeShsbWU0KVxubGlicmFyeShNdU1JbilcbnRyYWl0cyA8LSByZWFkLmNzdihcIlRyYWl0Q29sbGVjdGlvbkZpc2hOQXRsYW50aWNORVBhY2lmaWNDb250U2hlbGYgKDMpLmNzdlwiKVxudHJhaXRzIDwtIGRhdGEudGFibGUodHJhaXRzKVxuI3JlbW92ZSBkdXBsaWNhdGVzXG50cmFpdHMudSA8LSB1bmlxdWUodHJhaXRzLCBieSA9IGMoJ3RheG9uJykpXG5gYGAifQ== -->
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxubGlicmFyeShnZ3Bsb3QyKVxubGlicmFyeShkYXRhLnRhYmxlKVxuXG5gYGAifQ== -->
 <pre class="r"><code>library(ggplot2)
 library(data.table)
-library(lme4)
-library(MuMIn)
-traits &lt;- read.csv(&quot;TraitCollectionFishNAtlanticNEPacificContShelf (3).csv&quot;)
+</code></pre>
+<!-- rnb-source-end -->
+<!-- rnb-output-begin eyJkYXRhIjoicGFja2FnZSDigJhkYXRhLnRhYmxl4oCZIHdhcyBidWlsdCB1bmRlciBSIHZlcnNpb24gMy41LjJkYXRhLnRhYmxlIDEuMTIuMCAgTGF0ZXN0IG5ld3M6IHItZGF0YXRhYmxlLmNvbVxuIn0= -->
+<pre><code>package ‘data.table’ was built under R version 3.5.2data.table 1.12.0  Latest news: r-datatable.com</code></pre>
+<!-- rnb-output-end -->
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxubGlicmFyeShsbWU0KVxuYGBgIn0= -->
+<pre class="r"><code>library(lme4)</code></pre>
+<!-- rnb-source-end -->
+<!-- rnb-output-begin eyJkYXRhIjoicGFja2FnZSDigJhsbWU04oCZIHdhcyBidWlsdCB1bmRlciBSIHZlcnNpb24gMy41LjJMb2FkaW5nIHJlcXVpcmVkIHBhY2thZ2U6IE1hdHJpeFxuIn0= -->
+<pre><code>package ‘lme4’ was built under R version 3.5.2Loading required package: Matrix</code></pre>
+<!-- rnb-output-end -->
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxubGlicmFyeShNdU1JbilcbmBgYCJ9 -->
+<pre class="r"><code>library(MuMIn)</code></pre>
+<!-- rnb-source-end -->
+<!-- rnb-output-begin eyJkYXRhIjoicGFja2FnZSDigJhNdU1JbuKAmSB3YXMgYnVpbHQgdW5kZXIgUiB2ZXJzaW9uIDMuNS4yXG4ifQ== -->
+<pre><code>package ‘MuMIn’ was built under R version 3.5.2</code></pre>
+<!-- rnb-output-end -->
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxudHJhaXRzIDwtIHJlYWQuY3N2KFwiVHJhaXRDb2xsZWN0aW9uRmlzaE5BdGxhbnRpY05FUGFjaWZpY0NvbnRTaGVsZiAoMykuY3N2XCIpXG50cmFpdHMgPC0gZGF0YS50YWJsZSh0cmFpdHMpXG4jcmVtb3ZlIGR1cGxpY2F0ZXNcbnRyYWl0cy51IDwtIHVuaXF1ZSh0cmFpdHMsIGJ5ID0gYygndGF4b24nKSlcbmBgYCJ9 -->
+<pre class="r"><code>traits &lt;- read.csv(&quot;TraitCollectionFishNAtlanticNEPacificContShelf (3).csv&quot;)
 traits &lt;- data.table(traits)
 #remove duplicates
 traits.u &lt;- unique(traits, by = c('taxon'))</code></pre>
