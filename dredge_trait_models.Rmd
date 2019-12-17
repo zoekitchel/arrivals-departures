@@ -5,13 +5,128 @@ output: html_notebook
 
 Here, I'm going to try again to use dredge. 
 
-```{r}
-plot(cars)
+```{r setup}
+library(MuMIn)
+library(data.table)
+library(lme4)
+load("spp_master_ztemp.traits.Rdata")
 ```
 
-Add a new chunk by clicking the *Insert Chunk* button on the toolbar or by pressing *Cmd+Option+I*.
+First, get rid of all rows that don't have all three trait variables
+```{r get rid of rows without three trait variables}
+spp_master_ztemp.traits.nonas <- na.omit(spp_master_ztemp.traits, cols=c("age.max", "age.maturity", "tl")) #gets rid of any rows missing any of these trait data values
+spp_master_ztemp.traits.nonas.nomean <- spp_master_ztemp.traits.nonas[, grep("mean*", colnames(spp_master_ztemp.traits.nonas)):=NULL] #get rid of columns with mean temp variables
+```
 
-When you save the notebook, an HTML file containing the code and output will be saved alongside it (click the *Preview* button or press *Cmd+Shift+K* to preview the HTML file). 
+To see which variables to include... 
+```{r}
+cor(spp_master_ztemp.traits.nonas.nomean[,c("age.max", "age.maturity", "tl")])
+                                  
+``` 
 
-The preview shows you a rendered HTML copy of the contents of the editor. Consequently, unlike *Knit*, *Preview* does not run any R code chunks. Instead, the output of the chunk when it was last run in the editor is displayed.
+None super correlated, so I'll keep all in models
 
+Prep for dredge
+```{r prep for dredge}
+
+#Colonization table
+colonization.reduced <- spp_master_ztemp.traits.nonas.nomean[,c(1, 3, 6, 45:230, 239, 246, 251)]#reduces to columns we need
+
+#Extinction table
+
+extinction.reduced <- spp_master_ztemp.traits.nonas.nomean[,c(1, 3, 9, 45:230, 239, 246, 251)]
+
+
+```
+
+Making all models for colonization
+```{r all models colonization}
+
+#playing with year as factor
+#can't get dredge to run above, so trying here with fewer variables
+colonization.reduced[,year := as.factor(year)]
+
+#going to make loop to make all models I need to look at with single variables
+all.temp.variables <- colnames(colonization.reduced[,4:189])
+all.temp.variables.0 <- c(0, all.temp.variables) #add 0 as option
+all.trait.variables <- c(0, "tl", "age.max","age.maturity", "tl + age.max", "tl * age.max", "tl + age.maturity", "tl * age.maturity", "age.max + age.maturity", "age.max * age.maturity", "tl + age.max + age.maturity", "tl + age.max * age.maturity", "tl * age.max + age.maturity", "tl * age.max * age.maturity")
+
+sign <- c("+", "*")
+
+full_var_set <- as.data.table(expand.grid(all.temp.variables.0, sign, all.trait.variables))
+
+full_var_set <- full_var_set[!(Var1 == "0" & Var3 == "0")] #eliminate models with both 0s
+
+colonization_model_comparison_traits <- as.data.table(matrix(nrow = nrow(full_var_set))) 
+colonization_model_comparison_traits[, temp_variable:=as.factor(V1)][, sign:=as.factor(V1)][, trait_variable:=as.factor(V1)][, AICc:=as.numeric(V1)][, converge:= as.logical(V1)]
+colonization_model_comparison_traits[, V1 := NULL]
+
+for (i in 1:nrow(full_var_set)){
+ 
+  temp <- full_var_set$Var1[i]
+  sign <- full_var_set$Var2[i]
+  trait <- full_var_set$Var3[i]
+  
+  formula <- as.formula(paste("col ~", temp, sign, trait, "+ (1|reg) + (1|year)"))
+  
+  mod <- glmer(formula, family = binomial, data = colonization.reduced)
+  
+  colonization_model_comparison_traits[i,temp_variable := full_var_set$Var1[i]]
+  colonization_model_comparison_traits[i,sign := full_var_set$Var2[i]]
+  colonization_model_comparison_traits[i,trait_variable := full_var_set$Var3[i]]
+  colonization_model_comparison_traits[i,AICc := AICc(mod)]
+  
+  warning <- mod@optinfo$conv$lme4$messages[2]
+  converges <- ifelse(is.null(warning) == TRUE, T, F)
+  
+  colonization_model_comparison_traits[i, converge := converges]
+  
+  print(paste(i, nrow(colonization_model_comparison_traits), sep = "/"))
+    
+}
+
+```
+Above couldn't complete with all 
+
+Making all models for extinction
+```{r all models extinction}
+
+#to figure out whether or not model converged
+mod@optinfo$conv$lme4$messages[2]
+mod2@optinfo$conv$lme4$messages[2]
+
+#playing with year as factor
+extinction.reduced[,year := as.factor(year)]
+
+#full var set made above
+
+extinction_model_comparison_traits <- as.data.table(matrix(nrow = nrow(full_var_set))) 
+extinction_model_comparison_traits[, temp_variable:=as.factor(V1)][, sign:=as.factor(V1)][, trait_variable:=as.factor(V1)][, AICc:=as.numeric(V1)][, converge:= as.logical(V1)]
+extinction_model_comparison_traits[, V1 := NULL]
+
+for (i in 1:nrow(extinction_model_comparison_traits)){
+ 
+  temp <- full_var_set$Var1[i]
+  sign <- full_var_set$Var2[i]
+  trait <- full_var_set$Var3[i]
+  
+  formula <- as.formula(paste("now_ext ~", temp, sign, trait, "+ (1|reg) + (1|year)"))
+  
+  mod <- glmer(formula, family = binomial, data = extinction.reduced)
+  
+  extinction_model_comparison_traits[i,temp_variable := full_var_set$Var1[i]]
+  extinction_model_comparison_traits[i,sign := full_var_set$Var2[i]]
+  extinction_model_comparison_traits[i,trait_variable := full_var_set$Var3[i]]
+  extinction_model_comparison_traits[i,AICc := AICc(mod)]
+  
+  warning <- mod2@optinfo$conv$lme4$messages[2]
+  converges <- ifelse(is.null(warning) == TRUE, T, F)
+  
+  extinction_model_comparison_traits[i, converge := converges]
+  
+  print(paste(i, nrow(extinction_model_comparison_traits), sep = "/"))
+    
+}
+
+save(colonization_model_comparison_traits, extinction_model_comparison_traits, file = "col_ext_mod_ext_wtraits.Rdata")
+```

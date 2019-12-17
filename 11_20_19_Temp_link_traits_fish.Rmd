@@ -392,6 +392,11 @@ col_raw_importance <- sum(colonization_model_comparisons.nomean[!grep("change", 
 #change (grepl("change", variable), (!grepl("abs")))
 col_change_importance <- sum(colonization_model_comparisons.nomean[grep("change", variable), ][!grep("abs", variable),]$akaike_weight)
 
+#type of temp variable (max, min, seas)
+col_max_temp_importance <- sum(colonization_model_comparisons.nomean[grep("max", variable), ]$akaike_weight)
+col_min_temp_importance <- sum(colonization_model_comparisons.nomean[grep("min", variable), ]$akaike_weight)
+col_seas_temp_importance <- sum(colonization_model_comparisons.nomean[grep("seas", variable), ]$akaike_weight)
+
 ```
 Surface importance = 0.02
 Bottom importance = 0.97
@@ -399,12 +404,15 @@ Lag importance = 0.03
 Absolute change importance = 0.99
 Raw temp importance = 0.003
 Change importance (no abs) = 0.005
+min temp importance = 0.0091
+max temp importance = 0.979
+seas temp importance = 0.0114
 
 ```{r put RVIs for colonization into data table}
-col_ext <- c("col","col","col","col","col", "col","col")
-type <- c("depth", "depth", "lag", "lag", "Change?", "Change?", "Change?")
-variable <- c("bottom", "surface", "no_lag", "lagged", "absolute_value_change", "change", "raw")
-value <- c(col_bottom_importance, col_surface_importance, col_nolag_importance, col_lag_importance, col_abs_importance, col_change_importance, col_raw_importance)
+col_ext <- c("col","col","col","col","col", "col","col", "col", "col","col")
+type <- c("depth", "depth", "lag", "lag", "Change?", "Change?", "Change?", "Temp", "Temp", "Temp")
+variable <- c("bottom", "surface", "no_lag", "lagged", "absolute_value_change", "change", "raw", "Min", "Max", "Seas")
+value <- c(col_bottom_importance, col_surface_importance, col_nolag_importance, col_lag_importance, col_abs_importance, col_change_importance, col_raw_importance, col_min_temp_importance, col_max_temp_importance, col_seas_temp_importance)
 
 RVI_col <- data.table(col_ext, type, variable, value)
 ```
@@ -467,6 +475,11 @@ ext_raw_importance <- sum(extinction_model_comparisons.nomean[!grep("change", va
 #change (grepl("change", variable), (!grepl("abs")))
 ext_change_importance <- (1 - (ext_abs_importance + ext_raw_importance))
 
+#type of temp variable (max, min, seas)
+ext_max_temp_importance <- sum(extinction_model_comparisons.nomean[grep("max", variable), ]$akaike_weight)
+ext_min_temp_importance <- sum(extinction_model_comparisons.nomean[grep("min", variable), ]$akaike_weight)
+ext_seas_temp_importance <- sum(extinction_model_comparisons.nomean[grep("seas", variable), ]$akaike_weight)
+
 ```
 Surface importance = 0.37
 Bottom importance = 0.63
@@ -475,12 +488,15 @@ No lag importance = 0.10
 Absolute change importance = 0.47
 Raw temp importance = 0.20
 Change importance (no abs) = 0.34
+min temp importance = 0.265
+max temp importance = 0.269
+seas temp importance = 0.465
 
 ```{r put RVIs for extinction into data table}
-col_ext <- c("ext","ext","ext","ext","ext", "ext", "ext")
-type <- c("depth", "depth", "lag", "lag", "Change?", "Change?", "Change?")
-variable <- c("bottom", "surface", "no_lag", "lagged", "absolute_value_change", "change", "raw")
-value <- c(ext_bottom_importance, ext_surface_importance, ext_nolag_importance, ext_lag_importance, ext_abs_importance, ext_change_importance, ext_raw_importance)
+col_ext <- c("ext","ext","ext","ext","ext", "ext", "ext", "ext", "ext", "ext")
+type <- c("depth", "depth", "lag", "lag", "Change?", "Change?", "Change?", "Temp", "Temp", "Temp")
+variable <- c("bottom", "surface", "no_lag", "lagged", "absolute_value_change", "change", "raw", "Min", "Max", "Seas")
+value <- c(ext_bottom_importance, ext_surface_importance, ext_nolag_importance, ext_lag_importance, ext_abs_importance, ext_change_importance, ext_raw_importance, ext_min_temp_importance, ext_max_temp_importance, ext_seas_temp_importance)
 
 RVI_ext <- data.table(col_ext, type, variable, value)
 ```
@@ -495,13 +511,13 @@ RVI_table.r <- RVI_table[!grep("surface", variable)][!grep("lagged", variable)]
 RVI_table.r[,"variable" := as.factor(variable)]
 RVI_table.r <- RVI_table.r %>% 
   dplyr::mutate("variable" = factor(variable, 
-                                    levels = c("bottom", "no_lag", "raw", "change", "absolute_value_change")))
+                                    levels = c("bottom", "no_lag", "raw", "change", "absolute_value_change", "min", "max", "seas")))
 
 save(RVI_table, file = "RVI_table.Rdata")
 
 ggplot(data = RVI_table.r, aes(x=variable, y = value, fill = col_ext)) +
   geom_bar(stat = "identity", position = "dodge") +
-  scale_x_discrete(breaks = c("bottom", "no_lag", "raw", "change", "absolute_value_change"), labels = c("Bottom Temp", "No Lag", "Raw Temp", "Change in Temp", "| Change in Temp |")) +
+  scale_x_discrete(breaks = c("bottom", "no_lag", "raw", "change", "absolute_value_change", "Min", "Max", "Seas"), labels = c("Bottom Temp", "No Lag", "Raw Temp", "Change in Temp", "| Change in Temp |", "Minimum Temp", "Maximum Temp", "Seasonality")) +
   labs(x = "Temperature Variables", y = "Relative Variable Importance")  +
   theme_bw()
 
@@ -510,19 +526,19 @@ Another way to visualize is stacked bar plot.
 
 ```{r RVI stacked plot}
 #put levels into correct order for viewing
-levels(RVI_table) <- c("bottom", "surface", "absolute_value_change", "change", "raw", "no_lag", "lagged")
+levels(RVI_table) <- c("bottom", "surface", "absolute_value_change", "change", "raw", "no_lag", "lagged", "min", "max", "seas")
 #make types factors as well
 RVI_table[,type := as.factor(type)]
 #colonization
 RVI_col_plot <- ggplot(data = RVI_table[col_ext == "col",], aes(x=type, y = value, fill = variable)) +
   geom_bar(stat="identity") +
-  scale_x_discrete(breaks = c("Change?", "depth", "lag"), labels = c("Change in temp?", "Measurement Depth", "Lagged?")) +
+  scale_x_discrete(breaks = c("Change?", "depth", "lag", "Temp"), labels = c("Change in temp?", "Measurement Depth", "Lagged?", "Temp")) +
   labs(x = "Temperature Variables", y = "Relative Variable Importance") +
   theme_classic()
 #extinction
 RVI_ext_plot <- ggplot(data = RVI_table[col_ext == "ext",], aes(x=type, y = value, fill = variable)) +
   geom_bar(stat="identity") +
-  scale_x_discrete(breaks = c("Change?", "depth", "lag"), labels = c("Change in temp?", "Measurement Depth", "Lagged?")) +
+  scale_x_discrete(breaks = c("Change?", "depth", "lag", "Temp"), labels = c("Change in temp?", "Measurement Depth", "Lagged?", "Temp")) +
   labs(x = "Temperature Variables", y = "Relative Variable Importance") +
   theme_classic()
 ```
