@@ -104,7 +104,7 @@ extinction_model_comparison_traits <- as.data.table(matrix(nrow = nrow(full_var_
 extinction_model_comparison_traits[, temp_variable:=as.factor(V1)][, sign:=as.factor(V1)][, trait_variable:=as.factor(V1)][, AICc:=as.numeric(V1)][, converge:= as.logical(V1)]
 extinction_model_comparison_traits[, V1 := NULL]
 
-for (i in 1:nrow(extinction_model_comparison_traits)){
+for (i in 1614:nrow(extinction_model_comparison_traits)){
  
   temp <- full_var_set$Var1[i]
   sign <- full_var_set$Var2[i]

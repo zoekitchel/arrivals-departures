@@ -1,0 +1,26 @@
+---
+title: "Colonization Extinction results"
+output: pdf_document
+header-includes:
+  - \usepackage{caption}
+---
+
+This is an [R Markdown](http://rmarkdown.rstudio.com) Notebook. When you execute code within the notebook, the results appear beneath the code. 
+
+Try executing this chunk by clicking the *Run* button within the chunk or by placing your cursor inside it and pressing *Cmd+Shift+Enter*. 
+
+```{r setup}
+library(xtable)
+
+```
+
+Colonization
+```{r colonization model ranking}
+load("colonization_models_with_likelihoods.Rdata")
+colonization_model_comparisons.nomean[,AICc:= NULL][,rel_likelihood:=NULL][,"Coefficient" := round(coef, 4)][,"Pr(>|z|)":= round(p_value, 4)][,"ΔAICc":=round(deltaAICc,4)][,"Akaike Weight" := round(akaike_weight,4)]
+setorder(colonization_model_comparisons.nomean, ΔAICc)
+colonization_models_fortable <- colonization_model_comparisons.nomean[1:10,c(1,6:9)]
+
+```
+
+

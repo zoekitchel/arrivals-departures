@@ -169,67 +169,6 @@ The above models perform really poorly, but this doesn't really surprise me. I t
 colnames(spp_master_ztemp)
 ```
 
-#START HERE
-Now, let's play around with dredge.
-```{r dredge colonization}
-#I want to look at possible predictors
-dredgesubset <- spp_master_ztemp[,c(1:3,6,45:168)] # this will have to change
-#let's set the NA setting correctly
-options(na.action = "na.fail")
-#fitting global model
-fm1_col <- glmer(col ~ . + (1|reg) + (1|year), family = binomial, data = dredgesubset)
-#fixed-effect model matrix is rank deficient so dropping 102 columns / coefficients
-#I have to trick model here so that it doesn't think it's rank deficient
-vars <- colnames(spp_master_ztemp[,45:292])
-form<-formula(paste0('col~',paste0(vars,collapse='+'),'+(1|reg)+(1|year)'))
-attr(fm1_col@frame,"formula")<-form
-
-#include only models with 1 term (and intercept)
-dd <- dredge(fm1_col, m.lim = c(0, 1))
-
-subset(dd, delta < 2)
-
-# Visualize the model selection table:
-
-par(mar = c(3,5,6,4))
-plot(dd.col, labAsExpr = TRUE)
-
-# Model average models with delta AICc < 2
-model.avg(dd.col, subset = delta < 2)
-
-#or as a 95% confidence set:
-model.avg(dd.col, subset = cumsum(weight) <= .95) # get averaged coefficients
-
-#'Best' model
-summary(get.models(dd.col, 1)[[1]])
-```
-Now a dredge for extinction
-```{r dredge extinction}
-#fitting global model
-fm1_ext <- glmm(now_ext ~  + (1|reg) + (1|year), family = binomial, data = dredgesubset)
-dd.ext <- dredge(fm1_ext)
-
-subset(dd.ext, delta < 2)
-
-# Visualize the model selection table:
-
-par(mar = c(3,5,6,4))
-plot(dd.ext, labAsExpr = TRUE)
-
-# Model average models with delta AICc < 2
-model.avg(dd.ext, subset = delta < 2)
-
-#or as a 95% confidence set:
-model.avg(dd.ext, subset = cumsum(weight) <= .95) # get averaged coefficients
-
-#'Best' model
-summary(get.models(dd.ext, 1)[[1]])
-```
-
-
-
-
-
 
 *******
 
@@ -363,6 +302,9 @@ load("colonization_model_comparisons_dataframe.Rdata")
 
 colonization_model_comparisons.nomean <- data.table(colonization_model_comparisons.nomean)
 
+#only raw temp has lag of 10 years, which means variable importance comparisons are unbalanced so I will get rid of these rows
+colonization_model_comparisons.nomean <- colonization_model_comparisons.nomean[!grepl("lag10", variable), ]
+
 #add ∆AIC to tables
 min_col_AICc <- min(colonization_model_comparisons.nomean[, AICc])
 colonization_model_comparisons.nomean[,"deltaAICc" := (AICc - min_col_AICc)]
@@ -397,16 +339,10 @@ col_max_temp_importance <- sum(colonization_model_comparisons.nomean[grep("max",
 col_min_temp_importance <- sum(colonization_model_comparisons.nomean[grep("min", variable), ]$akaike_weight)
 col_seas_temp_importance <- sum(colonization_model_comparisons.nomean[grep("seas", variable), ]$akaike_weight)
 
+#save this table
+save(colonization_model_comparisons.nomean, file = "colonization_models_with_likelihoods.Rdata")
 ```
-Surface importance = 0.02
-Bottom importance = 0.97
-Lag importance = 0.03
-Absolute change importance = 0.99
-Raw temp importance = 0.003
-Change importance (no abs) = 0.005
-min temp importance = 0.0091
-max temp importance = 0.979
-seas temp importance = 0.0114
+
 
 ```{r put RVIs for colonization into data table}
 col_ext <- c("col","col","col","col","col", "col","col", "col", "col","col")
@@ -446,6 +382,9 @@ load("extinction_model_comparisons_dataframe.Rdata")
 
 extinction_model_comparisons.nomean <- data.table(extinction_model_comparisons.nomean)
 
+#only raw temp has lag of 10 years, which means variable importance comparisons are unbalanced so I will get rid of these rows
+extinction_model_comparisons.nomean <- extinction_model_comparisons.nomean[!grepl("lag10", variable), ]
+
 #add ∆AIC to tables
 min_ext_AICc <- min(extinction_model_comparisons.nomean[, AICc])
 extinction_model_comparisons.nomean[,"deltaAICc" := (AICc - min_ext_AICc)]
@@ -460,37 +399,39 @@ extinction_model_comparisons.nomean[,"akaike_weight" := rel_likelihood/extinctio
 #I want to look at relative importance FOR 
 #bottom/surface (bottom = includes sbt, grepl("sbt", variable))
 ext_bottom_importance <- sum(extinction_model_comparisons.nomean[grep("sbt", variable), ]$akaike_weight)
+count(extinction_model_comparisons.nomean[grep("sbt", variable), ])
 ext_surface_importance <- sum(extinction_model_comparisons.nomean[grep("sst", variable), ]$akaike_weight)
+count(extinction_model_comparisons.nomean[grep("sst", variable), ])
 
 #lag/not lagged (grepl("lag", variable))
 ext_lag_importance <- sum(extinction_model_comparisons.nomean[grep("lag", variable), ]$akaike_weight)
+count(extinction_model_comparisons.nomean[grep("lag", variable), ])
 ext_nolag_importance <- sum(extinction_model_comparisons.nomean[!grep("lag", variable), ]$akaike_weight)
+count(extinction_model_comparisons.nomean[!grep("lag", variable), ])
 
 #absolute (grepl("abs", variable))
 ext_abs_importance <- sum(extinction_model_comparisons.nomean[grep("abs", variable), ]$akaike_weight)
+count(extinction_model_comparisons.nomean[grep("abs", variable), ])
 
 #raw (!grepl("change"))
 ext_raw_importance <- sum(extinction_model_comparisons.nomean[!grep("change", variable), ]$akaike_weight)
+count(extinction_model_comparisons.nomean[!grep("change", variable), ])
 
 #change (grepl("change", variable), (!grepl("abs")))
 ext_change_importance <- (1 - (ext_abs_importance + ext_raw_importance))
 
+
 #type of temp variable (max, min, seas)
 ext_max_temp_importance <- sum(extinction_model_comparisons.nomean[grep("max", variable), ]$akaike_weight)
+count(extinction_model_comparisons.nomean[grep("max", variable), ])
 ext_min_temp_importance <- sum(extinction_model_comparisons.nomean[grep("min", variable), ]$akaike_weight)
+count(extinction_model_comparisons.nomean[grep("min", variable), ])
 ext_seas_temp_importance <- sum(extinction_model_comparisons.nomean[grep("seas", variable), ]$akaike_weight)
+count(extinction_model_comparisons.nomean[grep("seas", variable), ])
+
+save(extinction_model_comparisons.nomean, file = "extinction_models_with_likelihoods.Rdata")
 
 ```
-Surface importance = 0.37
-Bottom importance = 0.63
-Lag importance = 0.90
-No lag importance = 0.10
-Absolute change importance = 0.47
-Raw temp importance = 0.20
-Change importance (no abs) = 0.34
-min temp importance = 0.265
-max temp importance = 0.269
-seas temp importance = 0.465
 
 ```{r put RVIs for extinction into data table}
 col_ext <- c("ext","ext","ext","ext","ext", "ext", "ext", "ext", "ext", "ext")
@@ -503,21 +444,18 @@ RVI_ext <- data.table(col_ext, type, variable, value)
 
 Merge RVI tables for colonization and extinction, and then graph
 ```{r merge RVI tables and plot}
-RVI_table <- as.data.table(rbind(RVI_col, RVI_ext))
+RVI_table <- as.data.table(rbind(RVI_col, RVI_ext)) #bind RVI for colonizations and extinctions
 
 RVI_table.r <- RVI_table[!grep("surface", variable)][!grep("lagged", variable)]
 
 #change order of factor levels
-RVI_table.r[,"variable" := as.factor(variable)]
-RVI_table.r <- RVI_table.r %>% 
-  dplyr::mutate("variable" = factor(variable, 
-                                    levels = c("bottom", "no_lag", "raw", "change", "absolute_value_change", "min", "max", "seas")))
+RVI_table.r[, variable := factor(variable, levels = c("bottom", "no_lag", "raw", "change", "absolute_value_change", "Min", "Max", "Seas"))]
 
 save(RVI_table, file = "RVI_table.Rdata")
 
 ggplot(data = RVI_table.r, aes(x=variable, y = value, fill = col_ext)) +
   geom_bar(stat = "identity", position = "dodge") +
-  scale_x_discrete(breaks = c("bottom", "no_lag", "raw", "change", "absolute_value_change", "Min", "Max", "Seas"), labels = c("Bottom Temp", "No Lag", "Raw Temp", "Change in Temp", "| Change in Temp |", "Minimum Temp", "Maximum Temp", "Seasonality")) +
+  scale_x_discrete(breaks = c("bottom", "no_lag", "raw", "change", "absolute_value_change", "Min", "Max", "Seas"), labels = c("Bottom Temp", "No Lag", "Raw Temp", "Change in \nTemp", "| Change in\n Temp |", "Min Temp", "Max Temp", "Seas")) +
   labs(x = "Temperature Variables", y = "Relative Variable Importance")  +
   theme_bw()
 
@@ -526,7 +464,7 @@ Another way to visualize is stacked bar plot.
 
 ```{r RVI stacked plot}
 #put levels into correct order for viewing
-levels(RVI_table) <- c("bottom", "surface", "absolute_value_change", "change", "raw", "no_lag", "lagged", "min", "max", "seas")
+RVI_table[, variable := factor(variable, levels = c("bottom", "surface", "absolute_value_change", "change", "raw", "no_lag", "lagged", "Min", "Max", "Seas"))]
 #make types factors as well
 RVI_table[,type := as.factor(type)]
 #colonization
@@ -541,6 +479,12 @@ RVI_ext_plot <- ggplot(data = RVI_table[col_ext == "ext",], aes(x=type, y = valu
   scale_x_discrete(breaks = c("Change?", "depth", "lag", "Temp"), labels = c("Change in temp?", "Measurement Depth", "Lagged?", "Temp")) +
   labs(x = "Temperature Variables", y = "Relative Variable Importance") +
   theme_classic()
+
+RVI_table
+RVI_col_plot
+RVI_ext_plot
+
+
 ```
 
 
