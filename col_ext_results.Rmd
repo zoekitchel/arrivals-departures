@@ -11,16 +11,194 @@ Try executing this chunk by clicking the *Run* button within the chunk or by pla
 
 ```{r setup}
 library(xtable)
-
+options(xtable.floating = FALSE)
+options(xtable.timestamp = "")
+substrRight <- function(x, n){ #function to select last n characters in a string
+  substr(x, nchar(x)-n+1, nchar(x))
+}
 ```
 
 Colonization
 ```{r colonization model ranking}
 load("colonization_models_with_likelihoods.Rdata")
-colonization_model_comparisons.nomean[,AICc:= NULL][,rel_likelihood:=NULL][,"Coefficient" := round(coef, 4)][,"Pr(>|z|)":= round(p_value, 4)][,"ΔAICc":=round(deltaAICc,4)][,"Akaike Weight" := round(akaike_weight,4)]
-setorder(colonization_model_comparisons.nomean, ΔAICc)
-colonization_models_fortable <- colonization_model_comparisons.nomean[1:10,c(1,6:9)]
 
+colonization_models_fortable <- colonization_model_comparisons.nomean[,"Variable" := as.character(Variable)][, "Temp Measure" := ifelse(grepl("max", Variable), "max", ifelse(grepl("min", Variable), "min", "seas"))][, "Depth" := ifelse(grepl("sbt", Variable), "bottom", "surface")][, "Lag" := ifelse(grepl("lag", Variable), substrRight(Variable,4), "lag0")][,"Change?":= ifelse(grepl("abs", Variable), "abs_change", ifelse(!grepl("change", Variable), "raw", "change"))][,AICc:= NULL][,rel_likelihood:=NULL][,"Coefficient" := round(coef, 4)][,"Pr(>|z|)":= round(p_value, 4)][,"ΔAICc":=round(deltaAICc,4)][,"Akaike Weight" := round(akaike_weight,4)]
+
+setorder(colonization_models_fortable, ΔAICc)
+colonization_models_fortable <- colonization_models_fortable[1:10,c(11,12,13,14,7:10)]
+
+colonization_models_xtable <- xtable(colonization_models_fortable)
+
+print.xtable(colonization_models_xtable, type = "html", file = "colonization_models.html")
+print.xtable(colonization_models_xtable, type = "latex", file = "colonization_models.tex")
 ```
 
+Extinction
+```{r extinction model ranking}
+load("extinction_models_with_likelihoods.Rdata")
+
+extinction_models_fortable <- extinction_model_comparisons.nomean[,"Variable" := as.character(variable)][, "Temp Measure" := ifelse(grepl("max", Variable), "max", ifelse(grepl("min", Variable), "min", "seas"))][, "Depth" := ifelse(grepl("sbt", Variable), "bottom", "surface")][, "Lag" := ifelse(grepl("lag", Variable), substrRight(Variable,4), "lag0")][,"Change?":= ifelse(grepl("abs", Variable), "abs_change", ifelse(!grepl("change", Variable), "raw", "change"))][,AICc:= NULL][,rel_likelihood:=NULL][,"Coefficient" := round(coef, 4)][,"Pr(>|z|)":= round(p_value, 4)][,"ΔAICc":=round(deltaAICc,4)][,"Akaike Weight" := round(akaike_weight,4)]
+
+setorder(extinction_models_fortable, ΔAICc)
+extinction_models_fortable <- extinction_models_fortable[1:26,c(6,7,9:14)]
+
+extinction_models_xtable <- xtable(extinction_models_fortable)
+
+print.xtable(extinction_models_xtable, type = "html", file = "extinction_models.html")
+print.xtable(extinction_models_xtable, type = "latex", file = "extinction_models.tex")
+```
+
+Relative Variable Importance Plots
+```{r RVI}
+load("RVI_plots.Rdata")
+RVI_col_plot
+RVI_ext_plot
+RVI_lags
+```
+
+Traits
+```{r trait results colonization}
+load("col_ext_mod_ext_wtraits.Rdata")
+
+setorder(colonization_model_comparison_traits, -converge, AICc)
+
+traittable_colnames <- c("Temp Measure", "Depth", "Lag", "Change?", "Coef", "Pr>|z|", "Trait 1", "Coef 1", "Pr>|z| 1", "Int 1", "Coef Int 1", "Pr>|z| Int 1", "Trait 2", "Coef 2", "Pr>|z| 2", "Int 2", "Coef Int 2", "Pr>|z| Int 2", "Trait 3", "Coef 3","Pr>|z| 3", "ΔAICc")
+
+traittable_col_row1 <- c("seas", "bottom", "lag4", "abs_change", -0.092841 , 0.309778, "*age.max", -0.037283, 5.03e-10, "temp:age.max", 0.019085, 0.000224, "", "", "", "", "", "","", "","", 0.000)
+
+traittable_col_row2 <- c("min", "bottom", "lag6", "abs_change", -0.524753 , 0.000178, "*age.max", -0.039182, 6.58e-11, "temp:age.max", 0.031778, 1.39e-06, "", "", "", "", "", "","", "","", 0.043)
+
+traittable_col_row3 <- c("min", "bottom", "lag6", "abs_change", -0.526703 , 0.000186, "*age.max", -0.038719, 4.85e-09, "temp:age.max", 0.031886, 1.60e-06, "age.maturity", -0.003585, 0.869045, "", "","", "","", "", 2.018)
+
+traittable_col_row4 <- c("min", "bottom", "lag0", "abs_change", -0.189744 , 0.146473, "*age.max", -0.034545, 6.63e-10, "temp:age.max", 0.024841, 0.000602, "", "", "", "", "", "","", "","", 4.314)
+
+traittable_col_row5 <- c("max", "bottom", "lag6", "abs_change", -0.415441 , 0.125224, "*age.max", -0.039181, 1.91e-09, "temp:age.max", 0.022767, 0.000248, "", "", "", "", "", "","", "","", 4.405)
+
+traittable_col_row6 <- c("seas", "surface", "lag0", "abs_change", 0.169231 , 0.00103, "+age.max", -0.022766, 4.56e-07, "", "","" , "", "", "", "", "", "","+tl", -0.159119,0.13892, 5.386)
+
+traittable_col_row7 <- c("seas", "surface", "lag0", "abs_change", 0.168830 , 0.00105, "+age.max", -0.024406, 3.99e-08, "", "","" , "", "", "", "", "", "","", "","", 5.539)
+
+traittable_col_row8 <- c("min", "bottom", "lag6", "change", -0.163852 , 0.04485, "*age.max", -0.025855, 5.06e-09, "temp:age.max", 0.021084,0.00011 , "", "", "", "", "", "","", "","", 6.077)
+
+traittable_col_row9 <- c("seas", "surface", "lag6", "abs_change", -0.303695 , 0.000886, "*age.max", -0.036722, 5.6e-08, "temp:age.max", 0.011868,0.007932 , "", "", "", "", "", "","", "","", 6.404)
+
+traittable_col_row10 <- c("max", "bottom", "lag6", "abs_change", -0.4154028 , 0.000914, "*age.max", -0.0391440, 8.76e-08, "temp:age.max", 0.0227626, 0.000257, "+age.maturity", -0.0002674, 0.990819, "", "", "","", "","", 6.407)
+
+traittable_col_row11 <- c("seas", "bottom", "lag3", "abs_change", -0.137584 , 0.116101, "*age.max", -0.036740, 2.43e-09, "temp:age.max", 0.016625, 0.000867, "", "", "", "", "", "","", "","", 6.409)
+
+traittable_col_row12 <- c("min", "bottom", "lag1", "abs_change", -0.444901 , 0.00416, "*age.max", -0.035545, 9.34e-10, "temp:age.max", 0.028066, 0.00080, "", "", "", "", "", "","", "","", 6.877)
+
+traittable_col_row13 <- c("max", "surface", "lag1", "abs_change", -0.270353 , 0.00361, "+age.max", -0.024485, 3.62e-08, "", "", "", "", "", "", "", "", "","", "","", 6.889)
+
+traittable_col_row14 <- c("seas", "surface", "lag0", "abs_change", 0.125681 , 0.105, "*age.max", -0.028347, 4.74e-05, "temp:age.max", 0.003524, 0.451, "", "", "", "", "", "","", "","", 6.99)
+
+traittable_col_row15 <- c("max", "bottom", "lag6", "change", -0.133223 , 0.054244, "*age.max", -0.027204, 3.05e-09, "temp:age.max", 0.015038, 0.000756, "", "", "", "", "", "","", "","", 7.225)
+
+traittable_col_row16 <- c("seas", "surface", "lag0", "abs_change", 1.692e-01 , 0.00103, "+age.max", -2.277e-02, 2.29e-05, "", "", "", "+tl", -1.591e-01, 0.13924, "", "", "","+age.maturity", 5.873e-05,0.99798, 7.389)
+
+traittable_col_row17 <- c("seas", "surface", "lag0", "abs_change", 0.168817 , 0.00105, "+age.max", -0.024236, 5.76e-06, "", "", "", "+age.maturity", -0.001317, 0.95459, "", "", "","", "","", 7.538)
+
+#corresponding models
+mod <- glmer(col~ seas_sbt_temp_change_abs_lag4 * age.max + (1|reg) + (1|year), family = binomial, data = colonization.reduced)
+mod <- glmer(col~ min_sbt_temp_change_abs_lag6 * age.max + (1|reg) + (1|year), family = binomial, data = colonization.reduced)
+mod <- glmer(col~ min_sbt_temp_change_abs_lag6 * age.max + age.maturity + (1|reg) + (1|year), family = binomial, data = colonization.reduced)
+mod <- glmer(col~ min_sbt_temp_change_abs * age.max + (1|reg) + (1|year), family = binomial, data = colonization.reduced)
+mod <- glmer(col~ max_sbt_temp_change_abs_lag6 * age.max + (1|reg) + (1|year), family = binomial, data = colonization.reduced)
+mod <- glmer(col~ seas_sst_temp_change_abs + tl + age.max + (1|reg) + (1|year), family = binomial, data = colonization.reduced)
+mod <- glmer(col~ seas_sst_temp_change_abs + age.max + (1|reg) + (1|year), family = binomial, data = colonization.reduced)
+mod <- glmer(col~ min_sbt_temp_change_lag6 * age.max + (1|reg) + (1|year), family = binomial, data = colonization.reduced)
+mod <- glmer(col~ seas_sst_temp_change_abs_lag6 * age.max + (1|reg) + (1|year), family = binomial, data = colonization.reduced)
+mod <- glmer(col~ max_sbt_temp_change_abs_lag6 * age.max + age.maturity + (1|reg) + (1|year), family = binomial, data = colonization.reduced)
+mod <- glmer(col~ seas_sbt_temp_change_abs_lag3 * age.max + (1|reg) + (1|year), family = binomial, data = colonization.reduced)
+mod <- glmer(col~ min_sbt_temp_change_abs_lag1 * age.max + (1|reg) + (1|year), family = binomial, data = colonization.reduced)
+mod <- glmer(col~ max_sst_temp_change_abs_lag1 + age.max + (1|reg) + (1|year), family = binomial, data = colonization.reduced)
+mod <- glmer(col~ seas_sst_temp_change_abs * age.max + (1|reg) + (1|year), family = binomial, data = colonization.reduced)
+mod <- glmer(col~ max_sbt_temp_change_lag6 * age.max + (1|reg) + (1|year), family = binomial, data = colonization.reduced)
+mod <- glmer(col~ seas_sst_temp_change_abs + tl + age.max + age.maturity + (1|reg) + (1|year), family = binomial, data = colonization.reduced)
+mod <- glmer(col~ seas_sst_temp_change_abs + age.max + age.maturity + (1|reg) + (1|year), family = binomial, data = colonization.reduced)
+
+colonization_trait_table <- transpose(data.table(traittable_col_row1, traittable_col_row2, traittable_col_row3, traittable_col_row4, traittable_col_row5, traittable_col_row6, traittable_col_row7, traittable_col_row8, traittable_col_row9, traittable_col_row10, traittable_col_row11, traittable_col_row12, traittable_col_row13, traittable_col_row14, traittable_col_row15, traittable_col_row16, traittable_col_row17))
+
+colnames(colonization_trait_table) <- traittable_colnames
+
+colonization_trait_table[, Coef := round(as.numeric(Coef), 3)][, `Pr>|z|` := round(as.numeric(`Pr>|z|`), 3)][, `Coef 1` := round(as.numeric(`Coef 1`), 3)][, `Pr>|z| 1` := round(as.numeric(`Pr>|z| 1`))][, `Coef Int 1` := round(as.numeric(`Coef Int 1`), 3)][, `Pr>|z| Int 1` := round(as.numeric(`Pr>|z| Int 1`))][, `Coef 2` := round(as.numeric(`Coef 2`), 3)][, `Pr>|z| 2` := round(as.numeric(`Pr>|z| 2`))][, `Coef 3` := round(as.numeric(`Coef 3`), 3)][,`ΔAICc` := round(as.numeric(`ΔAICc`))]
+
+colonization_models_traits_xtable <- xtable(colonization_trait_table)
+
+print.xtable(colonization_models_traits_xtable, type = "html", file = "colonization_models_traits_xtable.html")
+print.xtable(colonization_models_traits_xtable, type = "latex", file = "colonization_models_traits_xtable.tex")
+```
+Extinction with Traits HAVE TO RERUN ALL EXTINCTION MODELS
+```{r trait results extinction}
+setorder(extinction_model_comparison_traits, -converge, AICc)
+
+traittable_col_row1 <- c("seas", "bottom", "lag4", "abs_change", -0.092841 , 0.309778, "*age.max", -0.037283, 5.03e-10, "temp:age.max", 0.019085, 0.000224, "", "", "", "", "", "","", "","", 0.000)
+
+traittable_col_row2 <- c("min", "bottom", "lag6", "abs_change", -0.524753 , 0.000178, "*age.max", -0.039182, 6.58e-11, "temp:age.max", 0.031778, 1.39e-06, "", "", "", "", "", "","", "","", 0.043)
+
+traittable_col_row3 <- c("min", "bottom", "lag6", "abs_change", -0.526703 , 0.000186, "*age.max", -0.038719, 4.85e-09, "temp:age.max", 0.031886, 1.60e-06, "age.maturity", -0.003585, 0.869045, "", "","", "","", "", 2.018)
+
+traittable_col_row4 <- c("min", "bottom", "lag0", "abs_change", -0.189744 , 0.146473, "*age.max", -0.034545, 6.63e-10, "temp:age.max", 0.024841, 0.000602, "", "", "", "", "", "","", "","", 4.314)
+
+traittable_col_row5 <- c("max", "bottom", "lag6", "abs_change", -0.415441 , 0.125224, "*age.max", -0.039181, 1.91e-09, "temp:age.max", 0.022767, 0.000248, "", "", "", "", "", "","", "","", 4.405)
+
+traittable_col_row6 <- c("seas", "surface", "lag0", "abs_change", 0.169231 , 0.00103, "+age.max", -0.022766, 4.56e-07, "", "","" , "", "", "", "", "", "","+tl", -0.159119,0.13892, 5.386)
+
+traittable_col_row7 <- c("seas", "surface", "lag0", "abs_change", 0.168830 , 0.00105, "+age.max", -0.024406, 3.99e-08, "", "","" , "", "", "", "", "", "","", "","", 5.539)
+
+traittable_col_row8 <- c("min", "bottom", "lag6", "change", -0.163852 , 0.04485, "*age.max", -0.025855, 5.06e-09, "temp:age.max", 0.021084,0.00011 , "", "", "", "", "", "","", "","", 6.077)
+
+traittable_col_row9 <- c("seas", "surface", "lag6", "abs_change", -0.303695 , 0.000886, "*age.max", -0.036722, 5.6e-08, "temp:age.max", 0.011868,0.007932 , "", "", "", "", "", "","", "","", 6.404)
+
+traittable_col_row10 <- c("max", "bottom", "lag6", "abs_change", -0.4154028 , 0.000914, "*age.max", -0.0391440, 8.76e-08, "temp:age.max", 0.0227626, 0.000257, "+age.maturity", -0.0002674, 0.990819, "", "", "","", "","", 6.407)
+
+traittable_col_row11 <- c("seas", "bottom", "lag3", "abs_change", -0.137584 , 0.116101, "*age.max", -0.036740, 2.43e-09, "temp:age.max", 0.016625, 0.000867, "", "", "", "", "", "","", "","", 6.409)
+
+traittable_col_row12 <- c("min", "bottom", "lag1", "abs_change", -0.444901 , 0.00416, "*age.max", -0.035545, 9.34e-10, "temp:age.max", 0.028066, 0.00080, "", "", "", "", "", "","", "","", 6.877)
+
+traittable_col_row13 <- c("max", "surface", "lag1", "abs_change", -0.270353 , 0.00361, "+age.max", -0.024485, 3.62e-08, "", "", "", "", "", "", "", "", "","", "","", 6.889)
+
+traittable_col_row14 <- c("seas", "surface", "lag0", "abs_change", 0.125681 , 0.105, "*age.max", -0.028347, 4.74e-05, "temp:age.max", 0.003524, 0.451, "", "", "", "", "", "","", "","", 6.99)
+
+traittable_col_row15 <- c("max", "bottom", "lag6", "change", -0.133223 , 0.054244, "*age.max", -0.027204, 3.05e-09, "temp:age.max", 0.015038, 0.000756, "", "", "", "", "", "","", "","", 7.225)
+
+traittable_col_row16 <- c("seas", "surface", "lag0", "abs_change", 1.692e-01 , 0.00103, "+age.max", -2.277e-02, 2.29e-05, "", "", "", "+tl", -1.591e-01, 0.13924, "", "", "","+age.maturity", 5.873e-05,0.99798, 7.389)
+
+traittable_col_row17 <- c("seas", "surface", "lag0", "abs_change", 0.168817 , 0.00105, "+age.max", -0.024236, 5.76e-06, "", "", "", "+age.maturity", -0.001317, 0.95459, "", "", "","", "","", 7.538)
+
+#corresponding models
+mod <- glmer(now_ext ~ max_sst_temp_lag2 * age.max * age.maturity + (1|reg) + (1|year), family = binomial, data = extinction.reduced)
+mod <- glmer(now_ext ~ max_sst_temp_lag6 * age.max * age.maturity + (1|reg) + (1|year), family = binomial, data = extinction.reduced)
+mod <- glmer(now_ext ~ min_sbt_temp_change_abs_lag6 * age.max * age.maturity + (1|reg) + (1|year), family = binomial, data = extinction.reduced)
+mod <- glmer(now_ext ~ min_sbt_temp_change_abs * age.max * age.maturity + (1|reg) + (1|year), family = binomial, data = extinction.reduced)
+mod <- glmer(now_ext ~ max_sbt_temp_change_abs_lag6 * age.max * age.maturity + (1|reg) + (1|year), family = binomial, data = extinction.reduced)
+mod <- glmer(now_ext ~ seas_sst_temp_change_abs * age.max * age.maturity + (1|reg) + (1|year), family = binomial, data = extinction.reduced)
+mod <- glmer(now_ext ~ seas_sst_temp_change_abs * age.max * age.maturity + (1|reg) + (1|year), family = binomial, data = extinction.reduced)
+mod <- glmer(now_ext ~ min_sbt_temp_change_lag6 * age.max * age.maturity + (1|reg) + (1|year), family = binomial, data = extinction.reduced)
+mod <- glmer(now_ext ~ seas_sst_temp_change_abs_lag6 * age.max * age.maturity + (1|reg) + (1|year), family = binomial, data = extinction.reduced)
+mod <- glmer(now_ext ~ max_sbt_temp_change_abs_lag6 * age.max * age.maturity + age.maturity + (1|reg) + (1|year), family = binomial, data = extinction.reduced)
+mod <- glmer(now_ext ~ seas_sbt_temp_change_abs_lag3 * age.max * age.maturity + (1|reg) + (1|year), family = binomial, data = extinction.reduced)
+mod <- glmer(now_ext ~ min_sbt_temp_change_abs_lag1 * age.max * age.maturity + (1|reg) + (1|year), family = binomial, data = extinction.reduced)
+mod <- glmer(now_ext ~ max_sst_temp_change_abs_lag1 * age.max * age.maturity + (1|reg) + (1|year), family = binomial, data = extinction.reduced)
+
+mod <- glmer(now_ext ~ seas_sst_temp_change_abs * age.max + (1|reg) + (1|year), family = binomial, data = extinction.reduced)
+mod <- glmer(now_ext ~ max_sbt_temp_change_lag6 * age.max + (1|reg) + (1|year), family = binomial, data = extinction.reduced)
+mod <- glmer(now_ext ~ seas_sst_temp_change_abs + tl + age.max + age.maturity + (1|reg) + (1|year), family = binomial, data = extinction.reduced)
+mod <- glmer(now_ext ~ seas_sst_temp_change_abs + age.max + age.maturity + (1|reg) + (1|year), family = binomial, data = extinction.reduced)
+
+colonization_trait_table <- transpose(data.table(traittable_col_row1, traittable_col_row2, traittable_col_row3, traittable_col_row4, traittable_col_row5, traittable_col_row6, traittable_col_row7, traittable_col_row8, traittable_col_row9, traittable_col_row10, traittable_col_row11, traittable_col_row12, traittable_col_row13, traittable_col_row14, traittable_col_row15, traittable_col_row16, traittable_col_row17))
+
+colnames(colonization_trait_table) <- traittable_colnames
+
+colonization_trait_table[, Coef := round(as.numeric(Coef), 3)][, `Pr>|z|` := round(as.numeric(`Pr>|z|`), 3)][, `Coef 1` := round(as.numeric(`Coef 1`), 3)][, `Pr>|z| 1` := round(as.numeric(`Pr>|z| 1`))][, `Coef Int 1` := round(as.numeric(`Coef Int 1`), 3)][, `Pr>|z| Int 1` := round(as.numeric(`Pr>|z| Int 1`))][, `Coef 2` := round(as.numeric(`Coef 2`), 3)][, `Pr>|z| 2` := round(as.numeric(`Pr>|z| 2`))][, `Coef 3` := round(as.numeric(`Coef 3`), 3)][,`ΔAICc` := round(as.numeric(`ΔAICc`))]
+
+colonization_models_traits_xtable <- xtable(colonization_trait_table)
+
+print.xtable(colonization_models_traits_xtable, type = "html", file = "colonization_models_traits_xtable.html")
+print.xtable(colonization_models_traits_xtable, type = "latex", file = "colonization_models_traits_xtable.tex")
+```
+```{r}
+extinction_model_comparison_traits[187:204]
+
+```
 

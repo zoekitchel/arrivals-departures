@@ -86,9 +86,9 @@ for (i in 1:nrow(full_var_set)){
 }
 
 ```
-Above couldn't complete with all 
+Above couldn't complete with all, system crashes with three interactions for both colonizatino and below in extinction. 
 
-Making all models for extinction
+Making all models for extinction (RUN THIS TONIGHT)
 ```{r all models extinction}
 
 #to figure out whether or not model converged
@@ -119,7 +119,7 @@ for (i in 1614:nrow(extinction_model_comparison_traits)){
   extinction_model_comparison_traits[i,trait_variable := full_var_set$Var3[i]]
   extinction_model_comparison_traits[i,AICc := AICc(mod)]
   
-  warning <- mod2@optinfo$conv$lme4$messages[2]
+  warning <- mod@optinfo$conv$lme4$messages[2]
   converges <- ifelse(is.null(warning) == TRUE, T, F)
   
   extinction_model_comparison_traits[i, converge := converges]

@@ -469,16 +469,18 @@ RVI_table[, variable := factor(variable, levels = c("bottom", "surface", "absolu
 RVI_table[,type := as.factor(type)]
 #colonization
 RVI_col_plot <- ggplot(data = RVI_table[col_ext == "col",], aes(x=type, y = value, fill = variable)) +
-  geom_bar(stat="identity") +
-  scale_x_discrete(breaks = c("Change?", "depth", "lag", "Temp"), labels = c("Change in temp?", "Measurement Depth", "Lagged?", "Temp")) +
+  geom_bar(stat="identity", color = "black") +
+  scale_x_discrete(breaks = c("Change?", "depth", "lag", "Temp"), labels = c("Change in\ntemp?", "Measurement\nDepth", "Lagged?", "Temp")) +
   labs(x = "Temperature Variables", y = "Relative Variable Importance") +
-  theme_classic()
+  theme_classic() +
+  theme(text = element_text(size = 22), legend.position = "none")
 #extinction
 RVI_ext_plot <- ggplot(data = RVI_table[col_ext == "ext",], aes(x=type, y = value, fill = variable)) +
-  geom_bar(stat="identity") +
-  scale_x_discrete(breaks = c("Change?", "depth", "lag", "Temp"), labels = c("Change in temp?", "Measurement Depth", "Lagged?", "Temp")) +
+  geom_bar(stat="identity", color = "black") +
+  scale_x_discrete(breaks = c("Change?", "depth", "lag", "Temp"), labels = c("Change in\ntemp?", "Measurement\nDepth", "Lagged?", "Temp")) +
   labs(x = "Temperature Variables", y = "Relative Variable Importance") +
-  theme_classic()
+  theme_classic()  +
+  theme(text = element_text(size = 22), legend.position = "none")
 
 RVI_table
 RVI_col_plot
@@ -518,11 +520,27 @@ lags_v_RVI[10,3] <- sum(extinction_model_comparisons.nomean[grep("lag9", variabl
 RVI_lags <- ggplot(data = lags_v_RVI, aes(x = col_lag)) +
   geom_line(aes(y = col_RVI), col = "blue") +
   geom_line(aes(y = ext_RVI), col = "red") +
-  labs(x = "Lag", y = "Relative Variable Importance") +
-  scale_color_discrete() + #how to make a legend
-  theme_bw()
+  labs(x = "Lag (years)", y = "Relative Variable Importance") +
+  theme_classic() +
+  theme(text = element_text(size = 22, color = "black")) +
+  scale_x_continuous(breaks = 0:10)
 
 save(RVI_col_plot, RVI_ext_plot, RVI_lags, file = "RVI_plots.Rdata")
+
+setEPS()
+postscript("RVI_col_plot.eps")
+RVI_col_plot
+dev.off()
+
+setEPS()
+postscript("RVI_ext_plot.eps")
+RVI_ext_plot
+dev.off()
+
+setEPS()
+postscript("RVI_lags_plot.eps")
+RVI_lags
+dev.off()
 ```
 
 ********
