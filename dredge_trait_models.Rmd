@@ -9,6 +9,8 @@ Here, I'm going to try again to use dredge.
 library(MuMIn)
 library(data.table)
 library(lme4)
+library(ggplot2)
+library(dplyr)
 load("spp_master_ztemp.traits.Rdata")
 ```
 
@@ -104,7 +106,7 @@ extinction_model_comparison_traits <- as.data.table(matrix(nrow = nrow(full_var_
 extinction_model_comparison_traits[, temp_variable:=as.factor(V1)][, sign:=as.factor(V1)][, trait_variable:=as.factor(V1)][, AICc:=as.numeric(V1)][, converge:= as.logical(V1)]
 extinction_model_comparison_traits[, V1 := NULL]
 
-for (i in 1614:nrow(extinction_model_comparison_traits)){
+for (i in 1:nrow(extinction_model_comparison_traits)){
  
   temp <- full_var_set$Var1[i]
   sign <- full_var_set$Var2[i]
@@ -128,5 +130,266 @@ for (i in 1614:nrow(extinction_model_comparison_traits)){
     
 }
 
-save(colonization_model_comparison_traits, extinction_model_comparison_traits, file = "col_ext_mod_ext_wtraits.Rdata")
+save(extinction_model_comparison_traits, file = "col_ext_mod_ext_wtraits_extonly.Rdata")
+save(colonization_model_comparison_traits, file = "col_ext_mod_ext_wtraits_colonly.Rdata")
+```
+
+Next step is to look at RVI
+
+COLONIZATION
+
+```{r RVI colonization traits}
+#only raw temp has lag of 10 years, which means variable importance comparisons are unbalanced so I will get rid of these rows
+colonization_model_comparisons_traits.lag9max <- colonization_model_comparison_traits[!grepl("lag10", temp_variable), ][converge == TRUE,]#don't know what to do about the fact so many models (1/) don't converge, but for here will just get rid of all models that don't converge
+
+
+#add ∆AIC to tables
+min_col_AICc_trait <- min(colonization_model_comparisons_traits.lag9max[, AICc])
+colonization_model_comparisons_traits.lag9max[,"deltaAICc" := (AICc - min_col_AICc_trait)]
+
+#add relative likelihood exp( -0.5 * ∆AIC score for that model)
+colonization_model_comparisons_traits.lag9max[,"rel_likelihood" := exp((-0.5 * deltaAICc))]
+#sum relative likelihoods across all models
+colonization_model_comparisons_traits.lag9max.likelihoodsum <- sum(colonization_model_comparisons_traits.lag9max[, rel_likelihood])
+#Akaike weight for a model is this rel_likelihood devided by the sum of these values across all models
+colonization_model_comparisons_traits.lag9max[,"akaike_weight" := rel_likelihood/colonization_model_comparisons_traits.lag9max.likelihoodsum]
+
+#I want to look at relative importance FOR 
+#bottom/surface (bottom = includes sbt, grepl("sbt", variable))
+col_bottom_importance <- sum(colonization_model_comparisons_traits.lag9max[grep("sbt", temp_variable), ]$akaike_weight)
+col_surface_importance <- sum(colonization_model_comparisons_traits.lag9max[grep("sst", temp_variable), ]$akaike_weight)
+  col_bottom_importance.n <- count(colonization_model_comparisons_traits.lag9max[grepl("sbt", temp_variable), ]) #1103
+  col_surface_importance.n <- count(colonization_model_comparisons_traits.lag9max[grepl("sst", temp_variable), ]) #1092
+
+#lag/not lagged (grepl("lag", variable))
+col_lag_importance <- sum(colonization_model_comparisons_traits.lag9max[grep("lag", temp_variable), ]$akaike_weight)
+col_nolag_importance <- sum(colonization_model_comparisons_traits.lag9max[!grep("lag", temp_variable), ]$akaike_weight)
+  col_lag_importance.n <- count(colonization_model_comparisons_traits.lag9max[grepl("lag", temp_variable), ]) #1976
+  col_nolag_importance.n <- count(colonization_model_comparisons_traits.lag9max[!grepl("lag", temp_variable), ]) #239
+
+
+#absolute (grepl("abs", variable))
+col_abs_importance <- sum(colonization_model_comparisons_traits.lag9max[grep("abs", temp_variable), ]$akaike_weight)
+  col_abs_importance.n <- count(colonization_model_comparisons_traits.lag9max[grepl("abs", temp_variable), ])#788
+  
+#raw (!grepl("change"))
+col_raw_importance <- sum(colonization_model_comparisons_traits.lag9max[!grep("change", temp_variable), ]$akaike_weight)
+  col_raw_importance.n <- count(colonization_model_comparisons_traits.lag9max[!grepl("change", temp_variable), ]) #647
+
+#change (grepl("change", temp_variable), (!grepl("abs")))
+col_change_importance <- sum(colonization_model_comparisons_traits.lag9max[grep("change", temp_variable), ][!grep("abs", temp_variable),]$akaike_weight)
+  col_change_importance.n <- count(colonization_model_comparisons_traits.lag9max[grep("change", temp_variable), ][!grep("abs", temp_variable),])#780
+
+
+#type of temp temp_variable (max, min, seas)
+col_max_temp_importance <- sum(colonization_model_comparisons_traits.lag9max[grep("max", temp_variable), ]$akaike_weight)
+col_min_temp_importance <- sum(colonization_model_comparisons_traits.lag9max[grep("min", temp_variable), ]$akaike_weight)
+col_seas_temp_importance <- sum(colonization_model_comparisons_traits.lag9max[grep("seas", temp_variable), ]$akaike_weight)
+  col_max_temp_importance.n <- count(colonization_model_comparisons_traits.lag9max[grepl("max", temp_variable), ]) #729
+  col_min_temp_importance.n <- count(colonization_model_comparisons_traits.lag9max[grepl("min", temp_variable), ]) #723
+  col_seas_temp_importance.n <- count(colonization_model_comparisons_traits.lag9max[grepl("seas", temp_variable), ]) #743
+  
+
+#traits included
+col_age.max_importance <- sum(colonization_model_comparisons_traits.lag9max[grep("age.max", trait_variable), ]$akaike_weight)
+col_age.maturity_importance <- sum(colonization_model_comparisons_traits.lag9max[grep("age.maturity", trait_variable), ]$akaike_weight)
+col_tl_importance <- sum(colonization_model_comparisons_traits.lag9max[grep("tl", trait_variable), ]$akaike_weight)
+  col_age.max_importance.n <- count(colonization_model_comparisons_traits.lag9max[grepl("age.max", trait_variable), ]) #963
+  col_age.maturity_importance.n <- count(colonization_model_comparisons_traits.lag9max[grepl("age.maturity", trait_variable), ]) #1076
+  col_tl_importance.n <- count(colonization_model_comparisons_traits.lag9max[grepl("tl", trait_variable), ]) #1004
+
+
+#interaction between trait and temperature
+col_interaction_temp_trait_importance <- sum(colonization_model_comparisons_traits.lag9max[grep("\\*", sign), ]$akaike_weight)
+  col_interaction_temp_trait_importance.n <- count(colonization_model_comparisons_traits.lag9max[grepl("\\*", sign), ]) #793
+
+#interaction between traits
+col_interaction_trait_trait_importance <- sum(colonization_model_comparisons_traits.lag9max[grep("\\*", trait_variable), ]$akaike_weight)
+  col_interaction_trait_trait_importance.n <- count(colonization_model_comparisons_traits.lag9max[grepl("\\*", trait_variable), ]) #44
+
+#save this table
+save(colonization_model_comparisons_traits.lag9max, file = "colonization_models_traits_with_likelihoods.Rdata")
+```
+
+```{r put RVIs for colonization into data table}
+col_ext <- c("col","col","col","col","col", "col","col", "col", "col","col", "col","col", "col", "col","col")
+type <- c("depth", "depth", "lag", "lag", "Change?", "Change?", "Change?", "Temp", "Temp", "Temp", "Trait", "Trait", "Trait", "Interaction", "Interaction")
+variable <- c("bottom", "surface", "no_lag", "lagged", "absolute_value_change", "change", "raw", "Min", "Max", "Seas", "age.max", "age.maturity", "tl", "tempxtrait", "traitxtrait")
+value <- c(col_bottom_importance, col_surface_importance, col_nolag_importance, col_lag_importance, col_abs_importance, col_change_importance, col_raw_importance, col_min_temp_importance, col_max_temp_importance, col_seas_temp_importance, col_age.max_importance, col_age.maturity_importance, col_tl_importance, col_interaction_temp_trait_importance, col_interaction_trait_trait_importance)
+
+RVI_col_traits <- data.table(col_ext, type, variable, value)
+```
+
+EXTINCTION
+
+```{r RVI extinction traits}
+#only raw temp has lag of 10 years, which means variable importance comparisons are unbalanced so I will get rid of these rows
+extinction_model_comparisons_traits.lag9max <- extinction_model_comparison_traits[!grepl("lag10", temp_variable), ][converge == TRUE,]#don't know what to do about the fact so many models (1/) don't converge, but for here will just get rid of all models that don't converge
+
+
+#add ∆AIC to tables
+min_ext_AICc_trait <- min(extinction_model_comparisons_traits.lag9max[, AICc])
+extinction_model_comparisons_traits.lag9max[,"deltaAICc" := (AICc - min_ext_AICc_trait)]
+
+#add relative likelihood exp( -0.5 * ∆AIC score for that model)
+extinction_model_comparisons_traits.lag9max[,"rel_likelihood" := exp((-0.5 * deltaAICc))]
+#sum relative likelihoods across all models
+extinction_model_comparisons_traits.lag9max.likelihoodsum <- sum(extinction_model_comparisons_traits.lag9max[, rel_likelihood])
+#Akaike weight for a model is this rel_likelihood devided by the sum of these values across all models
+extinction_model_comparisons_traits.lag9max[,"akaike_weight" := rel_likelihood/extinction_model_comparisons_traits.lag9max.likelihoodsum]
+
+#I want to look at relative importance FOR 
+#bottom/surface (bottom = includes sbt, grepl("sbt", variable))
+ext_bottom_importance <- sum(extinction_model_comparisons_traits.lag9max[grep("sbt", temp_variable), ]$akaike_weight)
+  ext_bottom_importance.n <- count(extinction_model_comparisons_traits.lag9max[grepl("sbt", temp_variable), ]) #1142
+ext_surface_importance <- sum(extinction_model_comparisons_traits.lag9max[grep("sst", temp_variable), ]$akaike_weight)
+  ext_surface_importance.n <- count(extinction_model_comparisons_traits.lag9max[grepl("sst", temp_variable), ]) #1114
+  
+#lag/not lagged (grepl("lag", variable))
+ext_lag_importance <- sum(extinction_model_comparisons_traits.lag9max[grep("lag", temp_variable), ]$akaike_weight)
+  ext_lag_importance.n <- count(extinction_model_comparisons_traits.lag9max[grepl("lag", temp_variable),]) #2030
+ext_nolag_importance <- sum(extinction_model_comparisons_traits.lag9max[!grep("lag", temp_variable), ]$akaike_weight)
+  ext_nolag_importance.n <- count(extinction_model_comparisons_traits.lag9max[!grepl("lag", temp_variable), ]) #245
+
+  #absolute (grepl("abs", variable))
+ext_abs_importance <- sum(extinction_model_comparisons_traits.lag9max[grep("abs", temp_variable), ]$akaike_weight)
+  ext_abs_importance.n <- count(extinction_model_comparisons_traits.lag9max[grepl("abs", temp_variable), ]) #810
+
+  #raw (!grepl("change"))
+ext_raw_importance <- sum(extinction_model_comparisons_traits.lag9max[!grep("change", temp_variable), ]$akaike_weight)
+  ext_raw_importance.n <- count(extinction_model_comparisons_traits.lag9max[!grepl("change", temp_variable), ]) #669
+
+#change (grepl("change", temp_variable), (!grepl("abs")))
+ext_change_importance <- sum(extinction_model_comparisons_traits.lag9max[grep("change", temp_variable), ][!grep("abs", temp_variable),]$akaike_weight)
+  ext_change_importance.n <- count(extinction_model_comparisons_traits.lag9max[grepl("change", temp_variable), ][!grepl("abs", temp_variable),])#796
+
+#type of temp temp_variable (max, min, seas)
+ext_max_temp_importance <- sum(extinction_model_comparisons_traits.lag9max[grep("max", temp_variable), ]$akaike_weight)
+  ext_max_temp_importance.n <- count(extinction_model_comparisons_traits.lag9max[grepl("max", temp_variable), ]) #742
+ext_min_temp_importance <- sum(extinction_model_comparisons_traits.lag9max[grep("min", temp_variable), ]$akaike_weight)
+  ext_min_temp_importance.n <- count(extinction_model_comparisons_traits.lag9max[grepl("min", temp_variable), ]) #762
+ext_seas_temp_importance <- sum(extinction_model_comparisons_traits.lag9max[grep("seas", temp_variable), ]$akaike_weight)
+  ext_seas_temp_importance.n <- count(extinction_model_comparisons_traits.lag9max[grepl("seas", temp_variable), ]) #752
+
+#traits included
+ext_age.max_importance <- sum(extinction_model_comparisons_traits.lag9max[grep("age.max", trait_variable), ]$akaike_weight)
+ext_age.maturity_importance <- sum(extinction_model_comparisons_traits.lag9max[grep("age.maturity", trait_variable), ]$akaike_weight)
+ext_tl_importance <- sum(extinction_model_comparisons_traits.lag9max[grep("tl", trait_variable), ]$akaike_weight)
+
+  ext_age.max_importance.n <- count(extinction_model_comparisons_traits.lag9max[grepl("age.max", trait_variable), ]) #1000
+  ext_age.maturity_importance.n <- count(extinction_model_comparisons_traits.lag9max[grepl("age.maturity", trait_variable), ]) #1112
+  ext_tl_importance.n <- count(extinction_model_comparisons_traits.lag9max[grepl("tl", trait_variable), ]) #1051
+
+#interaction between trait and temperature
+ext_interaction_temp_trait_importance <- sum(extinction_model_comparisons_traits.lag9max[grep("\\*", sign), ]$akaike_weight)
+  ext_interaction_temp_trait_importance.n <- count(extinction_model_comparisons_traits.lag9max[grepl("\\*", sign), ]) #820
+#interaction between traits
+ext_interaction_trait_trait_importance <- sum(extinction_model_comparisons_traits.lag9max[grep("\\*", trait_variable), ]$akaike_weight)
+  ext_interaction_trait_trait_importance.n <- count(extinction_model_comparisons_traits.lag9max[grepl("\\*", trait_variable), ]) #54
+
+#save this table
+save(extinction_model_comparisons_traits.lag9max, file = "extinction_models_traits_with_likelihoods.Rdata")
+```
+
+```{r put RVIs for extinction into data table}
+col_ext <- c("ext","ext","ext","ext","ext", "ext","ext", "ext", "ext","ext", "ext","ext", "ext", "ext","ext")
+type <- c("depth", "depth", "lag", "lag", "Change?", "Change?", "Change?", "Temp", "Temp", "Temp", "Trait", "Trait", "Trait", "Interaction", "Interaction")
+variable <- c("bottom", "surface", "no_lag", "lagged", "absolute_value_change", "change", "raw", "Min", "Max", "Seas", "age.max", "age.maturity", "tl", "tempxtrait", "traitxtrait")
+value <- c(ext_bottom_importance, ext_surface_importance, ext_nolag_importance, ext_lag_importance, ext_abs_importance, ext_change_importance, ext_raw_importance, ext_min_temp_importance, ext_max_temp_importance, ext_seas_temp_importance, ext_age.max_importance, ext_age.maturity_importance, ext_tl_importance, ext_interaction_temp_trait_importance, ext_interaction_trait_trait_importance)
+
+RVI_ext_traits <- data.table(col_ext, type, variable, value)
+```
+
+Merge RVI tables for colonization and extinction with traits, and then graph
+```{r merge RVI trait tables and plot}
+RVI_trait_table <- as.data.table(rbind(RVI_col_traits, RVI_ext_traits)) #bind RVI for colonizations and extinctions
+
+RVI_trait_table.r <- RVI_trait_table[!grep("surface", variable)][!grep("lagged", variable)]
+
+#change order of factor levels
+RVI_trait_table.r[, variable := factor(variable, levels = c("bottom", "no_lag", "raw", "change", "absolute_value_change", "Min", "Max", "Seas", "age.max", "age.maturity", "tl", "tempxtrait", "traitxtrait"))]
+
+save(RVI_trait_table, file = "RVI_trait_table.Rdata")
+
+ggplot(data = RVI_trait_table.r, aes(x=variable, y = value, fill = col_ext)) +
+  geom_bar(stat = "identity", position = "dodge") +
+  scale_x_discrete(breaks = c("bottom", "no_lag", "raw", "change", "absolute_value_change", "Min", "Max", "Seas", "age.max", "age.maturity", "tl", "tempxtrait", "traitxtrait"), labels = c("Bottom\nTemp", "No\nLag", "Raw\nTemp", "Change in \nTemp", "| Change in\n Temp |", "Min\nTemp", "Max\nTemp", "Seas", "Age\nMax", "Age\nMaturity", "Trophic\nLevel", "Temp*\nTrait", "Trait*\nTrait")) +
+  labs(x = "Temperature and Trait Variables", y = "Relative Variable Importance")  +
+  theme_bw()
+
+```
+
+Another way to visualize
+```{r visualizing RVI with traits}
+#put levels into correct order for viewing
+RVI_trait_table[, variable := factor(variable, levels = c("bottom", "surface", "absolute_value_change", "change", "raw", "no_lag", "lagged", "Min", "Max", "Seas", "age.max", "age.maturity", "tl", "tempxtrait", "traitxtrait"))][,type := factor(type, levels = c("Change?", "depth", "lag", "Temp", "Trait", "Interaction"))]
+#make types factors as well
+
+#colonization
+RVI_col_trait_plot <- ggplot(data = RVI_trait_table[col_ext == "col" & (type == "Trait" | type == "Interaction")], aes(x=variable, y = value)) +
+  geom_bar(stat= "identity") +
+  scale_x_discrete(breaks = c("age.max", "age.maturity", "tl", "tempxtrait", "traitxtrait"), labels = c("Maximum\nAge", "Age of\nMaturity", "Trophic\nLevel", "Temp Trait\nInteraction", "Trait Trait\nInteraction")) +
+  labs(x = "Trait Variables", y = "Relative Variable Importance") +
+  theme_classic() +
+  theme(text = element_text(size = 20))
+#extinction
+RVI_ext_trait_plot <- ggplot(data = RVI_trait_table[col_ext == "ext" & (type == "Trait" | type == "Interaction")], aes(x=variable, y = value)) +
+  geom_bar(stat= "identity") +
+  scale_x_discrete(breaks = c("age.max", "age.maturity", "tl", "tempxtrait", "traitxtrait"), labels = c("Maximum\nAge", "Age of\nMaturity", "Trophic\nLevel", "Temp Trait\nInteraction", "Trait Trait\nInteraction")) +
+  labs(x = "Trait Variables", y = "Relative Variable Importance") +
+  theme_classic() +
+  theme(text = element_text(size = 20))
+```
+Let's see how the RVI importance varies by looking at specific lag values for these trait models
+```{r make a plot here for variability across lag values for trait models}
+#first, table for lags
+lags_v_RVI_trait <- data.table(col_lag = c(0:9), col_RVI = 0, ext_RVI = 0)
+#colonization
+lags_v_RVI_trait[1,2] <- 1-sum(colonization_model_comparisons_traits.lag9max[grep("lag", temp_variable), ]$akaike_weight)
+lags_v_RVI_trait[2,2] <- sum(colonization_model_comparisons_traits.lag9max[grep("lag1", temp_variable), ]$akaike_weight)
+lags_v_RVI_trait[3,2] <- sum(colonization_model_comparisons_traits.lag9max[grep("lag2", temp_variable), ]$akaike_weight)
+lags_v_RVI_trait[4,2] <- sum(colonization_model_comparisons_traits.lag9max[grep("lag3", temp_variable), ]$akaike_weight)
+lags_v_RVI_trait[5,2] <- sum(colonization_model_comparisons_traits.lag9max[grep("lag4", temp_variable), ]$akaike_weight)
+lags_v_RVI_trait[6,2] <- sum(colonization_model_comparisons_traits.lag9max[grep("lag5", temp_variable), ]$akaike_weight)
+lags_v_RVI_trait[7,2] <- sum(colonization_model_comparisons_traits.lag9max[grep("lag6", temp_variable), ]$akaike_weight)
+lags_v_RVI_trait[8,2] <- sum(colonization_model_comparisons_traits.lag9max[grep("lag7", temp_variable), ]$akaike_weight)
+lags_v_RVI_trait[9,2] <- sum(colonization_model_comparisons_traits.lag9max[grep("lag8", temp_variable), ]$akaike_weight)
+lags_v_RVI_trait[10,2] <- sum(colonization_model_comparisons_traits.lag9max[grep("lag9", temp_variable), ]$akaike_weight)
+#extinction
+lags_v_RVI_trait[1,3] <- 1-sum(extinction_model_comparisons_traits.lag9max[grep("lag", temp_variable), ]$akaike_weight)
+lags_v_RVI_trait[2,3] <- sum(extinction_model_comparisons_traits.lag9max[grep("lag1", temp_variable), ]$akaike_weight)
+lags_v_RVI_trait[3,3] <- sum(extinction_model_comparisons_traits.lag9max[grep("lag2", temp_variable), ]$akaike_weight)
+lags_v_RVI_trait[4,3] <- sum(extinction_model_comparisons_traits.lag9max[grep("lag3", temp_variable), ]$akaike_weight)
+lags_v_RVI_trait[5,3] <- sum(extinction_model_comparisons_traits.lag9max[grep("lag4", temp_variable), ]$akaike_weight)
+lags_v_RVI_trait[6,3] <- sum(extinction_model_comparisons_traits.lag9max[grep("lag5", temp_variable), ]$akaike_weight)
+lags_v_RVI_trait[7,3] <- sum(extinction_model_comparisons_traits.lag9max[grep("lag6", temp_variable), ]$akaike_weight)
+lags_v_RVI_trait[8,3] <- sum(extinction_model_comparisons_traits.lag9max[grep("lag7", temp_variable), ]$akaike_weight)
+lags_v_RVI_trait[9,3] <- sum(extinction_model_comparisons_traits.lag9max[grep("lag8", temp_variable), ]$akaike_weight)
+lags_v_RVI_trait[10,3] <- sum(extinction_model_comparisons_traits.lag9max[grep("lag9", temp_variable), ]$akaike_weight)
+
+RVI_lags_traits <- ggplot(data = lags_v_RVI_trait, aes(x = col_lag)) +
+  geom_line(aes(y = col_RVI), col = "blue") +
+  geom_line(aes(y = ext_RVI), col = "red") +
+  labs(x = "Lag (years)", y = "Relative Variable Importance") +
+  theme_classic() +
+  theme(text = element_text(size = 22, color = "black")) +
+  scale_x_continuous(breaks = 0:10) +
+  scale_y_continuous(limits = 0:1)
+
+save(RVI_col_trait_plot, RVI_ext_trait_plot, RVI_lags_traits, file = "RVI_plots_traits.Rdata")
+
+setEPS()
+postscript("RVI_col_trait_plot.eps")
+RVI_col_trait_plot
+dev.off()
+
+setEPS()
+postscript("RVI_ext_trait_plot.eps")
+RVI_ext_trait_plot
+dev.off()
+
+setEPS()
+postscript("RVI_lags_trait_plot.eps")
+RVI_lags_traits
+dev.off()
 ```
