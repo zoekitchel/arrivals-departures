@@ -253,28 +253,24 @@ load(&quot;col_ext/hauls.Rdata&quot;)</code></pre>
 <p>Let’s link species data from spp_master to temp data with lags and changes</p>
 <!-- rnb-text-end -->
 <!-- rnb-chunk-begin -->
-<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuI21hdGNoIHJlZ2lvbiBuYW1lcyBiZXR3ZWVuIHR3byBkYXRhIHRhYmxlc1xucmVnIDwtIGxldmVscyhhcy5mYWN0b3Ioc3BwX21hc3RlciRyZWcpKVxucmVnaW9uIDwtIGMoXCJBRlNDX0FsZXV0aWFuc1wiLFwiQUZTQ19FQlNcIiwgXCJTRUZTQ19HT01leFwiLCBcIkFGU0NfR09BXCIsIFwiTkVGU0NfTkVVU1wiLCBcIkRGT19OZXdmb3VuZGxhbmRcIiwgXCJTQ0ROUl9TRVVTXCIsIFwiREZPX1Njb3RpYW5TaGVsZlwiLCBcIkFGU0NfV0NUcmlcIilcbnJlZ2lvbnMuZHQgPC0gZGF0YS50YWJsZShyZWcsIHJlZ2lvbilcblxuaGF1bHMgPC0gaGF1bHNbcmVnaW9ucy5kdCwgbm9tYXRjaCA9IDAsIG9uID0gYyhcInJlZ2lvblwiKV1cblxuaGF1bHNbLCByZWcgOj0gYXMuZmFjdG9yKHJlZyldICNtYWtlIHJlZ2lvbiBhIGZhY3RvciBpbiBoYXVsc1xuXG5gYGAifQ== -->
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuI21hdGNoIHJlZ2lvbiBuYW1lcyBiZXR3ZWVuIHR3byBkYXRhIHRhYmxlc1xucmVnIDwtIGxldmVscyhhcy5mYWN0b3Ioc3BwX21hc3RlciRyZWcpKVxucmVnaW9uIDwtIGMoXCJBRlNDX0FsZXV0aWFuc1wiLFwiQUZTQ19FQlNcIiwgXCJTRUZTQ19HT01leFwiLCBcIkFGU0NfR09BXCIsIFwiTkVGU0NfTkVVU1wiLCBcIkRGT19OZXdmb3VuZGxhbmRcIiwgXCJTQ0ROUl9TRVVTXCIsIFwiREZPX1Njb3RpYW5TaGVsZlwiLCBcIkFGU0NfV0NUcmlcIilcbnJlZ2lvbnMuZHQgPC0gZGF0YS50YWJsZShyZWcsIHJlZ2lvbilcbmhhdWxzIDwtIGhhdWxzW3JlZ2lvbnMuZHQsIG5vbWF0Y2ggPSAwLCBvbiA9IGMoXCJyZWdpb25cIildXG5oYXVsc1ssIHJlZyA6PSBhcy5mYWN0b3IocmVnKV0gI21ha2UgcmVnaW9uIGEgZmFjdG9yIGluIGhhdWxzXG5gYGAifQ== -->
 <pre class="r"><code>#match region names between two data tables
 reg &lt;- levels(as.factor(spp_master$reg))
 region &lt;- c(&quot;AFSC_Aleutians&quot;,&quot;AFSC_EBS&quot;, &quot;SEFSC_GOMex&quot;, &quot;AFSC_GOA&quot;, &quot;NEFSC_NEUS&quot;, &quot;DFO_Newfoundland&quot;, &quot;SCDNR_SEUS&quot;, &quot;DFO_ScotianShelf&quot;, &quot;AFSC_WCTri&quot;)
 regions.dt &lt;- data.table(reg, region)
-
 hauls &lt;- hauls[regions.dt, nomatch = 0, on = c(&quot;region&quot;)]
-
-hauls[, reg := as.factor(reg)] #make region a factor in hauls
-</code></pre>
+hauls[, reg := as.factor(reg)] #make region a factor in hauls</code></pre>
 <!-- rnb-source-end -->
 <!-- rnb-chunk-end -->
 <!-- rnb-text-begin -->
 <p>Just realizing now that I currently have data from 12 months before each trawl event. This isn’t appropriate, as my colonization/extinction data is per year. FOR NOW (before I speak with Malin, update spoke to Malin he agreed that this worked), I will just use earliest month in each year.</p>
 <!-- rnb-text-end -->
 <!-- rnb-chunk-begin -->
-<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuI2tlZXAgb25lIGxpbmUgb2YgZGF0YSBmb3IgZWFjaCB5ZWFyL3JlZ2lvbiBjb21ibywgYW5kIHBpY2sgaXQgYmFzZWQgb24gc21hbGxlciBtb250aCB2YWx1ZVxuaGF1bHMyIDwtIGhhdWxzW2hhdWxzWywgLklbMV0sIGJ5ID0gYyhcInllYXJcIiwgXCJyZWdpb25cIildJFYxXVxuY29scyA8LSBjKDUsMzg6Mjg2KVxuaGF1bHMyLnIgPC0gaGF1bHMyWywgLi5jb2xzXSAjLi4gcHVsbHMgaW4gdmFyaWFibGUgdnMgY29sdW1uIG5hbWVcblxuYGBgIn0= -->
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuI2tlZXAgb25lIGxpbmUgb2YgZGF0YSBmb3IgZWFjaCB5ZWFyL3JlZ2lvbiBjb21ibywgYW5kIHBpY2sgaXQgYmFzZWQgb24gc21hbGxlciBtb250aCB2YWx1ZVxuaGF1bHMyIDwtIGhhdWxzW2hhdWxzWywgLklbMV0sIGJ5ID0gYyhcInllYXJcIiwgXCJyZWdpb25cIildJFYxXVxuY29scyA8LSBjKDUsMzg6Mjg2KVxuaGF1bHMyLnIgPC0gaGF1bHMyWywgLi5jb2xzXSAjLi4gcHVsbHMgaW4gdmFyaWFibGUgdnMgY29sdW1uIG5hbWVcbmBgYCJ9 -->
 <pre class="r"><code>#keep one line of data for each year/region combo, and pick it based on smaller month value
 hauls2 &lt;- hauls[hauls[, .I[1], by = c(&quot;year&quot;, &quot;region&quot;)]$V1]
 cols &lt;- c(5,38:286)
-hauls2.r &lt;- hauls2[, ..cols] #.. pulls in variable vs column name
-</code></pre>
+hauls2.r &lt;- hauls2[, ..cols] #.. pulls in variable vs column name</code></pre>
 <!-- rnb-source-end -->
 <!-- rnb-chunk-end -->
 <!-- rnb-text-begin -->

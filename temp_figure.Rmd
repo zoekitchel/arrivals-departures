@@ -12,35 +12,59 @@ library(ggplot2)
 library(data.table)
 
 load("hauls_fulltempdata.Rdata")
+load("spp_master.Rdata")
 
 ```
 New data table with unique values
-```{r unique data table}
-hauls2 <- unique(hauls, by = c("region", "year"))
+
+```{r link species data to temp data}
+#match region names between two data tables
+reg <- levels(as.factor(spp_master$reg))
+region <- c("AFSC_Aleutians","AFSC_EBS", "SEFSC_GOMex", "AFSC_GOA", "NEFSC_NEUS", "DFO_Newfoundland", "SCDNR_SEUS", "DFO_ScotianShelf", "AFSC_WCTri")
+regions.dt <- data.table(reg, region)
+
+hauls <- hauls[regions.dt, nomatch = 0, on = c("region")]
+
+hauls[, reg := as.factor(reg)] #make region a factor in hauls
+
+```
+Just realizing now that I currently have data from 12 months before each trawl event. This isn't appropriate, as my colonization/extinction data is per year. FOR NOW (before I speak with Malin, update spoke to Malin he agreed that this worked), I will just use earliest month in each year. 
+
+```{r only keep earlier year temp data}
+#keep one line of data for each year/region combo, and pick it based on smaller month value
+hauls2 <- hauls[hauls[, .I[1], by = c("year", "region")]$V1]
+cols <- c(5,38:286)
+hauls2.r <- hauls2[, ..cols] #.. pulls in variable vs column name
+
 ```
 
 Temp through time facet wrap
 ```{r temp facet}
 #temperature through time
-ggplot(data=hauls2, aes(x=year, y = min_sst_temp)) +
-  geom_point(aes(y = min_sst_temp, col = "blue")) +
-  geom_point(aes(y = max_sst_temp, col = "red")) +
-  geom_point(aes(y = seas_sst_temp, col = "grey")) +
-  labs(x="Year", y="Surface\n Temperature (˚C)") +
+#year as numeric to fix axis
+hauls2.r$year <- as.numeric((as.character(hauls2.r$year)))
+ggplot(data=hauls2.r, aes(x=year)) +
+  geom_point(aes(y = min_sst_temp, shape = 20), col = "darkblue") +
+  geom_point(aes(y = max_sst_temp, shape = 18),  col = "darkred") +
+  geom_point(aes(y = seas_sst_temp, shape = 3),  col = "slategrey") +
+  scale_shape_identity() +
+  labs(x="Year", y="Surface Temperature (˚C)") +
   ylim(0,25) +
   theme_classic() +
-  facet_wrap (~region) +
-  theme(text=element_text(size = 20))
-
-summary(hauls2$seas_sst_temp)
+  facet_wrap (~reg) +
+  theme(text=element_text(size = 19), axis.text.x = element_text(angle = 90))
 
 #temperature through time
-ggplot(data=hauls, aes(x=year, y=mean_sbt_temp, col = reg)) +
-  geom_point() +
-  labs(x="Year", y="Mean Annual Bottom\n Temperature (˚C)") +
+ggplot(data=hauls2.r, aes(x=year)) +
+  geom_point(aes(y = min_sbt_temp, shape = 20), col = "darkblue") +
+  geom_point(aes(y = max_sbt_temp, shape = 18),  col = "darkred") +
+  geom_point(aes(y = seas_sbt_temp, shape = 3),  col = "slategrey") +
+  scale_shape_identity() +
+  labs(x="Year", y="Bottom Temperature (˚C)") +
   ylim(0,25) +
-  geom_smooth(aes(col = reg), se = F, method = "lm") +
   theme_classic() +
-  theme(text=element_text(size = 20))
+  facet_wrap (~reg) +
+  theme(text=element_text(size = 19), axis.text.x = element_text(angle = 90))
+
 ```
 
