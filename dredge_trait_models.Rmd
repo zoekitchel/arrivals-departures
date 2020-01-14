@@ -18,11 +18,20 @@ First, get rid of all rows that don't have all three trait variables
 ```{r get rid of rows without three trait variables}
 spp_master_ztemp.traits.nonas <- na.omit(spp_master_ztemp.traits, cols=c("age.max", "age.maturity", "tl")) #gets rid of any rows missing any of these trait data values
 spp_master_ztemp.traits.nonas.nomean <- spp_master_ztemp.traits.nonas[, grep("mean*", colnames(spp_master_ztemp.traits.nonas)):=NULL] #get rid of columns with mean temp variables
+length(unique(spp_master_ztemp.traits.nonas$spp))
 ```
 
 To see which variables to include... 
 ```{r}
 cor(spp_master_ztemp.traits.nonas.nomean[,c("age.max", "age.maturity", "tl")])
+
+mod1 <- lm(age.max ~ age.maturity, data = spp_master_ztemp.traits.nonas.nomean)
+mod2 <- lm(age.max ~ tl, data = spp_master_ztemp.traits.nonas.nomean)
+mod3 <- lm(age.maturity ~ tl, data = spp_master_ztemp.traits.nonas.nomean)
+
+mod1
+mod2
+mod3
                                   
 ``` 
 

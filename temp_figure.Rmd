@@ -1,0 +1,46 @@
+---
+title: "Temp_figure"
+output: html_notebook
+---
+
+This is an [R Markdown](http://rmarkdown.rstudio.com) Notebook. When you execute code within the notebook, the results appear beneath the code. 
+
+Try executing this chunk by clicking the *Run* button within the chunk or by placing your cursor inside it and pressing *Cmd+Shift+Enter*. 
+
+```{r setup}
+library(ggplot2)
+library(data.table)
+
+load("hauls_fulltempdata.Rdata")
+
+```
+New data table with unique values
+```{r unique data table}
+hauls2 <- unique(hauls, by = c("region", "year"))
+```
+
+Temp through time facet wrap
+```{r temp facet}
+#temperature through time
+ggplot(data=hauls2, aes(x=year, y = min_sst_temp)) +
+  geom_point(aes(y = min_sst_temp, col = "blue")) +
+  geom_point(aes(y = max_sst_temp, col = "red")) +
+  geom_point(aes(y = seas_sst_temp, col = "grey")) +
+  labs(x="Year", y="Surface\n Temperature (˚C)") +
+  ylim(0,25) +
+  theme_classic() +
+  facet_wrap (~region) +
+  theme(text=element_text(size = 20))
+
+summary(hauls2$seas_sst_temp)
+
+#temperature through time
+ggplot(data=hauls, aes(x=year, y=mean_sbt_temp, col = reg)) +
+  geom_point() +
+  labs(x="Year", y="Mean Annual Bottom\n Temperature (˚C)") +
+  ylim(0,25) +
+  geom_smooth(aes(col = reg), se = F, method = "lm") +
+  theme_classic() +
+  theme(text=element_text(size = 20))
+```
+

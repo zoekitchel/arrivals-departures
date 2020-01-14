@@ -1030,10 +1030,24 @@ Now we'll visualize regions in a plot
 #manipulate data
 region_summaries.m <- melt(region_summaries[,c(1:3,5)], id.vars = "reg")
 
-ggplot(aes(x=reg, y = value, fill = variable), data = region_summaries.m) +
+col_ext_v_observations <- ggplot(aes(x=reg, y = value, fill = variable), data = region_summaries.m) +
   geom_bar(stat = "identity", position = "dodge") +
-  labs(x = "Region", y = "Observations")
+  labs(x = "Region", y = "Observations") +
+  theme_classic() +
+  theme(text = element_text(size = 20))
+
+ggsave(col_ext_v_observations, file = "col_ext_v_observations.eps")
   
 region_summaries.m
+
+#total number of colonizations
+total_colonizations <- sum(region_summaries$n.col)
+total_extinctions <- sum(region_summaries$n.ext)
+total_observations <- sum(region_summaries$n)
+
+total_colonizations/total_observations
+total_extinctions/total_observations
+total_observations
+
 ```
 This shows that no specific region is monopolizing the patterns we see. 

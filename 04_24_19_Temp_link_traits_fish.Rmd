@@ -99,19 +99,43 @@ library(ggplot2)
 #temperature through time
 ggplot(data=spp_master_ztemp, aes(x=year, y=mean_sst_temp, col = reg)) +
   geom_point() +
-  labs(x="Year", y="Mean Annual Surface Temperature (˚C)") +
+  labs(x="Year", y="Mean Annual Surface\n Temperature (˚C)") +
   ylim(0,25) +
   geom_smooth(aes(col = reg), se = F, method = "lm") +
-  theme_bw()
+  theme_classic() +
+  theme(text=element_text(size = 20))
 
 #temperature through time
 ggplot(data=spp_master_ztemp, aes(x=year, y=mean_sbt_temp, col = reg)) +
   geom_point() +
-  labs(x="Year", y="Mean Annual Bottom Temperature (˚C)") +
+  labs(x="Year", y="Mean Annual Bottom\n Temperature (˚C)") +
   ylim(0,25) +
   geom_smooth(aes(col = reg), se = F, method = "lm") +
-  theme_bw()
+  theme_classic() +
+  theme(text=element_text(size = 20))
 
+```
+Get to know facet wrap but with facet wrap instead
+```{r temp over time}
+#temperature through time
+ggplot(data=spp_master_ztemp, aes(x=year)) +
+  geom_line(aes(y = min_sst_temp, col = "blue")) +
+  geom_line(aes(y = max_sst_temp, col = "red")) +
+  geom_line(aes(y = seas_sst_temp, col = "grey")) +
+  labs(x="Year", y="Surface\n Temperature (˚C)") +
+  ylim(0,25) +
+  theme_classic() +
+  facet_wrap (~reg) +
+  theme(text=element_text(size = 20))
+
+#temperature through time
+ggplot(data=spp_master_ztemp, aes(x=year, y=mean_sbt_temp, col = reg)) +
+  geom_point() +
+  labs(x="Year", y="Mean Annual Bottom\n Temperature (˚C)") +
+  ylim(0,25) +
+  geom_smooth(aes(col = reg), se = F, method = "lm") +
+  theme_classic() +
+  theme(text=element_text(size = 20))
 ```
 
 What about correlations among temperature variables?
