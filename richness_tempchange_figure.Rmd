@@ -41,6 +41,8 @@ ggplot(data = spp_master_richness, aes(y = richness_change)) +
   theme_classic() +
   theme(text = element_text(size = 20))
 
+ggsave(width = 3, height = 2.5, units = c("in"), path = "plots/richness_change", file = "richness_change_max_sbt.jpg")
+
 ggplot(data = spp_master_richness, aes(y = richness_change)) +
   geom_point(aes(x=min_sbt_temp_change), col = "blue") +
   labs(y = "Raw Richness Change") +
@@ -50,7 +52,7 @@ ggplot(data = spp_master_richness, aes(y = richness_change)) +
   theme(text = element_text(size = 20))
 
 ggplot(data = spp_master_richness, aes(y = richness_change)) +
-  geom_point(aes(x=mean_sbt_temp_change), col = "black") +
+  geom_point(aes(x=mean_sbt_temp_change), col = "grey") +
   labs(y = "Raw Richness Change") +
   geom_hline(aes(yintercept = 0)) +
   geom_vline(aes(xintercept = 0)) +
@@ -75,7 +77,7 @@ ggplot(data = spp_master_richness, aes(y = richness_change)) +
   theme(text = element_text(size = 20))
 
 ggplot(data = spp_master_richness, aes(y = richness_change)) +
-  geom_point(aes(x=mean_sst_temp_change), col = "black") +
+  geom_point(aes(x=mean_sst_temp_change), col = "grey") +
   labs(y = "Raw Richness Change") +
   geom_hline(aes(yintercept = 0)) +
   geom_vline(aes(xintercept = 0)) +
@@ -87,52 +89,70 @@ Make plot for each region separately
 ```{r plot richness v temp change by region independently}
 #SBT
 ggplot(data = spp_master_richness, aes(y = richness_change)) +
-  geom_point(aes(x=max_sbt_temp_change), col = "red", size = 1) +
+  geom_point(aes(x=max_sbt_temp_change), col = "red", size = 0.35) +
+  geom_hline(aes(yintercept = 0), size = 0.2) +
+  geom_vline(aes(xintercept = 0), size = 0.2) +
   labs(y = "Raw Richness Change") +
-  geom_hline(aes(yintercept = 0)) +
-  geom_vline(aes(xintercept = 0)) +
   facet_wrap(~reg) +
-  theme_classic()
+  theme_classic() +
+  theme(text = element_text(size = 5))
+
+ggsave(width = 3, height = 2.5, units = c("in"), path = "plots/richness_change", file = "richness_change_byreg_max_sbt.jpg")
 
 ggplot(data = spp_master_richness, aes(y = richness_change)) +
-  geom_point(aes(x=min_sbt_temp_change), col = "blue", size = 1) +
+  geom_point(aes(x=min_sbt_temp_change), col = "blue", size = 0.35) +
+  geom_hline(aes(yintercept = 0), size = 0.2) +
+  geom_vline(aes(xintercept = 0), size = 0.2) +
   labs(y = "Raw Richness Change") +
-  geom_hline(aes(yintercept = 0)) +
-  geom_vline(aes(xintercept = 0)) +
   facet_wrap(~reg) +
-  theme_classic()
+  theme_classic() +
+  theme(text = element_text(size = 5))
+
+ggsave(width = 3, height = 2.5, units = c("in"), path = "plots/richness_change", file = "richness_change_byreg_min_sbt.jpg")
 
 ggplot(data = spp_master_richness, aes(y = richness_change)) +
-  geom_point(aes(x=mean_sbt_temp_change), col = "black", size = 1) +
+  geom_point(aes(x=mean_sbt_temp_change), col = "grey", size = 0.35) +
+  geom_hline(aes(yintercept = 0), size = 0.2) +
+  geom_vline(aes(xintercept = 0), size = 0.2) +
   labs(y = "Raw Richness Change") +
-  geom_hline(aes(yintercept = 0)) +
-  geom_vline(aes(xintercept = 0)) +
   facet_wrap(~reg) +
-  theme_classic()
+  theme_classic() +
+  theme(text = element_text(size = 5))
+
+ggsave(width = 3, height = 2.5, units = c("in"), path = "plots/richness_change", file = "richness_change_byreg_mean_sbt.jpg")
 
 #SST
 ggplot(data = spp_master_richness, aes(y = richness_change)) +
-  geom_point(aes(x=max_sst_temp_change), col = "red", size = 1) +
+  geom_point(aes(x=max_sst_temp_change), col = "red", size = 0.35) +
+  geom_hline(aes(yintercept = 0), size = 0.2) +
+  geom_vline(aes(xintercept = 0), size = 0.2) +
   labs(y = "Raw Richness Change") +
-  geom_hline(aes(yintercept = 0)) +
-  geom_vline(aes(xintercept = 0)) +
   facet_wrap(~reg) +
-  theme_classic()
+  theme_classic() +
+  theme(text = element_text(size = 5))
+
+ggsave(width = 3, height = 2.5, units = c("in"), path = "plots/richness_change", file = "richness_change_byreg_max_sst.jpg")
 
 ggplot(data = spp_master_richness, aes(y = richness_change)) +
-  geom_point(aes(x=min_sst_temp_change), col = "blue", size = 1) +
+  geom_point(aes(x=min_sst_temp_change), col = "blue", size = 0.35) +
+  geom_hline(aes(yintercept = 0), size = 0.2) +
+  geom_vline(aes(xintercept = 0), size = 0.2) +
   labs(y = "Raw Richness Change") +
-  geom_hline(aes(yintercept = 0)) +
-  geom_vline(aes(xintercept = 0)) +
   facet_wrap(~reg) +
-  theme_classic()
+  theme_classic() +
+  theme(text = element_text(size = 5))
+
+ggsave(width = 3, height = 2.5, units = c("in"), path = "plots/richness_change", file = "richness_change_byreg_min_sst.jpg")
 
 ggplot(data = spp_master_richness, aes(y = richness_change)) +
-  geom_point(aes(x=mean_sst_temp_change), col = "black", size = 1) +
+  geom_point(aes(x=mean_sst_temp_change), col = "grey", size = 0.35) +
+  geom_hline(aes(yintercept = 0), size = 0.2) +
+  geom_vline(aes(xintercept = 0), size = 0.2) +
   labs(y = "Raw Richness Change") +
-  geom_hline(aes(yintercept = 0)) +
-  geom_vline(aes(xintercept = 0)) +
   facet_wrap(~reg) +
-  theme_classic()
+  theme_classic() +
+  theme(text = element_text(size = 5))
+
+ggsave(width = 3, height = 2.5, units = c("in"), path = "plots/richness_change", file = "richness_change_byreg_mean_sst.jpg")
 
 ```
