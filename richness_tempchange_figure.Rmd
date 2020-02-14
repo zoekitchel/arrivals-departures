@@ -34,55 +34,65 @@ Make plot for all regions together
 ```{r plot richness v temp change}
 #SBT
 ggplot(data = spp_master_richness, aes(y = richness_change)) +
-  geom_point(aes(x=max_sbt_temp_change), col = "red") +
+  geom_point(aes(x=max_sbt_temp_change), col = "red", size= 0.5) +
   labs(y = "Raw Richness Change") +
   geom_hline(aes(yintercept = 0)) +
   geom_vline(aes(xintercept = 0)) +
   theme_classic() +
-  theme(text = element_text(size = 20))
+  theme(text = element_text(size = 10))
 
 ggsave(width = 3, height = 2.5, units = c("in"), path = "plots/richness_change", file = "richness_change_max_sbt.jpg")
 
 ggplot(data = spp_master_richness, aes(y = richness_change)) +
-  geom_point(aes(x=min_sbt_temp_change), col = "blue") +
+  geom_point(aes(x=min_sbt_temp_change), col = "blue", size = 0.5) +
   labs(y = "Raw Richness Change") +
   geom_hline(aes(yintercept = 0)) +
   geom_vline(aes(xintercept = 0)) +
   theme_classic() +
-  theme(text = element_text(size = 20))
+  theme(text = element_text(size = 10))
+
+ggsave(width = 3, height = 2.5, units = c("in"), path = "plots/richness_change", file = "richness_change_min_sbt.jpg")
 
 ggplot(data = spp_master_richness, aes(y = richness_change)) +
-  geom_point(aes(x=mean_sbt_temp_change), col = "grey") +
+  geom_point(aes(x=mean_sbt_temp_change), col = "grey",size = 0.5) +
   labs(y = "Raw Richness Change") +
   geom_hline(aes(yintercept = 0)) +
   geom_vline(aes(xintercept = 0)) +
   theme_classic() +
-  theme(text = element_text(size = 20))
+  theme(text = element_text(size = 10))
+
+ggsave(width = 3, height = 2.5, units = c("in"), path = "plots/richness_change", file = "richness_change_mean_sbt.jpg")
 
 #SST
 ggplot(data = spp_master_richness, aes(y = richness_change)) +
-  geom_point(aes(x=max_sst_temp_change), col = "red") +
+  geom_point(aes(x=max_sst_temp_change), col = "red",size = 0.5) +
   labs(y = "Raw Richness Change") +
   geom_hline(aes(yintercept = 0)) +
   geom_vline(aes(xintercept = 0)) +
   theme_classic() +
-  theme(text = element_text(size = 20))
+  theme(text = element_text(size = 10))
+
+ggsave(width = 3, height = 2.5, units = c("in"), path = "plots/richness_change", file = "richness_change_max_sst.jpg")
 
 ggplot(data = spp_master_richness, aes(y = richness_change)) +
-  geom_point(aes(x=min_sst_temp_change), col = "blue") +
+  geom_point(aes(x=min_sst_temp_change), col = "blue",size = 0.5) +
   labs(y = "Raw Richness Change") +
   geom_hline(aes(yintercept = 0)) +
   geom_vline(aes(xintercept = 0)) +
   theme_classic() +
-  theme(text = element_text(size = 20))
+  theme(text = element_text(size = 10))
+
+ggsave(width = 3, height = 2.5, units = c("in"), path = "plots/richness_change", file = "richness_change_min_sst.jpg")
 
 ggplot(data = spp_master_richness, aes(y = richness_change)) +
-  geom_point(aes(x=mean_sst_temp_change), col = "grey") +
+  geom_point(aes(x=mean_sst_temp_change), col = "grey", size = 0.5) +
   labs(y = "Raw Richness Change") +
   geom_hline(aes(yintercept = 0)) +
   geom_vline(aes(xintercept = 0)) +
   theme_classic() +
-  theme(text = element_text(size = 20))
+  theme(text = element_text(size = 10))
+
+ggsave(width = 3, height = 2.5, units = c("in"), path = "plots/richness_change", file = "richness_change_mean_sst.jpg")
 ```
 
 Make plot for each region separately
