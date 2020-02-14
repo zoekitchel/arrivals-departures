@@ -140,7 +140,9 @@ for (i in 1:nrow(extinction_model_comparison_traits)){
 }
 
 save(extinction_model_comparison_traits, file = "col_ext_mod_ext_wtraits_extonly.Rdata")
+load("col_ext_mod_ext_wtraits_extonly.Rdata")
 save(colonization_model_comparison_traits, file = "col_ext_mod_ext_wtraits_colonly.Rdata")
+load("col_ext_mod_ext_wtraits_colonly.Rdata")
 ```
 
 Next step is to look at RVI
@@ -298,6 +300,7 @@ ext_interaction_trait_trait_importance <- sum(extinction_model_comparisons_trait
 
 #save this table
 save(extinction_model_comparisons_traits.lag9max, file = "extinction_models_traits_with_likelihoods.Rdata")
+head(extinction_model_comparisons_traits.lag9max)
 ```
 
 ```{r put RVIs for extinction into data table}
@@ -348,6 +351,8 @@ RVI_ext_trait_plot <- ggplot(data = RVI_trait_table[col_ext == "ext" & (type == 
   labs(x = "Trait Variables", y = "Relative Variable Importance") +
   theme_classic() +
   theme(text = element_text(size = 20))
+
+save(RVI_trait_table, file = "RVI_trait_table.Rdata")
 ```
 Let's see how the RVI importance varies by looking at specific lag values for these trait models
 ```{r make a plot here for variability across lag values for trait models}
@@ -378,7 +383,7 @@ lags_v_RVI_trait[10,3] <- sum(extinction_model_comparisons_traits.lag9max[grep("
 
 RVI_lags_traits <- ggplot(data = lags_v_RVI_trait, aes(x = col_lag)) +
   geom_line(aes(y = col_RVI), col = "blue") +
-  geom_line(aes(y = ext_RVI), col = "red") +
+  geom_line(aes(y = ext_RVI), col = "red", linetype = "dashed") +
   labs(x = "Lag (years)", y = "Relative Variable Importance") +
   theme_classic() +
   theme(text = element_text(size = 22, color = "black")) +

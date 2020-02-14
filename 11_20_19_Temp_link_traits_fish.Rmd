@@ -519,7 +519,7 @@ lags_v_RVI[10,3] <- sum(extinction_model_comparisons.nomean[grep("lag9", variabl
 
 RVI_lags <- ggplot(data = lags_v_RVI, aes(x = col_lag)) +
   geom_line(aes(y = col_RVI), col = "blue") +
-  geom_line(aes(y = ext_RVI), col = "red") +
+  geom_line(aes(y = ext_RVI), col = "red", linetype = "dashed") +
   labs(x = "Lag (years)", y = "Relative Variable Importance") +
   theme_classic() +
   theme(text = element_text(size = 22, color = "black")) +

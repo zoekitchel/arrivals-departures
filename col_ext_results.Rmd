@@ -207,4 +207,95 @@ RVI_lags_traits
 ```
 
 
+Traits revised with only AICc, and only up to delta 2
+```{r col traits revised }
+traittable_colnames <- c("Temp Measure", "Depth", "Lag", "Change?", "Trait 1", "Trait 2", "AICc", "ΔAICc", "Akaike Weight")
 
+traittable_col_row1 <- c("seas", "bottom", "lag4", "abs_change", "*age.max", "", 4109.235, 0.000, 0.259)
+
+traittable_col_row2 <- c("min", "bottom", "lag6", "abs_change", "*age.max", "",  4109.278, 0.043, 0.253)
+
+traittable_col_row3 <- c("min", "bottom", "lag6", "abs_change", "*age.max",  "+age.maturity",  4111.253, 2.019, 0.094)
+
+colonization_trait_table.r <- transpose(data.table(traittable_col_row1, traittable_col_row2, traittable_col_row3))
+
+colnames(colonization_trait_table.r) <- traittable_colnames
+
+colonization_models.r_xtable <- xtable(colonization_trait_table.r)
+
+```
+
+Variable importance and estimated GLMM coefficients.
+
+```{r trait variable importance and estimated coef for colonization}
+
+RVI_table_colnames <- c("Variable", "Coefficient (from best model)")
+
+RVI_table_col_row1 <- c("age.max", paste0(-0.037, "."))
+
+RVI_table_col_row2 <- c("age.maturity",  paste0(-0.004,"."))
+
+RVI_table_col_row3 <- c("seas_sbt_lag4_abs_change", paste0(-0.092))
+
+RVI_table_col_row4 <- c("min_sbt_lag6_abs_change", paste0(-0.525))
+
+RVI_table_col_row5 <- c("seas_sbt_lag4_abs_change*age.max", paste0(0.019))
+
+RVI_table_col_row6 <- c("min_sbt_lag6_abs_change*age.max", paste0(0.032))
+
+colonization_coef_trait_table.r <- transpose(data.table(RVI_table_col_row1, RVI_table_col_row2, RVI_table_col_row3, RVI_table_col_row4, RVI_table_col_row5, RVI_table_col_row6))
+
+colnames(colonization_coef_trait_table.r) <- RVI_table_colnames
+
+colonization_coef_trait_table.r_xtable <- xtable(colonization_coef_trait_table.r)
+
+#. designates that they are not significant to p = 0.05
+
+```
+
+
+```{r ext traits revised }
+traittable_colnames <- c("Temp Measure", "Depth", "Lag", "Change?", "Trait 1", "Trait 2","Trait 3", "AICc", "ΔAICc", "Akaike Weight")
+
+traittable_ext_row1 <- c("max", "bottom", "lag2", "abs_change", "*age.max", "+age.maturity","", 3802.378, 0.000, 0.064)
+traittable_ext_row2 <- c("seas", "bottom", "lag2", "abs_change", "*age.max", "+age.maturity","",  3803.241, 0.862, 0.034)
+traittable_ext_row3 <- c("min", "surface", "lag2", "change", "+age.max",  "+age.maturity", "+tl" , 3803.663, 1.284, 0.034)
+traittable_ext_row4 <- c("min", "surface", "lag2", "change", "+age.max",  "+age.maturity","",  3803.717, 1.339, 0.033)
+traittable_ext_row5 <- c("max", "bottom", "lag5", "abs_change", "*age.max",  "+age.maturity","",  3803.849, 1.471, 0.031)
+traittable_ext_row6 <- c("min", "bottom", "lag0", "abs_change", "*age.max",  "+age.maturity","",  3803.943, 1.565, 0.029)
+traittable_ext_row7 <- c("seas", "bottom", "lag5", "abs_change", "*age.max",  "+age.maturity", "",  3804.176, 1.798, 0.026)
+traittable_ext_row8 <- c("min", "surface", "lag2", "change", "*age.max",  "+age.maturity","",   3804.528, 2.150, 0.022)
+
+extinction_trait_table.r <- transpose(data.table(traittable_ext_row1, traittable_ext_row2, traittable_ext_row3, traittable_ext_row4, traittable_ext_row5, traittable_ext_row6, traittable_ext_row7, traittable_ext_row8))
+
+colnames(extinction_trait_table.r) <- traittable_colnames
+
+extinction_models.r_xtable <- xtable(extinction_trait_table.r)
+
+```
+
+Variable importance and estimated GLMM coefficients for extinction.
+
+```{r trait variable importance and estimated coef for extinction}
+
+RVI_table_colnames <- c("Variable", "Coefficient (from best model)")
+
+RVI_table_ext_row1 <- c("age.max", paste0(-0.034))
+
+RVI_table_ext_row2 <- c("age.maturity",  paste0(-0.056))
+
+RVI_table_ext_row3 <- c("trophic level (tl)", paste0(-0.163) )
+
+RVI_table_ext_row4 <- c("max_sbt_lag2_abs_change", paste0(-0.140, "."))
+
+RVI_table_ext_row5 <- c("max_sbt_lag2_abs_change*age.max", paste0(-0.034))
+
+extinction_coef_trait_table.r <- transpose(data.table(RVI_table_ext_row1, RVI_table_ext_row2, RVI_table_ext_row3, RVI_table_ext_row4, RVI_table_ext_row5))
+
+colnames(extinction_coef_trait_table.r) <- RVI_table_colnames
+
+extinction_coef_trait_table.r_xtable <- xtable(extinction_coef_trait_table.r)
+
+#. designates that they are not significant to p = 0.05
+
+```

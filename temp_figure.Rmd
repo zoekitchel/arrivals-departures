@@ -43,28 +43,48 @@ Temp through time facet wrap
 #temperature through time
 #year as numeric to fix axis
 hauls2.r$year <- as.numeric((as.character(hauls2.r$year)))
-ggplot(data=hauls2.r, aes(x=year)) +
+surface_temp_plot <- ggplot(data=hauls2.r, aes(x=year)) +
   geom_point(aes(y = min_sst_temp, shape = 20), col = "darkblue") +
   geom_point(aes(y = max_sst_temp, shape = 18),  col = "darkred") +
   geom_point(aes(y = seas_sst_temp, shape = 3),  col = "slategrey") +
   scale_shape_identity() +
   labs(x="Year", y="Surface Temperature (˚C)") +
-  ylim(0,25) +
+  ylim(-2,31) +
   theme_classic() +
   facet_wrap (~reg) +
   theme(text=element_text(size = 19), axis.text.x = element_text(angle = 90))
 
+#model for maximum surface temperature in neus
+hauls2.r.reduced <- hauls2.r[reg == "neus",]
+mod_max_sst_neus <- lm(max_sst_temp ~ year, data = hauls2.r.reduced)
+summary(mod_max_sst_neus) #0.1185 ˚ C per year = 1.18˚ per decade (p<0.05)
+
+
+#model for max surface temp in goa
+hauls2.r.reduced <- hauls2.r[reg == "sa",]
+mod_min_sst_sa <- lm(min_sst_temp ~ year, data = hauls2.r.reduced)
+summary(mod_min_sst_sa) #-0.186 ˚ C per year = -1.9˚ per decade (p<0.05)
+
+
 #temperature through time
-ggplot(data=hauls2.r, aes(x=year)) +
+bottom_temp_plot <- ggplot(data=hauls2.r, aes(x=year)) +
   geom_point(aes(y = min_sbt_temp, shape = 20), col = "darkblue") +
   geom_point(aes(y = max_sbt_temp, shape = 18),  col = "darkred") +
   geom_point(aes(y = seas_sbt_temp, shape = 3),  col = "slategrey") +
   scale_shape_identity() +
   labs(x="Year", y="Bottom Temperature (˚C)") +
-  ylim(0,25) +
+  ylim(-2,31) +
   theme_classic() +
   facet_wrap (~reg) +
   theme(text=element_text(size = 19), axis.text.x = element_text(angle = 90))
+
+
+surface_temp_plot
+bottom_temp_plot
+
+ggsave(surface_temp_plot, file = "surface_temp_plot.eps")
+ggsave(bottom_temp_plot, file = "bottom_temp_plot.eps")
+
 
 ```
 
