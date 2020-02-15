@@ -543,6 +543,27 @@ RVI_lags
 dev.off()
 ```
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 ********
 ##Below I'm doing a more"organic" and less perscriptive dredge
 
