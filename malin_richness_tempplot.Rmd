@@ -1,0 +1,61 @@
+---
+title: "Malin's Richness Temp Plot"
+output: html_notebook
+---
+
+```{r setup}
+require(data.table)
+require(lme4)
+
+load('data/comm_data/comm_master.RData')
+```
+
+```{r plot}
+trend <- function(y, x){
+	return(coef(lm(y ~ x))[2])
+}
+
+scale <- function(x){
+	return((x-mean(x))/sd(x))
+}
+
+
+comm_master[reg=='neus',plot(year, reg_rich, type='o')]
+
+# add trends and other vars
+comm_master[,bt_trend:=trend(bt_ann,year), by=reg]
+comm_master[,bt_trend_abs:=abs(bt_trend)]
+comm_master[,bt_trend_abs_sc:=scale(bt_trend_abs)]
+comm_master[,year_sc:=scale(year)]
+
+# create summary data
+trends <- comm_master[,.(rich=trend(reg_rich, year), temp=trend(bt_ann,year)), by=reg]
+
+setkey(comm_master, reg, year)
+fd <- comm_master[,.(fyear=year[1:(.N-1)], richdiff=c(diff(reg_rich)), btdiff=c(diff(bt_ann))),by=reg]
+
+
+# statistics
+mod <- trends[,lm(rich ~ abs(temp))]
+summary(mod)
+
+mod2 <- fd[,lmer(richdiff ~ abs(btdiff) + (1|reg))]
+summary(mod2)
+
+mod3 <- comm_master[,lmer(reg_rich ~ year_sc + bt_trend_abs_sc + year_sc:bt_trend_abs_sc + (year_sc|reg))]
+summary(mod3)
+mod3b <- comm_master[,lmer(reg_rich ~ year_sc + bt_trend_abs_sc + (year_sc|reg))]
+anova(mod3, mod3b)
+
+
+
+# plot
+quartz(width=5, height=4)
+# pdf(width=5, height=4, file='figures/richnesstrend_vs_temperaturetrend.pdf')
+par(las=1, mai=c(1,1,0.2, 0.2))
+trends[,plot(abs(temp), rich, pch=16, cex=2, col='#1f78b4', ylab='Change in richness (spp/yr)', xlab='abs(Temperature trend) (°C/yr)')]
+trends[,abline(mod, col='grey', lty=2)]
+
+dev.off()
+```
+
