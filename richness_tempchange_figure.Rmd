@@ -345,7 +345,7 @@ Make plot for each region separately
 ```{r plot richness v absolute temp change by region independently}
 #SBT
 ggplot(data = spp_master_richness, aes(y = richness_change)) +
-  geom_point(aes(x=max_sbt_temp_change), col = "red", size = 0.35) +
+  geom_point(aes(x=max_sbt_temp_change_abs), col = "red", size = 0.35) +
   geom_hline(aes(yintercept = 0), size = 0.2) +
   labs(y = "Raw Richness Change (spp/yr)") +
   facet_wrap(~reg) +
@@ -355,7 +355,7 @@ ggplot(data = spp_master_richness, aes(y = richness_change)) +
 ggsave(width = 3, height = 2.5, units = c("in"), path = "plots/richness_change", file = "richness_change_byreg_max_sbt_change_abs.jpg")
 
 ggplot(data = spp_master_richness, aes(y = richness_change)) +
-  geom_point(aes(x=min_sbt_temp_change), col = "blue", size = 0.35) +
+  geom_point(aes(x=min_sbt_temp_change_abs), col = "blue", size = 0.35) +
   geom_hline(aes(yintercept = 0), size = 0.2) +
   labs(y = "Raw Richness Change (spp/yr)") +
   facet_wrap(~reg) +
@@ -365,7 +365,7 @@ ggplot(data = spp_master_richness, aes(y = richness_change)) +
 ggsave(width = 3, height = 2.5, units = c("in"), path = "plots/richness_change", file = "richness_change_byreg_min_sbt_change_abs.jpg")
 
 ggplot(data = spp_master_richness, aes(y = richness_change)) +
-  geom_point(aes(x=mean_sbt_temp_change), col = "grey", size = 0.35) +
+  geom_point(aes(x=mean_sbt_temp_change_abs), col = "grey", size = 0.35) +
   geom_hline(aes(yintercept = 0), size = 0.2) +
   labs(y = "Raw Richness Change (spp/yr)") +
   facet_wrap(~reg) +
@@ -376,7 +376,7 @@ ggsave(width = 3, height = 2.5, units = c("in"), path = "plots/richness_change",
 
 #SST
 ggplot(data = spp_master_richness, aes(y = richness_change)) +
-  geom_point(aes(x=max_sst_temp_change), col = "red", size = 0.35) +
+  geom_point(aes(x=max_sst_temp_change_abs), col = "red", size = 0.35) +
   geom_hline(aes(yintercept = 0), size = 0.2) +
   labs(y = "Raw Richness Change (spp/yr)") +
   facet_wrap(~reg) +
@@ -386,7 +386,7 @@ ggplot(data = spp_master_richness, aes(y = richness_change)) +
 ggsave(width = 3, height = 2.5, units = c("in"), path = "plots/richness_change", file = "richness_change_byreg_max_sst_change_abs.jpg")
 
 ggplot(data = spp_master_richness, aes(y = richness_change)) +
-  geom_point(aes(x=min_sst_temp_change), col = "blue", size = 0.35) +
+  geom_point(aes(x=min_sst_temp_change_abs), col = "blue", size = 0.35) +
   geom_hline(aes(yintercept = 0), size = 0.2) +
   labs(y = "Raw Richness Change (spp/yr)") +
   facet_wrap(~reg) +
@@ -396,7 +396,7 @@ ggplot(data = spp_master_richness, aes(y = richness_change)) +
 ggsave(width = 3, height = 2.5, units = c("in"), path = "plots/richness_change", file = "richness_change_byreg_min_sst_change_abs.jpg")
 
 ggplot(data = spp_master_richness, aes(y = richness_change)) +
-  geom_point(aes(x=mean_sst_temp_change), col = "grey", size = 0.35) +
+  geom_point(aes(x=mean_sst_temp_change_abs), col = "grey", size = 0.35) +
   geom_hline(aes(yintercept = 0), size = 0.2) +
   labs(y = "Raw Richness Change (spp/yr)") +
   facet_wrap(~reg) +
@@ -406,3 +406,60 @@ ggplot(data = spp_master_richness, aes(y = richness_change)) +
 ggsave(width = 3, height = 2.5, units = c("in"), path = "plots/richness_change", file = "richness_change_byreg_mean_sst_change_abs.jpg")
 
 ```
+##Malin's way: average trends over all years
+```{r functions}
+
+trend <- function(y, x){ #function to extract coefficient
+	return(coef(lm(y ~ x))[2])
+}
+
+scale <- function(x){ # function to scale by (ni-nmean)/sdn
+	return((x-mean(x))/sd(x))
+}
+
+```
+
+Add trends and new variables
+```{r trends and new var}
+# add trends and other vars
+spp_master_richness[,bt_trend_max:=trend(max_sbt_temp_change_abs,year), by=reg]#max bottom temp change per year
+spp_master_richness[,bt_trend_min:=trend(min_sbt_temp_change_abs,year), by=reg]#min bottom temp change per year
+spp_master_richness[,bt_trend_mean:=trend(mean_sbt_temp_change_abs,year), by=reg]#mean bottom temp change per year
+
+spp_master_richness[,bt_trend_max_sc:=scale(bt_trend_max)] #scaled max bottom temp change per year
+spp_master_richness[,bt_trend_min_sc:=scale(bt_trend_min)] #scaled min bottom temp change per year
+spp_master_richness[,bt_trend_mean_sc:=scale(bt_trend_mean)] #scaled mean bottom temp change per year
+
+spp_master_richness[,year_sc:=scale(year)] #scaled year
+
+```
+
+Summary data
+```{r summary data}
+# create summary data
+trends <- spp_master_richness[,.(rich=trend(richness, year), bt_trend_max=trend(max_sbt_temp_change,year), bt_trend_min=trend(min_sbt_temp_change,year), bt_trend_mean=trend(mean_sbt_temp_change,year)), by=reg] #calculate trend in richness per year and trend in annual temp per year
+
+```
+
+Plot
+```{r plot}
+#max
+pdf(file='plots/richness_change/richness_trends_maxbottomtemp.pdf')
+  mod1 <- trends[,lm(rich ~ abs(bt_trend_max))]
+  trends[,plot(abs(bt_trend_max), rich, pch=16, cex=2, col='#1f78b4', ylab='Change in richness (spp/yr)', xlab='abs(Maximum temperature trend) (°C/yr)')]
+  trends[,abline(mod1, col='grey', lty=2)]
+dev.off()
+#min
+pdf(file='plots/richness_change/richness_trends_minbottomtemp.pdf')
+  mod2 <- trends[,lm(rich ~ abs(bt_trend_min))]
+  trends[,plot(abs(bt_trend_min), rich, pch=16, cex=2, col='#1f78b4', ylab='Change in richness (spp/yr)', xlab='abs(Minimum temperature trend) (°C/yr)')]
+  trends[,abline(mod2, col='grey', lty=2)]
+dev.off()
+#mean
+pdf(file='plots/richness_change/richness_trends_meanbottomtemp.pdf')
+  mod3 <- trends[,lm(rich ~ abs(bt_trend_mean))]
+  trends[,plot(abs(bt_trend_mean), rich, pch=16, cex=2, col='#1f78b4', ylab='Change in richness (spp/yr)', xlab='abs(Mean temperature trend) (°C/yr)')]
+  trends[,abline(mod3, col='grey', lty=2)]
+dev.off()
+```
+
