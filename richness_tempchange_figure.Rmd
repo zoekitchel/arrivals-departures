@@ -422,6 +422,10 @@ scale <- function(x){ # function to scale by (ni-nmean)/sdn
 Add trends and new variables
 ```{r trends and new var}
 # add trends and other vars
+spp_master_richness[,bt_trend_max:=trend(max_sbt_temp_change_abs,year), by=reg]#max bottom temp per year
+spp_master_richness[,bt_trend_min:=trend(min_sbt_temp_change_abs,year), by=reg]#min bottom temp change per year
+spp_master_richness[,bt_trend_mean:=trend(mean_sbt_temp_change_abs,year), by=reg]#mean bottom temp change per year
+
 spp_master_richness[,bt_trend_max:=trend(max_sbt_temp_change_abs,year), by=reg]#max bottom temp change per year
 spp_master_richness[,bt_trend_min:=trend(min_sbt_temp_change_abs,year), by=reg]#min bottom temp change per year
 spp_master_richness[,bt_trend_mean:=trend(mean_sbt_temp_change_abs,year), by=reg]#mean bottom temp change per year

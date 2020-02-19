@@ -8,6 +8,7 @@ library(ggplot2)
 library(data.table)
 library(lme4)
 library(ggeffects)
+library(MuMIn)
 
 #data
 load("extinction_models_with_likelihoods.Rdata")
@@ -26,6 +27,13 @@ mod_col <- glmer(col ~ max_sbt_temp_change_abs + (1|reg) + (1|year), family = bi
 summary(mod_col)
 #what x values do we need to predict for?
 range(spp_master_ztemp$max_sbt_temp_change_abs)
+
+#null model (intercept only)
+mod_col_null <- glmer(col ~ (1|reg) + (1|year), family = binomial, data = spp_master_ztemp)
+AICc(mod_col_null)
+
+#delta AIC between null and best model
+AICc(mod_col_null)-AICc(mod_col)
 
 #seq x values to predict for
 xtemp <- seq(0, 6.5, 0.01)
@@ -60,6 +68,13 @@ Best model: seas_sbt_temp_change_abs_lag9
 #our model
 mod_ext <- glmer(now_ext ~ seas_sbt_temp_change_abs_lag9 + (1|reg) + (1|year), family = binomial, data = spp_master_ztemp)
 summary(mod_ext)
+
+#null model (intercept only)
+mod_ext_null <- glmer(now_ext ~ (1|reg) + (1|year), family = binomial, data = spp_master_ztemp)
+
+#delta AIC between null and best model
+AICc(mod_ext_null)-AICc(mod_ext)
+
 #what x values do we need to predict for?
 range(spp_master_ztemp$seas_sbt_temp_change_abs_lag9)
 
