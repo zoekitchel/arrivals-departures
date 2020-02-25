@@ -421,18 +421,37 @@ scale <- function(x){ # function to scale by (ni-nmean)/sdn
 
 Add trends and new variables
 ```{r trends and new var}
-# add trends and other vars
-spp_master_richness[,bt_trend_max:=trend(max_sbt_temp_change_abs,year), by=reg]#max bottom temp per year
-spp_master_richness[,bt_trend_min:=trend(min_sbt_temp_change_abs,year), by=reg]#min bottom temp change per year
-spp_master_richness[,bt_trend_mean:=trend(mean_sbt_temp_change_abs,year), by=reg]#mean bottom temp change per year
+#raw
+spp_master_richness[,bt_trend_max_raw:=mean(max_sbt_temp), by=reg]
+spp_master_richness[,bt_trend_min_raw:=mean(min_sbt_temp), by=reg]
+spp_master_richness[,bt_trend_mean_raw:=mean(mean_sbt_temp), by=reg]
 
-spp_master_richness[,bt_trend_max:=trend(max_sbt_temp_change_abs,year), by=reg]#max bottom temp change per year
-spp_master_richness[,bt_trend_min:=trend(min_sbt_temp_change_abs,year), by=reg]#min bottom temp change per year
-spp_master_richness[,bt_trend_mean:=trend(mean_sbt_temp_change_abs,year), by=reg]#mean bottom temp change per year
+spp_master_richness[,bt_trend_max_raw_sc:=scale(bt_trend_max_raw)] 
+spp_master_richness[,bt_trend_min_raw_sc:=scale(bt_trend_min_raw)] 
+spp_master_richness[,bt_trend_mean_raw_sc:=scale(bt_trend_mean_raw)]
 
-spp_master_richness[,bt_trend_max_sc:=scale(bt_trend_max)] #scaled max bottom temp change per year
-spp_master_richness[,bt_trend_min_sc:=scale(bt_trend_min)] #scaled min bottom temp change per year
-spp_master_richness[,bt_trend_mean_sc:=scale(bt_trend_mean)] #scaled mean bottom temp change per year
+#change
+spp_master_richness[,bt_trend_max_change:=trend(max_sbt_temp_change,year), by=reg]
+spp_master_richness[,bt_trend_min_change:=trend(min_sbt_temp_change,year), by=reg]
+spp_master_richness[,bt_trend_mean_change:=trend(mean_sbt_temp_change,year), by=reg]
+
+spp_master_richness[,bt_trend_max_change_sc:=scale(bt_trend_max_change)] 
+spp_master_richness[,bt_trend_min_change_sc:=scale(bt_trend_min_change)] 
+spp_master_richness[,bt_trend_mean_change_sc:=scale(bt_trend_mean_change)]
+
+#OR
+#abs change
+spp_master_richness[,bt_trend_max_abs_change:=abs(bt_trend_max_change), by=reg]#max bottom temp per year
+spp_master_richness[,bt_trend_min_abs_change:=abs(bt_trend_min_change), by=reg]#min bottom temp change per year
+spp_master_richness[,bt_trend_mean_abs_change:=abs(bt_trend_mean_change), by=reg]#mean bottom temp change per year
+
+spp_master_richness[,bt_trend_max_abs_change_sc:=scale(bt_trend_max_abs_change)] #scaled max bottom temp change per year
+spp_master_richness[,bt_trend_min_abs_change_sc:=scale(bt_trend_min_abs_change)] #scaled min bottom temp change per year
+spp_master_richness[,bt_trend_mean_abs_change_sc:=scale(bt_trend_mean_abs_change)] #scaled mean bottom temp change per year
+
+
+
+
 
 spp_master_richness[,year_sc:=scale(year)] #scaled year
 
@@ -441,29 +460,76 @@ spp_master_richness[,year_sc:=scale(year)] #scaled year
 Summary data
 ```{r summary data}
 # create summary data
-trends <- spp_master_richness[,.(rich=trend(richness, year), bt_trend_max=trend(max_sbt_temp_change,year), bt_trend_min=trend(min_sbt_temp_change,year), bt_trend_mean=trend(mean_sbt_temp_change,year)), by=reg] #calculate trend in richness per year and trend in annual temp per year
+trends <- spp_master_richness[,.(rich=trend(richness, year), #calculate trend in richness per year and trend in annual temp per year
+                                 bt_trend_max_abs_change = mean(bt_trend_max_abs_change) , 
+                                 bt_trend_min_abs_change = mean(bt_trend_min_abs_change) , 
+                                 bt_trend_mean_abs_change = mean(bt_trend_mean_abs_change) ,
+                                 bt_trend_max_change = mean(bt_trend_max_change) , 
+                                 bt_trend_min_change = mean(bt_trend_min_change) , 
+                                 bt_trend_mean_change = mean(bt_trend_mean_change) , 
+                                 bt_trend_max_raw = mean(bt_trend_max_raw) ,
+                                 bt_trend_min_raw = mean(bt_trend_min_raw) ,
+                                 bt_trend_mean_raw = mean(bt_trend_mean_raw)), by=reg] 
 
 ```
 
-Plot
+Plot Max and Min for Change and Abs
 ```{r plot}
-#max
-pdf(file='plots/richness_change/richness_trends_maxbottomtemp.pdf')
-  mod1 <- trends[,lm(rich ~ abs(bt_trend_max))]
-  trends[,plot(abs(bt_trend_max), rich, pch=16, cex=2, col='#1f78b4', ylab='Change in richness (spp/yr)', xlab='abs(Maximum temperature trend) (°C/yr)')]
-  trends[,abline(mod1, col='grey', lty=2)]
-dev.off()
-#min
-pdf(file='plots/richness_change/richness_trends_minbottomtemp.pdf')
-  mod2 <- trends[,lm(rich ~ abs(bt_trend_min))]
-  trends[,plot(abs(bt_trend_min), rich, pch=16, cex=2, col='#1f78b4', ylab='Change in richness (spp/yr)', xlab='abs(Minimum temperature trend) (°C/yr)')]
-  trends[,abline(mod2, col='grey', lty=2)]
-dev.off()
-#mean
-pdf(file='plots/richness_change/richness_trends_meanbottomtemp.pdf')
-  mod3 <- trends[,lm(rich ~ abs(bt_trend_mean))]
-  trends[,plot(abs(bt_trend_mean), rich, pch=16, cex=2, col='#1f78b4', ylab='Change in richness (spp/yr)', xlab='abs(Mean temperature trend) (°C/yr)')]
-  trends[,abline(mod3, col='grey', lty=2)]
-dev.off()
+#Raw
+
+#raw mods for abline
+raw_max_mod <- lm(rich~bt_trend_max_raw, data = trends)
+raw_min_mod <- lm(rich~bt_trend_min_raw, data = trends)
+
+
+
+ggplot(data = trends) +
+  geom_point(aes(x = bt_trend_max_raw, y = rich, col = reg), size = 4) +
+  geom_abline(intercept = raw_max_mod$coefficients[[1]], slope = raw_max_mod$coefficients[[2]], col = "slategrey", linetype = "dashed") +
+  #geom_point(aes(x = bt_trend_min_raw, y = rich), col = "blue") +
+  #geom_abline(intercept = raw_min_mod$coefficients[[1]], slope = raw_min_mod$coefficients[[2]], col = "blue") +
+  labs(x = "Average\nMaximum Temperature (°C)", y = "Average change\nin richness (spp/yr)") +
+  theme_classic() +
+  theme(text = element_text(size = 14))
+
+ggsave(width = 4, height = 3.5, units = "in", path = "plots/richness_change", filename = "richness_trend_max_raw.jpeg")
+  
+  
+#Change
+
+
+#change mods for abline
+change_max_mod <- lm(rich~bt_trend_max_change, data = trends)
+change_min_mod <- lm(rich~bt_trend_min_change, data = trends)
+
+
+
+ggplot(data = trends) +
+  geom_point(aes(x = bt_trend_max_change, y = rich, col = reg), size = 4) +
+  geom_abline(intercept = change_max_mod$coefficients[[1]], slope = change_max_mod$coefficients[[2]], col = "slategrey", linetype = "dashed") +
+  #geom_point(aes(x = bt_trend_max_change, y = rich), col = "blue") +
+  #geom_abline(intercept = change_min_mod$coefficients[[1]], slope = change_min_mod$coefficients[[2]], col = "blue") +
+  labs(x = "Average Change in \nMax Temperature (°C/yr)", y = "Average change\nin richness (spp/yr)") +
+  theme_classic() +
+  theme(text = element_text(size = 14))
+
+ggsave(width = 4, height = 3.5, units = "in", path = "plots/richness_change", filename = "richness_trend_max_change.jpeg")
+
+#Absolute Change
+#abs change mods for abline
+abs_change_max_mod <- lm(rich~bt_trend_max_abs_change, data = trends)
+abs_change_min_mod <- lm(rich~bt_trend_min_abs_change, data = trends)
+
+
+ggplot(data = trends) +
+  geom_point(aes(x = bt_trend_max_abs_change, y = rich, col = reg), size = 4) +
+  geom_abline(intercept = abs_change_max_mod$coefficients[[1]], slope = abs_change_max_mod$coefficients[[2]], col = "slategrey", linetype = "dashed") +
+  #geom_point(aes(x = bt_trend_max_abs_change, y = rich), col = "blue") +
+  #geom_abline(intercept = abs_change_min_mod$coefficients[[1]], slope = abs_change_min_mod$coefficients[[2]], col = "blue") +
+  labs(x = "Average Absolute Change\nin Max Temperature (°C/yr)", y = "Average change\nin richness (spp/yr)") +
+  theme_classic() +
+  theme(text = element_text(size = 14))
+
+ggsave(width = 4, height = 3.5, units = "in", path = "plots/richness_change", filename = "richness_trend_max_change_abs.jpeg")
 ```
 
