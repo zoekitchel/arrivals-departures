@@ -473,14 +473,16 @@ trends <- spp_master_richness[,.(rich=trend(richness, year), #calculate trend in
 
 ```
 
-Plot Max and Min for Change and Abs
-```{r plot}
+Plot Max Change and Abs
+```{r plot min}
 #Raw
 
 #raw mods for abline
 raw_max_mod <- lm(rich~bt_trend_max_raw, data = trends)
-raw_min_mod <- lm(rich~bt_trend_min_raw, data = trends)
-
+summary(raw_max_mod)$r.squared
+anova(raw_max_mod)$'Pr(>F)'[1]
+# R^2 =  0.1420429
+#p value = 0.3173871
 
 
 ggplot(data = trends) +
@@ -500,7 +502,10 @@ ggsave(width = 4, height = 3.5, units = "in", path = "plots/richness_change", fi
 
 #change mods for abline
 change_max_mod <- lm(rich~bt_trend_max_change, data = trends)
-change_min_mod <- lm(rich~bt_trend_min_change, data = trends)
+summary(change_max_mod)$r.squared
+anova(change_max_mod)$'Pr(>F)'[1]
+# R^2 = 0.1677293
+#p value = 0.2736701
 
 
 
@@ -518,7 +523,10 @@ ggsave(width = 4, height = 3.5, units = "in", path = "plots/richness_change", fi
 #Absolute Change
 #abs change mods for abline
 abs_change_max_mod <- lm(rich~bt_trend_max_abs_change, data = trends)
-abs_change_min_mod <- lm(rich~bt_trend_min_abs_change, data = trends)
+summary(abs_change_max_mod)$r.squared
+anova(abs_change_max_mod)$'Pr(>F)'[1]
+# R^2 = 0.1750758
+#p value = 0.2623728
 
 
 ggplot(data = trends) +
@@ -533,3 +541,142 @@ ggplot(data = trends) +
 ggsave(width = 4, height = 3.5, units = "in", path = "plots/richness_change", filename = "richness_trend_max_change_abs.jpeg")
 ```
 
+Plot Min for Change and Abs
+```{r min plots}
+#Raw
+
+#raw mods for abline
+raw_min_mod <- lm(rich~bt_trend_min_raw, data = trends)
+summary(raw_min_mod)$r.squared
+anova(raw_min_mod)$'Pr(>F)'[1]
+# R^2 = 0.05175603
+#p value = 0.5560681
+
+
+
+ggplot(data = trends) +
+  geom_point(aes(x = bt_trend_min_raw, y = rich, col = reg), size = 4) +
+  geom_abline(intercept = raw_min_mod$coefficients[[1]], slope = raw_min_mod$coefficients[[2]], col = "slategrey", linetype = "dashed") +
+  #geom_point(aes(x = bt_trend_min_raw, y = rich), col = "blue") +
+  #geom_abline(intercept = raw_min_mod$coefficients[[1]], slope = raw_min_mod$coefficients[[2]], col = "blue") +
+  labs(x = "Average\nMinimum Temperature (°C)", y = "Average change\nin richness (spp/yr)") +
+  theme_classic() +
+  theme(text = element_text(size = 14))
+
+ggsave(width = 4, height = 3.5, units = "in", path = "plots/richness_change", filename = "richness_trend_min_raw.jpeg")
+  
+  
+#Change
+
+
+#change mods for abline
+change_min_mod <- lm(rich~bt_trend_min_change, data = trends)
+summary(change_min_mod)$r.squared
+anova(change_min_mod)$'Pr(>F)'[1]
+# R squared: 0.525328
+# p value: 0.02716705
+
+
+
+ggplot(data = trends) +
+  geom_point(aes(x = bt_trend_min_change, y = rich, col = reg), size = 4) +
+  geom_abline(intercept = change_min_mod$coefficients[[1]], slope = change_min_mod$coefficients[[2]], col = "slategrey", linetype = "dashed") +
+  #geom_point(aes(x = bt_trend_min_change, y = rich), col = "blue") +
+  #geom_abline(intercept = change_min_mod$coefficients[[1]], slope = change_min_mod$coefficients[[2]], col = "blue") +
+  labs(x = "Average Change in \nMin Temperature (°C/yr)", y = "Average change\nin richness (spp/yr)") +
+  theme_classic() +
+  theme(text = element_text(size = 14))
+
+ggsave(width = 4, height = 3.5, units = "in", path = "plots/richness_change", filename = "richness_trend_min_change.jpeg")
+
+#Absolute Change
+#abs change mods for abline
+abs_change_min_mod <- lm(rich~bt_trend_min_abs_change, data = trends)
+summary(abs_change_min_mod)$r.squared
+anova(abs_change_min_mod)$'Pr(>F)'[1]
+#r squared value: 0.2929706
+#p value:0.1323295
+
+
+ggplot(data = trends) +
+  geom_point(aes(x = bt_trend_min_abs_change, y = rich, col = reg), size = 4) +
+  geom_abline(intercept = abs_change_min_mod$coefficients[[1]], slope = abs_change_min_mod$coefficients[[2]], col = "slategrey", linetype = "dashed") +
+  #geom_point(aes(x = bt_trend_min_abs_change, y = rich), col = "blue") +
+  #geom_abline(intercept = abs_change_min_mod$coefficients[[1]], slope = abs_change_min_mod$coefficients[[2]], col = "blue") +
+  labs(x = "Average Absolute Change\nin Min Temperature (°C/yr)", y = "Average change\nin richness (spp/yr)") +
+  theme_classic() +
+  theme(text = element_text(size = 14))
+
+ggsave(width = 4, height = 3.5, units = "in", path = "plots/richness_change", filename = "richness_trend_min_change_abs.jpeg")
+```
+
+
+Plot Mean for Change and Abs
+```{r mean plots}
+#Raw
+
+#raw mods for abline
+raw_mean_mod <- lm(rich~bt_trend_mean_raw, data = trends)
+summary(raw_mean_mod)$r.squared
+anova(raw_mean_mod)$'Pr(>F)'[1]
+# R squared value: 0.1034685
+#p value: 0.3986127
+
+
+ggplot(data = trends) +
+  geom_point(aes(x = bt_trend_mean_raw, y = rich, col = reg), size = 4) +
+  geom_abline(intercept = raw_mean_mod$coefficients[[1]], slope = raw_mean_mod$coefficients[[2]], col = "slategrey", linetype = "dashed") +
+  #geom_point(aes(x = bt_trend_mean_raw, y = rich), col = "blue") +
+  #geom_abline(intercept = raw_mean_mod$coefficients[[1]], slope = raw_mean_mod$coefficients[[2]], col = "blue") +
+  labs(x = "Average\nMean Temperature (°C)", y = "Average change\nin richness (spp/yr)") +
+  theme_classic() +
+  theme(text = element_text(size = 14))
+
+ggsave(width = 4, height = 3.5, units = "in", path = "plots/richness_change", filename = "richness_trend_mean_raw.jpeg")
+  
+  
+#Change
+
+
+#change mods for abline
+change_mean_mod <- lm(rich~bt_trend_mean_change, data = trends)
+summary(change_mean_mod)$r.squared
+anova(change_mean_mod)$'Pr(>F)'[1]
+#R squared: 0.3887231
+#p value: 0.07280526
+
+
+
+ggplot(data = trends) +
+  geom_point(aes(x = bt_trend_mean_change, y = rich, col = reg), size = 4) +
+  geom_abline(intercept = change_mean_mod$coefficients[[1]], slope = change_mean_mod$coefficients[[2]], col = "slategrey", linetype = "dashed") +
+  #geom_point(aes(x = bt_trend_mean_change, y = rich), col = "blue") +
+  #geom_abline(intercept = change_mean_mod$coefficients[[1]], slope = change_mean_mod$coefficients[[2]], col = "blue") +
+  labs(x = "Average Change in \nMean Temperature (°C/yr)", y = "Average change\nin richness (spp/yr)") +
+  theme_classic() +
+  theme(text = element_text(size = 14))
+
+ggsave(width = 4, height = 3.5, units = "in", path = "plots/richness_change", filename = "richness_trend_mean_change.jpeg")
+
+#Absolute Change
+#abs change mods for abline
+abs_change_mean_mod <- lm(rich~bt_trend_mean_abs_change, data = trends)
+summary(abs_change_mean_mod)$r.squared
+anova(abs_change_mean_mod)$'Pr(>F)'[1]
+#R Squared: 0.1413137
+#P value: 0.3187339
+
+
+
+
+ggplot(data = trends) +
+  geom_point(aes(x = bt_trend_mean_abs_change, y = rich, col = reg), size = 4) +
+  geom_abline(intercept = abs_change_mean_mod$coefficients[[1]], slope = abs_change_mean_mod$coefficients[[2]], col = "slategrey", linetype = "dashed") +
+  #geom_point(aes(x = bt_trend_mean_abs_change, y = rich), col = "blue") +
+  #geom_abline(intercept = abs_change_mean_mod$coefficients[[1]], slope = abs_change_mean_mod$coefficients[[2]], col = "blue") +
+  labs(x = "Average Absolute Change\nin Mean Temperature (°C/yr)", y = "Average change\nin richness (spp/yr)") +
+  theme_classic() +
+  theme(text = element_text(size = 14))
+
+ggsave(width = 4, height = 3.5, units = "in", path = "plots/richness_change", filename = "richness_trend_mean_change_abs.jpeg")
+```
