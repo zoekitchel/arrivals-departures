@@ -229,39 +229,44 @@ summary {
 <p>What lat/lon values do we actually need?</p>
 <!-- rnb-text-end -->
 <!-- rnb-chunk-begin -->
-<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxubWlubGF0XG5cbmBgYCJ9 -->
-<pre class="r"><code>minlat
-</code></pre>
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuYGBgclxubWlubGF0XG5cbmBgYFxuYGBgIn0= -->
+<p><code>r</code>r minlat</p>
+<pre><code></code></pre>
 <!-- rnb-source-end -->
 <!-- rnb-output-begin eyJkYXRhIjoiWzFdIDI0LjQ5MDA4XG4ifQ== -->
 <pre><code>[1] 24.49008</code></pre>
 <!-- rnb-output-end -->
-<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxubWF4bGF0XG5gYGAifQ== -->
-<pre class="r"><code>maxlat</code></pre>
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuYGBgclxubWF4bGF0XG5gYGBcbmBgYCJ9 -->
+<p><code>r</code>r maxlat</p>
+<pre><code></code></pre>
 <!-- rnb-source-end -->
 <!-- rnb-output-begin eyJkYXRhIjoiWzFdIDYyLjAxOTE3XG4ifQ== -->
 <pre><code>[1] 62.01917</code></pre>
 <!-- rnb-output-end -->
-<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxubWlubG9uXG5gYGAifQ== -->
-<pre class="r"><code>minlon</code></pre>
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuYGBgclxubWlubG9uXG5gYGBcbmBgYCJ9 -->
+<p><code>r</code>r minlon</p>
+<pre><code></code></pre>
 <!-- rnb-source-end -->
 <!-- rnb-output-begin eyJkYXRhIjoiWzFdIC0xODkuMzk3XG4ifQ== -->
 <pre><code>[1] -189.397</code></pre>
 <!-- rnb-output-end -->
-<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxubWF4bG9uXG5gYGAifQ== -->
-<pre class="r"><code>maxlon</code></pre>
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuYGBgclxubWF4bG9uXG5gYGBcbmBgYCJ9 -->
+<p><code>r</code>r maxlon</p>
+<pre><code></code></pre>
 <!-- rnb-source-end -->
 <!-- rnb-output-begin eyJkYXRhIjoiWzFdIC00My44MzVcbiJ9 -->
 <pre><code>[1] -43.835</code></pre>
 <!-- rnb-output-end -->
-<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxubWF4ZGVwdGhcbmBgYCJ9 -->
-<pre class="r"><code>maxdepth</code></pre>
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuYGBgclxubWF4ZGVwdGhcbmBgYFxuYGBgIn0= -->
+<p><code>r</code>r maxdepth</p>
+<pre><code></code></pre>
 <!-- rnb-source-end -->
 <!-- rnb-output-begin eyJkYXRhIjoiWzFdIDE1MDRcbiJ9 -->
 <pre><code>[1] 1504</code></pre>
 <!-- rnb-output-end -->
-<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxubWluZGVwdGhcbmBgYCJ9 -->
-<pre class="r"><code>mindepth</code></pre>
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuYGBgclxubWluZGVwdGhcbmBgYFxuYGBgIn0= -->
+<p><code>r</code>r mindepth</p>
+<pre><code></code></pre>
 <!-- rnb-source-end -->
 <!-- rnb-output-begin eyJkYXRhIjoiWzFdIDNcbiJ9 -->
 <pre><code>[1] 3</code></pre>
@@ -271,47 +276,40 @@ summary {
 <p>We need to follow Jim’s lead, and use SODA 2.2 for pre1980, and then SODA 3.3 for post1980. Unfortunately, they’re accessible in different ways. We will start with1980+</p>
 <!-- rnb-text-end -->
 <!-- rnb-chunk-begin -->
-<!-- rnb-source-begin eyJkYXRhIjoiYGBgYmFzaFxuI2luc3RhbGwgbmNvXG5jb25kYSBpbnN0YWxsLWMgY29uZGEtZm9yZ2UgbmNvXG4jbWFrZSB0ZXh0IGZpbGUgZnJvbSBodHRwczovL3d3dy5hdG1vcy51bWQuZWR1L35vY2Vhbi9pbmRleF9maWxlcy9zb2RhMy4zLjFfbW5fb2NlYW5fcmVnLnR4dFxuI2FkZCBcIi9vY2VhblwiYWZ0ZXIgcmVncmlkZWQgZXJyb3Igb24gdGhlaXIgcGFydFxuXG53Z2V0LWkgc29kYTMuMy4xX21uX29jZWFuX3JlZ19pbXBvcnQudHh0XG5cbmBgYCJ9 -->
-<pre class="bash"><code>#install nco
-conda install-c conda-forge nco
-#make text file from https://www.atmos.umd.edu/~ocean/index_files/soda3.3.1_mn_ocean_reg.txt
-#add &quot;/ocean&quot;after regrided error on their part
-
-wget-i soda3.3.1_mn_ocean_reg_import.txt
-</code></pre>
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgYmFzaFxuYGBgYmFzaFxuI2luc3RhbGwgbmNvXG5jb25kYSBpbnN0YWxsLWMgY29uZGEtZm9yZ2UgbmNvXG4jbWFrZSB0ZXh0IGZpbGUgZnJvbSBodHRwczovL3d3dy5hdG1vcy51bWQuZWR1L35vY2Vhbi9pbmRleF9maWxlcy9zb2RhMy4zLjFfbW5fb2NlYW5fcmVnLnR4dFxuI2FkZCBcXC9vY2VhblxcYWZ0ZXIgcmVncmlkZWQgZXJyb3Igb24gdGhlaXIgcGFydFxuXG53Z2V0LWkgc29kYTMuMy4xX21uX29jZWFuX3JlZ19pbXBvcnQudHh0XG5cbmBgYFxuYGBgIn0= -->
+<p><code>bash</code>bash #install nco conda install-c conda-forge nco #make text file from <a href="https://www.atmos.umd.edu/~ocean/index_files/soda3.3.1_mn_ocean_reg.txt" class="uri">https://www.atmos.umd.edu/~ocean/index_files/soda3.3.1_mn_ocean_reg.txt</a> #add /oceanregrided error on their part</p>
+<p>wget-i soda3.3.1_mn_ocean_reg_import.txt</p>
+<pre><code></code></pre>
 <!-- rnb-source-end -->
 <!-- rnb-chunk-end -->
 <!-- rnb-text-begin -->
 <p>This takes a while, as it’s100 gb of data and no way to narrow down beforehand as far as I can tell. <strong>Downloaded: 36 files, 118G in 46m13s 43.6 MB/s</strong></p>
 <!-- rnb-text-end -->
 <!-- rnb-chunk-begin -->
-<!-- rnb-source-begin eyJkYXRhIjoiYGBgYmFzaFxuI2JvdHRvbVxuZm9yIGkgaW4gYGNhdCBzb2RhMy4zLjFfbW5fb2NlYW5fcmVnX2ltcG9ydC50eHRgO2RvIG5ja3MgLWQgZGVwdGgsLTEgXCIke2l9XCIgXCIke2klLip9X2JvdHRvbS5uY1wiO2RvbmVcblxuI3N1cmZhY2VcbmZvciBpIGluIGBjYXQgc29kYTMuMy4xX21uX29jZWFuX3JlZ19pbXBvcnQudHh0YDtkbyBuY2tzIC1kIGRlcHRoLDAgXCIke2l9XCIgXCIke2klLip9X3N1cmZhY2UubmNcIjtkb25lICNpbiBweXRob24sIDAgaXMgdGhlIGZpcnN0IGRpbWVuc2lvblxuXG5gYGAifQ== -->
-<pre class="bash"><code>#bottom
-for i in `cat soda3.3.1_mn_ocean_reg_import.txt`;do ncks -d depth,-1 &quot;${i}&quot; &quot;${i%.*}_bottom.nc&quot;;done
-
-#surface
-for i in `cat soda3.3.1_mn_ocean_reg_import.txt`;do ncks -d depth,0 &quot;${i}&quot; &quot;${i%.*}_surface.nc&quot;;done #in python, 0 is the first dimension
-</code></pre>
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgYmFzaFxuYGBgYmFzaFxuI2JvdHRvbVxuZm9yIGkgaW4gYGNhdCBzb2RhMy4zLjFfbW5fb2NlYW5fcmVnX2ltcG9ydC50eHRgO2RvIG5ja3MgLWQgZGVwdGgsLTEgXFwke2l9XFwgXFwke2klLip9X2JvdHRvbS5uY1xcO2RvbmVcblxuI3N1cmZhY2VcbmZvciBpIGluIGBjYXQgc29kYTMuMy4xX21uX29jZWFuX3JlZ19pbXBvcnQudHh0YDtkbyBuY2tzIC1kIGRlcHRoLDAgXFwke2l9XFwgXFwke2klLip9X3N1cmZhY2UubmNcXDtkb25lICNpbiBweXRob24sIDAgaXMgdGhlIGZpcnN0IGRpbWVuc2lvblxuXG5gYGBcbmBgYCJ9 -->
+<p><code>bash</code>bash #bottom for i in <code>cat soda3.3.1_mn_ocean_reg_import.txt</code>;do ncks -d depth,-1 ${i} ${i%.*}_bottom.nc;done</p>
+<div id="surface" class="section level1">
+<h1>surface</h1>
+<p>for i in <code>cat soda3.3.1_mn_ocean_reg_import.txt</code>;do ncks -d depth,0 ${i} ${i%.*}_surface.nc;done #in python, 0 is the first dimension</p>
+<pre><code></code></pre>
 <!-- rnb-source-end -->
 <!-- rnb-chunk-end -->
 <!-- rnb-text-begin -->
 <p>Seeing now that these files in their current state actually contain multiple variables, and I only want one temp</p>
 <!-- rnb-text-end -->
 <!-- rnb-chunk-begin -->
-<!-- rnb-source-begin eyJkYXRhIjoiYGBgYmFzaFxuI2JvdHRvbVxuZm9yIGkgaW4gYGNhdCBzb2RhMy4zLjFfbW5fb2NlYW5fcmVnX2ltcG9ydC50eHRgOyBkbyBuY2tzIC12IHRlbXAgLU8gXCIke2klLip9X2JvdHRvbS5uY1wiIFwiJHtpJS4qfV9zYnQubmNcIjtkb25lXG4jc3VyZmFjZVxuZm9yIGkgaW4gYGNhdCBzb2RhMy4zLjFfbW5fb2NlYW5fcmVnX2ltcG9ydC50eHRgOyBkbyBuY2tzIC12IHRlbXAgLU8gXCIke2klLip9X3N1cmZhY2UubmNcIiBcIiR7aSUuKn1fc3N0Lm5jXCI7ZG9uZVxuYGBgIn0= -->
-<pre class="bash"><code>#bottom
-for i in `cat soda3.3.1_mn_ocean_reg_import.txt`; do ncks -v temp -O &quot;${i%.*}_bottom.nc&quot; &quot;${i%.*}_sbt.nc&quot;;done
-#surface
-for i in `cat soda3.3.1_mn_ocean_reg_import.txt`; do ncks -v temp -O &quot;${i%.*}_surface.nc&quot; &quot;${i%.*}_sst.nc&quot;;done</code></pre>
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgYmFzaFxuYGBgYmFzaFxuI2JvdHRvbVxuZm9yIGkgaW4gYGNhdCBzb2RhMy4zLjFfbW5fb2NlYW5fcmVnX2ltcG9ydC50eHRgOyBkbyBuY2tzIC12IHRlbXAgLU8gXFwke2klLip9X2JvdHRvbS5uY1xcIFxcJHtpJS4qfV9zYnQubmNcXDtkb25lXG4jc3VyZmFjZVxuZm9yIGkgaW4gYGNhdCBzb2RhMy4zLjFfbW5fb2NlYW5fcmVnX2ltcG9ydC50eHRgOyBkbyBuY2tzIC12IHRlbXAgLU8gXFwke2klLip9X3N1cmZhY2UubmNcXCBcXCR7aSUuKn1fc3N0Lm5jXFw7ZG9uZVxuYGBgXG5gYGAifQ== -->
+<p><code>bash</code>bash #bottom for i in <code>cat soda3.3.1_mn_ocean_reg_import.txt</code>; do ncks -v temp -O ${i%.*}_bottom.nc ${i%.*}_sbt.nc;done #surface for i in <code>cat soda3.3.1_mn_ocean_reg_import.txt</code>; do ncks -v temp -O ${i%.*}_surface.nc ${i%.*}_sst.nc;done</p>
+<pre><code></code></pre>
 <!-- rnb-source-end -->
 <!-- rnb-chunk-end -->
 <!-- rnb-text-begin -->
 <p>I will now merge these files along time. Ensure that there are no other files that match <code>soda3.3.1*sst.nc</code> syntax because then it won’t work.</p>
 <!-- rnb-text-end -->
 <!-- rnb-chunk-begin -->
-<!-- rnb-source-begin eyJkYXRhIjoiYGBgYmFzaFxubmNyY2F0IHNvZGEzLjMuMSpzc3QubmMgLU8gc29kYTMuMy4xXzE5ODBfMjAxNV9zc3QubmNcbm5jcmNhdCBzb2RhMy4zLjEqc2J0Lm5jIC1PIHNvZGEzLjMuMV8xOTgwXzIwMTVfc2J0Lm5jXG5gYGAifQ== -->
-<pre class="bash"><code>ncrcat soda3.3.1*sst.nc -O soda3.3.1_1980_2015_sst.nc
-ncrcat soda3.3.1*sbt.nc -O soda3.3.1_1980_2015_sbt.nc</code></pre>
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgYmFzaFxuYGBgYmFzaFxubmNyY2F0IHNvZGEzLjMuMSpzc3QubmMgLU8gc29kYTMuMy4xXzE5ODBfMjAxNV9zc3QubmNcbm5jcmNhdCBzb2RhMy4zLjEqc2J0Lm5jIC1PIHNvZGEzLjMuMV8xOTgwXzIwMTVfc2J0Lm5jXG5gYGBcbmBgYCJ9 -->
+<p><code>bash</code>bash ncrcat soda3.3.1<em>sst.nc -O soda3.3.1_1980_2015_sst.nc ncrcat soda3.3.1</em>sbt.nc -O soda3.3.1_1980_2015_sbt.nc</p>
+<pre><code></code></pre>
 <!-- rnb-source-end -->
 <!-- rnb-chunk-end -->
 <!-- rnb-text-begin -->
@@ -321,39 +319,35 @@ ncrcat soda3.3.1*sbt.nc -O soda3.3.1_1980_2015_sbt.nc</code></pre>
 <p>Let’s crop into two pieces, and then remerge. Crop to correct lat lon</p>
 <!-- rnb-text-end -->
 <!-- rnb-chunk-begin -->
-<!-- rnb-source-begin eyJkYXRhIjoiYGBgYmFzaFxuI3N1cmZhY2Vcbm5ja3MgLU8gLWQgbGF0aXR1ZGUsMjQuMjUsNjIuMjUgLWQgbG9uZ2l0dWRlLDE3MC4yNSwzMTYuNzUgc29kYTMuMy4xXzE5ODBfMjAxNV9zc3QubmMgc29kYTMuMy4xXzE5ODBfMjAxNV9zc3RfY3JvcC5uY1xuXG5cbiNib3R0b21cbm5ja3MgLU8gLWQgbGF0aXR1ZGUsMjQuMjUsNjIuMjUgLWQgbG9uZ2l0dWRlLDE3MC4yNSwzMTYuNzUgc29kYTMuMy4xXzE5ODBfMjAxNV9zYnQubmMgc29kYTMuMy4xXzE5ODBfMjAxNV9zYnRfY3JvcC5uY1xuXG5gYGAifQ== -->
-<pre class="bash"><code>#surface
-ncks -O -d latitude,24.25,62.25 -d longitude,170.25,316.75 soda3.3.1_1980_2015_sst.nc soda3.3.1_1980_2015_sst_crop.nc
-
-
-#bottom
-ncks -O -d latitude,24.25,62.25 -d longitude,170.25,316.75 soda3.3.1_1980_2015_sbt.nc soda3.3.1_1980_2015_sbt_crop.nc
-</code></pre>
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgYmFzaFxuYGBgYmFzaFxuI3N1cmZhY2Vcbm5ja3MgLU8gLWQgbGF0aXR1ZGUsMjQuMjUsNjIuMjUgLWQgbG9uZ2l0dWRlLDE3MC4yNSwzMTYuNzUgc29kYTMuMy4xXzE5ODBfMjAxNV9zc3QubmMgc29kYTMuMy4xXzE5ODBfMjAxNV9zc3RfY3JvcC5uY1xuXG5cbiNib3R0b21cbm5ja3MgLU8gLWQgbGF0aXR1ZGUsMjQuMjUsNjIuMjUgLWQgbG9uZ2l0dWRlLDE3MC4yNSwzMTYuNzUgc29kYTMuMy4xXzE5ODBfMjAxNV9zYnQubmMgc29kYTMuMy4xXzE5ODBfMjAxNV9zYnRfY3JvcC5uY1xuXG5gYGBcbmBgYCJ9 -->
+<p><code>bash</code>bash #surface ncks -O -d latitude,24.25,62.25 -d longitude,170.25,316.75 soda3.3.1_1980_2015_sst.nc soda3.3.1_1980_2015_sst_crop.nc</p>
+</div>
+<div id="bottom" class="section level1">
+<h1>bottom</h1>
+<p>ncks -O -d latitude,24.25,62.25 -d longitude,170.25,316.75 soda3.3.1_1980_2015_sbt.nc soda3.3.1_1980_2015_sbt_crop.nc</p>
+<pre><code></code></pre>
 <!-- rnb-source-end -->
 <!-- rnb-chunk-end -->
 <!-- rnb-text-begin -->
 <p><em>The first command ncks shifts the data, the second command ncap2 recalibrates the coordinate to the newly shifted data. One comment on applying this algorithm: Be careful to specify hemispheres that do not overlap, e.g., by inadvertently specifying coordinate ranges in the first command that both include the date line. Some users will find using index-based rather than coordinate-based hyperslabs makes this clearer. Examine a plot of the field to make sure your rotation was correct.</em></p>
 <!-- rnb-text-end -->
 <!-- rnb-chunk-begin -->
-<!-- rnb-source-begin eyJkYXRhIjoiYGBgYmFzaFxuI3N1cmZhY2Vcbm5jYXAyIC1PIC1zICdsb25naXR1ZGU9bG9uZ2l0dWRlLTM2MCcgc29kYTMuMy4xXzE5ODBfMjAxNV9zc3RfY3JvcC5uYyBzb2RhMy4zLjFfMTk4MF8yMDE1X3NzdF9maW5hbC5uY1xuXG4jYm90dG9tXG5uY2FwMiAtTyAtcyAnbG9uZ2l0dWRlPWxvbmdpdHVkZS0zNjAnIHNvZGEzLjMuMV8xOTgwXzIwMTVfc2J0X2Nyb3AubmMgc29kYTMuMy4xXzE5ODBfMjAxNV9zYnRfZmluYWwubmNcbmBgYCJ9 -->
-<pre class="bash"><code>#surface
-ncap2 -O -s 'longitude=longitude-360' soda3.3.1_1980_2015_sst_crop.nc soda3.3.1_1980_2015_sst_final.nc
-
-#bottom
-ncap2 -O -s 'longitude=longitude-360' soda3.3.1_1980_2015_sbt_crop.nc soda3.3.1_1980_2015_sbt_final.nc</code></pre>
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgYmFzaFxuYGBgYmFzaFxuI3N1cmZhY2Vcbm5jYXAyIC1PIC1zICdsb25naXR1ZGU9bG9uZ2l0dWRlLTM2MCcgc29kYTMuMy4xXzE5ODBfMjAxNV9zc3RfY3JvcC5uYyBzb2RhMy4zLjFfMTk4MF8yMDE1X3NzdF9maW5hbC5uY1xuXG4jYm90dG9tXG5uY2FwMiAtTyAtcyAnbG9uZ2l0dWRlPWxvbmdpdHVkZS0zNjAnIHNvZGEzLjMuMV8xOTgwXzIwMTVfc2J0X2Nyb3AubmMgc29kYTMuMy4xXzE5ODBfMjAxNV9zYnRfZmluYWwubmNcbmBgYFxuYGBgIn0= -->
+<p><code>bash</code>bash #surface ncap2 -O -s ‘longitude=longitude-360’ soda3.3.1_1980_2015_sst_crop.nc soda3.3.1_1980_2015_sst_final.nc</p>
+</div>
+<div id="bottom-1" class="section level1">
+<h1>bottom</h1>
+<p>ncap2 -O -s ‘longitude=longitude-360’ soda3.3.1_1980_2015_sbt_crop.nc soda3.3.1_1980_2015_sbt_final.nc</p>
+<pre><code></code></pre>
 <!-- rnb-source-end -->
 <!-- rnb-chunk-end -->
 <!-- rnb-text-begin -->
 <p>Change names of dimensions to match earlier time files</p>
 <!-- rnb-text-end -->
 <!-- rnb-chunk-begin -->
-<!-- rnb-source-begin eyJkYXRhIjoiYGBgYmFzaFxuI3N1cmZhY2Vcbm5jcmVuYW1lIC1kIGxhdGl0dWRlLGxhdCAtdiBsYXRpdHVkZSxsYXQgc29kYTMuMy4xXzE5ODBfMjAxNV9zc3RfZmluYWwubmNcbm5jcmVuYW1lIC1kIGxvbmdpdHVkZSxsb24gLXYgbG9uZ2l0dWRlLGxvbiBzb2RhMy4zLjFfMTk4MF8yMDE1X3NzdF9maW5hbC5uY1xuI2JvdHRvbVxubmNyZW5hbWUgLWQgbGF0aXR1ZGUsbGF0IC12IGxhdGl0dWRlLGxhdCBzb2RhMy4zLjFfMTk4MF8yMDE1X3NidF9maW5hbC5uY1xubmNyZW5hbWUgLWQgbG9uZ2l0dWRlLGxvbiAtdiBsb25naXR1ZGUsbG9uIHNvZGEzLjMuMV8xOTgwXzIwMTVfc2J0X2ZpbmFsLm5jXG5gYGAifQ== -->
-<pre class="bash"><code>#surface
-ncrename -d latitude,lat -v latitude,lat soda3.3.1_1980_2015_sst_final.nc
-ncrename -d longitude,lon -v longitude,lon soda3.3.1_1980_2015_sst_final.nc
-#bottom
-ncrename -d latitude,lat -v latitude,lat soda3.3.1_1980_2015_sbt_final.nc
-ncrename -d longitude,lon -v longitude,lon soda3.3.1_1980_2015_sbt_final.nc</code></pre>
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgYmFzaFxuYGBgYmFzaFxuI3N1cmZhY2Vcbm5jcmVuYW1lIC1kIGxhdGl0dWRlLGxhdCAtdiBsYXRpdHVkZSxsYXQgc29kYTMuMy4xXzE5ODBfMjAxNV9zc3RfZmluYWwubmNcbm5jcmVuYW1lIC1kIGxvbmdpdHVkZSxsb24gLXYgbG9uZ2l0dWRlLGxvbiBzb2RhMy4zLjFfMTk4MF8yMDE1X3NzdF9maW5hbC5uY1xuI2JvdHRvbVxubmNyZW5hbWUgLWQgbGF0aXR1ZGUsbGF0IC12IGxhdGl0dWRlLGxhdCBzb2RhMy4zLjFfMTk4MF8yMDE1X3NidF9maW5hbC5uY1xubmNyZW5hbWUgLWQgbG9uZ2l0dWRlLGxvbiAtdiBsb25naXR1ZGUsbG9uIHNvZGEzLjMuMV8xOTgwXzIwMTVfc2J0X2ZpbmFsLm5jXG5gYGBcbmBgYCJ9 -->
+<p><code>bash</code>bash #surface ncrename -d latitude,lat -v latitude,lat soda3.3.1_1980_2015_sst_final.nc ncrename -d longitude,lon -v longitude,lon soda3.3.1_1980_2015_sst_final.nc #bottom ncrename -d latitude,lat -v latitude,lat soda3.3.1_1980_2015_sbt_final.nc ncrename -d longitude,lon -v longitude,lon soda3.3.1_1980_2015_sbt_final.nc</p>
+<pre><code></code></pre>
 <!-- rnb-source-end -->
 <!-- rnb-chunk-end -->
 <!-- rnb-text-begin -->
@@ -415,28 +409,19 @@ ncrename -d longitude,lon -v longitude,lon soda3.3.1_1980_2015_sbt_final.nc</cod
 <p>I made text file in amphiprion to bulk download <code>wget-i soda2.2.4_mn_ocean_reg.txt--no-check-certificate</code> DO THIS file names going in as data.nc.x etc. 5.01-70.02: data.nc 82.92-197.79: data.nc.1 229.48-729.35: data.nc.2 918.37-2375.0: data.nc.3 2625.0-4375.0: data.nc.4 4625.0-5375.0: data.nc.5</p>
 <!-- rnb-text-end -->
 <!-- rnb-chunk-begin -->
-<!-- rnb-source-begin eyJkYXRhIjoiYGBgYmFzaFxuI21lcmdlIGFsbCBkZXB0aCBjaHVua3NcbmNkbyBtZXJnZSBkYXRhLm4qIGRhdGEucHJlMTk4MC5uY1xuXG4jb25seSBib3R0b20gbGF5ZXJcbm5ja3MgLWQgZGVwdGgsLTEgZGF0YS5wcmUxOTgwLm5jIHNvZGEyLjIuNF8xOTUzXzE5Nzlfc2J0Lm5jICNOQ08gbmNrcyB3aXRoIGEgbmVnYXRpdmUgaHlwZXJzbGFiXG5cbiNvbmx5IHN1cmZhY2UgbGF5ZXJcbm5ja3MgLWQgZGVwdGgsMSBkYXRhLnByZTE5ODAubmMgc29kYTIuMi40XzE5NTNfMTk3OV9zc3QubmNcbmBgYCJ9 -->
-<pre class="bash"><code>#merge all depth chunks
-cdo merge data.n* data.pre1980.nc
-
-#only bottom layer
-ncks -d depth,-1 data.pre1980.nc soda2.2.4_1953_1979_sbt.nc #NCO ncks with a negative hyperslab
-
-#only surface layer
-ncks -d depth,1 data.pre1980.nc soda2.2.4_1953_1979_sst.nc</code></pre>
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgYmFzaFxuYGBgYmFzaFxubmN3YSAtYSBkZXB0aCBzb2RhMi4yLjRfMTk1M18xOTc5X3NzdC5uYyBzb2RhMi4yLjRfMTk1M18xOTc5X3NzdC5uY1xubmN3YSAtYSBkZXB0aCBzb2RhMy4zLjFfMTk4MF8yMDE1X3NzdF9maW5hbC5uYyBzb2RhMy4zLjFfMTk4MF8yMDE1X3NzdF9maW5hbC5uY1xuXG5uY2tzIC14IC12IGRlcHRoIHNvZGEyLjIuNF8xOTUzXzE5Nzlfc3N0Lm5jIHNvZGEyLjIuNF8xOTUzXzE5Nzlfc3N0Lm5jXG5uY2tzIC14IC12IGRlcHRoIHNvZGEzLjMuMV8xOTgwXzIwMTVfc3N0X2ZpbmFsLm5jIHNvZGEzLjMuMV8xOTgwXzIwMTVfc3N0X2ZpbmFsLm5jXG5cbmBgYFxuYGBgIn0= -->
+<p><code>bash</code>bash ncwa -a depth soda2.2.4_1953_1979_sst.nc soda2.2.4_1953_1979_sst.nc ncwa -a depth soda3.3.1_1980_2015_sst_final.nc soda3.3.1_1980_2015_sst_final.nc</p>
+<p>ncks -x -v depth soda2.2.4_1953_1979_sst.nc soda2.2.4_1953_1979_sst.nc ncks -x -v depth soda3.3.1_1980_2015_sst_final.nc soda3.3.1_1980_2015_sst_final.nc</p>
+<pre><code></code></pre>
 <!-- rnb-source-end -->
 <!-- rnb-chunk-end -->
 <!-- rnb-text-begin -->
 <p>Get rid of depth dimension for surface temp files</p>
 <!-- rnb-text-end -->
 <!-- rnb-chunk-begin -->
-<!-- rnb-source-begin eyJkYXRhIjoiYGBgYmFzaFxubmN3YSAtYSBkZXB0aCBzb2RhMi4yLjRfMTk1M18xOTc5X3NzdC5uYyBzb2RhMi4yLjRfMTk1M18xOTc5X3NzdC5uY1xubmN3YSAtYSBkZXB0aCBzb2RhMy4zLjFfMTk4MF8yMDE1X3NzdF9maW5hbC5uYyBzb2RhMy4zLjFfMTk4MF8yMDE1X3NzdF9maW5hbC5uY1xuXG5uY2tzIC14IC12IGRlcHRoIHNvZGEyLjIuNF8xOTUzXzE5Nzlfc3N0Lm5jIHNvZGEyLjIuNF8xOTUzXzE5Nzlfc3N0Lm5jXG5uY2tzIC14IC12IGRlcHRoIHNvZGEzLjMuMV8xOTgwXzIwMTVfc3N0X2ZpbmFsLm5jIHNvZGEzLjMuMV8xOTgwXzIwMTVfc3N0X2ZpbmFsLm5jXG5cbmBgYCJ9 -->
-<pre class="bash"><code>ncwa -a depth soda2.2.4_1953_1979_sst.nc soda2.2.4_1953_1979_sst.nc
-ncwa -a depth soda3.3.1_1980_2015_sst_final.nc soda3.3.1_1980_2015_sst_final.nc
-
-ncks -x -v depth soda2.2.4_1953_1979_sst.nc soda2.2.4_1953_1979_sst.nc
-ncks -x -v depth soda3.3.1_1980_2015_sst_final.nc soda3.3.1_1980_2015_sst_final.nc
-</code></pre>
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgYmFzaFxuYGBgYmFzaFxuY2RvIC1hIHNldGNhbGVuZGFyLHN0YW5kYXJkIHNvZGEzLjMuMV8xOTgwXzIwMTVfc3N0X2ZpbmFsLm5jIHNvZGEzLjMuMV8xOTgwXzIwMTVfc3N0X2ZpbmFsX3RpbWVmaXgubmNcbmNkbyAtYSBzZXRjYWxlbmRhcixzdGFuZGFyZCBzb2RhMy4zLjFfMTk4MF8yMDE1X3NidF9maW5hbC5uYyBzb2RhMy4zLjFfMTk4MF8yMDE1X3NidF9maW5hbF90aW1lZml4Lm5jXG5jZG8gLWEgc2V0Y2FsZW5kYXIsc3RhbmRhcmQgc29kYTIuMi40XzE5NTNfMTk3OV9zc3QubmMgc29kYTIuMi40XzE5NTNfMTk3OV9zc3RfdGltZWZpeC5uY1xuY2RvIC1hIHNldGNhbGVuZGFyLHN0YW5kYXJkIHNvZGEyLjIuNF8xOTUzXzE5Nzlfc2J0Lm5jIHNvZGEyLjIuNF8xOTUzXzE5Nzlfc2J0X3RpbWVmaXgubmNcbmBgYFxuYGBgIn0= -->
+<p><code>bash</code>bash cdo -a setcalendar,standard soda3.3.1_1980_2015_sst_final.nc soda3.3.1_1980_2015_sst_final_timefix.nc cdo -a setcalendar,standard soda3.3.1_1980_2015_sbt_final.nc soda3.3.1_1980_2015_sbt_final_timefix.nc cdo -a setcalendar,standard soda2.2.4_1953_1979_sst.nc soda2.2.4_1953_1979_sst_timefix.nc cdo -a setcalendar,standard soda2.2.4_1953_1979_sbt.nc soda2.2.4_1953_1979_sbt_timefix.nc</p>
+<pre><code></code></pre>
 <!-- rnb-source-end -->
 <!-- rnb-chunk-end -->
 <!-- rnb-text-begin -->
@@ -469,10 +454,58 @@ cdo -a setcalendar,standard soda2.2.4_1953_1979_sbt.nc soda2.2.4_1953_1979_sbt_t
 <td><!-- rnb-chunk-begin --></td>
 </tr>
 <tr class="odd">
-<td><!-- rnb-source-begin eyJkYXRhIjoiYGBgYmFzaFxuI2xpbWl0IGRlcHRoIHRvIDE2MjUuNyAoY2xvc2VzdCB0byBtYXggaW4gdHJhd2wgc3VydmV5KVxubmNrcyAtTyAtZCBkZXB0aCwwLiwxNjI1LjcgZGF0YS5wcmUxOTgwLm5jIHNvZGEyLjIuNF8xOTUzXzE5Nzlfc2J0X3RyYXdsX2ZpbmFsLm5jXG4jSSBzaG91bGQga2VlcCB0aGlzIGRlcHRoIG1heCBldmVuIGlmIEkgZG9uJ3QgdXNlIE1hbGluJ3MgcmVjb21tZW5kYXRpb24gYmVjYXVzZSBib3R0b20gdGVtcGVyYXR1cmUgYmVsb3cgdGhpcyBwb2ludCAoZGVlcGVzdCB0cmF3bCkgaXMgaWxsb2dpY2FsXG5gYGAifQ== --></td>
+<td><!-- rnb-source-begin eyJkYXRhIjoiYGBgYmFzaFxuYGBgclxuI0ZpcnN0LCBwcmUgMTk4MFxuXG4jID09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09XG4jID0gRnVuY3Rpb24gdG8gUmVhZCBpbiBTT0RBLCBHcmFiIFN1cmZhY2UgPSBieSBSeWFuXG4jID09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09XG5nZXQuc29kYSA8LSBmdW5jdGlvbihmaWxlKXtcblxuXHRzb2RhLmluZm8gPC0gbmNfb3BlbihmaWxlKVxuXHRuYW1lLnNvZGEuc2l6ZXMgPC0gc2FwcGx5KHNvZGEuaW5mbyR2YXIkdGVtcCRkaW0sIGZ1bmN0aW9uKHgpeCRuYW1lKVxuXHRzb2RhLnNpemVzIDwtIHNvZGEuaW5mbyR2YXIkdGVtcCRzaXplXG5cdGRpbS51bml0cyA8LSBzYXBwbHkoc29kYS5pbmZvJHZhciR0ZW1wJGRpbSwgZnVuY3Rpb24oeCl4JHVuaXRzKVxuXHRwcmludChkaW0udW5pdHMpXG5cdHN0b3BpZm5vdChncmVwbChcXG1vbnRocyBzaW5jZSBcXCwgZGltLnVuaXRzWzNdKSkgIyBtYWtlIHN1cmUgdGltZSBpcyBpbiBjb3JyZWN0IHVuaXRzIGFuZCBpbiByaWdodCBwbGFjZVxuXHRuYW1lcyhzb2RhLnNpemVzKSA8LSBuYW1lLnNvZGEuc2l6ZXNcblx0bnRpbWUgPC0gc29kYS5zaXplc1tcXHRpbWVcXF1cblx0bmRlcHRoIDwtIHNvZGEuc2l6ZXNbXFxkZXB0aFxcXVxuXG5cdHNvZGEudGltZTAgPC0gc29kYS5pbmZvJHZhciR0ZW1wJGRpbVtbM11dJHZhbHNcblx0cmVmLmRhdGUgPC0gYXMuRGF0ZShnc3ViKFxcbW9udGhzIHNpbmNlIFxcLCBcXFxcLCBkaW0udW5pdHNbM10pKVxuXHRzdGFydC5iZWZvcmUucmVmIDwtIGdyZXBsKFxcLVxcLCBzb2RhLnRpbWUwWzFdKSAjIGlzIHRoZSBmaXJzdCBkYXRlIGJlZm9yZSByZWYuZGF0ZT9cblx0bi5tb250aC5iZWZvcmUgPC0gY2VpbGluZyhhYnMoc29kYS50aW1lMFsxXSkpICsgYXMuaW50ZWdlcihzdGFydC5iZWZvcmUucmVmKVxuXHRzdGFydC5pbmNyZW1lbnQgPC0gaWZlbHNlKHN0YXJ0LmJlZm9yZS5yZWYsIFxcLTEgbW9udGhcXCwgXFwxIG1vbnRoXFwpXG5cdHRpbWUuc3RhcnQgPC0gcmV2KHNlcS5EYXRlKHJlZi5kYXRlLCBieT1zdGFydC5pbmNyZW1lbnQsIGxlbmd0aC5vdXQ9bi5tb250aC5iZWZvcmUpKVsxXVxuXHRzb2RhLnRpbWUgPC0gc2VxLkRhdGUodGltZS5zdGFydCwgYnk9XFwxIG1vbnRoXFwsIGxlbmd0aC5vdXQ9bnRpbWUpXG5cdFxuXHRzb2RhIDwtIGJyaWNrKGZpbGUpXG5cdG5hbWVzKHNvZGEpIDwtIHNvZGEudGltZVxuXG5cdFx0XG5cdHJldHVybihzb2RhKVxuXHRcbn1cblxuc29kYV9zdXJmYWNlXzIuMi40IDwtIGdldC5zb2RhKFxcc29kYTIuMi40XzE5NTNfMTk3OV9zc3QubmNcXClcblxuI05vdywgcG9zdCAxOTgwXG5cbiMgPT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT1cbiMgPSBGdW5jdGlvbiB0byBSZWFkIGluIFNPREEsIEdyYWIgU3VyZmFjZSA9IGJ5IFJ5YW4gKE5PVElDRSBFRElUUyBGUk9NIEFCT1ZFIEJFQ0FVU0UgT0YgVElNRSlcbiMgPT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT1cbmdldC5zb2RhLjMuMy4xIDwtIGZ1bmN0aW9uKGZpbGUpe1xuXG5cdHNvZGEuaW5mbyA8LSBuY19vcGVuKGZpbGUpXG5cdG5hbWUuc29kYS5zaXplcyA8LSBzYXBwbHkoc29kYS5pbmZvJHZhciR0ZW1wJGRpbSwgZnVuY3Rpb24oeCl4JG5hbWUpXG5cdHNvZGEuc2l6ZXMgPC0gc29kYS5pbmZvJHZhciR0ZW1wJHNpemVcblx0ZGltLnVuaXRzIDwtIHNhcHBseShzb2RhLmluZm8kdmFyJHRlbXAkZGltLCBmdW5jdGlvbih4KXgkdW5pdHMpXG5cdHByaW50KGRpbS51bml0cylcblx0bmFtZXMoc29kYS5zaXplcykgPC0gbmFtZS5zb2RhLnNpemVzXG5cdG50aW1lIDwtIHNvZGEuc2l6ZXNbXFx0aW1lXFxdXG5cblx0dGltZS5zdGFydCA8LSBhcy5EYXRlKFxcMTk4MC0wMS0wMVxcKSAjc2V0IHRoaXMgdG8gZGF0ZSB5b3Ugd2FudCB0byBzdGFydCBhdFxuXHRzb2RhLnRpbWUgPC0gc2VxLkRhdGUodGltZS5zdGFydCwgYnk9XFwxIG1vbnRoXFwsIGxlbmd0aC5vdXQ9bnRpbWUpXG5cdFxuXHRzb2RhIDwtIGJyaWNrKGZpbGUpXG5cdG5hbWVzKHNvZGEpIDwtIHNvZGEudGltZVxuXG5cdFx0XG5cdHJldHVybihzb2RhKVxuXHRcbn1cblxuc29kYV9zdXJmYWNlXzMuMy4xIDwtIGdldC5zb2RhLjMuMy4xKFxcc29kYTMuMy4xXzE5ODBfMjAxNV9zc3RfZmluYWxfdGltZWZpeC5uY1xcKVxuXG5gYGBcbmBgYCJ9 --></td>
 </tr>
 <tr class="even">
-<td><code>bash #limit depth to 1625.7 (closest to max in trawl survey) ncks -O -d depth,0.,1625.7 data.pre1980.nc soda2.2.4_1953_1979_sbt_trawl_final.nc #I should keep this depth max even if I don't use Malin's recommendation because bottom temperature below this point (deepest trawl) is illogical</code></td>
+<td><code>bash</code>r #First, pre 1980</td>
+</tr>
+<tr class="odd">
+<td># ========================================= # = Function to Read in SODA, Grab Surface = by Ryan # ========================================= get.soda &lt;- function(file){</td>
+</tr>
+<tr class="even">
+<td>soda.info &lt;- nc_open(file) name.soda.sizes &lt;- sapply(soda.info<span class="math inline">\(var\)</span>temp<span class="math inline">\(dim, function(x)x\)</span>name) soda.sizes &lt;- soda.info<span class="math inline">\(var\)</span>temp<span class="math inline">\(size dim.units &lt;- sapply(soda.info\)</span>var<span class="math inline">\(temp\)</span>dim, function(x)x$units) print(dim.units) stopifnot(grepl(since , dim.units[3])) # make sure time is in correct units and in right place names(soda.sizes) &lt;- name.soda.sizes ntime &lt;- soda.sizes[] ndepth &lt;- soda.sizes[]</td>
+</tr>
+<tr class="odd">
+<td>soda.time0 &lt;- soda.info<span class="math inline">\(var\)</span>temp<span class="math inline">\(dim[[3]]\)</span>vals ref.date &lt;- as.Date(gsub(since , \, dim.units[3])) start.before.ref &lt;- grepl(-, soda.time0[1]) # is the first date before ref.date? n.month.before &lt;- ceiling(abs(soda.time0[1])) + as.integer(start.before.ref) start.increment &lt;- ifelse(start.before.ref, -1 month,  month) time.start &lt;- rev(seq.Date(ref.date, by=start.increment, length.out=n.month.before))[1] soda.time &lt;- seq.Date(time.start, by= month, length.out=ntime)</td>
+</tr>
+<tr class="even">
+<td>soda &lt;- brick(file) names(soda) &lt;- soda.time</td>
+</tr>
+<tr class="odd">
+<td>return(soda)</td>
+</tr>
+<tr class="even">
+<td>}</td>
+</tr>
+<tr class="odd">
+<td>soda_surface_2.2.4 &lt;- get.soda(2.2.4_1953_1979_sst.nc)</td>
+</tr>
+<tr class="even">
+<td>#Now, post 1980</td>
+</tr>
+<tr class="odd">
+<td># ========================================= # = Function to Read in SODA, Grab Surface = by Ryan (NOTICE EDITS FROM ABOVE BECAUSE OF TIME) # ========================================= get.soda.3.3.1 &lt;- function(file){</td>
+</tr>
+<tr class="even">
+<td>soda.info &lt;- nc_open(file) name.soda.sizes &lt;- sapply(soda.info<span class="math inline">\(var\)</span>temp<span class="math inline">\(dim, function(x)x\)</span>name) soda.sizes &lt;- soda.info<span class="math inline">\(var\)</span>temp<span class="math inline">\(size dim.units &lt;- sapply(soda.info\)</span>var<span class="math inline">\(temp\)</span>dim, function(x)x$units) print(dim.units) names(soda.sizes) &lt;- name.soda.sizes ntime &lt;- soda.sizes[]</td>
+</tr>
+<tr class="odd">
+<td>time.start &lt;- as.Date(980-01-01) #set this to date you want to start at soda.time &lt;- seq.Date(time.start, by= month, length.out=ntime)</td>
+</tr>
+<tr class="even">
+<td>soda &lt;- brick(file) names(soda) &lt;- soda.time</td>
+</tr>
+<tr class="odd">
+<td>return(soda)</td>
+</tr>
+<tr class="even">
+<td>}</td>
+</tr>
+<tr class="odd">
+<td>soda_surface_3.3.1 &lt;- get.soda.3.3.1(3.3.1_1980_2015_sst_final_timefix.nc)</td>
+</tr>
+<tr class="even">
+<td><code></code></td>
 </tr>
 <tr class="odd">
 <td><!-- rnb-source-end --></td>
@@ -489,12 +522,9 @@ cdo -a setcalendar,standard soda2.2.4_1953_1979_sbt.nc soda2.2.4_1953_1979_sbt_t
 <p>*see below for timefix specifics</p>
 <!-- rnb-text-end -->
 <!-- rnb-chunk-begin -->
-<!-- rnb-source-begin eyJkYXRhIjoiYGBgYmFzaFxuI0kgd2FudCBpdCB0byBiZSBtb250aHMgc2luY2UgXCJcIm1vbnRocyBzaW5jZSAxOTYwLTAxLTAxXCJcIlxuIzE5ODAtMDEtMDEgKGZpcnN0IHZhbHVlKSBpcyAyNDEuNSBtb250aHMgc2luY2UgMTk2MC0wMS0wMVxubmNhcDIgLXMgJ3RpbWU9YXJyYXkoMjQxLjUsMSwkdGltZSknIHNvZGEzLjMuMV8xOTgwXzIwMTVfc3N0X2ZpbmFsLm5jIHNvZGEzLjMuMV8xOTgwXzIwMTVfc3N0X2ZpbmFsX3RpbWVmaXgubmNcbm5jYXAyIC1zICd0aW1lPWFycmF5KDI0MS41LDEsJHRpbWUpJyBzb2RhMy4zLjFfMTk4MF8yMDE1X3NidF90cmF3bF9maW5hbC5uYyBzb2RhMy4zLjFfMTk4MF8yMDE1X3NidF90cmF3bF9maW5hbF90aW1lZml4Lm5jXG5cbmBgYCJ9 -->
-<pre class="bash"><code>#I want it to be months since &quot;&quot;months since 1960-01-01&quot;&quot;
-#1980-01-01 (first value) is 241.5 months since 1960-01-01
-ncap2 -s 'time=array(241.5,1,$time)' soda3.3.1_1980_2015_sst_final.nc soda3.3.1_1980_2015_sst_final_timefix.nc
-ncap2 -s 'time=array(241.5,1,$time)' soda3.3.1_1980_2015_sbt_trawl_final.nc soda3.3.1_1980_2015_sbt_trawl_final_timefix.nc
-</code></pre>
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgYmFzaFxuYGBgclxuc29kYV9zdXJmYWNlIDwtIHN0YWNrKHNvZGFfc3VyZmFjZV8yLjIuNCwgc29kYV9zdXJmYWNlXzMuMy4xKVxuI3NhdmVcbndyaXRlUmFzdGVyKHNvZGFfc3VyZmFjZSwgXFxzb2RhX3N1cmZhY2Vfc2VwMjAxOS5ncmRcXCwgb3ZlcndyaXRlID0gVClcbmBgYFxuYGBgIn0= -->
+<p><code>bash</code>r soda_surface &lt;- stack(soda_surface_2.2.4, soda_surface_3.3.1) #save writeRaster(soda_surface, _surface_sep2019.grd, overwrite = T)</p>
+<pre><code></code></pre>
 <!-- rnb-source-end -->
 <!-- rnb-chunk-end -->
 <!-- rnb-text-begin -->
@@ -505,80 +535,108 @@ ncap2 -s 'time=array(241.5,1,$time)' soda3.3.1_1980_2015_sbt_trawl_final.nc soda
 <p>Let’s start with extracting GPS points from surface temperature, this should be easy enough.</p>
 <!-- rnb-text-end -->
 <!-- rnb-chunk-begin -->
-<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuI0ZpcnN0LCBwcmUgMTk4MFxuXG4jID09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09XG4jID0gRnVuY3Rpb24gdG8gUmVhZCBpbiBTT0RBLCBHcmFiIFN1cmZhY2UgPSBieSBSeWFuXG4jID09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09XG5nZXQuc29kYSA8LSBmdW5jdGlvbihmaWxlKXtcblxuXHRzb2RhLmluZm8gPC0gbmNfb3BlbihmaWxlKVxuXHRuYW1lLnNvZGEuc2l6ZXMgPC0gc2FwcGx5KHNvZGEuaW5mbyR2YXIkdGVtcCRkaW0sIGZ1bmN0aW9uKHgpeCRuYW1lKVxuXHRzb2RhLnNpemVzIDwtIHNvZGEuaW5mbyR2YXIkdGVtcCRzaXplXG5cdGRpbS51bml0cyA8LSBzYXBwbHkoc29kYS5pbmZvJHZhciR0ZW1wJGRpbSwgZnVuY3Rpb24oeCl4JHVuaXRzKVxuXHRwcmludChkaW0udW5pdHMpXG5cdHN0b3BpZm5vdChncmVwbChcIm1vbnRocyBzaW5jZSBcIiwgZGltLnVuaXRzWzNdKSkgIyBtYWtlIHN1cmUgdGltZSBpcyBpbiBjb3JyZWN0IHVuaXRzIGFuZCBpbiByaWdodCBwbGFjZVxuXHRuYW1lcyhzb2RhLnNpemVzKSA8LSBuYW1lLnNvZGEuc2l6ZXNcblx0bnRpbWUgPC0gc29kYS5zaXplc1tcInRpbWVcIl1cblx0bmRlcHRoIDwtIHNvZGEuc2l6ZXNbXCJkZXB0aFwiXVxuXG5cdHNvZGEudGltZTAgPC0gc29kYS5pbmZvJHZhciR0ZW1wJGRpbVtbM11dJHZhbHNcblx0cmVmLmRhdGUgPC0gYXMuRGF0ZShnc3ViKFwibW9udGhzIHNpbmNlIFwiLCBcIlwiLCBkaW0udW5pdHNbM10pKVxuXHRzdGFydC5iZWZvcmUucmVmIDwtIGdyZXBsKFwiLVwiLCBzb2RhLnRpbWUwWzFdKSAjIGlzIHRoZSBmaXJzdCBkYXRlIGJlZm9yZSByZWYuZGF0ZT9cblx0bi5tb250aC5iZWZvcmUgPC0gY2VpbGluZyhhYnMoc29kYS50aW1lMFsxXSkpICsgYXMuaW50ZWdlcihzdGFydC5iZWZvcmUucmVmKVxuXHRzdGFydC5pbmNyZW1lbnQgPC0gaWZlbHNlKHN0YXJ0LmJlZm9yZS5yZWYsIFwiLTEgbW9udGhcIiwgXCIxIG1vbnRoXCIpXG5cdHRpbWUuc3RhcnQgPC0gcmV2KHNlcS5EYXRlKHJlZi5kYXRlLCBieT1zdGFydC5pbmNyZW1lbnQsIGxlbmd0aC5vdXQ9bi5tb250aC5iZWZvcmUpKVsxXVxuXHRzb2RhLnRpbWUgPC0gc2VxLkRhdGUodGltZS5zdGFydCwgYnk9XCIxIG1vbnRoXCIsIGxlbmd0aC5vdXQ9bnRpbWUpXG5cdFxuXHRzb2RhIDwtIGJyaWNrKGZpbGUpXG5cdG5hbWVzKHNvZGEpIDwtIHNvZGEudGltZVxuXG5cdFx0XG5cdHJldHVybihzb2RhKVxuXHRcbn1cblxuc29kYV9zdXJmYWNlXzIuMi40IDwtIGdldC5zb2RhKFwic29kYTIuMi40XzE5NTNfMTk3OV9zc3QubmNcIilcblxuI05vdywgcG9zdCAxOTgwXG5cbiMgPT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT1cbiMgPSBGdW5jdGlvbiB0byBSZWFkIGluIFNPREEsIEdyYWIgU3VyZmFjZSA9IGJ5IFJ5YW4gKE5PVElDRSBFRElUUyBGUk9NIEFCT1ZFIEJFQ0FVU0UgT0YgVElNRSlcbiMgPT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT1cbmdldC5zb2RhLjMuMy4xIDwtIGZ1bmN0aW9uKGZpbGUpe1xuXG5cdHNvZGEuaW5mbyA8LSBuY19vcGVuKGZpbGUpXG5cdG5hbWUuc29kYS5zaXplcyA8LSBzYXBwbHkoc29kYS5pbmZvJHZhciR0ZW1wJGRpbSwgZnVuY3Rpb24oeCl4JG5hbWUpXG5cdHNvZGEuc2l6ZXMgPC0gc29kYS5pbmZvJHZhciR0ZW1wJHNpemVcblx0ZGltLnVuaXRzIDwtIHNhcHBseShzb2RhLmluZm8kdmFyJHRlbXAkZGltLCBmdW5jdGlvbih4KXgkdW5pdHMpXG5cdHByaW50KGRpbS51bml0cylcblx0bmFtZXMoc29kYS5zaXplcykgPC0gbmFtZS5zb2RhLnNpemVzXG5cdG50aW1lIDwtIHNvZGEuc2l6ZXNbXCJ0aW1lXCJdXG5cblx0dGltZS5zdGFydCA8LSBhcy5EYXRlKFwiMTk4MC0wMS0wMVwiKSAjc2V0IHRoaXMgdG8gZGF0ZSB5b3Ugd2FudCB0byBzdGFydCBhdFxuXHRzb2RhLnRpbWUgPC0gc2VxLkRhdGUodGltZS5zdGFydCwgYnk9XCIxIG1vbnRoXCIsIGxlbmd0aC5vdXQ9bnRpbWUpXG5cdFxuXHRzb2RhIDwtIGJyaWNrKGZpbGUpXG5cdG5hbWVzKHNvZGEpIDwtIHNvZGEudGltZVxuXG5cdFx0XG5cdHJldHVybihzb2RhKVxuXHRcbn1cblxuc29kYV9zdXJmYWNlXzMuMy4xIDwtIGdldC5zb2RhLjMuMy4xKFwic29kYTMuMy4xXzE5ODBfMjAxNV9zc3RfZmluYWxfdGltZWZpeC5uY1wiKVxuXG5gYGAifQ== -->
-<pre class="r"><code>#First, pre 1980
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuYGBgclxuIyA9PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PVxuIyA9IEZ1bmN0aW9uIHRvIFJlYWQgaW4gU09EQSwgR3JhYiBCb3R0b20gPVxuIyA9PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PVxuZ2V0LnNvZGEuYm90LjIuMi40IDwtIGZ1bmN0aW9uKGZpbGUpe1xuXG5cdHNvZGEuaW5mbyA8LSBuY19vcGVuKGZpbGUpXG5cdG5hbWUuc29kYS5zaXplcyA8LSBzYXBwbHkoc29kYS5pbmZvJHZhciR0ZW1wJGRpbSwgZnVuY3Rpb24oeCl4JG5hbWUpXG5cdHNvZGEuc2l6ZXMgPC0gc29kYS5pbmZvJHZhciR0ZW1wJHNpemVcblx0ZGltLnVuaXRzIDwtIHNhcHBseShzb2RhLmluZm8kdmFyJHRlbXAkZGltLCBmdW5jdGlvbih4KXgkdW5pdHMpXG5cdHByaW50KGRpbS51bml0cylcblx0c3RvcGlmbm90KGdyZXBsKFxcbW9udGhzIHNpbmNlIFxcLCBkaW0udW5pdHNbNF0pKSAjIG1ha2Ugc3VyZSB0aW1lIGlzIGluIGNvcnJlY3QgdW5pdHMgYW5kIGluIHJpZ2h0IHBsYWNlXG5cdG5hbWVzKHNvZGEuc2l6ZXMpIDwtIG5hbWUuc29kYS5zaXplc1xuXHRudGltZSA8LSBzb2RhLnNpemVzW1xcdGltZVxcXVxuXHRuZGVwdGggPC0gc29kYS5zaXplc1tcXGRlcHRoXFxdXG5cblx0c29kYS50aW1lMCA8LSBzb2RhLmluZm8kdmFyJHRlbXAkZGltW1s0XV0kdmFsc1xuXHRyZWYuZGF0ZSA8LSBhcy5EYXRlKGdzdWIoXFxtb250aHMgc2luY2UgXFwsIFxcXFwsIGRpbS51bml0c1s0XSkpXG5cdHN0YXJ0LmJlZm9yZS5yZWYgPC0gZ3JlcGwoXFwtXFwsIHNvZGEudGltZTBbMV0pICMgaXMgdGhlIGZpcnN0IGRhdGUgYmVmb3JlIHJlZi5kYXRlP1xuXHRuLm1vbnRoLmJlZm9yZSA8LSBjZWlsaW5nKGFicyhzb2RhLnRpbWUwWzFdKSkgKyBhcy5pbnRlZ2VyKHN0YXJ0LmJlZm9yZS5yZWYpXG5cdHN0YXJ0LmluY3JlbWVudCA8LSBpZmVsc2Uoc3RhcnQuYmVmb3JlLnJlZiwgXFwtMSBtb250aFxcLCBcXDEgbW9udGhcXClcblx0dGltZS5zdGFydCA8LSByZXYoc2VxLkRhdGUocmVmLmRhdGUsIGJ5PXN0YXJ0LmluY3JlbWVudCwgbGVuZ3RoLm91dD1uLm1vbnRoLmJlZm9yZSkpWzFdXG5cdHNvZGEudGltZSA8LSBzZXEuRGF0ZSh0aW1lLnN0YXJ0LCBieT1cXDEgbW9udGhcXCwgbGVuZ3RoLm91dD1udGltZSlcblxuXG5cdHBiIDwtIHR4dFByb2dyZXNzQmFyKG1pbj0xLCBtYXg9bnRpbWUsIHN0eWxlPTMpXG5cdGZvcihpIGluIDE6bnRpbWUpe1xuXHRcdHQuc29kYSA8LSBicmljayhmaWxlLCBsdmFyPTQsIGxldmVsPWkpXG5cdFx0IyBuZWVkIHRvIHN3aXRjaCBtaXNzaW5nIHZhbHVlIHRvIGFjdHVhbCBOQSAjIFRPRE8gaXMgdGhpcyBhdXRvbWF0aWNhbGx5IGRvbmUgYnkgYnJpY2soKT8gSSB0aGluayBzby5cblx0XHRcblx0XHRzb2RhLmRlcHRocyA8LSBhcy5udW1lcmljKGdzdWIoXFxYXFwsIFxcXFwsIG5hbWVzKHQuc29kYSkpKSAjIGRvZXMgd2VpcmQgcm91bmRpbmcgdGhhdCBJIGRvbid0IHVuZGVyc3RhbmRcblx0XG5cdFx0IyBnZXQgdGhlIGRlZXBlc3QgYXZhaWxhYmxlIHRlbXBlcmF0dXJlIGluIGVhY2ggZ3JpZGQgY2VsbFxuXHRcdHQuc29kYS5ib3QgPC0gZG8uY2FsbChjb3ZlciwgdW5zdGFjayhzdWJzZXQodC5zb2RhLCBsZW5ndGgoc29kYS5kZXB0aHMpOjEpKSlcblx0XHRuYW1lcyh0LnNvZGEuYm90KSA8LSBzb2RhLnRpbWVbaV1cblx0XHQjIHRoZSBzdWJzZXR0aW5nIHBpZWNlIGZsaXBzIHRoZSBvcmRlciBvZiB0aGUgbGF5ZXJzIChzbyB0aGF0IGRlZXBlc3QgaXMgZmlyc3QgbGF5ZXIpXG5cdFx0IyBieSB1bnN0YWNraW5nIEkgcmVmb3JtYXQgZnJvbSByYXN0ZXIgd2l0aCBsYXllcnMsIHRvIGxpc3Qgb2YgcmFzdGVyc1xuXHRcdCMgdGhhdCBsaXN0IGNhbiBiZSB1c2VkIGFzIHRoZSBsaXN0IG9mIGFyZ3VtZW50cyB0byBhIGZ1bmN0aW9uIHRha2luZyAuLi5cblx0XHQjIGNvdmVyIGtlZXBzIHRoZSB2YWx1ZXMgaW4gdGhlIGZpcnN0IG9iamVjdCBvZiB0aGUgLi4uLCBhbmQgcmVwbGFjZXMgdGhlIE5BJ3Mgd2l0aCB2YWx1ZXMgZnJvbSB0aGUgc2Vjb25kIC4uLlxuXHRcdCMgdGhhdCBwcm9jZXNzIHJlcGVhdHMgdW50aWwgdGhyb3VnaCBhbGwgb2JqZWN0IGxpc3RlZCBpbiB0aGUgLi4uXG5cdFx0IyBpbiBvdGhlciB3b3JkcywgdGhlIGZpbmFsIHZhbHVlIHdpbGwgYmUgdGhlIHZhbHVlIGluIHRoZSBmaXJzdCBsYXllciB0aGF0IGhhcyBhIG5vbi1OQSB2YWx1ZSBpbiB0aGF0IGNlbGxcblx0XHRcblx0XHQjIGFjY3VtdWxhdGUgb3ZlciB0aW1lIHBlcmlvZHMgKG1vbnRobHkgaW4gb3JpZ2luYWwgZGF0YSBzZXRzIEknbSB1c2luZylcblx0XHQjIHRoaXMgd2lsbCBiZSBmb3IgdGhlIGZpcnN0IHRpbWUgcGVyaW9kICgxOTU4LTE5NzgpXG5cdFx0aWYoaT09MSl7XG5cdFx0XHRzb2RhLmJvdCA8LSB0LnNvZGEuYm90XG5cdFx0fWVsc2V7XG5cdFx0XHRzb2RhLmJvdCA8LSBhZGRMYXllcihzb2RhLmJvdCwgdC5zb2RhLmJvdClcblx0XHR9XG5cdFx0c2V0VHh0UHJvZ3Jlc3NCYXIocGIsIGkpXG5cdH1cblx0Y2xvc2UocGIpXG5cdFxuXHRyZXR1cm4oc29kYS5ib3QpXG5cdFxufVxuXG5zb2RhX2JvdHRvbV8yLjIuNCA8LSBnZXQuc29kYS5ib3QuMi4yLjQoXFxzb2RhMi4yLjRfMTk1M18xOTc5X3NidF90cmF3bF9maW5hbC5uY1xcKVxuXG5gYGBcbmBgYCJ9 -->
+<p><code>r</code>r # ========================================= # = Function to Read in SODA, Grab Bottom = # ========================================= get.soda.bot.2.2.4 &lt;- function(file){</p>
+<pre><code>soda.info &lt;- nc_open(file)
+name.soda.sizes &lt;- sapply(soda.info$var$temp$dim, function(x)x$name)
+soda.sizes &lt;- soda.info$var$temp$size
+dim.units &lt;- sapply(soda.info$var$temp$dim, function(x)x$units)
+print(dim.units)
+stopifnot(grepl(\months since \, dim.units[4])) # make sure time is in correct units and in right place
+names(soda.sizes) &lt;- name.soda.sizes
+ntime &lt;- soda.sizes[\time\]
+ndepth &lt;- soda.sizes[\depth\]
 
-# =========================================
-# = Function to Read in SODA, Grab Surface = by Ryan
-# =========================================
-get.soda &lt;- function(file){
+soda.time0 &lt;- soda.info$var$temp$dim[[4]]$vals
+ref.date &lt;- as.Date(gsub(\months since \, \\, dim.units[4]))
+start.before.ref &lt;- grepl(\-\, soda.time0[1]) # is the first date before ref.date?
+n.month.before &lt;- ceiling(abs(soda.time0[1])) + as.integer(start.before.ref)
+start.increment &lt;- ifelse(start.before.ref, \-1 month\, \1 month\)
+time.start &lt;- rev(seq.Date(ref.date, by=start.increment, length.out=n.month.before))[1]
+soda.time &lt;- seq.Date(time.start, by=\1 month\, length.out=ntime)
 
-    soda.info &lt;- nc_open(file)
-    name.soda.sizes &lt;- sapply(soda.info$var$temp$dim, function(x)x$name)
-    soda.sizes &lt;- soda.info$var$temp$size
-    dim.units &lt;- sapply(soda.info$var$temp$dim, function(x)x$units)
-    print(dim.units)
-    stopifnot(grepl(&quot;months since &quot;, dim.units[3])) # make sure time is in correct units and in right place
-    names(soda.sizes) &lt;- name.soda.sizes
-    ntime &lt;- soda.sizes[&quot;time&quot;]
-    ndepth &lt;- soda.sizes[&quot;depth&quot;]
 
-    soda.time0 &lt;- soda.info$var$temp$dim[[3]]$vals
-    ref.date &lt;- as.Date(gsub(&quot;months since &quot;, &quot;&quot;, dim.units[3]))
-    start.before.ref &lt;- grepl(&quot;-&quot;, soda.time0[1]) # is the first date before ref.date?
-    n.month.before &lt;- ceiling(abs(soda.time0[1])) + as.integer(start.before.ref)
-    start.increment &lt;- ifelse(start.before.ref, &quot;-1 month&quot;, &quot;1 month&quot;)
-    time.start &lt;- rev(seq.Date(ref.date, by=start.increment, length.out=n.month.before))[1]
-    soda.time &lt;- seq.Date(time.start, by=&quot;1 month&quot;, length.out=ntime)
+pb &lt;- txtProgressBar(min=1, max=ntime, style=3)
+for(i in 1:ntime){
+    t.soda &lt;- brick(file, lvar=4, level=i)
+    # need to switch missing value to actual NA # TODO is this automatically done by brick()? I think so.
     
-    soda &lt;- brick(file)
-    names(soda) &lt;- soda.time
+    soda.depths &lt;- as.numeric(gsub(\X\, \\, names(t.soda))) # does weird rounding that I don't understand
 
-        
-    return(soda)
+    # get the deepest available temperature in each gridd cell
+    t.soda.bot &lt;- do.call(cover, unstack(subset(t.soda, length(soda.depths):1)))
+    names(t.soda.bot) &lt;- soda.time[i]
+    # the subsetting piece flips the order of the layers (so that deepest is first layer)
+    # by unstacking I reformat from raster with layers, to list of rasters
+    # that list can be used as the list of arguments to a function taking ...
+    # cover keeps the values in the first object of the ..., and replaces the NA's with values from the second ...
+    # that process repeats until through all object listed in the ...
+    # in other words, the final value will be the value in the first layer that has a non-NA value in that cell
     
+    # accumulate over time periods (monthly in original data sets I'm using)
+    # this will be for the first time period (1958-1978)
+    if(i==1){
+        soda.bot &lt;- t.soda.bot
+    }else{
+        soda.bot &lt;- addLayer(soda.bot, t.soda.bot)
+    }
+    setTxtProgressBar(pb, i)
 }
+close(pb)
 
-soda_surface_2.2.4 &lt;- get.soda(&quot;soda2.2.4_1953_1979_sst.nc&quot;)
-
-#Now, post 1980
-
-# =========================================
-# = Function to Read in SODA, Grab Surface = by Ryan (NOTICE EDITS FROM ABOVE BECAUSE OF TIME)
-# =========================================
-get.soda.3.3.1 &lt;- function(file){
-
-    soda.info &lt;- nc_open(file)
-    name.soda.sizes &lt;- sapply(soda.info$var$temp$dim, function(x)x$name)
-    soda.sizes &lt;- soda.info$var$temp$size
-    dim.units &lt;- sapply(soda.info$var$temp$dim, function(x)x$units)
-    print(dim.units)
-    names(soda.sizes) &lt;- name.soda.sizes
-    ntime &lt;- soda.sizes[&quot;time&quot;]
-
-    time.start &lt;- as.Date(&quot;1980-01-01&quot;) #set this to date you want to start at
-    soda.time &lt;- seq.Date(time.start, by=&quot;1 month&quot;, length.out=ntime)
-    
-    soda &lt;- brick(file)
-    names(soda) &lt;- soda.time
-
-        
-    return(soda)
-    
-}
-
-soda_surface_3.3.1 &lt;- get.soda.3.3.1(&quot;soda3.3.1_1980_2015_sst_final_timefix.nc&quot;)
-</code></pre>
+return(soda.bot)</code></pre>
+<p>}</p>
+<p>soda_bottom_2.2.4 &lt;- get.soda.bot.2.2.4(2.2.4_1953_1979_sbt_trawl_final.nc)</p>
+<pre><code></code></pre>
 <!-- rnb-source-end -->
 <!-- rnb-chunk-end -->
 <!-- rnb-text-begin -->
 <p>Now, in R, merge these two raster bricks</p>
 <!-- rnb-text-end -->
 <!-- rnb-chunk-begin -->
-<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuc29kYV9zdXJmYWNlIDwtIHN0YWNrKHNvZGFfc3VyZmFjZV8yLjIuNCwgc29kYV9zdXJmYWNlXzMuMy4xKVxuI3NhdmVcbndyaXRlUmFzdGVyKHNvZGFfc3VyZmFjZSwgXCJzb2RhX3N1cmZhY2Vfc2VwMjAxOS5ncmRcIiwgb3ZlcndyaXRlID0gVClcbmBgYCJ9 -->
-<pre class="r"><code>soda_surface &lt;- stack(soda_surface_2.2.4, soda_surface_3.3.1)
-#save
-writeRaster(soda_surface, &quot;soda_surface_sep2019.grd&quot;, overwrite = T)</code></pre>
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuYGBgclxuIyA9PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PVxuIyA9IEZ1bmN0aW9uIHRvIFJlYWQgaW4gU09EQSwgR3JhYiBCb3R0b20gPVxuIyA9PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PVxuZ2V0LnNvZGEuYm90LjMuMy4xIDwtIGZ1bmN0aW9uKGZpbGUpe1xuXG5cdHNvZGEuaW5mbyA8LSBuY19vcGVuKGZpbGUpXG5cdG5hbWUuc29kYS5zaXplcyA8LSBzYXBwbHkoc29kYS5pbmZvJHZhciR0ZW1wJGRpbSwgZnVuY3Rpb24oeCl4JG5hbWUpXG5cdHNvZGEuc2l6ZXMgPC0gc29kYS5pbmZvJHZhciR0ZW1wJHNpemVcblx0ZGltLnVuaXRzIDwtIHNhcHBseShzb2RhLmluZm8kdmFyJHRlbXAkZGltLCBmdW5jdGlvbih4KXgkdW5pdHMpXG5cdHByaW50KGRpbS51bml0cylcblx0bmFtZXMoc29kYS5zaXplcykgPC0gbmFtZS5zb2RhLnNpemVzXG5cdG50aW1lIDwtIHNvZGEuc2l6ZXNbXFx0aW1lXFxdXG5cdG5kZXB0aCA8LSBzb2RhLnNpemVzW1xcZGVwdGhcXF1cblxuICB0aW1lLnN0YXJ0IDwtIGFzLkRhdGUoXFwxOTgwLTAxLTAxXFwpICNzZXQgdGhpcyB0byBkYXRlIHlvdSB3YW50IHRvIHN0YXJ0IGF0XG5cdHNvZGEudGltZSA8LSBzZXEuRGF0ZSh0aW1lLnN0YXJ0LCBieT1cXDEgbW9udGhcXCwgbGVuZ3RoLm91dD1udGltZSlcblxuXG5cdHBiIDwtIHR4dFByb2dyZXNzQmFyKG1pbj0xLCBtYXg9bnRpbWUsIHN0eWxlPTMpXG5cdGZvcihpIGluIDE6bnRpbWUpe1xuXHRcdHQuc29kYSA8LSBicmljayhmaWxlLCBsdmFyPTQsIGxldmVsPWkpXG5cdFx0IyBuZWVkIHRvIHN3aXRjaCBtaXNzaW5nIHZhbHVlIHRvIGFjdHVhbCBOQSAjIFRPRE8gaXMgdGhpcyBhdXRvbWF0aWNhbGx5IGRvbmUgYnkgYnJpY2soKT8gSSB0aGluayBzby5cblx0XHRcblx0XHRzb2RhLmRlcHRocyA8LSBhcy5udW1lcmljKGdzdWIoXFxYXFwsIFxcXFwsIG5hbWVzKHQuc29kYSkpKSAjIGRvZXMgd2VpcmQgcm91bmRpbmcgdGhhdCBJIGRvbid0IHVuZGVyc3RhbmRcblx0XG5cdFx0IyBnZXQgdGhlIGRlZXBlc3QgYXZhaWxhYmxlIHRlbXBlcmF0dXJlIGluIGVhY2ggZ3JpZGQgY2VsbFxuXHRcdHQuc29kYS5ib3QgPC0gZG8uY2FsbChjb3ZlciwgdW5zdGFjayhzdWJzZXQodC5zb2RhLCBsZW5ndGgoc29kYS5kZXB0aHMpOjEpKSlcblx0XHRuYW1lcyh0LnNvZGEuYm90KSA8LSBzb2RhLnRpbWVbaV1cblx0XHQjIHRoZSBzdWJzZXR0aW5nIHBpZWNlIGZsaXBzIHRoZSBvcmRlciBvZiB0aGUgbGF5ZXJzIChzbyB0aGF0IGRlZXBlc3QgaXMgZmlyc3QgbGF5ZXIpXG5cdFx0IyBieSB1bnN0YWNraW5nIEkgcmVmb3JtYXQgZnJvbSByYXN0ZXIgd2l0aCBsYXllcnMsIHRvIGxpc3Qgb2YgcmFzdGVyc1xuXHRcdCMgdGhhdCBsaXN0IGNhbiBiZSB1c2VkIGFzIHRoZSBsaXN0IG9mIGFyZ3VtZW50cyB0byBhIGZ1bmN0aW9uIHRha2luZyAuLi5cblx0XHQjIGNvdmVyIGtlZXBzIHRoZSB2YWx1ZXMgaW4gdGhlIGZpcnN0IG9iamVjdCBvZiB0aGUgLi4uLCBhbmQgcmVwbGFjZXMgdGhlIE5BJ3Mgd2l0aCB2YWx1ZXMgZnJvbSB0aGUgc2Vjb25kIC4uLlxuXHRcdCMgdGhhdCBwcm9jZXNzIHJlcGVhdHMgdW50aWwgdGhyb3VnaCBhbGwgb2JqZWN0IGxpc3RlZCBpbiB0aGUgLi4uXG5cdFx0IyBpbiBvdGhlciB3b3JkcywgdGhlIGZpbmFsIHZhbHVlIHdpbGwgYmUgdGhlIHZhbHVlIGluIHRoZSBmaXJzdCBsYXllciB0aGF0IGhhcyBhIG5vbi1OQSB2YWx1ZSBpbiB0aGF0IGNlbGxcblx0XHRcblx0XHQjIGFjY3VtdWxhdGUgb3ZlciB0aW1lIHBlcmlvZHMgKG1vbnRobHkgaW4gb3JpZ2luYWwgZGF0YSBzZXRzIEknbSB1c2luZylcblx0XHQjIHRoaXMgd2lsbCBiZSBmb3IgdGhlIGZpcnN0IHRpbWUgcGVyaW9kICgxOTU4LTE5NzgpXG5cdFx0aWYoaT09MSl7XG5cdFx0XHRzb2RhLmJvdCA8LSB0LnNvZGEuYm90XG5cdFx0fWVsc2V7XG5cdFx0XHRzb2RhLmJvdCA8LSBhZGRMYXllcihzb2RhLmJvdCwgdC5zb2RhLmJvdClcblx0XHR9XG5cdFx0c2V0VHh0UHJvZ3Jlc3NCYXIocGIsIGkpXG5cdH1cblx0Y2xvc2UocGIpXG5cdFxuXHRyZXR1cm4oc29kYS5ib3QpXG5cdFxufVxuXG5zb2RhX2JvdHRvbV8zLjMuMSA8LSBnZXQuc29kYS5ib3QuMy4zLjEoXFxzb2RhMy4zLjFfMTk4MF8yMDE1X3NidF90cmF3bF9maW5hbF90aW1lZml4Lm5jXFwpXG5cbmBgYFxuYGBgIn0= -->
+<p><code>r</code>r # ========================================= # = Function to Read in SODA, Grab Bottom = # ========================================= get.soda.bot.3.3.1 &lt;- function(file){</p>
+<pre><code>soda.info &lt;- nc_open(file)
+name.soda.sizes &lt;- sapply(soda.info$var$temp$dim, function(x)x$name)
+soda.sizes &lt;- soda.info$var$temp$size
+dim.units &lt;- sapply(soda.info$var$temp$dim, function(x)x$units)
+print(dim.units)
+names(soda.sizes) &lt;- name.soda.sizes
+ntime &lt;- soda.sizes[\time\]
+ndepth &lt;- soda.sizes[\depth\]</code></pre>
+<p>time.start &lt;- as.Date(980-01-01) #set this to date you want to start at soda.time &lt;- seq.Date(time.start, by= month, length.out=ntime)</p>
+<pre><code>pb &lt;- txtProgressBar(min=1, max=ntime, style=3)
+for(i in 1:ntime){
+    t.soda &lt;- brick(file, lvar=4, level=i)
+    # need to switch missing value to actual NA # TODO is this automatically done by brick()? I think so.
+    
+    soda.depths &lt;- as.numeric(gsub(\X\, \\, names(t.soda))) # does weird rounding that I don't understand
+
+    # get the deepest available temperature in each gridd cell
+    t.soda.bot &lt;- do.call(cover, unstack(subset(t.soda, length(soda.depths):1)))
+    names(t.soda.bot) &lt;- soda.time[i]
+    # the subsetting piece flips the order of the layers (so that deepest is first layer)
+    # by unstacking I reformat from raster with layers, to list of rasters
+    # that list can be used as the list of arguments to a function taking ...
+    # cover keeps the values in the first object of the ..., and replaces the NA's with values from the second ...
+    # that process repeats until through all object listed in the ...
+    # in other words, the final value will be the value in the first layer that has a non-NA value in that cell
+    
+    # accumulate over time periods (monthly in original data sets I'm using)
+    # this will be for the first time period (1958-1978)
+    if(i==1){
+        soda.bot &lt;- t.soda.bot
+    }else{
+        soda.bot &lt;- addLayer(soda.bot, t.soda.bot)
+    }
+    setTxtProgressBar(pb, i)
+}
+close(pb)
+
+return(soda.bot)</code></pre>
+<p>}</p>
+<p>soda_bottom_3.3.1 &lt;- get.soda.bot.3.3.1(3.3.1_1980_2015_sbt_trawl_final_timefix.nc)</p>
+<pre><code></code></pre>
 <!-- rnb-source-end -->
 <!-- rnb-chunk-end -->
 <!-- rnb-text-begin -->
@@ -587,65 +645,9 @@ writeRaster(soda_surface, &quot;soda_surface_sep2019.grd&quot;, overwrite = T)</
 <p>First, 2.2.4 <code>soda2.2.4_1953_1979_sbt_trawl_final.nc</code></p>
 <!-- rnb-text-end -->
 <!-- rnb-chunk-begin -->
-<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuIyA9PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PVxuIyA9IEZ1bmN0aW9uIHRvIFJlYWQgaW4gU09EQSwgR3JhYiBCb3R0b20gPVxuIyA9PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PVxuZ2V0LnNvZGEuYm90LjIuMi40IDwtIGZ1bmN0aW9uKGZpbGUpe1xuXG5cdHNvZGEuaW5mbyA8LSBuY19vcGVuKGZpbGUpXG5cdG5hbWUuc29kYS5zaXplcyA8LSBzYXBwbHkoc29kYS5pbmZvJHZhciR0ZW1wJGRpbSwgZnVuY3Rpb24oeCl4JG5hbWUpXG5cdHNvZGEuc2l6ZXMgPC0gc29kYS5pbmZvJHZhciR0ZW1wJHNpemVcblx0ZGltLnVuaXRzIDwtIHNhcHBseShzb2RhLmluZm8kdmFyJHRlbXAkZGltLCBmdW5jdGlvbih4KXgkdW5pdHMpXG5cdHByaW50KGRpbS51bml0cylcblx0c3RvcGlmbm90KGdyZXBsKFwibW9udGhzIHNpbmNlIFwiLCBkaW0udW5pdHNbNF0pKSAjIG1ha2Ugc3VyZSB0aW1lIGlzIGluIGNvcnJlY3QgdW5pdHMgYW5kIGluIHJpZ2h0IHBsYWNlXG5cdG5hbWVzKHNvZGEuc2l6ZXMpIDwtIG5hbWUuc29kYS5zaXplc1xuXHRudGltZSA8LSBzb2RhLnNpemVzW1widGltZVwiXVxuXHRuZGVwdGggPC0gc29kYS5zaXplc1tcImRlcHRoXCJdXG5cblx0c29kYS50aW1lMCA8LSBzb2RhLmluZm8kdmFyJHRlbXAkZGltW1s0XV0kdmFsc1xuXHRyZWYuZGF0ZSA8LSBhcy5EYXRlKGdzdWIoXCJtb250aHMgc2luY2UgXCIsIFwiXCIsIGRpbS51bml0c1s0XSkpXG5cdHN0YXJ0LmJlZm9yZS5yZWYgPC0gZ3JlcGwoXCItXCIsIHNvZGEudGltZTBbMV0pICMgaXMgdGhlIGZpcnN0IGRhdGUgYmVmb3JlIHJlZi5kYXRlP1xuXHRuLm1vbnRoLmJlZm9yZSA8LSBjZWlsaW5nKGFicyhzb2RhLnRpbWUwWzFdKSkgKyBhcy5pbnRlZ2VyKHN0YXJ0LmJlZm9yZS5yZWYpXG5cdHN0YXJ0LmluY3JlbWVudCA8LSBpZmVsc2Uoc3RhcnQuYmVmb3JlLnJlZiwgXCItMSBtb250aFwiLCBcIjEgbW9udGhcIilcblx0dGltZS5zdGFydCA8LSByZXYoc2VxLkRhdGUocmVmLmRhdGUsIGJ5PXN0YXJ0LmluY3JlbWVudCwgbGVuZ3RoLm91dD1uLm1vbnRoLmJlZm9yZSkpWzFdXG5cdHNvZGEudGltZSA8LSBzZXEuRGF0ZSh0aW1lLnN0YXJ0LCBieT1cIjEgbW9udGhcIiwgbGVuZ3RoLm91dD1udGltZSlcblxuXG5cdHBiIDwtIHR4dFByb2dyZXNzQmFyKG1pbj0xLCBtYXg9bnRpbWUsIHN0eWxlPTMpXG5cdGZvcihpIGluIDE6bnRpbWUpe1xuXHRcdHQuc29kYSA8LSBicmljayhmaWxlLCBsdmFyPTQsIGxldmVsPWkpXG5cdFx0IyBuZWVkIHRvIHN3aXRjaCBtaXNzaW5nIHZhbHVlIHRvIGFjdHVhbCBOQSAjIFRPRE8gaXMgdGhpcyBhdXRvbWF0aWNhbGx5IGRvbmUgYnkgYnJpY2soKT8gSSB0aGluayBzby5cblx0XHRcblx0XHRzb2RhLmRlcHRocyA8LSBhcy5udW1lcmljKGdzdWIoXCJYXCIsIFwiXCIsIG5hbWVzKHQuc29kYSkpKSAjIGRvZXMgd2VpcmQgcm91bmRpbmcgdGhhdCBJIGRvbid0IHVuZGVyc3RhbmRcblx0XG5cdFx0IyBnZXQgdGhlIGRlZXBlc3QgYXZhaWxhYmxlIHRlbXBlcmF0dXJlIGluIGVhY2ggZ3JpZGQgY2VsbFxuXHRcdHQuc29kYS5ib3QgPC0gZG8uY2FsbChjb3ZlciwgdW5zdGFjayhzdWJzZXQodC5zb2RhLCBsZW5ndGgoc29kYS5kZXB0aHMpOjEpKSlcblx0XHRuYW1lcyh0LnNvZGEuYm90KSA8LSBzb2RhLnRpbWVbaV1cblx0XHQjIHRoZSBzdWJzZXR0aW5nIHBpZWNlIGZsaXBzIHRoZSBvcmRlciBvZiB0aGUgbGF5ZXJzIChzbyB0aGF0IGRlZXBlc3QgaXMgZmlyc3QgbGF5ZXIpXG5cdFx0IyBieSB1bnN0YWNraW5nIEkgcmVmb3JtYXQgZnJvbSByYXN0ZXIgd2l0aCBsYXllcnMsIHRvIGxpc3Qgb2YgcmFzdGVyc1xuXHRcdCMgdGhhdCBsaXN0IGNhbiBiZSB1c2VkIGFzIHRoZSBsaXN0IG9mIGFyZ3VtZW50cyB0byBhIGZ1bmN0aW9uIHRha2luZyAuLi5cblx0XHQjIGNvdmVyIGtlZXBzIHRoZSB2YWx1ZXMgaW4gdGhlIGZpcnN0IG9iamVjdCBvZiB0aGUgLi4uLCBhbmQgcmVwbGFjZXMgdGhlIE5BJ3Mgd2l0aCB2YWx1ZXMgZnJvbSB0aGUgc2Vjb25kIC4uLlxuXHRcdCMgdGhhdCBwcm9jZXNzIHJlcGVhdHMgdW50aWwgdGhyb3VnaCBhbGwgb2JqZWN0IGxpc3RlZCBpbiB0aGUgLi4uXG5cdFx0IyBpbiBvdGhlciB3b3JkcywgdGhlIGZpbmFsIHZhbHVlIHdpbGwgYmUgdGhlIHZhbHVlIGluIHRoZSBmaXJzdCBsYXllciB0aGF0IGhhcyBhIG5vbi1OQSB2YWx1ZSBpbiB0aGF0IGNlbGxcblx0XHRcblx0XHQjIGFjY3VtdWxhdGUgb3ZlciB0aW1lIHBlcmlvZHMgKG1vbnRobHkgaW4gb3JpZ2luYWwgZGF0YSBzZXRzIEknbSB1c2luZylcblx0XHQjIHRoaXMgd2lsbCBiZSBmb3IgdGhlIGZpcnN0IHRpbWUgcGVyaW9kICgxOTU4LTE5NzgpXG5cdFx0aWYoaT09MSl7XG5cdFx0XHRzb2RhLmJvdCA8LSB0LnNvZGEuYm90XG5cdFx0fWVsc2V7XG5cdFx0XHRzb2RhLmJvdCA8LSBhZGRMYXllcihzb2RhLmJvdCwgdC5zb2RhLmJvdClcblx0XHR9XG5cdFx0c2V0VHh0UHJvZ3Jlc3NCYXIocGIsIGkpXG5cdH1cblx0Y2xvc2UocGIpXG5cdFxuXHRyZXR1cm4oc29kYS5ib3QpXG5cdFxufVxuXG5zb2RhX2JvdHRvbV8yLjIuNCA8LSBnZXQuc29kYS5ib3QuMi4yLjQoXCJzb2RhMi4yLjRfMTk1M18xOTc5X3NidF90cmF3bF9maW5hbC5uY1wiKVxuXG5gYGAifQ== -->
-<pre class="r"><code># =========================================
-# = Function to Read in SODA, Grab Bottom =
-# =========================================
-get.soda.bot.2.2.4 &lt;- function(file){
-
-    soda.info &lt;- nc_open(file)
-    name.soda.sizes &lt;- sapply(soda.info$var$temp$dim, function(x)x$name)
-    soda.sizes &lt;- soda.info$var$temp$size
-    dim.units &lt;- sapply(soda.info$var$temp$dim, function(x)x$units)
-    print(dim.units)
-    stopifnot(grepl(&quot;months since &quot;, dim.units[4])) # make sure time is in correct units and in right place
-    names(soda.sizes) &lt;- name.soda.sizes
-    ntime &lt;- soda.sizes[&quot;time&quot;]
-    ndepth &lt;- soda.sizes[&quot;depth&quot;]
-
-    soda.time0 &lt;- soda.info$var$temp$dim[[4]]$vals
-    ref.date &lt;- as.Date(gsub(&quot;months since &quot;, &quot;&quot;, dim.units[4]))
-    start.before.ref &lt;- grepl(&quot;-&quot;, soda.time0[1]) # is the first date before ref.date?
-    n.month.before &lt;- ceiling(abs(soda.time0[1])) + as.integer(start.before.ref)
-    start.increment &lt;- ifelse(start.before.ref, &quot;-1 month&quot;, &quot;1 month&quot;)
-    time.start &lt;- rev(seq.Date(ref.date, by=start.increment, length.out=n.month.before))[1]
-    soda.time &lt;- seq.Date(time.start, by=&quot;1 month&quot;, length.out=ntime)
-
-
-    pb &lt;- txtProgressBar(min=1, max=ntime, style=3)
-    for(i in 1:ntime){
-        t.soda &lt;- brick(file, lvar=4, level=i)
-        # need to switch missing value to actual NA # TODO is this automatically done by brick()? I think so.
-        
-        soda.depths &lt;- as.numeric(gsub(&quot;X&quot;, &quot;&quot;, names(t.soda))) # does weird rounding that I don't understand
-    
-        # get the deepest available temperature in each gridd cell
-        t.soda.bot &lt;- do.call(cover, unstack(subset(t.soda, length(soda.depths):1)))
-        names(t.soda.bot) &lt;- soda.time[i]
-        # the subsetting piece flips the order of the layers (so that deepest is first layer)
-        # by unstacking I reformat from raster with layers, to list of rasters
-        # that list can be used as the list of arguments to a function taking ...
-        # cover keeps the values in the first object of the ..., and replaces the NA's with values from the second ...
-        # that process repeats until through all object listed in the ...
-        # in other words, the final value will be the value in the first layer that has a non-NA value in that cell
-        
-        # accumulate over time periods (monthly in original data sets I'm using)
-        # this will be for the first time period (1958-1978)
-        if(i==1){
-            soda.bot &lt;- t.soda.bot
-        }else{
-            soda.bot &lt;- addLayer(soda.bot, t.soda.bot)
-        }
-        setTxtProgressBar(pb, i)
-    }
-    close(pb)
-    
-    return(soda.bot)
-    
-}
-
-soda_bottom_2.2.4 &lt;- get.soda.bot.2.2.4(&quot;soda2.2.4_1953_1979_sbt_trawl_final.nc&quot;)
-</code></pre>
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuYGBgclxuc29kYV9ib3R0b20gPC0gc3RhY2soc29kYV9ib3R0b21fMi4yLjQsIHNvZGFfYm90dG9tXzMuMy4xKVxuI3NhdmVcbndyaXRlUmFzdGVyKHNvZGFfYm90dG9tLCBcXHNvZGFfYm90dG9tX3NlcDIwMTkuZ3JkXFwsIG92ZXJ3cml0ZSA9IFQpXG5gYGBcbmBgYCJ9 -->
+<p><code>r</code>r soda_bottom &lt;- stack(soda_bottom_2.2.4, soda_bottom_3.3.1) #save writeRaster(soda_bottom, _bottom_sep2019.grd, overwrite = T)</p>
+<pre><code></code></pre>
 <!-- rnb-source-end -->
 <!-- rnb-chunk-end -->
 <!-- rnb-text-begin -->
@@ -717,8 +719,9 @@ soda_bottom_3.3.1 &lt;- get.soda.bot.3.3.1(&quot;soda3.3.1_1980_2015_sbt_trawl_f
 writeRaster(soda_bottom, &quot;soda_bottom_sep2019.grd&quot;, overwrite = T)</code></pre>
 <!-- rnb-source-end -->
 <!-- rnb-chunk-end -->
+</div>
 
-<div id="rmd-source-code">LS0tCnRpdGxlOiAiRXh0cmFjdGluZyBTT0RBIFRlbXBlcmF0dXJlIGZyb20gYm90aCAyLjIuNCBhbmQgMy4zLjEiCm91dHB1dDogaHRtbF9ub3RlYm9vawotLS0KV2hhdCBsYXQvbG9uIHZhbHVlcyBkbyB3ZSBhY3R1YWxseSBuZWVkPwpgYGB7ciBtYWtlIGxpc3Qgb2YgYWxsIEdQUyBwb2ludHMgd2Ugd2FudCB0byBleHRyYWN0IHRlbXAgZGF0YSBmcm9tfQpsaWJyYXJ5KGRhdGEudGFibGUpCmxvYWQoIi9Vc2Vycy96b2VraXRjaGVsL0RvY3VtZW50cy9ncmFkIHNjaG9vbC9SdXRnZXJzL0NvdXJzZXdvcmsvRmFsbCAyMDE4L1NETS9oYXVsc19jYXRjaF9EZWMyMDE3IDEuUkRhdGEiKQojbG9hZCgifi9jb2xfZXh0L2hhdWxzX2NhdGNoX0RlYzIwMTcgMS5SRGF0YSIpCmhhdWxzIDwtIGRhdGEudGFibGUoaGF1bHMpCmNvbHMgPC0gYygibGF0IiwgICJsb24iLCAgInJlZ2lvbiIsICJkZXB0aCIpCmxhdGxvbmd5ZWFyIDwtIGhhdWxzWywgIGNvbHMsICB3aXRoID0gRl0KCiMgc2V0IHRoZSBrZXkgdG8gYWxsIGNvbHVtbnMKc2V0a2V5KGxhdGxvbmd5ZWFyKQoKIyBHZXQgdW5pcXVlIGxhdCBsb24gY29tYm9zCmxhdGxvbmd5ZWFyLnUgPC0gdW5pcXVlKGxhdGxvbmd5ZWFyW2xpc3QobGF0LCAgbG9uKSwgIG5vbWF0Y2ggPSAwXSkKCiNvbmx5IHRha2UgbWF4aW11bSBkZXB0aApsYXRsb25neWVhci51X21heGRlcHRoIDwtIGxhdGxvbmd5ZWFyLnVbbGF0bG9uZ3llYXIudVssIC5JW3doaWNoLm1heChkZXB0aCldLCBieSA9IGMoImxhdCIsImxvbiIpXSRWMV0KCiNtaW5pbXVtIGxhdD8sICBtYXhpbXVtIGxhdD8gbWluaW11bSBsb25nPyBtYXhpbXVtIGxvbmc/CnN1bW1hcnkobGF0bG9uZ3llYXIudV9tYXhkZXB0aCkKCm1pbmxhdCA8LSBtaW4obGF0bG9uZ3llYXIudV9tYXhkZXB0aCRsYXQpCm1heGxhdCA8LSBtYXgobGF0bG9uZ3llYXIudV9tYXhkZXB0aCRsYXQpCm1pbmxvbiA8LSBtaW4obGF0bG9uZ3llYXIudV9tYXhkZXB0aCRsb24pCm1heGxvbiA8LSBtYXgobGF0bG9uZ3llYXIudV9tYXhkZXB0aCRsb24pCm1heGRlcHRoIDwtIG1heChsYXRsb25neWVhci51X21heGRlcHRoJGRlcHRoKQptaW5kZXB0aCA8LSBtaW4obGF0bG9uZ3llYXIudV9tYXhkZXB0aCRkZXB0aCkKCm1pbmxhdAptYXhsYXQKbWlubG9uCm1heGxvbgptYXhkZXB0aAptaW5kZXB0aApgYGAKCldlIG5lZWQgdG8gZm9sbG93IEppbSdzIGxlYWQsICBhbmQgdXNlIFNPREEgMi4yIGZvciBwcmUxOTgwLCAgYW5kIHRoZW4gU09EQSAzLjMgZm9yIHBvc3QxOTgwLiBVbmZvcnR1bmF0ZWx5LCAgdGhleSdyZSBhY2Nlc3NpYmxlIGluIGRpZmZlcmVudCB3YXlzLiBXZSB3aWxsIHN0YXJ0IHdpdGgxOTgwKwoKYGBge2Jhc2ggaW1wb3J0IFNPREEgcG9zdDE5ODB9CiNpbnN0YWxsIG5jbwpjb25kYSBpbnN0YWxsLWMgY29uZGEtZm9yZ2UgbmNvCiNtYWtlIHRleHQgZmlsZSBmcm9tIGh0dHBzOi8vd3d3LmF0bW9zLnVtZC5lZHUvfm9jZWFuL2luZGV4X2ZpbGVzL3NvZGEzLjMuMV9tbl9vY2Vhbl9yZWcudHh0CiNhZGQgIi9vY2VhbiJhZnRlciByZWdyaWRlZCBlcnJvciBvbiB0aGVpciBwYXJ0Cgp3Z2V0LWkgc29kYTMuMy4xX21uX29jZWFuX3JlZ19pbXBvcnQudHh0CgpgYGAKClRoaXMgdGFrZXMgYSB3aGlsZSwgIGFzIGl0J3MxMDAgZ2Igb2YgZGF0YSBhbmQgbm8gd2F5IHRvIG5hcnJvdyBkb3duIGJlZm9yZWhhbmQgYXMgZmFyIGFzIEkgY2FuIHRlbGwuIAoqKkRvd25sb2FkZWQ6IDM2IGZpbGVzLCAxMThHIGluIDQ2bTEzcyA0My42IE1CL3MqKgoKYGBge2Jhc2ggZXh0cmFjdCBqdXN0IHRvcC9ib3R0b20gbGF5ZXJzIGZyb20xOTgwIHRvIDIwMTUgZm9yIGVhY2ggeWVhcmx5IGZpbGV9CiNib3R0b20KZm9yIGkgaW4gYGNhdCBzb2RhMy4zLjFfbW5fb2NlYW5fcmVnX2ltcG9ydC50eHRgO2RvIG5ja3MgLWQgZGVwdGgsLTEgIiR7aX0iICIke2klLip9X2JvdHRvbS5uYyI7ZG9uZQoKI3N1cmZhY2UKZm9yIGkgaW4gYGNhdCBzb2RhMy4zLjFfbW5fb2NlYW5fcmVnX2ltcG9ydC50eHRgO2RvIG5ja3MgLWQgZGVwdGgsMCAiJHtpfSIgIiR7aSUuKn1fc3VyZmFjZS5uYyI7ZG9uZSAjaW4gcHl0aG9uLCAwIGlzIHRoZSBmaXJzdCBkaW1lbnNpb24KCmBgYAoKU2VlaW5nIG5vdyB0aGF0IHRoZXNlIGZpbGVzIGluIHRoZWlyIGN1cnJlbnQgc3RhdGUgYWN0dWFsbHkgY29udGFpbiBtdWx0aXBsZSB2YXJpYWJsZXMsIGFuZCBJIG9ubHkgd2FudCBvbmUgdGVtcApgYGB7YmFzaCBleHRyYWN0aW5nIG9ubHkgdGVtcCBmcm9tIDE5ODAgdG8gMjAxNX0KI2JvdHRvbQpmb3IgaSBpbiBgY2F0IHNvZGEzLjMuMV9tbl9vY2Vhbl9yZWdfaW1wb3J0LnR4dGA7IGRvIG5ja3MgLXYgdGVtcCAtTyAiJHtpJS4qfV9ib3R0b20ubmMiICIke2klLip9X3NidC5uYyI7ZG9uZQojc3VyZmFjZQpmb3IgaSBpbiBgY2F0IHNvZGEzLjMuMV9tbl9vY2Vhbl9yZWdfaW1wb3J0LnR4dGA7IGRvIG5ja3MgLXYgdGVtcCAtTyAiJHtpJS4qfV9zdXJmYWNlLm5jIiAiJHtpJS4qfV9zc3QubmMiO2RvbmUKYGBgCgpJIHdpbGwgbm93IG1lcmdlIHRoZXNlIGZpbGVzIGFsb25nIHRpbWUuIEVuc3VyZSB0aGF0IHRoZXJlIGFyZSBubyBvdGhlciBmaWxlcyB0aGF0IG1hdGNoIGBzb2RhMy4zLjEqc3N0Lm5jYCBzeW50YXggYmVjYXVzZSB0aGVuIGl0IHdvbid0IHdvcmsuCmBgYHtiYXNoIG1lcmdlMTk4MC0yMDE1IGZpbGVzIGZvciBzYnQgYW5kIHNzdH0KbmNyY2F0IHNvZGEzLjMuMSpzc3QubmMgLU8gc29kYTMuMy4xXzE5ODBfMjAxNV9zc3QubmMKbmNyY2F0IHNvZGEzLjMuMSpzYnQubmMgLU8gc29kYTMuMy4xXzE5ODBfMjAxNV9zYnQubmMKYGBgCgpMZXQncyBub3cgY3JvcCBkb3duIHRvIGFjdHVhbCBwb2ludHMgd2UgbmVlZDoKMjQuNDkwMDggbGF0CjYyLjAxOTE3IGxhdAotMTg5LjM5NyBsb24KLTQzLjgzNSBsb24KCkJ1dCwgY3VycmVudGx5LCB0aGlzIDMuMy4xIGRhdGEgaXMgaW4gMC0zNjAsIG9yIHRlY2huaWNhbGx5IDAuMjUtMzU5Ljc1IHdoaWNoIGlzIGVxdWFsIHRvIDAuMjUgdG8gLTAuMjUKClRvIG1hdGNoIHdoYXQgd2Ugd2lsbCBleHRyYWN0IGZyb20gMi4yLjQsIHdlIG5lZWQgLTE4OS43NUUgYW5kIC00My4yNUUuIFNvLCB3ZSBuZWVkIHRvIGtlZXAgMTcwLjI1LTMxNi43NSoqCgpMZXQncyBjcm9wIGludG8gdHdvIHBpZWNlcywgYW5kIHRoZW4gcmVtZXJnZS4KQ3JvcCB0byBjb3JyZWN0IGxhdCBsb24KYGBge2Jhc2ggY3JvcCBwb2ludHMgdG8gdGhvc2Ugd2UgYWN0dWFsbHkgbmVlZCBmcm9tIDAtMzYwIGZyb20gMy4zLjF9CiNzdXJmYWNlCm5ja3MgLU8gLWQgbGF0aXR1ZGUsMjQuMjUsNjIuMjUgLWQgbG9uZ2l0dWRlLDE3MC4yNSwzMTYuNzUgc29kYTMuMy4xXzE5ODBfMjAxNV9zc3QubmMgc29kYTMuMy4xXzE5ODBfMjAxNV9zc3RfY3JvcC5uYwoKCiNib3R0b20KbmNrcyAtTyAtZCBsYXRpdHVkZSwyNC4yNSw2Mi4yNSAtZCBsb25naXR1ZGUsMTcwLjI1LDMxNi43NSBzb2RhMy4zLjFfMTk4MF8yMDE1X3NidC5uYyBzb2RhMy4zLjFfMTk4MF8yMDE1X3NidF9jcm9wLm5jCgpgYGAKCgoqVGhlIGZpcnN0IGNvbW1hbmQgbmNrcyBzaGlmdHMgdGhlIGRhdGEsICB0aGUgc2Vjb25kIGNvbW1hbmQgbmNhcDIgcmVjYWxpYnJhdGVzIHRoZSBjb29yZGluYXRlIHRvIHRoZSBuZXdseSBzaGlmdGVkIGRhdGEuIE9uZSBjb21tZW50IG9uIGFwcGx5aW5nIHRoaXMgYWxnb3JpdGhtOiBCZSBjYXJlZnVsIHRvIHNwZWNpZnkgaGVtaXNwaGVyZXMgdGhhdCBkbyBub3Qgb3ZlcmxhcCwgIGUuZy4sICBieSBpbmFkdmVydGVudGx5IHNwZWNpZnlpbmcgY29vcmRpbmF0ZSByYW5nZXMgaW4gdGhlIGZpcnN0IGNvbW1hbmQgdGhhdCBib3RoIGluY2x1ZGUgdGhlIGRhdGUgbGluZS4gU29tZSB1c2VycyB3aWxsIGZpbmQgdXNpbmcgaW5kZXgtYmFzZWQgcmF0aGVyIHRoYW4gY29vcmRpbmF0ZS1iYXNlZCBoeXBlcnNsYWJzIG1ha2VzIHRoaXMgY2xlYXJlci4gRXhhbWluZSBhIHBsb3Qgb2YgdGhlIGZpZWxkIHRvIG1ha2Ugc3VyZSB5b3VyIHJvdGF0aW9uIHdhcyBjb3JyZWN0LioKCmBgYHtiYXNoIGNvbnZlcnQgZ3JpZH0KI3N1cmZhY2UKbmNhcDIgLU8gLXMgJ2xvbmdpdHVkZT1sb25naXR1ZGUtMzYwJyBzb2RhMy4zLjFfMTk4MF8yMDE1X3NzdF9jcm9wLm5jIHNvZGEzLjMuMV8xOTgwXzIwMTVfc3N0X2ZpbmFsLm5jCgojYm90dG9tCm5jYXAyIC1PIC1zICdsb25naXR1ZGU9bG9uZ2l0dWRlLTM2MCcgc29kYTMuMy4xXzE5ODBfMjAxNV9zYnRfY3JvcC5uYyBzb2RhMy4zLjFfMTk4MF8yMDE1X3NidF9maW5hbC5uYwpgYGAKCgpDaGFuZ2UgbmFtZXMgb2YgZGltZW5zaW9ucyB0byBtYXRjaCBlYXJsaWVyIHRpbWUgZmlsZXMKYGBge2Jhc2ggY2hhbmdlIG5hbWVzIG9mIGRpbWVuc2lvbnMgYW5kIHZhcmlhYmxlcyBmb3IxOTgwK30KI3N1cmZhY2UKbmNyZW5hbWUgLWQgbGF0aXR1ZGUsbGF0IC12IGxhdGl0dWRlLGxhdCBzb2RhMy4zLjFfMTk4MF8yMDE1X3NzdF9maW5hbC5uYwpuY3JlbmFtZSAtZCBsb25naXR1ZGUsbG9uIC12IGxvbmdpdHVkZSxsb24gc29kYTMuMy4xXzE5ODBfMjAxNV9zc3RfZmluYWwubmMKI2JvdHRvbQpuY3JlbmFtZSAtZCBsYXRpdHVkZSxsYXQgLXYgbGF0aXR1ZGUsbGF0IHNvZGEzLjMuMV8xOTgwXzIwMTVfc2J0X2ZpbmFsLm5jCm5jcmVuYW1lIC1kIGxvbmdpdHVkZSxsb24gLXYgbG9uZ2l0dWRlLGxvbiBzb2RhMy4zLjFfMTk4MF8yMDE1X3NidF9maW5hbC5uYwpgYGAKKkRvbmUgd2l0aDE5ODAtMjAxNSoKCi0tLS0tLS0tLS0KTWFsaW4gcmVjb21tZW5kZWQgZXh0cmFjdGluZyBib3R0b20gdGVtcGVyYXR1cmUgYnkgZXh0cmFjdGluZyBmcm9tIGdpdmVuIGRlcHRoIHZhbHVlIGF0IGVhY2ggR1BTIGxvY2F0aW9uIGZyb20gdHJhd2wgcmF0aGVyIHRoYW4gdHJ5aW5nIHRvIGNyZWF0ZSBhIGJvdHRvbSBsYXllciwgc28gSSB3aWxsIGFsc28gbWVyZ2UgYnV0IGtlZXAgYWxsIGRlcHRocywgc28gSSB3aWxsIGFsc28gdHJ5IHRoaXMgd2F5LlN1cmZhY2UgaXMgZmluZSwgYnV0IEkgaGF2ZSB0byBtYWtlIHRoZSBib3R0b20gbGF5ZXIgaW4gYSBkaWZmZXJlbnQgd2F5LgoKTWF4aW11bSBkZXB0aCA9IDE1MDQgbWV0ZXJzLCBzbyBvbmx5IHVwIHRvIDE2MjUuNyBpbiBTT0RBIGRhdGEKYGBge2Jhc2ggbGltaXQgdG8gZGVwdGhzIGluY2x1ZGVkIGluIHRyYXdsIHN1cnZleSAzLjMuMX0KI2xpbWl0IGRlcHRoIHRvIDE2MjUuNyAoY2xvc2VzdCB0byBtYXggaW4gdHJhd2wgc3VydmV5KQpmb3IgaSBpbiBgY2F0IHNvZGEzLjMuMV9tbl9vY2Vhbl9yZWdfaW1wb3J0LnR4dGA7ZG8gbmNrcyAtTyAtZCBkZXB0aCwwLiwxNjI1LjcgIiR7aX0iICIke2klLip9X2JvdHRvbV90cmF3bC5uYyI7ZG9uZQojSSBzaG91bGQga2VlcCB0aGlzIGRlcHRoIG1heCBldmVuIGlmIEkgZG9uJ3QgdXNlIE1hbGluJ3MgcmVjb21tZW5kYXRpb24gYmVjYXVzZSBib3R0b20gdGVtcGVyYXR1cmUgYmVsb3cgdGhpcyBwb2ludCAoZGVlcGVzdCB0cmF3bCkgaXMgaWxsb2dpY2FsCgojb25seSBsb29rIGF0IHRlbXBlcmF0dXJlIHZhcmlhYmxlCmZvciBpIGluIGBjYXQgc29kYTMuMy4xX21uX29jZWFuX3JlZ19pbXBvcnQudHh0YDsgZG8gbmNrcyAtdiB0ZW1wIC1PICIke2klLip9X2JvdHRvbV90cmF3bC5uYyIgIiR7aSUuKn1fc2J0X3RyYXdsLm5jIjtkb25lCgojbm93IG1lcmdlIHRoZXNlIGZpbGVzIG92ZXIgdGltZQpuY3JjYXQgc29kYTMuMy4xKnNidF90cmF3bC5uYyAtTyBzb2RhMy4zLjFfMTk4MF8yMDE1X3NidF90cmF3bC5uYwoKI2Nyb3AgdG8gcG9pbnRzIHdlIG5lZWQgbGF0IGxvbgpuY2tzIC1PIC1kIGxhdGl0dWRlLDI0LjI1LDYyLjI1IC1kIGxvbmdpdHVkZSwxNzAuMjUsMzE2Ljc1IHNvZGEzLjMuMV8xOTgwXzIwMTVfc2J0X3RyYXdsLm5jIHNvZGEzLjMuMV8xOTgwXzIwMTVfc2J0X3RyYXdsX2Nyb3AubmMKCiNjaGFuZ2UgZ3JpZCBmcm9tIDAgMzYwIC0gLTE4MC0xODAKbmNhcDIgLU8gLXMgJ2xvbmdpdHVkZT1sb25naXR1ZGUtMzYwJyBzb2RhMy4zLjFfMTk4MF8yMDE1X3NidF90cmF3bF9jcm9wLm5jIHNvZGEzLjMuMV8xOTgwXzIwMTVfc2J0X3RyYXdsX2ZpbmFsLm5jCgojY2hhbmdlIG5hbWVzIHRvIGxhdC9sb24KbmNyZW5hbWUgLWQgbGF0aXR1ZGUsbGF0IC12IGxhdGl0dWRlLGxhdCBzb2RhMy4zLjFfMTk4MF8yMDE1X3NidF90cmF3bF9maW5hbC5uYwpuY3JlbmFtZSAtZCBsb25naXR1ZGUsbG9uIC12IGxvbmdpdHVkZSxsb24gc29kYTMuMy4xXzE5ODBfMjAxNV9zYnRfdHJhd2xfZmluYWwubmMKYGBgCi0tLS0tLS0tLQoKKioqKioqKioqKgoKTm93LCAgd2Ugd2lsbCBpbXBvcnQgbmV0Y2RmIGRhdGEgZm9yIHByZTE5ODAgZnJvbSBTT0RBIDIuNC4KClVuZm9ydHVuYXRlbHksICBJdCBsb29rcyBsaWtlIEknbSBnb2luZyB0byBoYXZlIHRvIGltcG9ydCBmaWxlcyBvbmUgYnkgb25lIGZvciBjaHVua3Mgb2YgZGVwdGguCgpUZXh0IGZpbGUgd2l0aCBsaW5rczogL1NjcmF0Y2gvem9la19zY3JhdGNoL3NvZGEyLjIuNF9tbl9vY2Vhbl9yZWcudHh0CgpJbiBvcmRlciB0byBnaXZlIGEgYnVmZmVyIGFuZCBjb3JyZWN0bHkgZG93bmxvYWQgZnJvbSBpcmlkbC5sZGVvLmNvbHVtYmlhLmVkdSwgdXNlIC0xOTBFLSAtNDNFClNPREEgMi4yLjQgZ2l2ZXMgLTE4OS43NUUgYW5kIC00My4yNUUgd2hpY2ggaXMgZXF1YWwgdG8gMTg5Ljc1VyBhbmQgNDMuMjVXIE9SIDE3MC4yNUUgYW5kIC00My4yNUUKCkkgbWFkZSB0ZXh0IGZpbGUgaW4gYW1waGlwcmlvbiB0byBidWxrIGRvd25sb2FkIGB3Z2V0LWkgc29kYTIuMi40X21uX29jZWFuX3JlZy50eHQtLW5vLWNoZWNrLWNlcnRpZmljYXRlYCBETyBUSElTCmZpbGUgbmFtZXMgZ29pbmcgaW4gYXMgZGF0YS5uYy54IGV0Yy4KNS4wMS03MC4wMjogZGF0YS5uYwo4Mi45Mi0xOTcuNzk6IGRhdGEubmMuMQoyMjkuNDgtNzI5LjM1OiBkYXRhLm5jLjIKOTE4LjM3LTIzNzUuMDogZGF0YS5uYy4zCjI2MjUuMC00Mzc1LjA6IGRhdGEubmMuNAo0NjI1LjAtNTM3NS4wOiBkYXRhLm5jLjUKCmBgYHtiYXNoIG1lcmdlIFNPREEgZmlsZXMgcHJlMTk4MH0KI21lcmdlIGFsbCBkZXB0aCBjaHVua3MKY2RvIG1lcmdlIGRhdGEubiogZGF0YS5wcmUxOTgwLm5jCgojb25seSBib3R0b20gbGF5ZXIKbmNrcyAtZCBkZXB0aCwtMSBkYXRhLnByZTE5ODAubmMgc29kYTIuMi40XzE5NTNfMTk3OV9zYnQubmMgI05DTyBuY2tzIHdpdGggYSBuZWdhdGl2ZSBoeXBlcnNsYWIKCiNvbmx5IHN1cmZhY2UgbGF5ZXIKbmNrcyAtZCBkZXB0aCwxIGRhdGEucHJlMTk4MC5uYyBzb2RhMi4yLjRfMTk1M18xOTc5X3NzdC5uYwpgYGAKR2V0IHJpZCBvZiBkZXB0aCBkaW1lbnNpb24gZm9yIHN1cmZhY2UgdGVtcCBmaWxlcwpgYGB7YmFzaCBkZWxldGUgZGVwdGggZGltZW5zaW9uIGFuZCB2YXJpYWJsZSBmb3Igc3VyZmFjZSB0ZW1wIGZpbGVzfQpuY3dhIC1hIGRlcHRoIHNvZGEyLjIuNF8xOTUzXzE5Nzlfc3N0Lm5jIHNvZGEyLjIuNF8xOTUzXzE5Nzlfc3N0Lm5jCm5jd2EgLWEgZGVwdGggc29kYTMuMy4xXzE5ODBfMjAxNV9zc3RfZmluYWwubmMgc29kYTMuMy4xXzE5ODBfMjAxNV9zc3RfZmluYWwubmMKCm5ja3MgLXggLXYgZGVwdGggc29kYTIuMi40XzE5NTNfMTk3OV9zc3QubmMgc29kYTIuMi40XzE5NTNfMTk3OV9zc3QubmMKbmNrcyAteCAtdiBkZXB0aCBzb2RhMy4zLjFfMTk4MF8yMDE1X3NzdF9maW5hbC5uYyBzb2RhMy4zLjFfMTk4MF8yMDE1X3NzdF9maW5hbC5uYwoKYGBgCldlIGhhdmUgdG8gbWF0Y2ggdGltZSB1bml0cywgc29kYTIuMi40IGluIDM2MCBkYXkgYW5kIDMuMy4xIGluIGdyZWdvcmlhbgpTVEFSVCBIRVJFLCBtYXliZSBpbXBvcnQgZmlyc3QsIGFuZCB0aGVuIHBsYXkgd2l0aCB0aW1lCmBgYHtiYXNoIGZpeGluZyB0aW1lIHVuaXRzfQpjZG8gLWEgc2V0Y2FsZW5kYXIsc3RhbmRhcmQgc29kYTMuMy4xXzE5ODBfMjAxNV9zc3RfZmluYWwubmMgc29kYTMuMy4xXzE5ODBfMjAxNV9zc3RfZmluYWxfdGltZWZpeC5uYwpjZG8gLWEgc2V0Y2FsZW5kYXIsc3RhbmRhcmQgc29kYTMuMy4xXzE5ODBfMjAxNV9zYnRfZmluYWwubmMgc29kYTMuMy4xXzE5ODBfMjAxNV9zYnRfZmluYWxfdGltZWZpeC5uYwpjZG8gLWEgc2V0Y2FsZW5kYXIsc3RhbmRhcmQgc29kYTIuMi40XzE5NTNfMTk3OV9zc3QubmMgc29kYTIuMi40XzE5NTNfMTk3OV9zc3RfdGltZWZpeC5uYwpjZG8gLWEgc2V0Y2FsZW5kYXIsc3RhbmRhcmQgc29kYTIuMi40XzE5NTNfMTk3OV9zYnQubmMgc29kYTIuMi40XzE5NTNfMTk3OV9zYnRfdGltZWZpeC5uYwpgYGAKLS0tLS0tLS0tLQpNYWxpbiByZWNvbW1lbmRlZCBleHRyYWN0aW5nIGJvdHRvbSB0ZW1wZXJhdHVyZSBieSBleHRyYWN0aW5nIGZyb20gZ2l2ZW4gZGVwdGggdmFsdWUgYXQgZWFjaCBHUFMgbG9jYXRpb24gZnJvbSB0cmF3bCByYXRoZXIgdGhhbiB0cnlpbmcgdG8gY3JlYXRlIGEgYm90dG9tIGxheWVyLCBzbyBJIHdpbGwgYWxzbyBtZXJnZSBidXQga2VlcCBhbGwgZGVwdGhzLCBzbyBJIHdpbGwgYWxzbyB0cnkgdGhpcyB3YXkuU3VyZmFjZSBpcyBmaW5lLCBidXQgSSBoYXZlIHRvIG1ha2UgdGhlIGJvdHRvbSBsYXllciBpbiBhIGRpZmZlcmVudCB3YXkuCgpNYXhpbXVtIGRlcHRoID0gMTUwNCBtZXRlcnMsIHNvIG9ubHkgdXAgdG8gMTYyNS43IGluIFNPREEgZGF0YQpgYGB7YmFzaCBsaW1pdCB0byBkZXB0aHMgaW5jbHVkZWQgaW4gdHJhd2wgc3VydmV5IDIuMi40fQojbGltaXQgZGVwdGggdG8gMTYyNS43IChjbG9zZXN0IHRvIG1heCBpbiB0cmF3bCBzdXJ2ZXkpCm5ja3MgLU8gLWQgZGVwdGgsMC4sMTYyNS43IGRhdGEucHJlMTk4MC5uYyBzb2RhMi4yLjRfMTk1M18xOTc5X3NidF90cmF3bF9maW5hbC5uYwojSSBzaG91bGQga2VlcCB0aGlzIGRlcHRoIG1heCBldmVuIGlmIEkgZG9uJ3QgdXNlIE1hbGluJ3MgcmVjb21tZW5kYXRpb24gYmVjYXVzZSBib3R0b20gdGVtcGVyYXR1cmUgYmVsb3cgdGhpcyBwb2ludCAoZGVlcGVzdCB0cmF3bCkgaXMgaWxsb2dpY2FsCmBgYAoKLS0tLS0tLS0tCgoKQ2FuJ3QgZmlndXJlIHRoZSB0aW1lIHRoaW5nIG91dCwgSSB3aWxsIHVwbG9hZCB3aGF0IEkgaGF2ZS4Kc29kYTMuMy4xXzE5ODBfMjAxNV9zc3RfZmluYWxfdGltZWZpeC5uYyoKc29kYTMuMy4xXzE5ODBfMjAxNV9zYnRfdHJhd2xfZmluYWxfdGltZWZpeC5uYyoKc29kYTIuMi40XzE5NTNfMTk3OV9zc3QubmMKc29kYTIuMi40XzE5NTNfMTk3OV9zYnRfdHJhd2xfZmluYWwubmMKCgoqc2VlIGJlbG93IGZvciB0aW1lZml4IHNwZWNpZmljcwpgYGB7YmFzaCBlbnVtZXJhdGluZyAzLjMuMSBtb250aHMgc2VxdWVudGlhbGx5fQojSSB3YW50IGl0IHRvIGJlIG1vbnRocyBzaW5jZSAiIm1vbnRocyBzaW5jZSAxOTYwLTAxLTAxIiIKIzE5ODAtMDEtMDEgKGZpcnN0IHZhbHVlKSBpcyAyNDEuNSBtb250aHMgc2luY2UgMTk2MC0wMS0wMQpuY2FwMiAtcyAndGltZT1hcnJheSgyNDEuNSwxLCR0aW1lKScgc29kYTMuMy4xXzE5ODBfMjAxNV9zc3RfZmluYWwubmMgc29kYTMuMy4xXzE5ODBfMjAxNV9zc3RfZmluYWxfdGltZWZpeC5uYwpuY2FwMiAtcyAndGltZT1hcnJheSgyNDEuNSwxLCR0aW1lKScgc29kYTMuMy4xXzE5ODBfMjAxNV9zYnRfdHJhd2xfZmluYWwubmMgc29kYTMuMy4xXzE5ODBfMjAxNV9zYnRfdHJhd2xfZmluYWxfdGltZWZpeC5uYwoKYGBgCgoqKioqKioqKioqKioKCkkgZGlkbid0IHVzZSB0aGlzIGxpbmssICBidXQgaXQgYXBwZWFycyB0byBiZSBoZWxwZnVsLiBbRVJEQVBQXWh0dHBzOi8vY29hc3R3YXRjaC5wZmVnLm5vYWEuZ292L2VyZGRhcC9ncmlkZGFwL2VyZFNvZGEzMzFvY2Vhbm1kYXkuaHRtbC4KCioqKioqKioqKioqKgoKTm93IEkgaGF2ZSAyIGZpbGVzIGZvciBzdXJmYWNlIHRlbXBlcmF0dXJlICgzIGRpbWVuc2lvbnMpIGFuZCBzdXJmYWNlLWRlZXBlc3QgdHJhd2xzIChib3R0b20gdGVtcGVyYXR1cmUsIDQgZGltZW5zaW9ucykuIFN1cmZhY2UgdGVtcGVyYXR1cmUgc2hvdWxkIGJlIHN0cmFpZ2h0IGZvcndhcmQgZW5vdWdoLiBIb3dldmVyLCBJIHRoaW5rIHRoZSBuZXh0IHN0ZXAgZm9yIGJvdHRvbSB0ZW1wZXJhdHVyZSBpcyB0byBzcGxpdCB0aGVtIGJvdGggaW50byBtb250aGx5IGZpbGVzLCBhbmQgdGhlc2Ugd2lsbCBiZSBvZiB0aHJlZSBkaW1lbnNpb25zIChkZXB0aCwgbGF0LCBsb24pLiBUaGVuLCBJIGNhbiBleHRyYWN0IGRlcHRoLCBsYXQsIGxvbiwgZGF0YSBhbmQgbG9vcCB0aHJvdWdoIGFsbCBtb250aCBmaWxlcy4KCkxldCdzIHN0YXJ0IHdpdGggZXh0cmFjdGluZyBHUFMgcG9pbnRzIGZyb20gc3VyZmFjZSB0ZW1wZXJhdHVyZSwgdGhpcyBzaG91bGQgYmUgZWFzeSBlbm91Z2guCmBgYHtyIGV4dHJhY3QgdGVtcCB2YWx1ZXMgYXQgR1BTIHBvaW50cyBmb3Igc3VyZmFjZSB0ZW1wZXJhdHVyZX0KI0ZpcnN0LCBwcmUgMTk4MAoKIyA9PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PQojID0gRnVuY3Rpb24gdG8gUmVhZCBpbiBTT0RBLCBHcmFiIFN1cmZhY2UgPSBieSBSeWFuCiMgPT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT0KZ2V0LnNvZGEgPC0gZnVuY3Rpb24oZmlsZSl7CgoJc29kYS5pbmZvIDwtIG5jX29wZW4oZmlsZSkKCW5hbWUuc29kYS5zaXplcyA8LSBzYXBwbHkoc29kYS5pbmZvJHZhciR0ZW1wJGRpbSwgZnVuY3Rpb24oeCl4JG5hbWUpCglzb2RhLnNpemVzIDwtIHNvZGEuaW5mbyR2YXIkdGVtcCRzaXplCglkaW0udW5pdHMgPC0gc2FwcGx5KHNvZGEuaW5mbyR2YXIkdGVtcCRkaW0sIGZ1bmN0aW9uKHgpeCR1bml0cykKCXByaW50KGRpbS51bml0cykKCXN0b3BpZm5vdChncmVwbCgibW9udGhzIHNpbmNlICIsIGRpbS51bml0c1szXSkpICMgbWFrZSBzdXJlIHRpbWUgaXMgaW4gY29ycmVjdCB1bml0cyBhbmQgaW4gcmlnaHQgcGxhY2UKCW5hbWVzKHNvZGEuc2l6ZXMpIDwtIG5hbWUuc29kYS5zaXplcwoJbnRpbWUgPC0gc29kYS5zaXplc1sidGltZSJdCgluZGVwdGggPC0gc29kYS5zaXplc1siZGVwdGgiXQoKCXNvZGEudGltZTAgPC0gc29kYS5pbmZvJHZhciR0ZW1wJGRpbVtbM11dJHZhbHMKCXJlZi5kYXRlIDwtIGFzLkRhdGUoZ3N1YigibW9udGhzIHNpbmNlICIsICIiLCBkaW0udW5pdHNbM10pKQoJc3RhcnQuYmVmb3JlLnJlZiA8LSBncmVwbCgiLSIsIHNvZGEudGltZTBbMV0pICMgaXMgdGhlIGZpcnN0IGRhdGUgYmVmb3JlIHJlZi5kYXRlPwoJbi5tb250aC5iZWZvcmUgPC0gY2VpbGluZyhhYnMoc29kYS50aW1lMFsxXSkpICsgYXMuaW50ZWdlcihzdGFydC5iZWZvcmUucmVmKQoJc3RhcnQuaW5jcmVtZW50IDwtIGlmZWxzZShzdGFydC5iZWZvcmUucmVmLCAiLTEgbW9udGgiLCAiMSBtb250aCIpCgl0aW1lLnN0YXJ0IDwtIHJldihzZXEuRGF0ZShyZWYuZGF0ZSwgYnk9c3RhcnQuaW5jcmVtZW50LCBsZW5ndGgub3V0PW4ubW9udGguYmVmb3JlKSlbMV0KCXNvZGEudGltZSA8LSBzZXEuRGF0ZSh0aW1lLnN0YXJ0LCBieT0iMSBtb250aCIsIGxlbmd0aC5vdXQ9bnRpbWUpCgkKCXNvZGEgPC0gYnJpY2soZmlsZSkKCW5hbWVzKHNvZGEpIDwtIHNvZGEudGltZQoKCQkKCXJldHVybihzb2RhKQoJCn0KCnNvZGFfc3VyZmFjZV8yLjIuNCA8LSBnZXQuc29kYSgic29kYTIuMi40XzE5NTNfMTk3OV9zc3QubmMiKQoKI05vdywgcG9zdCAxOTgwCgojID09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09CiMgPSBGdW5jdGlvbiB0byBSZWFkIGluIFNPREEsIEdyYWIgU3VyZmFjZSA9IGJ5IFJ5YW4gKE5PVElDRSBFRElUUyBGUk9NIEFCT1ZFIEJFQ0FVU0UgT0YgVElNRSkKIyA9PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PQpnZXQuc29kYS4zLjMuMSA8LSBmdW5jdGlvbihmaWxlKXsKCglzb2RhLmluZm8gPC0gbmNfb3BlbihmaWxlKQoJbmFtZS5zb2RhLnNpemVzIDwtIHNhcHBseShzb2RhLmluZm8kdmFyJHRlbXAkZGltLCBmdW5jdGlvbih4KXgkbmFtZSkKCXNvZGEuc2l6ZXMgPC0gc29kYS5pbmZvJHZhciR0ZW1wJHNpemUKCWRpbS51bml0cyA8LSBzYXBwbHkoc29kYS5pbmZvJHZhciR0ZW1wJGRpbSwgZnVuY3Rpb24oeCl4JHVuaXRzKQoJcHJpbnQoZGltLnVuaXRzKQoJbmFtZXMoc29kYS5zaXplcykgPC0gbmFtZS5zb2RhLnNpemVzCgludGltZSA8LSBzb2RhLnNpemVzWyJ0aW1lIl0KCgl0aW1lLnN0YXJ0IDwtIGFzLkRhdGUoIjE5ODAtMDEtMDEiKSAjc2V0IHRoaXMgdG8gZGF0ZSB5b3Ugd2FudCB0byBzdGFydCBhdAoJc29kYS50aW1lIDwtIHNlcS5EYXRlKHRpbWUuc3RhcnQsIGJ5PSIxIG1vbnRoIiwgbGVuZ3RoLm91dD1udGltZSkKCQoJc29kYSA8LSBicmljayhmaWxlKQoJbmFtZXMoc29kYSkgPC0gc29kYS50aW1lCgoJCQoJcmV0dXJuKHNvZGEpCgkKfQoKc29kYV9zdXJmYWNlXzMuMy4xIDwtIGdldC5zb2RhLjMuMy4xKCJzb2RhMy4zLjFfMTk4MF8yMDE1X3NzdF9maW5hbF90aW1lZml4Lm5jIikKCmBgYAoKTm93LCBpbiBSLCBtZXJnZSB0aGVzZSB0d28gcmFzdGVyIGJyaWNrcwpgYGB7ciBtZXJnZSBzdGFja3MgZm9yIHN1cmZhY2UgdGVtcGVyYXR1cmUgYWNyb3NzIHRpbWV9CnNvZGFfc3VyZmFjZSA8LSBzdGFjayhzb2RhX3N1cmZhY2VfMi4yLjQsIHNvZGFfc3VyZmFjZV8zLjMuMSkKI3NhdmUKd3JpdGVSYXN0ZXIoc29kYV9zdXJmYWNlLCAic29kYV9zdXJmYWNlX3NlcDIwMTkuZ3JkIiwgb3ZlcndyaXRlID0gVCkKYGBgCkRvbmUgd2l0aCBzdXJmYWNlIHRlbXBlcmF0dXJlLgoKTm93LCB3ZSBoYXZlIHRvIGRvIHRoZSBzYW1lIGZvciBib3R0b20gdGVtcGVyYXR1cmUsIHdpbGwgdXNlIFJ5YW4gYW5kIEJlY2NhJ3MgY29kZS4KCkZpcnN0LCAyLjIuNCBgc29kYTIuMi40XzE5NTNfMTk3OV9zYnRfdHJhd2xfZmluYWwubmNgCmBgYHtyIGJyaW5nIGluIGJvdHRvbSAyLjIuNH0KIyA9PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PQojID0gRnVuY3Rpb24gdG8gUmVhZCBpbiBTT0RBLCBHcmFiIEJvdHRvbSA9CiMgPT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT0KZ2V0LnNvZGEuYm90LjIuMi40IDwtIGZ1bmN0aW9uKGZpbGUpewoKCXNvZGEuaW5mbyA8LSBuY19vcGVuKGZpbGUpCgluYW1lLnNvZGEuc2l6ZXMgPC0gc2FwcGx5KHNvZGEuaW5mbyR2YXIkdGVtcCRkaW0sIGZ1bmN0aW9uKHgpeCRuYW1lKQoJc29kYS5zaXplcyA8LSBzb2RhLmluZm8kdmFyJHRlbXAkc2l6ZQoJZGltLnVuaXRzIDwtIHNhcHBseShzb2RhLmluZm8kdmFyJHRlbXAkZGltLCBmdW5jdGlvbih4KXgkdW5pdHMpCglwcmludChkaW0udW5pdHMpCglzdG9waWZub3QoZ3JlcGwoIm1vbnRocyBzaW5jZSAiLCBkaW0udW5pdHNbNF0pKSAjIG1ha2Ugc3VyZSB0aW1lIGlzIGluIGNvcnJlY3QgdW5pdHMgYW5kIGluIHJpZ2h0IHBsYWNlCgluYW1lcyhzb2RhLnNpemVzKSA8LSBuYW1lLnNvZGEuc2l6ZXMKCW50aW1lIDwtIHNvZGEuc2l6ZXNbInRpbWUiXQoJbmRlcHRoIDwtIHNvZGEuc2l6ZXNbImRlcHRoIl0KCglzb2RhLnRpbWUwIDwtIHNvZGEuaW5mbyR2YXIkdGVtcCRkaW1bWzRdXSR2YWxzCglyZWYuZGF0ZSA8LSBhcy5EYXRlKGdzdWIoIm1vbnRocyBzaW5jZSAiLCAiIiwgZGltLnVuaXRzWzRdKSkKCXN0YXJ0LmJlZm9yZS5yZWYgPC0gZ3JlcGwoIi0iLCBzb2RhLnRpbWUwWzFdKSAjIGlzIHRoZSBmaXJzdCBkYXRlIGJlZm9yZSByZWYuZGF0ZT8KCW4ubW9udGguYmVmb3JlIDwtIGNlaWxpbmcoYWJzKHNvZGEudGltZTBbMV0pKSArIGFzLmludGVnZXIoc3RhcnQuYmVmb3JlLnJlZikKCXN0YXJ0LmluY3JlbWVudCA8LSBpZmVsc2Uoc3RhcnQuYmVmb3JlLnJlZiwgIi0xIG1vbnRoIiwgIjEgbW9udGgiKQoJdGltZS5zdGFydCA8LSByZXYoc2VxLkRhdGUocmVmLmRhdGUsIGJ5PXN0YXJ0LmluY3JlbWVudCwgbGVuZ3RoLm91dD1uLm1vbnRoLmJlZm9yZSkpWzFdCglzb2RhLnRpbWUgPC0gc2VxLkRhdGUodGltZS5zdGFydCwgYnk9IjEgbW9udGgiLCBsZW5ndGgub3V0PW50aW1lKQoKCglwYiA8LSB0eHRQcm9ncmVzc0JhcihtaW49MSwgbWF4PW50aW1lLCBzdHlsZT0zKQoJZm9yKGkgaW4gMTpudGltZSl7CgkJdC5zb2RhIDwtIGJyaWNrKGZpbGUsIGx2YXI9NCwgbGV2ZWw9aSkKCQkjIG5lZWQgdG8gc3dpdGNoIG1pc3NpbmcgdmFsdWUgdG8gYWN0dWFsIE5BICMgVE9ETyBpcyB0aGlzIGF1dG9tYXRpY2FsbHkgZG9uZSBieSBicmljaygpPyBJIHRoaW5rIHNvLgoJCQoJCXNvZGEuZGVwdGhzIDwtIGFzLm51bWVyaWMoZ3N1YigiWCIsICIiLCBuYW1lcyh0LnNvZGEpKSkgIyBkb2VzIHdlaXJkIHJvdW5kaW5nIHRoYXQgSSBkb24ndCB1bmRlcnN0YW5kCgkKCQkjIGdldCB0aGUgZGVlcGVzdCBhdmFpbGFibGUgdGVtcGVyYXR1cmUgaW4gZWFjaCBncmlkZCBjZWxsCgkJdC5zb2RhLmJvdCA8LSBkby5jYWxsKGNvdmVyLCB1bnN0YWNrKHN1YnNldCh0LnNvZGEsIGxlbmd0aChzb2RhLmRlcHRocyk6MSkpKQoJCW5hbWVzKHQuc29kYS5ib3QpIDwtIHNvZGEudGltZVtpXQoJCSMgdGhlIHN1YnNldHRpbmcgcGllY2UgZmxpcHMgdGhlIG9yZGVyIG9mIHRoZSBsYXllcnMgKHNvIHRoYXQgZGVlcGVzdCBpcyBmaXJzdCBsYXllcikKCQkjIGJ5IHVuc3RhY2tpbmcgSSByZWZvcm1hdCBmcm9tIHJhc3RlciB3aXRoIGxheWVycywgdG8gbGlzdCBvZiByYXN0ZXJzCgkJIyB0aGF0IGxpc3QgY2FuIGJlIHVzZWQgYXMgdGhlIGxpc3Qgb2YgYXJndW1lbnRzIHRvIGEgZnVuY3Rpb24gdGFraW5nIC4uLgoJCSMgY292ZXIga2VlcHMgdGhlIHZhbHVlcyBpbiB0aGUgZmlyc3Qgb2JqZWN0IG9mIHRoZSAuLi4sIGFuZCByZXBsYWNlcyB0aGUgTkEncyB3aXRoIHZhbHVlcyBmcm9tIHRoZSBzZWNvbmQgLi4uCgkJIyB0aGF0IHByb2Nlc3MgcmVwZWF0cyB1bnRpbCB0aHJvdWdoIGFsbCBvYmplY3QgbGlzdGVkIGluIHRoZSAuLi4KCQkjIGluIG90aGVyIHdvcmRzLCB0aGUgZmluYWwgdmFsdWUgd2lsbCBiZSB0aGUgdmFsdWUgaW4gdGhlIGZpcnN0IGxheWVyIHRoYXQgaGFzIGEgbm9uLU5BIHZhbHVlIGluIHRoYXQgY2VsbAoJCQoJCSMgYWNjdW11bGF0ZSBvdmVyIHRpbWUgcGVyaW9kcyAobW9udGhseSBpbiBvcmlnaW5hbCBkYXRhIHNldHMgSSdtIHVzaW5nKQoJCSMgdGhpcyB3aWxsIGJlIGZvciB0aGUgZmlyc3QgdGltZSBwZXJpb2QgKDE5NTgtMTk3OCkKCQlpZihpPT0xKXsKCQkJc29kYS5ib3QgPC0gdC5zb2RhLmJvdAoJCX1lbHNlewoJCQlzb2RhLmJvdCA8LSBhZGRMYXllcihzb2RhLmJvdCwgdC5zb2RhLmJvdCkKCQl9CgkJc2V0VHh0UHJvZ3Jlc3NCYXIocGIsIGkpCgl9CgljbG9zZShwYikKCQoJcmV0dXJuKHNvZGEuYm90KQoJCn0KCnNvZGFfYm90dG9tXzIuMi40IDwtIGdldC5zb2RhLmJvdC4yLjIuNCgic29kYTIuMi40XzE5NTNfMTk3OV9zYnRfdHJhd2xfZmluYWwubmMiKQoKYGBgCgpUaGVuLCAzLjMuMSBgc29kYTMuMy4xXzE5ODBfMjAxNV9zYnRfdHJhd2xfZmluYWxfdGltZWZpeC5uY2AKYGBge3IgYnJpbmcgaW4gYm90dG9tIDMuMy4xfQojID09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09CiMgPSBGdW5jdGlvbiB0byBSZWFkIGluIFNPREEsIEdyYWIgQm90dG9tID0KIyA9PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PQpnZXQuc29kYS5ib3QuMy4zLjEgPC0gZnVuY3Rpb24oZmlsZSl7CgoJc29kYS5pbmZvIDwtIG5jX29wZW4oZmlsZSkKCW5hbWUuc29kYS5zaXplcyA8LSBzYXBwbHkoc29kYS5pbmZvJHZhciR0ZW1wJGRpbSwgZnVuY3Rpb24oeCl4JG5hbWUpCglzb2RhLnNpemVzIDwtIHNvZGEuaW5mbyR2YXIkdGVtcCRzaXplCglkaW0udW5pdHMgPC0gc2FwcGx5KHNvZGEuaW5mbyR2YXIkdGVtcCRkaW0sIGZ1bmN0aW9uKHgpeCR1bml0cykKCXByaW50KGRpbS51bml0cykKCW5hbWVzKHNvZGEuc2l6ZXMpIDwtIG5hbWUuc29kYS5zaXplcwoJbnRpbWUgPC0gc29kYS5zaXplc1sidGltZSJdCgluZGVwdGggPC0gc29kYS5zaXplc1siZGVwdGgiXQoKICB0aW1lLnN0YXJ0IDwtIGFzLkRhdGUoIjE5ODAtMDEtMDEiKSAjc2V0IHRoaXMgdG8gZGF0ZSB5b3Ugd2FudCB0byBzdGFydCBhdAoJc29kYS50aW1lIDwtIHNlcS5EYXRlKHRpbWUuc3RhcnQsIGJ5PSIxIG1vbnRoIiwgbGVuZ3RoLm91dD1udGltZSkKCgoJcGIgPC0gdHh0UHJvZ3Jlc3NCYXIobWluPTEsIG1heD1udGltZSwgc3R5bGU9MykKCWZvcihpIGluIDE6bnRpbWUpewoJCXQuc29kYSA8LSBicmljayhmaWxlLCBsdmFyPTQsIGxldmVsPWkpCgkJIyBuZWVkIHRvIHN3aXRjaCBtaXNzaW5nIHZhbHVlIHRvIGFjdHVhbCBOQSAjIFRPRE8gaXMgdGhpcyBhdXRvbWF0aWNhbGx5IGRvbmUgYnkgYnJpY2soKT8gSSB0aGluayBzby4KCQkKCQlzb2RhLmRlcHRocyA8LSBhcy5udW1lcmljKGdzdWIoIlgiLCAiIiwgbmFtZXModC5zb2RhKSkpICMgZG9lcyB3ZWlyZCByb3VuZGluZyB0aGF0IEkgZG9uJ3QgdW5kZXJzdGFuZAoJCgkJIyBnZXQgdGhlIGRlZXBlc3QgYXZhaWxhYmxlIHRlbXBlcmF0dXJlIGluIGVhY2ggZ3JpZGQgY2VsbAoJCXQuc29kYS5ib3QgPC0gZG8uY2FsbChjb3ZlciwgdW5zdGFjayhzdWJzZXQodC5zb2RhLCBsZW5ndGgoc29kYS5kZXB0aHMpOjEpKSkKCQluYW1lcyh0LnNvZGEuYm90KSA8LSBzb2RhLnRpbWVbaV0KCQkjIHRoZSBzdWJzZXR0aW5nIHBpZWNlIGZsaXBzIHRoZSBvcmRlciBvZiB0aGUgbGF5ZXJzIChzbyB0aGF0IGRlZXBlc3QgaXMgZmlyc3QgbGF5ZXIpCgkJIyBieSB1bnN0YWNraW5nIEkgcmVmb3JtYXQgZnJvbSByYXN0ZXIgd2l0aCBsYXllcnMsIHRvIGxpc3Qgb2YgcmFzdGVycwoJCSMgdGhhdCBsaXN0IGNhbiBiZSB1c2VkIGFzIHRoZSBsaXN0IG9mIGFyZ3VtZW50cyB0byBhIGZ1bmN0aW9uIHRha2luZyAuLi4KCQkjIGNvdmVyIGtlZXBzIHRoZSB2YWx1ZXMgaW4gdGhlIGZpcnN0IG9iamVjdCBvZiB0aGUgLi4uLCBhbmQgcmVwbGFjZXMgdGhlIE5BJ3Mgd2l0aCB2YWx1ZXMgZnJvbSB0aGUgc2Vjb25kIC4uLgoJCSMgdGhhdCBwcm9jZXNzIHJlcGVhdHMgdW50aWwgdGhyb3VnaCBhbGwgb2JqZWN0IGxpc3RlZCBpbiB0aGUgLi4uCgkJIyBpbiBvdGhlciB3b3JkcywgdGhlIGZpbmFsIHZhbHVlIHdpbGwgYmUgdGhlIHZhbHVlIGluIHRoZSBmaXJzdCBsYXllciB0aGF0IGhhcyBhIG5vbi1OQSB2YWx1ZSBpbiB0aGF0IGNlbGwKCQkKCQkjIGFjY3VtdWxhdGUgb3ZlciB0aW1lIHBlcmlvZHMgKG1vbnRobHkgaW4gb3JpZ2luYWwgZGF0YSBzZXRzIEknbSB1c2luZykKCQkjIHRoaXMgd2lsbCBiZSBmb3IgdGhlIGZpcnN0IHRpbWUgcGVyaW9kICgxOTU4LTE5NzgpCgkJaWYoaT09MSl7CgkJCXNvZGEuYm90IDwtIHQuc29kYS5ib3QKCQl9ZWxzZXsKCQkJc29kYS5ib3QgPC0gYWRkTGF5ZXIoc29kYS5ib3QsIHQuc29kYS5ib3QpCgkJfQoJCXNldFR4dFByb2dyZXNzQmFyKHBiLCBpKQoJfQoJY2xvc2UocGIpCgkKCXJldHVybihzb2RhLmJvdCkKCQp9Cgpzb2RhX2JvdHRvbV8zLjMuMSA8LSBnZXQuc29kYS5ib3QuMy4zLjEoInNvZGEzLjMuMV8xOTgwXzIwMTVfc2J0X3RyYXdsX2ZpbmFsX3RpbWVmaXgubmMiKQoKYGBgCgpOb3csIGluIFIsIG1lcmdlIHRoZXNlIHR3byByYXN0ZXIgYnJpY2tzCmBgYHtyIG1lcmdlIHN0YWNrcyBmb3IgYm90dG9tIHRlbXBlcmF0dXJlIGFjcm9zcyB0aW1lfQpzb2RhX2JvdHRvbSA8LSBzdGFjayhzb2RhX2JvdHRvbV8yLjIuNCwgc29kYV9ib3R0b21fMy4zLjEpCiNzYXZlCndyaXRlUmFzdGVyKHNvZGFfYm90dG9tLCAic29kYV9ib3R0b21fc2VwMjAxOS5ncmQiLCBvdmVyd3JpdGUgPSBUKQpgYGA=</div>
+<div id="rmd-source-code">LS0tCnRpdGxlOiAiRXh0cmFjdGluZyBTT0RBIFRlbXBlcmF0dXJlIGZyb20gYm90aCAyLjIuNCBhbmQgMy4zLjEiCm91dHB1dDogaHRtbF9ub3RlYm9vawotLS0KV2hhdCBsYXQvbG9uIHZhbHVlcyBkbyB3ZSBhY3R1YWxseSBuZWVkPwpgYGB7ciBtYWtlIGxpc3Qgb2YgYWxsIEdQUyBwb2ludHMgd2Ugd2FudCB0byBleHRyYWN0IHRlbXAgZGF0YSBmcm9tfQpsaWJyYXJ5KGRhdGEudGFibGUpCmxvYWQoIi9Vc2Vycy96b2VraXRjaGVsL0RvY3VtZW50cy9ncmFkIHNjaG9vbC9SdXRnZXJzL0NvdXJzZXdvcmsvRmFsbCAyMDE4L1NETS9oYXVsc19jYXRjaF9EZWMyMDE3IDEuUkRhdGEiKQojbG9hZCgifi9jb2xfZXh0L2hhdWxzX2NhdGNoX0RlYzIwMTcgMS5SRGF0YSIpCmhhdWxzIDwtIGRhdGEudGFibGUoaGF1bHMpCmNvbHMgPC0gYygibGF0IiwgICJsb24iLCAgInJlZ2lvbiIsICJkZXB0aCIpCmxhdGxvbmd5ZWFyIDwtIGhhdWxzWywgIGNvbHMsICB3aXRoID0gRl0KCiMgc2V0IHRoZSBrZXkgdG8gYWxsIGNvbHVtbnMKc2V0a2V5KGxhdGxvbmd5ZWFyKQoKIyBHZXQgdW5pcXVlIGxhdCBsb24gY29tYm9zCmxhdGxvbmd5ZWFyLnUgPC0gdW5pcXVlKGxhdGxvbmd5ZWFyW2xpc3QobGF0LCAgbG9uKSwgIG5vbWF0Y2ggPSAwXSkKCiNvbmx5IHRha2UgbWF4aW11bSBkZXB0aApsYXRsb25neWVhci51X21heGRlcHRoIDwtIGxhdGxvbmd5ZWFyLnVbbGF0bG9uZ3llYXIudVssIC5JW3doaWNoLm1heChkZXB0aCldLCBieSA9IGMoImxhdCIsImxvbiIpXSRWMV0KCiNtaW5pbXVtIGxhdD8sICBtYXhpbXVtIGxhdD8gbWluaW11bSBsb25nPyBtYXhpbXVtIGxvbmc/CnN1bW1hcnkobGF0bG9uZ3llYXIudV9tYXhkZXB0aCkKCm1pbmxhdCA8LSBtaW4obGF0bG9uZ3llYXIudV9tYXhkZXB0aCRsYXQpCm1heGxhdCA8LSBtYXgobGF0bG9uZ3llYXIudV9tYXhkZXB0aCRsYXQpCm1pbmxvbiA8LSBtaW4obGF0bG9uZ3llYXIudV9tYXhkZXB0aCRsb24pCm1heGxvbiA8LSBtYXgobGF0bG9uZ3llYXIudV9tYXhkZXB0aCRsb24pCm1heGRlcHRoIDwtIG1heChsYXRsb25neWVhci51X21heGRlcHRoJGRlcHRoKQptaW5kZXB0aCA8LSBtaW4obGF0bG9uZ3llYXIudV9tYXhkZXB0aCRkZXB0aCkKCm1pbmxhdAptYXhsYXQKbWlubG9uCm1heGxvbgptYXhkZXB0aAptaW5kZXB0aApgYGAKCldlIG5lZWQgdG8gZm9sbG93IEppbSdzIGxlYWQsICBhbmQgdXNlIFNPREEgMi4yIGZvciBwcmUxOTgwLCAgYW5kIHRoZW4gU09EQSAzLjMgZm9yIHBvc3QxOTgwLiBVbmZvcnR1bmF0ZWx5LCAgdGhleSdyZSBhY2Nlc3NpYmxlIGluIGRpZmZlcmVudCB3YXlzLiBXZSB3aWxsIHN0YXJ0IHdpdGgxOTgwKwoKYGBge2Jhc2ggaW1wb3J0IFNPREEgcG9zdDE5ODB9CiNpbnN0YWxsIG5jbwpjb25kYSBpbnN0YWxsIC1jIGNvbmRhLWZvcmdlIG5jbwojbWFrZSB0ZXh0IGZpbGUgZnJvbSBodHRwczovL3d3dy5hdG1vcy51bWQuZWR1L35vY2Vhbi9pbmRleF9maWxlcy9zb2RhMy4zLjFfbW5fb2NlYW5fcmVnLnR4dAojYWRkICIvb2NlYW4iYWZ0ZXIgcmVncmlkZWQgZXJyb3Igb24gdGhlaXIgcGFydAoKd2dldC1pIHNvZGEzLjMuMV9tbl9vY2Vhbl9yZWdfaW1wb3J0LnR4dAoKYGBgCgpUaGlzIHRha2VzIGEgd2hpbGUsICBhcyBpdCdzMTAwIGdiIG9mIGRhdGEgYW5kIG5vIHdheSB0byBuYXJyb3cgZG93biBiZWZvcmVoYW5kIGFzIGZhciBhcyBJIGNhbiB0ZWxsLiAKKipEb3dubG9hZGVkOiAzNiBmaWxlcywgMTE4RyBpbiA0Nm0xM3MgNDMuNiBNQi9zKioKCmBgYHtiYXNoIGV4dHJhY3QganVzdCB0b3AvYm90dG9tIGxheWVycyBmcm9tMTk4MCB0byAyMDE1IGZvciBlYWNoIHllYXJseSBmaWxlfQojYm90dG9tCmZvciBpIGluIGBjYXQgc29kYTMuMy4xX21uX29jZWFuX3JlZ19pbXBvcnQudHh0YDtkbyBuY2tzIC1kIGRlcHRoLC0xICIke2l9IiAiJHtpJS4qfV9ib3R0b20ubmMiO2RvbmUKCiNzdXJmYWNlCmZvciBpIGluIGBjYXQgc29kYTMuMy4xX21uX29jZWFuX3JlZ19pbXBvcnQudHh0YDtkbyBuY2tzIC1kIGRlcHRoLDAgIiR7aX0iICIke2klLip9X3N1cmZhY2UubmMiO2RvbmUgI2luIHB5dGhvbiwgMCBpcyB0aGUgZmlyc3QgZGltZW5zaW9uCgpgYGAKClNlZWluZyBub3cgdGhhdCB0aGVzZSBmaWxlcyBpbiB0aGVpciBjdXJyZW50IHN0YXRlIGFjdHVhbGx5IGNvbnRhaW4gbXVsdGlwbGUgdmFyaWFibGVzLCBhbmQgSSBvbmx5IHdhbnQgb25lIHRlbXAKYGBge2Jhc2ggZXh0cmFjdGluZyBvbmx5IHRlbXAgZnJvbSAxOTgwIHRvIDIwMTV9CiNib3R0b20KZm9yIGkgaW4gYGNhdCBzb2RhMy4zLjFfbW5fb2NlYW5fcmVnX2ltcG9ydC50eHRgOyBkbyBuY2tzIC12IHRlbXAgLU8gIiR7aSUuKn1fYm90dG9tLm5jIiAiJHtpJS4qfV9zYnQubmMiO2RvbmUKI3N1cmZhY2UKZm9yIGkgaW4gYGNhdCBzb2RhMy4zLjFfbW5fb2NlYW5fcmVnX2ltcG9ydC50eHRgOyBkbyBuY2tzIC12IHRlbXAgLU8gIiR7aSUuKn1fc3VyZmFjZS5uYyIgIiR7aSUuKn1fc3N0Lm5jIjtkb25lCmBgYAoKSSB3aWxsIG5vdyBtZXJnZSB0aGVzZSBmaWxlcyBhbG9uZyB0aW1lLiBFbnN1cmUgdGhhdCB0aGVyZSBhcmUgbm8gb3RoZXIgZmlsZXMgdGhhdCBtYXRjaCBgc29kYTMuMy4xKnNzdC5uY2Agc3ludGF4IGJlY2F1c2UgdGhlbiBpdCB3b24ndCB3b3JrLgpgYGB7YmFzaCBtZXJnZTE5ODAtMjAxNSBmaWxlcyBmb3Igc2J0IGFuZCBzc3R9Cm5jcmNhdCBzb2RhMy4zLjEqc3N0Lm5jIC1PIHNvZGEzLjMuMV8xOTgwXzIwMTVfc3N0Lm5jCm5jcmNhdCBzb2RhMy4zLjEqc2J0Lm5jIC1PIHNvZGEzLjMuMV8xOTgwXzIwMTVfc2J0Lm5jCmBgYAoKTGV0J3Mgbm93IGNyb3AgZG93biB0byBhY3R1YWwgcG9pbnRzIHdlIG5lZWQ6CjI0LjQ5MDA4IGxhdAo2Mi4wMTkxNyBsYXQKLTE4OS4zOTcgbG9uCi00My44MzUgbG9uCgpCdXQsIGN1cnJlbnRseSwgdGhpcyAzLjMuMSBkYXRhIGlzIGluIDAtMzYwLCBvciB0ZWNobmljYWxseSAwLjI1LTM1OS43NSB3aGljaCBpcyBlcXVhbCB0byAwLjI1IHRvIC0wLjI1CgpUbyBtYXRjaCB3aGF0IHdlIHdpbGwgZXh0cmFjdCBmcm9tIDIuMi40LCB3ZSBuZWVkIC0xODkuNzVFIGFuZCAtNDMuMjVFLiBTbywgd2UgbmVlZCB0byBrZWVwIDE3MC4yNS0zMTYuNzUqKgoKTGV0J3MgY3JvcCBpbnRvIHR3byBwaWVjZXMsIGFuZCB0aGVuIHJlbWVyZ2UuCkNyb3AgdG8gY29ycmVjdCBsYXQgbG9uCmBgYHtiYXNoIGNyb3AgcG9pbnRzIHRvIHRob3NlIHdlIGFjdHVhbGx5IG5lZWQgZnJvbSAwLTM2MCBmcm9tIDMuMy4xfQojc3VyZmFjZQpuY2tzIC1PIC1kIGxhdGl0dWRlLDI0LjI1LDYyLjI1IC1kIGxvbmdpdHVkZSwxNzAuMjUsMzE2Ljc1IHNvZGEzLjMuMV8xOTgwXzIwMTVfc3N0Lm5jIHNvZGEzLjMuMV8xOTgwXzIwMTVfc3N0X2Nyb3AubmMKCgojYm90dG9tCm5ja3MgLU8gLWQgbGF0aXR1ZGUsMjQuMjUsNjIuMjUgLWQgbG9uZ2l0dWRlLDE3MC4yNSwzMTYuNzUgc29kYTMuMy4xXzE5ODBfMjAxNV9zYnQubmMgc29kYTMuMy4xXzE5ODBfMjAxNV9zYnRfY3JvcC5uYwoKYGBgCgoKKlRoZSBmaXJzdCBjb21tYW5kIG5ja3Mgc2hpZnRzIHRoZSBkYXRhLCAgdGhlIHNlY29uZCBjb21tYW5kIG5jYXAyIHJlY2FsaWJyYXRlcyB0aGUgY29vcmRpbmF0ZSB0byB0aGUgbmV3bHkgc2hpZnRlZCBkYXRhLiBPbmUgY29tbWVudCBvbiBhcHBseWluZyB0aGlzIGFsZ29yaXRobTogQmUgY2FyZWZ1bCB0byBzcGVjaWZ5IGhlbWlzcGhlcmVzIHRoYXQgZG8gbm90IG92ZXJsYXAsICBlLmcuLCAgYnkgaW5hZHZlcnRlbnRseSBzcGVjaWZ5aW5nIGNvb3JkaW5hdGUgcmFuZ2VzIGluIHRoZSBmaXJzdCBjb21tYW5kIHRoYXQgYm90aCBpbmNsdWRlIHRoZSBkYXRlIGxpbmUuIFNvbWUgdXNlcnMgd2lsbCBmaW5kIHVzaW5nIGluZGV4LWJhc2VkIHJhdGhlciB0aGFuIGNvb3JkaW5hdGUtYmFzZWQgaHlwZXJzbGFicyBtYWtlcyB0aGlzIGNsZWFyZXIuIEV4YW1pbmUgYSBwbG90IG9mIHRoZSBmaWVsZCB0byBtYWtlIHN1cmUgeW91ciByb3RhdGlvbiB3YXMgY29ycmVjdC4qCgpgYGB7YmFzaCBjb252ZXJ0IGdyaWR9CiNzdXJmYWNlCm5jYXAyIC1PIC1zICdsb25naXR1ZGU9bG9uZ2l0dWRlLTM2MCcgc29kYTMuMy4xXzE5ODBfMjAxNV9zc3RfY3JvcC5uYyBzb2RhMy4zLjFfMTk4MF8yMDE1X3NzdF9maW5hbC5uYwoKI2JvdHRvbQpuY2FwMiAtTyAtcyAnbG9uZ2l0dWRlPWxvbmdpdHVkZS0zNjAnIHNvZGEzLjMuMV8xOTgwXzIwMTVfc2J0X2Nyb3AubmMgc29kYTMuMy4xXzE5ODBfMjAxNV9zYnRfZmluYWwubmMKYGBgCgoKQ2hhbmdlIG5hbWVzIG9mIGRpbWVuc2lvbnMgdG8gbWF0Y2ggZWFybGllciB0aW1lIGZpbGVzCmBgYHtiYXNoIGNoYW5nZSBuYW1lcyBvZiBkaW1lbnNpb25zIGFuZCB2YXJpYWJsZXMgZm9yMTk4MCt9CiNzdXJmYWNlCm5jcmVuYW1lIC1kIGxhdGl0dWRlLGxhdCAtdiBsYXRpdHVkZSxsYXQgc29kYTMuMy4xXzE5ODBfMjAxNV9zc3RfZmluYWwubmMKbmNyZW5hbWUgLWQgbG9uZ2l0dWRlLGxvbiAtdiBsb25naXR1ZGUsbG9uIHNvZGEzLjMuMV8xOTgwXzIwMTVfc3N0X2ZpbmFsLm5jCiNib3R0b20KbmNyZW5hbWUgLWQgbGF0aXR1ZGUsbGF0IC12IGxhdGl0dWRlLGxhdCBzb2RhMy4zLjFfMTk4MF8yMDE1X3NidF9maW5hbC5uYwpuY3JlbmFtZSAtZCBsb25naXR1ZGUsbG9uIC12IGxvbmdpdHVkZSxsb24gc29kYTMuMy4xXzE5ODBfMjAxNV9zYnRfZmluYWwubmMKYGBgCipEb25lIHdpdGgxOTgwLTIwMTUqCgotLS0tLS0tLS0tCk1hbGluIHJlY29tbWVuZGVkIGV4dHJhY3RpbmcgYm90dG9tIHRlbXBlcmF0dXJlIGJ5IGV4dHJhY3RpbmcgZnJvbSBnaXZlbiBkZXB0aCB2YWx1ZSBhdCBlYWNoIEdQUyBsb2NhdGlvbiBmcm9tIHRyYXdsIHJhdGhlciB0aGFuIHRyeWluZyB0byBjcmVhdGUgYSBib3R0b20gbGF5ZXIsIHNvIEkgd2lsbCBhbHNvIG1lcmdlIGJ1dCBrZWVwIGFsbCBkZXB0aHMsIHNvIEkgd2lsbCBhbHNvIHRyeSB0aGlzIHdheS5TdXJmYWNlIGlzIGZpbmUsIGJ1dCBJIGhhdmUgdG8gbWFrZSB0aGUgYm90dG9tIGxheWVyIGluIGEgZGlmZmVyZW50IHdheS4KCk1heGltdW0gZGVwdGggPSAxNTA0IG1ldGVycywgc28gb25seSB1cCB0byAxNjI1LjcgaW4gU09EQSBkYXRhCmBgYHtiYXNoIGxpbWl0IHRvIGRlcHRocyBpbmNsdWRlZCBpbiB0cmF3bCBzdXJ2ZXkgMy4zLjF9CiNsaW1pdCBkZXB0aCB0byAxNjI1LjcgKGNsb3Nlc3QgdG8gbWF4IGluIHRyYXdsIHN1cnZleSkKZm9yIGkgaW4gYGNhdCBzb2RhMy4zLjFfbW5fb2NlYW5fcmVnX2ltcG9ydC50eHRgO2RvIG5ja3MgLU8gLWQgZGVwdGgsMC4sMTYyNS43ICIke2l9IiAiJHtpJS4qfV9ib3R0b21fdHJhd2wubmMiO2RvbmUKI0kgc2hvdWxkIGtlZXAgdGhpcyBkZXB0aCBtYXggZXZlbiBpZiBJIGRvbid0IHVzZSBNYWxpbidzIHJlY29tbWVuZGF0aW9uIGJlY2F1c2UgYm90dG9tIHRlbXBlcmF0dXJlIGJlbG93IHRoaXMgcG9pbnQgKGRlZXBlc3QgdHJhd2wpIGlzIGlsbG9naWNhbAoKI29ubHkgbG9vayBhdCB0ZW1wZXJhdHVyZSB2YXJpYWJsZQpmb3IgaSBpbiBgY2F0IHNvZGEzLjMuMV9tbl9vY2Vhbl9yZWdfaW1wb3J0LnR4dGA7IGRvIG5ja3MgLXYgdGVtcCAtTyAiJHtpJS4qfV9ib3R0b21fdHJhd2wubmMiICIke2klLip9X3NidF90cmF3bC5uYyI7ZG9uZQoKI25vdyBtZXJnZSB0aGVzZSBmaWxlcyBvdmVyIHRpbWUKbmNyY2F0IHNvZGEzLjMuMSpzYnRfdHJhd2wubmMgLU8gc29kYTMuMy4xXzE5ODBfMjAxNV9zYnRfdHJhd2wubmMKCiNjcm9wIHRvIHBvaW50cyB3ZSBuZWVkIGxhdCBsb24KbmNrcyAtTyAtZCBsYXRpdHVkZSwyNC4yNSw2Mi4yNSAtZCBsb25naXR1ZGUsMTcwLjI1LDMxNi43NSBzb2RhMy4zLjFfMTk4MF8yMDE1X3NidF90cmF3bC5uYyBzb2RhMy4zLjFfMTk4MF8yMDE1X3NidF90cmF3bF9jcm9wLm5jCgojY2hhbmdlIGdyaWQgZnJvbSAwIDM2MCAtIC0xODAtMTgwCm5jYXAyIC1PIC1zICdsb25naXR1ZGU9bG9uZ2l0dWRlLTM2MCcgc29kYTMuMy4xXzE5ODBfMjAxNV9zYnRfdHJhd2xfY3JvcC5uYyBzb2RhMy4zLjFfMTk4MF8yMDE1X3NidF90cmF3bF9maW5hbC5uYwoKI2NoYW5nZSBuYW1lcyB0byBsYXQvbG9uCm5jcmVuYW1lIC1kIGxhdGl0dWRlLGxhdCAtdiBsYXRpdHVkZSxsYXQgc29kYTMuMy4xXzE5ODBfMjAxNV9zYnRfdHJhd2xfZmluYWwubmMKbmNyZW5hbWUgLWQgbG9uZ2l0dWRlLGxvbiAtdiBsb25naXR1ZGUsbG9uIHNvZGEzLjMuMV8xOTgwXzIwMTVfc2J0X3RyYXdsX2ZpbmFsLm5jCmBgYAotLS0tLS0tLS0KCioqKioqKioqKioKCk5vdywgIHdlIHdpbGwgaW1wb3J0IG5ldGNkZiBkYXRhIGZvciBwcmUxOTgwIGZyb20gU09EQSAyLjQuCgpVbmZvcnR1bmF0ZWx5LCAgSXQgbG9va3MgbGlrZSBJJ20gZ29pbmcgdG8gaGF2ZSB0byBpbXBvcnQgZmlsZXMgb25lIGJ5IG9uZSBmb3IgY2h1bmtzIG9mIGRlcHRoLgoKVGV4dCBmaWxlIHdpdGggbGlua3M6IC9TY3JhdGNoL3pvZWtfc2NyYXRjaC9zb2RhMi4yLjRfbW5fb2NlYW5fcmVnLnR4dAoKSW4gb3JkZXIgdG8gZ2l2ZSBhIGJ1ZmZlciBhbmQgY29ycmVjdGx5IGRvd25sb2FkIGZyb20gaXJpZGwubGRlby5jb2x1bWJpYS5lZHUsIHVzZSAtMTkwRS0gLTQzRQpTT0RBIDIuMi40IGdpdmVzIC0xODkuNzVFIGFuZCAtNDMuMjVFIHdoaWNoIGlzIGVxdWFsIHRvIDE4OS43NVcgYW5kIDQzLjI1VyBPUiAxNzAuMjVFIGFuZCAtNDMuMjVFCgpJIG1hZGUgdGV4dCBmaWxlIGluIGFtcGhpcHJpb24gdG8gYnVsayBkb3dubG9hZCBgd2dldC1pIHNvZGEyLjIuNF9tbl9vY2Vhbl9yZWcudHh0LS1uby1jaGVjay1jZXJ0aWZpY2F0ZWAgRE8gVEhJUwpmaWxlIG5hbWVzIGdvaW5nIGluIGFzIGRhdGEubmMueCBldGMuCjUuMDEtNzAuMDI6IGRhdGEubmMKODIuOTItMTk3Ljc5OiBkYXRhLm5jLjEKMjI5LjQ4LTcyOS4zNTogZGF0YS5uYy4yCjkxOC4zNy0yMzc1LjA6IGRhdGEubmMuMwoyNjI1LjAtNDM3NS4wOiBkYXRhLm5jLjQKNDYyNS4wLTUzNzUuMDogZGF0YS5uYy41CgpgYGB7YmFzaCBtZXJnZSBTT0RBIGZpbGVzIHByZTE5ODB9CiNtZXJnZSBhbGwgZGVwdGggY2h1bmtzCmNkbyBtZXJnZSBkYXRhLm4qIGRhdGEucHJlMTk4MC5uYwoKI29ubHkgYm90dG9tIGxheWVyCm5ja3MgLWQgZGVwdGgsLTEgZGF0YS5wcmUxOTgwLm5jIHNvZGEyLjIuNF8xOTUzXzE5Nzlfc2J0Lm5jICNOQ08gbmNrcyB3aXRoIGEgbmVnYXRpdmUgaHlwZXJzbGFiCgojb25seSBzdXJmYWNlIGxheWVyCm5ja3MgLWQgZGVwdGgsMSBkYXRhLnByZTE5ODAubmMgc29kYTIuMi40XzE5NTNfMTk3OV9zc3QubmMKYGBgCkdldCByaWQgb2YgZGVwdGggZGltZW5zaW9uIGZvciBzdXJmYWNlIHRlbXAgZmlsZXMKYGBge2Jhc2ggZGVsZXRlIGRlcHRoIGRpbWVuc2lvbiBhbmQgdmFyaWFibGUgZm9yIHN1cmZhY2UgdGVtcCBmaWxlc30KbmN3YSAtYSBkZXB0aCBzb2RhMi4yLjRfMTk1M18xOTc5X3NzdC5uYyBzb2RhMi4yLjRfMTk1M18xOTc5X3NzdC5uYwpuY3dhIC1hIGRlcHRoIHNvZGEzLjMuMV8xOTgwXzIwMTVfc3N0X2ZpbmFsLm5jIHNvZGEzLjMuMV8xOTgwXzIwMTVfc3N0X2ZpbmFsLm5jCgpuY2tzIC14IC12IGRlcHRoIHNvZGEyLjIuNF8xOTUzXzE5Nzlfc3N0Lm5jIHNvZGEyLjIuNF8xOTUzXzE5Nzlfc3N0Lm5jCm5ja3MgLXggLXYgZGVwdGggc29kYTMuMy4xXzE5ODBfMjAxNV9zc3RfZmluYWwubmMgc29kYTMuMy4xXzE5ODBfMjAxNV9zc3RfZmluYWwubmMKCmBgYApXZSBoYXZlIHRvIG1hdGNoIHRpbWUgdW5pdHMsIHNvZGEyLjIuNCBpbiAzNjAgZGF5IGFuZCAzLjMuMSBpbiBncmVnb3JpYW4KU1RBUlQgSEVSRSwgbWF5YmUgaW1wb3J0IGZpcnN0LCBhbmQgdGhlbiBwbGF5IHdpdGggdGltZQpgYGB7YmFzaCBmaXhpbmcgdGltZSB1bml0c30KY2RvIC1hIHNldGNhbGVuZGFyLHN0YW5kYXJkIHNvZGEzLjMuMV8xOTgwXzIwMTVfc3N0X2ZpbmFsLm5jIHNvZGEzLjMuMV8xOTgwXzIwMTVfc3N0X2ZpbmFsX3RpbWVmaXgubmMKY2RvIC1hIHNldGNhbGVuZGFyLHN0YW5kYXJkIHNvZGEzLjMuMV8xOTgwXzIwMTVfc2J0X2ZpbmFsLm5jIHNvZGEzLjMuMV8xOTgwXzIwMTVfc2J0X2ZpbmFsX3RpbWVmaXgubmMKY2RvIC1hIHNldGNhbGVuZGFyLHN0YW5kYXJkIHNvZGEyLjIuNF8xOTUzXzE5Nzlfc3N0Lm5jIHNvZGEyLjIuNF8xOTUzXzE5Nzlfc3N0X3RpbWVmaXgubmMKY2RvIC1hIHNldGNhbGVuZGFyLHN0YW5kYXJkIHNvZGEyLjIuNF8xOTUzXzE5Nzlfc2J0Lm5jIHNvZGEyLjIuNF8xOTUzXzE5Nzlfc2J0X3RpbWVmaXgubmMKYGBgCi0tLS0tLS0tLS0KTWFsaW4gcmVjb21tZW5kZWQgZXh0cmFjdGluZyBib3R0b20gdGVtcGVyYXR1cmUgYnkgZXh0cmFjdGluZyBmcm9tIGdpdmVuIGRlcHRoIHZhbHVlIGF0IGVhY2ggR1BTIGxvY2F0aW9uIGZyb20gdHJhd2wgcmF0aGVyIHRoYW4gdHJ5aW5nIHRvIGNyZWF0ZSBhIGJvdHRvbSBsYXllciwgc28gSSB3aWxsIGFsc28gbWVyZ2UgYnV0IGtlZXAgYWxsIGRlcHRocywgc28gSSB3aWxsIGFsc28gdHJ5IHRoaXMgd2F5LlN1cmZhY2UgaXMgZmluZSwgYnV0IEkgaGF2ZSB0byBtYWtlIHRoZSBib3R0b20gbGF5ZXIgaW4gYSBkaWZmZXJlbnQgd2F5LgoKTWF4aW11bSBkZXB0aCA9IDE1MDQgbWV0ZXJzLCBzbyBvbmx5IHVwIHRvIDE2MjUuNyBpbiBTT0RBIGRhdGEKYGBge2Jhc2ggbGltaXQgdG8gZGVwdGhzIGluY2x1ZGVkIGluIHRyYXdsIHN1cnZleSAyLjIuNH0KI2xpbWl0IGRlcHRoIHRvIDE2MjUuNyAoY2xvc2VzdCB0byBtYXggaW4gdHJhd2wgc3VydmV5KQpuY2tzIC1PIC1kIGRlcHRoLDAuLDE2MjUuNyBkYXRhLnByZTE5ODAubmMgc29kYTIuMi40XzE5NTNfMTk3OV9zYnRfdHJhd2xfZmluYWwubmMKI0kgc2hvdWxkIGtlZXAgdGhpcyBkZXB0aCBtYXggZXZlbiBpZiBJIGRvbid0IHVzZSBNYWxpbidzIHJlY29tbWVuZGF0aW9uIGJlY2F1c2UgYm90dG9tIHRlbXBlcmF0dXJlIGJlbG93IHRoaXMgcG9pbnQgKGRlZXBlc3QgdHJhd2wpIGlzIGlsbG9naWNhbApgYGAKCi0tLS0tLS0tLQoKCkNhbid0IGZpZ3VyZSB0aGUgdGltZSB0aGluZyBvdXQsIEkgd2lsbCB1cGxvYWQgd2hhdCBJIGhhdmUuCnNvZGEzLjMuMV8xOTgwXzIwMTVfc3N0X2ZpbmFsX3RpbWVmaXgubmMqCnNvZGEzLjMuMV8xOTgwXzIwMTVfc2J0X3RyYXdsX2ZpbmFsX3RpbWVmaXgubmMqCnNvZGEyLjIuNF8xOTUzXzE5Nzlfc3N0Lm5jCnNvZGEyLjIuNF8xOTUzXzE5Nzlfc2J0X3RyYXdsX2ZpbmFsLm5jCgoKKnNlZSBiZWxvdyBmb3IgdGltZWZpeCBzcGVjaWZpY3MKYGBge2Jhc2ggZW51bWVyYXRpbmcgMy4zLjEgbW9udGhzIHNlcXVlbnRpYWxseX0KI0kgd2FudCBpdCB0byBiZSBtb250aHMgc2luY2UgIiJtb250aHMgc2luY2UgMTk2MC0wMS0wMSIiCiMxOTgwLTAxLTAxIChmaXJzdCB2YWx1ZSkgaXMgMjQxLjUgbW9udGhzIHNpbmNlIDE5NjAtMDEtMDEKbmNhcDIgLXMgJ3RpbWU9YXJyYXkoMjQxLjUsMSwkdGltZSknIHNvZGEzLjMuMV8xOTgwXzIwMTVfc3N0X2ZpbmFsLm5jIHNvZGEzLjMuMV8xOTgwXzIwMTVfc3N0X2ZpbmFsX3RpbWVmaXgubmMKbmNhcDIgLXMgJ3RpbWU9YXJyYXkoMjQxLjUsMSwkdGltZSknIHNvZGEzLjMuMV8xOTgwXzIwMTVfc2J0X3RyYXdsX2ZpbmFsLm5jIHNvZGEzLjMuMV8xOTgwXzIwMTVfc2J0X3RyYXdsX2ZpbmFsX3RpbWVmaXgubmMKCmBgYAoKKioqKioqKioqKioqCgpJIGRpZG4ndCB1c2UgdGhpcyBsaW5rLCAgYnV0IGl0IGFwcGVhcnMgdG8gYmUgaGVscGZ1bC4gW0VSREFQUF1odHRwczovL2NvYXN0d2F0Y2gucGZlZy5ub2FhLmdvdi9lcmRkYXAvZ3JpZGRhcC9lcmRTb2RhMzMxb2NlYW5tZGF5Lmh0bWwuCgoqKioqKioqKioqKioKCk5vdyBJIGhhdmUgMiBmaWxlcyBmb3Igc3VyZmFjZSB0ZW1wZXJhdHVyZSAoMyBkaW1lbnNpb25zKSBhbmQgc3VyZmFjZS1kZWVwZXN0IHRyYXdscyAoYm90dG9tIHRlbXBlcmF0dXJlLCA0IGRpbWVuc2lvbnMpLiBTdXJmYWNlIHRlbXBlcmF0dXJlIHNob3VsZCBiZSBzdHJhaWdodCBmb3J3YXJkIGVub3VnaC4gSG93ZXZlciwgSSB0aGluayB0aGUgbmV4dCBzdGVwIGZvciBib3R0b20gdGVtcGVyYXR1cmUgaXMgdG8gc3BsaXQgdGhlbSBib3RoIGludG8gbW9udGhseSBmaWxlcywgYW5kIHRoZXNlIHdpbGwgYmUgb2YgdGhyZWUgZGltZW5zaW9ucyAoZGVwdGgsIGxhdCwgbG9uKS4gVGhlbiwgSSBjYW4gZXh0cmFjdCBkZXB0aCwgbGF0LCBsb24sIGRhdGEgYW5kIGxvb3AgdGhyb3VnaCBhbGwgbW9udGggZmlsZXMuCgpMZXQncyBzdGFydCB3aXRoIGV4dHJhY3RpbmcgR1BTIHBvaW50cyBmcm9tIHN1cmZhY2UgdGVtcGVyYXR1cmUsIHRoaXMgc2hvdWxkIGJlIGVhc3kgZW5vdWdoLgpgYGB7ciBleHRyYWN0IHRlbXAgdmFsdWVzIGF0IEdQUyBwb2ludHMgZm9yIHN1cmZhY2UgdGVtcGVyYXR1cmV9CiNGaXJzdCwgcHJlIDE5ODAKCiMgPT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT0KIyA9IEZ1bmN0aW9uIHRvIFJlYWQgaW4gU09EQSwgR3JhYiBTdXJmYWNlID0gYnkgUnlhbgojID09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09CmdldC5zb2RhIDwtIGZ1bmN0aW9uKGZpbGUpewoKCXNvZGEuaW5mbyA8LSBuY19vcGVuKGZpbGUpCgluYW1lLnNvZGEuc2l6ZXMgPC0gc2FwcGx5KHNvZGEuaW5mbyR2YXIkdGVtcCRkaW0sIGZ1bmN0aW9uKHgpeCRuYW1lKQoJc29kYS5zaXplcyA8LSBzb2RhLmluZm8kdmFyJHRlbXAkc2l6ZQoJZGltLnVuaXRzIDwtIHNhcHBseShzb2RhLmluZm8kdmFyJHRlbXAkZGltLCBmdW5jdGlvbih4KXgkdW5pdHMpCglwcmludChkaW0udW5pdHMpCglzdG9waWZub3QoZ3JlcGwoIm1vbnRocyBzaW5jZSAiLCBkaW0udW5pdHNbM10pKSAjIG1ha2Ugc3VyZSB0aW1lIGlzIGluIGNvcnJlY3QgdW5pdHMgYW5kIGluIHJpZ2h0IHBsYWNlCgluYW1lcyhzb2RhLnNpemVzKSA8LSBuYW1lLnNvZGEuc2l6ZXMKCW50aW1lIDwtIHNvZGEuc2l6ZXNbInRpbWUiXQoJbmRlcHRoIDwtIHNvZGEuc2l6ZXNbImRlcHRoIl0KCglzb2RhLnRpbWUwIDwtIHNvZGEuaW5mbyR2YXIkdGVtcCRkaW1bWzNdXSR2YWxzCglyZWYuZGF0ZSA8LSBhcy5EYXRlKGdzdWIoIm1vbnRocyBzaW5jZSAiLCAiIiwgZGltLnVuaXRzWzNdKSkKCXN0YXJ0LmJlZm9yZS5yZWYgPC0gZ3JlcGwoIi0iLCBzb2RhLnRpbWUwWzFdKSAjIGlzIHRoZSBmaXJzdCBkYXRlIGJlZm9yZSByZWYuZGF0ZT8KCW4ubW9udGguYmVmb3JlIDwtIGNlaWxpbmcoYWJzKHNvZGEudGltZTBbMV0pKSArIGFzLmludGVnZXIoc3RhcnQuYmVmb3JlLnJlZikKCXN0YXJ0LmluY3JlbWVudCA8LSBpZmVsc2Uoc3RhcnQuYmVmb3JlLnJlZiwgIi0xIG1vbnRoIiwgIjEgbW9udGgiKQoJdGltZS5zdGFydCA8LSByZXYoc2VxLkRhdGUocmVmLmRhdGUsIGJ5PXN0YXJ0LmluY3JlbWVudCwgbGVuZ3RoLm91dD1uLm1vbnRoLmJlZm9yZSkpWzFdCglzb2RhLnRpbWUgPC0gc2VxLkRhdGUodGltZS5zdGFydCwgYnk9IjEgbW9udGgiLCBsZW5ndGgub3V0PW50aW1lKQoJCglzb2RhIDwtIGJyaWNrKGZpbGUpCgluYW1lcyhzb2RhKSA8LSBzb2RhLnRpbWUKCgkJCglyZXR1cm4oc29kYSkKCQp9Cgpzb2RhX3N1cmZhY2VfMi4yLjQgPC0gZ2V0LnNvZGEoInNvZGEyLjIuNF8xOTUzXzE5Nzlfc3N0Lm5jIikKCiNOb3csIHBvc3QgMTk4MAoKIyA9PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PQojID0gRnVuY3Rpb24gdG8gUmVhZCBpbiBTT0RBLCBHcmFiIFN1cmZhY2UgPSBieSBSeWFuIChOT1RJQ0UgRURJVFMgRlJPTSBBQk9WRSBCRUNBVVNFIE9GIFRJTUUpCiMgPT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT0KZ2V0LnNvZGEuMy4zLjEgPC0gZnVuY3Rpb24oZmlsZSl7CgoJc29kYS5pbmZvIDwtIG5jX29wZW4oZmlsZSkKCW5hbWUuc29kYS5zaXplcyA8LSBzYXBwbHkoc29kYS5pbmZvJHZhciR0ZW1wJGRpbSwgZnVuY3Rpb24oeCl4JG5hbWUpCglzb2RhLnNpemVzIDwtIHNvZGEuaW5mbyR2YXIkdGVtcCRzaXplCglkaW0udW5pdHMgPC0gc2FwcGx5KHNvZGEuaW5mbyR2YXIkdGVtcCRkaW0sIGZ1bmN0aW9uKHgpeCR1bml0cykKCXByaW50KGRpbS51bml0cykKCW5hbWVzKHNvZGEuc2l6ZXMpIDwtIG5hbWUuc29kYS5zaXplcwoJbnRpbWUgPC0gc29kYS5zaXplc1sidGltZSJdCgoJdGltZS5zdGFydCA8LSBhcy5EYXRlKCIxOTgwLTAxLTAxIikgI3NldCB0aGlzIHRvIGRhdGUgeW91IHdhbnQgdG8gc3RhcnQgYXQKCXNvZGEudGltZSA8LSBzZXEuRGF0ZSh0aW1lLnN0YXJ0LCBieT0iMSBtb250aCIsIGxlbmd0aC5vdXQ9bnRpbWUpCgkKCXNvZGEgPC0gYnJpY2soZmlsZSkKCW5hbWVzKHNvZGEpIDwtIHNvZGEudGltZQoKCQkKCXJldHVybihzb2RhKQoJCn0KCnNvZGFfc3VyZmFjZV8zLjMuMSA8LSBnZXQuc29kYS4zLjMuMSgic29kYTMuMy4xXzE5ODBfMjAxNV9zc3RfZmluYWxfdGltZWZpeC5uYyIpCgpgYGAKCk5vdywgaW4gUiwgbWVyZ2UgdGhlc2UgdHdvIHJhc3RlciBicmlja3MKYGBge3IgbWVyZ2Ugc3RhY2tzIGZvciBzdXJmYWNlIHRlbXBlcmF0dXJlIGFjcm9zcyB0aW1lfQpzb2RhX3N1cmZhY2UgPC0gc3RhY2soc29kYV9zdXJmYWNlXzIuMi40LCBzb2RhX3N1cmZhY2VfMy4zLjEpCiNzYXZlCndyaXRlUmFzdGVyKHNvZGFfc3VyZmFjZSwgInNvZGFfc3VyZmFjZV9zZXAyMDE5LmdyZCIsIG92ZXJ3cml0ZSA9IFQpCmBgYApEb25lIHdpdGggc3VyZmFjZSB0ZW1wZXJhdHVyZS4KCk5vdywgd2UgaGF2ZSB0byBkbyB0aGUgc2FtZSBmb3IgYm90dG9tIHRlbXBlcmF0dXJlLCB3aWxsIHVzZSBSeWFuIGFuZCBCZWNjYSdzIGNvZGUuCgpGaXJzdCwgMi4yLjQgYHNvZGEyLjIuNF8xOTUzXzE5Nzlfc2J0X3RyYXdsX2ZpbmFsLm5jYApgYGB7ciBicmluZyBpbiBib3R0b20gMi4yLjR9CiMgPT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT0KIyA9IEZ1bmN0aW9uIHRvIFJlYWQgaW4gU09EQSwgR3JhYiBCb3R0b20gPQojID09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09CmdldC5zb2RhLmJvdC4yLjIuNCA8LSBmdW5jdGlvbihmaWxlKXsKCglzb2RhLmluZm8gPC0gbmNfb3BlbihmaWxlKQoJbmFtZS5zb2RhLnNpemVzIDwtIHNhcHBseShzb2RhLmluZm8kdmFyJHRlbXAkZGltLCBmdW5jdGlvbih4KXgkbmFtZSkKCXNvZGEuc2l6ZXMgPC0gc29kYS5pbmZvJHZhciR0ZW1wJHNpemUKCWRpbS51bml0cyA8LSBzYXBwbHkoc29kYS5pbmZvJHZhciR0ZW1wJGRpbSwgZnVuY3Rpb24oeCl4JHVuaXRzKQoJcHJpbnQoZGltLnVuaXRzKQoJc3RvcGlmbm90KGdyZXBsKCJtb250aHMgc2luY2UgIiwgZGltLnVuaXRzWzRdKSkgIyBtYWtlIHN1cmUgdGltZSBpcyBpbiBjb3JyZWN0IHVuaXRzIGFuZCBpbiByaWdodCBwbGFjZQoJbmFtZXMoc29kYS5zaXplcykgPC0gbmFtZS5zb2RhLnNpemVzCgludGltZSA8LSBzb2RhLnNpemVzWyJ0aW1lIl0KCW5kZXB0aCA8LSBzb2RhLnNpemVzWyJkZXB0aCJdCgoJc29kYS50aW1lMCA8LSBzb2RhLmluZm8kdmFyJHRlbXAkZGltW1s0XV0kdmFscwoJcmVmLmRhdGUgPC0gYXMuRGF0ZShnc3ViKCJtb250aHMgc2luY2UgIiwgIiIsIGRpbS51bml0c1s0XSkpCglzdGFydC5iZWZvcmUucmVmIDwtIGdyZXBsKCItIiwgc29kYS50aW1lMFsxXSkgIyBpcyB0aGUgZmlyc3QgZGF0ZSBiZWZvcmUgcmVmLmRhdGU/CgluLm1vbnRoLmJlZm9yZSA8LSBjZWlsaW5nKGFicyhzb2RhLnRpbWUwWzFdKSkgKyBhcy5pbnRlZ2VyKHN0YXJ0LmJlZm9yZS5yZWYpCglzdGFydC5pbmNyZW1lbnQgPC0gaWZlbHNlKHN0YXJ0LmJlZm9yZS5yZWYsICItMSBtb250aCIsICIxIG1vbnRoIikKCXRpbWUuc3RhcnQgPC0gcmV2KHNlcS5EYXRlKHJlZi5kYXRlLCBieT1zdGFydC5pbmNyZW1lbnQsIGxlbmd0aC5vdXQ9bi5tb250aC5iZWZvcmUpKVsxXQoJc29kYS50aW1lIDwtIHNlcS5EYXRlKHRpbWUuc3RhcnQsIGJ5PSIxIG1vbnRoIiwgbGVuZ3RoLm91dD1udGltZSkKCgoJcGIgPC0gdHh0UHJvZ3Jlc3NCYXIobWluPTEsIG1heD1udGltZSwgc3R5bGU9MykKCWZvcihpIGluIDE6bnRpbWUpewoJCXQuc29kYSA8LSBicmljayhmaWxlLCBsdmFyPTQsIGxldmVsPWkpCgkJIyBuZWVkIHRvIHN3aXRjaCBtaXNzaW5nIHZhbHVlIHRvIGFjdHVhbCBOQSAjIFRPRE8gaXMgdGhpcyBhdXRvbWF0aWNhbGx5IGRvbmUgYnkgYnJpY2soKT8gSSB0aGluayBzby4KCQkKCQlzb2RhLmRlcHRocyA8LSBhcy5udW1lcmljKGdzdWIoIlgiLCAiIiwgbmFtZXModC5zb2RhKSkpICMgZG9lcyB3ZWlyZCByb3VuZGluZyB0aGF0IEkgZG9uJ3QgdW5kZXJzdGFuZAoJCgkJIyBnZXQgdGhlIGRlZXBlc3QgYXZhaWxhYmxlIHRlbXBlcmF0dXJlIGluIGVhY2ggZ3JpZGQgY2VsbAoJCXQuc29kYS5ib3QgPC0gZG8uY2FsbChjb3ZlciwgdW5zdGFjayhzdWJzZXQodC5zb2RhLCBsZW5ndGgoc29kYS5kZXB0aHMpOjEpKSkKCQluYW1lcyh0LnNvZGEuYm90KSA8LSBzb2RhLnRpbWVbaV0KCQkjIHRoZSBzdWJzZXR0aW5nIHBpZWNlIGZsaXBzIHRoZSBvcmRlciBvZiB0aGUgbGF5ZXJzIChzbyB0aGF0IGRlZXBlc3QgaXMgZmlyc3QgbGF5ZXIpCgkJIyBieSB1bnN0YWNraW5nIEkgcmVmb3JtYXQgZnJvbSByYXN0ZXIgd2l0aCBsYXllcnMsIHRvIGxpc3Qgb2YgcmFzdGVycwoJCSMgdGhhdCBsaXN0IGNhbiBiZSB1c2VkIGFzIHRoZSBsaXN0IG9mIGFyZ3VtZW50cyB0byBhIGZ1bmN0aW9uIHRha2luZyAuLi4KCQkjIGNvdmVyIGtlZXBzIHRoZSB2YWx1ZXMgaW4gdGhlIGZpcnN0IG9iamVjdCBvZiB0aGUgLi4uLCBhbmQgcmVwbGFjZXMgdGhlIE5BJ3Mgd2l0aCB2YWx1ZXMgZnJvbSB0aGUgc2Vjb25kIC4uLgoJCSMgdGhhdCBwcm9jZXNzIHJlcGVhdHMgdW50aWwgdGhyb3VnaCBhbGwgb2JqZWN0IGxpc3RlZCBpbiB0aGUgLi4uCgkJIyBpbiBvdGhlciB3b3JkcywgdGhlIGZpbmFsIHZhbHVlIHdpbGwgYmUgdGhlIHZhbHVlIGluIHRoZSBmaXJzdCBsYXllciB0aGF0IGhhcyBhIG5vbi1OQSB2YWx1ZSBpbiB0aGF0IGNlbGwKCQkKCQkjIGFjY3VtdWxhdGUgb3ZlciB0aW1lIHBlcmlvZHMgKG1vbnRobHkgaW4gb3JpZ2luYWwgZGF0YSBzZXRzIEknbSB1c2luZykKCQkjIHRoaXMgd2lsbCBiZSBmb3IgdGhlIGZpcnN0IHRpbWUgcGVyaW9kICgxOTU4LTE5NzgpCgkJaWYoaT09MSl7CgkJCXNvZGEuYm90IDwtIHQuc29kYS5ib3QKCQl9ZWxzZXsKCQkJc29kYS5ib3QgPC0gYWRkTGF5ZXIoc29kYS5ib3QsIHQuc29kYS5ib3QpCgkJfQoJCXNldFR4dFByb2dyZXNzQmFyKHBiLCBpKQoJfQoJY2xvc2UocGIpCgkKCXJldHVybihzb2RhLmJvdCkKCQp9Cgpzb2RhX2JvdHRvbV8yLjIuNCA8LSBnZXQuc29kYS5ib3QuMi4yLjQoInNvZGEyLjIuNF8xOTUzXzE5Nzlfc2J0X3RyYXdsX2ZpbmFsLm5jIikKCmBgYAoKVGhlbiwgMy4zLjEgYHNvZGEzLjMuMV8xOTgwXzIwMTVfc2J0X3RyYXdsX2ZpbmFsX3RpbWVmaXgubmNgCmBgYHtyIGJyaW5nIGluIGJvdHRvbSAzLjMuMX0KIyA9PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PQojID0gRnVuY3Rpb24gdG8gUmVhZCBpbiBTT0RBLCBHcmFiIEJvdHRvbSA9CiMgPT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT0KZ2V0LnNvZGEuYm90LjMuMy4xIDwtIGZ1bmN0aW9uKGZpbGUpewoKCXNvZGEuaW5mbyA8LSBuY19vcGVuKGZpbGUpCgluYW1lLnNvZGEuc2l6ZXMgPC0gc2FwcGx5KHNvZGEuaW5mbyR2YXIkdGVtcCRkaW0sIGZ1bmN0aW9uKHgpeCRuYW1lKQoJc29kYS5zaXplcyA8LSBzb2RhLmluZm8kdmFyJHRlbXAkc2l6ZQoJZGltLnVuaXRzIDwtIHNhcHBseShzb2RhLmluZm8kdmFyJHRlbXAkZGltLCBmdW5jdGlvbih4KXgkdW5pdHMpCglwcmludChkaW0udW5pdHMpCgluYW1lcyhzb2RhLnNpemVzKSA8LSBuYW1lLnNvZGEuc2l6ZXMKCW50aW1lIDwtIHNvZGEuc2l6ZXNbInRpbWUiXQoJbmRlcHRoIDwtIHNvZGEuc2l6ZXNbImRlcHRoIl0KCiAgdGltZS5zdGFydCA8LSBhcy5EYXRlKCIxOTgwLTAxLTAxIikgI3NldCB0aGlzIHRvIGRhdGUgeW91IHdhbnQgdG8gc3RhcnQgYXQKCXNvZGEudGltZSA8LSBzZXEuRGF0ZSh0aW1lLnN0YXJ0LCBieT0iMSBtb250aCIsIGxlbmd0aC5vdXQ9bnRpbWUpCgoKCXBiIDwtIHR4dFByb2dyZXNzQmFyKG1pbj0xLCBtYXg9bnRpbWUsIHN0eWxlPTMpCglmb3IoaSBpbiAxOm50aW1lKXsKCQl0LnNvZGEgPC0gYnJpY2soZmlsZSwgbHZhcj00LCBsZXZlbD1pKQoJCSMgbmVlZCB0byBzd2l0Y2ggbWlzc2luZyB2YWx1ZSB0byBhY3R1YWwgTkEgIyBUT0RPIGlzIHRoaXMgYXV0b21hdGljYWxseSBkb25lIGJ5IGJyaWNrKCk/IEkgdGhpbmsgc28uCgkJCgkJc29kYS5kZXB0aHMgPC0gYXMubnVtZXJpYyhnc3ViKCJYIiwgIiIsIG5hbWVzKHQuc29kYSkpKSAjIGRvZXMgd2VpcmQgcm91bmRpbmcgdGhhdCBJIGRvbid0IHVuZGVyc3RhbmQKCQoJCSMgZ2V0IHRoZSBkZWVwZXN0IGF2YWlsYWJsZSB0ZW1wZXJhdHVyZSBpbiBlYWNoIGdyaWRkIGNlbGwKCQl0LnNvZGEuYm90IDwtIGRvLmNhbGwoY292ZXIsIHVuc3RhY2soc3Vic2V0KHQuc29kYSwgbGVuZ3RoKHNvZGEuZGVwdGhzKToxKSkpCgkJbmFtZXModC5zb2RhLmJvdCkgPC0gc29kYS50aW1lW2ldCgkJIyB0aGUgc3Vic2V0dGluZyBwaWVjZSBmbGlwcyB0aGUgb3JkZXIgb2YgdGhlIGxheWVycyAoc28gdGhhdCBkZWVwZXN0IGlzIGZpcnN0IGxheWVyKQoJCSMgYnkgdW5zdGFja2luZyBJIHJlZm9ybWF0IGZyb20gcmFzdGVyIHdpdGggbGF5ZXJzLCB0byBsaXN0IG9mIHJhc3RlcnMKCQkjIHRoYXQgbGlzdCBjYW4gYmUgdXNlZCBhcyB0aGUgbGlzdCBvZiBhcmd1bWVudHMgdG8gYSBmdW5jdGlvbiB0YWtpbmcgLi4uCgkJIyBjb3ZlciBrZWVwcyB0aGUgdmFsdWVzIGluIHRoZSBmaXJzdCBvYmplY3Qgb2YgdGhlIC4uLiwgYW5kIHJlcGxhY2VzIHRoZSBOQSdzIHdpdGggdmFsdWVzIGZyb20gdGhlIHNlY29uZCAuLi4KCQkjIHRoYXQgcHJvY2VzcyByZXBlYXRzIHVudGlsIHRocm91Z2ggYWxsIG9iamVjdCBsaXN0ZWQgaW4gdGhlIC4uLgoJCSMgaW4gb3RoZXIgd29yZHMsIHRoZSBmaW5hbCB2YWx1ZSB3aWxsIGJlIHRoZSB2YWx1ZSBpbiB0aGUgZmlyc3QgbGF5ZXIgdGhhdCBoYXMgYSBub24tTkEgdmFsdWUgaW4gdGhhdCBjZWxsCgkJCgkJIyBhY2N1bXVsYXRlIG92ZXIgdGltZSBwZXJpb2RzIChtb250aGx5IGluIG9yaWdpbmFsIGRhdGEgc2V0cyBJJ20gdXNpbmcpCgkJIyB0aGlzIHdpbGwgYmUgZm9yIHRoZSBmaXJzdCB0aW1lIHBlcmlvZCAoMTk1OC0xOTc4KQoJCWlmKGk9PTEpewoJCQlzb2RhLmJvdCA8LSB0LnNvZGEuYm90CgkJfWVsc2V7CgkJCXNvZGEuYm90IDwtIGFkZExheWVyKHNvZGEuYm90LCB0LnNvZGEuYm90KQoJCX0KCQlzZXRUeHRQcm9ncmVzc0JhcihwYiwgaSkKCX0KCWNsb3NlKHBiKQoJCglyZXR1cm4oc29kYS5ib3QpCgkKfQoKc29kYV9ib3R0b21fMy4zLjEgPC0gZ2V0LnNvZGEuYm90LjMuMy4xKCJzb2RhMy4zLjFfMTk4MF8yMDE1X3NidF90cmF3bF9maW5hbF90aW1lZml4Lm5jIikKCmBgYAoKTm93LCBpbiBSLCBtZXJnZSB0aGVzZSB0d28gcmFzdGVyIGJyaWNrcwpgYGB7ciBtZXJnZSBzdGFja3MgZm9yIGJvdHRvbSB0ZW1wZXJhdHVyZSBhY3Jvc3MgdGltZX0Kc29kYV9ib3R0b20gPC0gc3RhY2soc29kYV9ib3R0b21fMi4yLjQsIHNvZGFfYm90dG9tXzMuMy4xKQojc2F2ZQp3cml0ZVJhc3Rlcihzb2RhX2JvdHRvbSwgInNvZGFfYm90dG9tX3NlcDIwMTkuZ3JkIiwgb3ZlcndyaXRlID0gVCkKYGBg</div>
 
 
 

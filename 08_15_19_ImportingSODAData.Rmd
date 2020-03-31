@@ -42,7 +42,7 @@ We need to follow Jim's lead,  and use SODA 2.2 for pre1980,  and then SODA 3.3 
 
 ```{bash import SODA post1980}
 #install nco
-conda install-c conda-forge nco
+conda install -c conda-forge nco
 #make text file from https://www.atmos.umd.edu/~ocean/index_files/soda3.3.1_mn_ocean_reg.txt
 #add "/ocean"after regrided error on their part
 
