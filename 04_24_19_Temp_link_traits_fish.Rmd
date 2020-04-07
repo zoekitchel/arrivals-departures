@@ -283,9 +283,11 @@ for (i in 1:length(surface_variables)){
 #21, 37 failed to converge
 head(surface_colonization_model_comparison)
 
+
+
+mod_null <- glmer(col ~ (1|reg) + (1|year_factor), family = binomial, data = spp_master_ztemp)
+
 ```
-
-
 
 Here, looking at surface extinction
 ```{r surface extinction comparison}
@@ -307,6 +309,7 @@ for (i in 1:length(surface_variables)){
     
 }
 ```
+
 Here, looking at bottom temp colonization
 ```{r bottom colonization comparison}
 #looping through all possible colonization variables with single variables
@@ -327,6 +330,7 @@ for (i in 1:length(bottom_variables)){
     
 }
 ```
+
 Finally, looking at bottom temp extinction
 ```{r bottom extinction comparison}
 #looping through all possible extinction variables with single variables
