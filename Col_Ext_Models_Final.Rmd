@@ -282,7 +282,7 @@ RVI_ext_plot
 
 How well do these models actually predict the # of colonizations and the # of extinctions?
 
-```{r predicted vs. observed colonizations}
+```{r predicted vs. observed colonizations scaled}
 library(tidyr)
 library(plyr)
 #best colonization models (all delta less than 2)
@@ -292,112 +292,64 @@ library(plyr)
   #max_sst_temp_change_abs_lag8_scaled
 
 
-bestcolmod <- glmer(col ~ max_sbt_temp_change_abs_scaled + (1|reg) + (1|spp), family = binomial, data = spp_master_ztemp_scaled, nAGQ = 0)
+bestcolmod_scaled <- glmer(col ~ max_sbt_temp_change_abs_scaled + (1|reg) + (1|spp), family = binomial, data = spp_master_ztemp_scaled, nAGQ = 0)
 
 #I wanted predicted # of colonizations in each region per region/year
 #year region observed colonizations predicted colonizations
 
 #plotting predicted versus modeled
 #unique combinations of spp, region, and max_sbt_temp_change_abs_scaled found in dataset
-newdd_col <- unique(spp_master_ztemp_scaled[,c("spp", "reg")])
-newdd_col$merge <- paste(newdd_col$spp, newdd_col$reg, sep = "_")
-temp.values_col <- seq(min(spp_master_ztemp_scaled$max_sbt_temp_change_abs_scaled), max(spp_master_ztemp_scaled$max_sbt_temp_change_abs_scaled), by = 0.05)
-newdd.full_col <- expand.grid(newdd_col$merge, temp.values_col)
-newdd.full_col <- separate(newdd.full_col, Var1, into = c("spp", "reg"), sep = "_")
-names(newdd.full_col) <- c("spp", "reg", "max_sbt_temp_change_abs_scaled")
+model_imputs <- spp_master_ztemp_scaled[,c("spp", "reg", "year", "col", "now_ext", "max_sbt_temp_change_abs_scaled")]
 
-t2_col <- predict(bestcolmod, newdata = newdd.full_col, type = "response", re.form = NULL) #setting re.form to NULL includes all random effects
+t2_col <- predict(bestcolmod_scaled, newdata = model_imputs, type = "response", re.form = NULL) #setting re.form to NULL includes all random effects
 
-newdd.full_col$pred <- t2_col
+model_imputs$pred <- t2_col
+
+#group by region and year, sum over "col" = observations, and "pred" = predict colonizations by summing probabilities
+col_model_comparisons <- model_imputs[, .(col_predicted = sum(pred), col_observed = sum(col)), by=.(year,reg)]
 
 
-ggplot(aes(x=max_sbt_temp_change_abs_scaled, y = pred), data = newdd.full_col) +
-  geom_point()
-
-#plot actual observations
-#round to nearest 0.05
-spp_master_ztemp_scaled[,"max_sbt_temp_change_abs_scaled_round" := round_any(max_sbt_temp_change_abs_scaled, 0.05, round)]
-
-#now, i can get # of colonizations per reg/spp/temp combo
-#number of observations per unique reg/spp/temp groups
-observations <- spp_master_ztemp_scaled[, .N, by = .(spp, reg, max_sbt_temp_change_abs_scaled_round)] #number of observations per spp, reg, 0.05 temp 
-
-observations_all <- spp_master_ztemp_scaled[, .N, by = .(max_sbt_temp_change_abs_scaled_round)]
-observations_all[,"obs_count" := N]
-
-colonizations <- spp_master_ztemp_scaled[, sum(col), by = .(spp, reg, max_sbt_temp_change_abs_scaled_round)] #number of colonizations per spp, reg, 0.05 temp 
-
-colonizations_all <- spp_master_ztemp_scaled[, sum(col), by = .(max_sbt_temp_change_abs_scaled_round)]
-colonizations_all[,"col_count" := V1]
-
-colonization_observations <- cbind(observations_all, colonizations_all)
-colonization_observations$proportion <- colonization_observations$col_count/colonization_observations$obs_count
-colonization_observations$max_sbt_temp_change_abs_scaled_round2 <- colonization_observations$max_sbt_temp_change_abs_scaled_round
-colonization_observations <- colonization_observations[,7:8]
-
-ggplot(aes(x=max_sbt_temp_change_abs_scaled_scaled, y = pred), data = newdd.full_col) +
-  geom_point() +
-  geom_point(data = colonization_observations, aes(x = max_sbt_temp_change_abs_scaled_round2, y = proportion), col = "red") +
+ggplot(aes(x=year), data = col_model_comparisons) +
+  geom_point(aes(y = col_observed), data = col_model_comparisons, col = "red") +
+  geom_point(data = col_model_comparisons, aes(y = col_predicted), col = "black") +
+  facet_wrap(~reg) +
   theme_classic()
+
+
 
 ```
 
 
-```{r extinction predictions versus observed}
+```{r extinction predictions versus observed scaled}
 
 #best extinction model (all delta less than 2)
-
-#min_sbt_temp_change_lag4_scaled
-#min_sst_temp_lag3_scaled
-#max_sst_temp_scaled
-
-
-bestextmod <- glmer(now_ext ~ min_sbt_temp_change_lag4_scaled + (1|reg) + (1|spp), family = binomial, data = spp_master_ztemp_scaled, nAGQ = 0)
+  #min_sst_temp_change_lag2_scaled
+  #seas_sst_temp_change_lag2_scaled
+  #min_sbt_temp_change_lag7_scaled
 
 
-#I wanted predicted # of extinctions in each region per year
+bestextmod_scaled <- glmer(now_ext ~ min_sst_temp_change_lag2_scaled + (1|reg) + (1|spp), family = binomial, data = spp_master_ztemp_scaled, nAGQ = 0)
+
+#I wanted predicted # of colonizations in each region per region/year
+#year region observed colonizations predicted colonizations
 
 #plotting predicted versus modeled
-#unique combinations of spp, region, and min_sbt_temp_lag7_scaled found in dataset
-newdd <- unique(spp_master_ztemp_scaled[,c("spp", "reg")])
-newdd$merge <- paste(newdd$spp, newdd$reg, sep = "_")
-temp.values_ext <- seq(min(spp_master_ztemp_scaled$min_sbt_temp_change_lag4_scaled), max(spp_master_ztemp_scaled$min_sbt_temp_change_lag4_scaled), by = 0.05)
-newdd.full_ext <- expand.grid(newdd$merge, temp.values_ext)
-newdd.full_ext <- separate(newdd.full_ext, Var1, sep = "_", into = c("spp", "reg"))
-names(newdd.full_ext) <- c("spp", "reg", "min_sbt_temp_change_lag4_scaled")
+#unique combinations of spp, region, and max_sbt_temp_change_abs_scaled found in dataset
+model_imputs <- spp_master_ztemp_scaled[,c("spp", "reg", "year", "col", "now_ext", "min_sst_temp_change_lag2_scaled")]
 
-t2_ext <- predict(bestextmod, newdata = newdd.full_ext, type = "response", re.form = NULL)
+t2_ext <- predict(bestextmod_scaled, newdata = model_imputs, type = "response", re.form = NULL) #setting re.form to NULL includes all random effects
 
-newdd.full_ext$pred <- t2_ext
+model_imputs$pred <- t2_ext
+
+#group by region and year, sum over "ext" = observations, and "pred" = predict colonizations by summing probabilities
+ext_model_comparisons <- model_imputs[, .(ext_predicted = sum(pred), ext_observed = sum(now_ext)), by=.(year,reg)]
 
 
-#plot actual observations
-#round to nearest 0.05
-spp_master_ztemp_scaled[,"min_sbt_temp_change_lag4_scaled_round" := round_any(min_sbt_temp_change_lag4_scaled, 0.05, round)]
-
-#now, i can get # of colonizations per reg/spp/temp combo
-#number of observations per unique reg/spp/temp groups
-observations_ext <- spp_master_ztemp_scaled[, .N, by = .(spp, reg, min_sbt_temp_change_lag4_scaled_round)] #number of observations per spp, reg, 0.05 temp 
-
-observations_all_ext <- spp_master_ztemp_scaled[, .N, by = .(min_sbt_temp_change_lag4_scaled_round)]
-observations_all_ext[,"obs_count" := N]
-
-extinctions <- spp_master_ztemp_scaled[, sum(col), by = .(spp, reg, min_sbt_temp_change_lag4_scaled_round)] #number of colonizations per spp, reg, 0.05 temp 
-
-extinctions_all <- spp_master_ztemp_scaled[, sum(col), by = .(min_sbt_temp_change_lag4_scaled_round)]
-extinctions_all[,"ext_count" := V1]
-
-extinctions_observations <- cbind(observations_all, extinctions_all)
-extinctions_observations$proportion <- extinctions_observations$ext_count/extinctions_observations$obs_count
-extinctions_observations$min_sbt_temp_change_lag4_scaled_round2 <- extinctions_observations$min_sbt_temp_change_lag4_scaled_round
-extinctions_observations <- extinctions_observations[,7:8]
-
-ggplot(aes(x=min_sbt_temp_change_lag4_scaled, y = pred), data = newdd.full_ext) +
-  geom_point() +
-  geom_point(data = extinctions_observations, aes(x = min_sbt_temp_change_lag4_scaled_round2, y = proportion), col = "red") +
+ggplot(aes(x=year), data = ext_model_comparisons) +
+  geom_point(aes(y = ext_observed), data = ext_model_comparisons, col = "red") +
+  geom_point(data = ext_model_comparisons, aes(y = ext_predicted), col = "black") +
+  facet_wrap(~reg) +
   theme_classic()
-
-#I wanted predicted # of extirpations in each region per year
 ```
 
 #Here, I do the same thing, but only include spp as random effect and reset model algorithm. I do NOT scale temperature values. 
@@ -645,69 +597,43 @@ RVI_ext_plot
 
 
 ```
-###start here
+
 How well do these models actually predict the # of colonizations and the # of extinctions?
 
 ```{r predicted vs. observed colonizations not scaled}
-#best colonization models (all delta less than 2)
+#best colonization model (all delta less than 2)
   #max_sbt_temp_change_abs
   #max_sst_temp_change_abs_lag1
   #min_sbt_temp_change_abs_lag5
 
 bestcolmod_notscaled <- glmer(col ~ max_sbt_temp_change_abs + (1|reg) + (1|spp), family = binomial, data = spp_master_ztemp, nAGQ = 0)
 
-#I wanted predicted # of colonizations in each region per year
+#I wanted predicted # of colonizations in each region per region/year
+#year region observed colonizations predicted colonizations
 
 #plotting predicted versus modeled
-#unique combinations of spp, region, and max_sbt_temp_change_abs found in dataset
-newdd_col <- unique(spp_master_ztemp[,c("spp", "reg")])
-newdd_col$merge <- paste(newdd_col$spp, newdd_col$reg, sep = "_")
-temp.values_col <- seq(min(spp_master_ztemp$max_sbt_temp_change_abs), max(spp_master_ztemp$max_sbt_temp_change_abs), by = 0.05)
-newdd.full_col <- expand.grid(newdd_col$merge, temp.values_col)
-newdd.full_col <- separate(newdd.full_col, Var1, into = c("spp", "reg"), sep = "_")
-names(newdd.full_col) <- c("spp", "reg", "max_sbt_temp_change_abs")
+#unique combinations of spp, region, and max_sbt_temp_change_abs_scaled found in dataset
+model_imputs <- spp_master_ztemp[,c("spp", "reg", "year", "now_ext", "col", "max_sbt_temp_change_abs")]
 
-t2_col <- predict(bestcolmod_notscaled, newdata = newdd.full_col, type = "response", re.form = NULL)
+t2_col <- predict(bestcolmod_notscaled, newdata = model_imputs, type = "response", re.form = NULL) #setting re.form to NULL includes all random effects
 
-newdd.full_col$pred <- t2_col
+model_imputs$pred <- t2_col
+
+#group by region and year, sum over "col" = observations, and "pred" = predict colonizations by summing probabilities
+col_model_comparisons <- model_imputs[, .(col_predicted = sum(pred), col_observed = sum(col)), by=.(year,reg)]
 
 
-ggplot(aes(x=max_sbt_temp_change_abs, y = pred), data = newdd.full_col) +
-  geom_point()
-
-#plot actual observations
-#round to nearest 0.05
-spp_master_ztemp[,"max_sbt_temp_change_abs_round" := round_any(max_sbt_temp_change_abs, 0.05, round)]
-
-#now, i can get # of colonizations per reg/spp/temp combo
-#number of observations per unique reg/spp/temp groups
-observations <- spp_master_ztemp[, .N, by = .(spp, reg, max_sbt_temp_change_abs_round)] #number of observations per spp, reg, 0.05 temp 
-
-observations_all <- spp_master_ztemp[, .N, by = .(max_sbt_temp_change_abs_round)]
-observations_all[,"obs_count" := N]
-
-colonizations <- spp_master_ztemp[, sum(col), by = .(spp, reg, max_sbt_temp_change_abs_round)] #number of colonizations per spp, reg, 0.05 temp 
-
-colonizations_all <- spp_master_ztemp[, sum(col), by = .(max_sbt_temp_change_abs_round)]
-colonizations_all[,"col_count" := V1]
-
-colonization_observations <- cbind(observations_all, colonizations_all)
-colonization_observations$proportion <- colonization_observations$col_count/colonization_observations$obs_count
-colonization_observations$max_sbt_temp_change_abs_round2 <- colonization_observations$max_sbt_temp_change_abs_round
-colonization_observations <- colonization_observations[,7:8]
-
-ggplot(aes(x=max_sbt_temp_change_abs, y = pred), data = newdd.full_col) +
-  geom_point() +
-  geom_point(data = colonization_observations, aes(x = max_sbt_temp_change_abs_round2, y = proportion), col = "red") +
+ggplot(aes(x=year), data = col_model_comparisons) +
+  geom_point(aes(y = col_observed), data = col_model_comparisons, col = "red") +
+  geom_point(data = col_model_comparisons, aes(y = col_predicted), col = "black") +
+  facet_wrap(~reg) +
   theme_classic()
 
 ```
 
 Extinction predictions versus observations, with 1|spp as random effect but not scaled
 ```{r extinction predictions versus observed not scaled}
-
-#best extinction model (all delta less than 2)
-
+#best EXTINCTION modelS (all delta less than 2)
   #min_sst_temp_change_lag2
   #seas_sst_temp_change_lag2
   #min_sbt_temp_change_lag7
@@ -715,49 +641,27 @@ Extinction predictions versus observations, with 1|spp as random effect but not 
 
 bestextmod_notscaled <- glmer(now_ext ~ min_sst_temp_change_lag2 + (1|reg) + (1|spp), family = binomial, data = spp_master_ztemp, nAGQ = 0)
 
-
-#I wanted predicted # of extinctions in each region per year
+#I wanted predicted # of extinctions in each region per region/year
+#year region observed extinctions predicted extinctions
 
 #plotting predicted versus modeled
-#unique combinations of spp, region, and min_sbt_temp_lag7_scaled found in dataset
-newdd <- unique(spp_master_ztemp[,c("spp", "reg")])
-newdd$merge <- paste(newdd$spp, newdd$reg, sep = "_")
-temp.values_ext <- seq(min(spp_master_ztemp_scaled$min_sst_temp_change_lag2), max(spp_master_ztemp_scaled$min_sst_temp_change_lag2), by = 0.05)
-newdd.full_ext <- expand.grid(newdd$merge, temp.values_ext)
-newdd.full_ext <- separate(newdd.full_ext, Var1, sep = "_", into = c("spp", "reg"))
-names(newdd.full_ext) <- c("spp", "reg", "min_sst_temp_change_lag2")
+#unique combinations of spp, region, and max_sbt_temp_change_abs_scaled found in dataset
+model_imputs <- spp_master_ztemp[,c("spp", "reg", "year", "now_ext", "col", "min_sst_temp_change_lag2")]
 
-t2_ext <- predict(bestextmod_notscaled, newdata = newdd.full_ext, type = "response", re.form = NULL)
+t2_col <- predict(bestextmod_notscaled, newdata = model_imputs, type = "response", re.form = NULL) #setting re.form to NULL includes all random effects
 
-newdd.full_ext$pred <- t2_ext
+model_imputs$pred <- t2_col
 
-#plot actual observations
-#round to nearest 0.05
-spp_master_ztemp[,"min_sst_temp_change_lag2_round" := round_any(min_sst_temp_change_lag2, 0.05, round)]
+#group by region and year, sum over "now_ext" = observations, and "pred" = predict extinctions by summing probabilities
+ext_model_comparisons <- model_imputs[, .(ext_predicted = sum(pred), ext_observed = sum(now_ext)), by=.(year,reg)]
 
-#now, i can get # of colonizations per reg/spp/temp combo
-#number of observations per unique reg/spp/temp groups
-observations_ext <- spp_master_ztemp[, .N, by = .(spp, reg, min_sst_temp_change_lag2_round)] #number of observations per spp, reg, 0.05 temp 
 
-observations_all_ext <- spp_master_ztemp[, .N, by = .(min_sst_temp_change_lag2_round)]
-observations_all_ext[,"obs_count" := N]
-
-extinctions <- spp_master_ztemp[, sum(col), by = .(spp, reg, min_sst_temp_change_lag2_round)] #number of colonizations per spp, reg, 0.05 temp 
-
-extinctions_all <- spp_master_ztemp[, sum(col), by = .(min_sst_temp_change_lag2_round)]
-extinctions_all[,"ext_count" := V1]
-
-extinctions_observations <- cbind(observations_all, extinctions_all)
-extinctions_observations$proportion <- extinctions_observations$ext_count/extinctions_observations$obs_count
-extinctions_observations$min_sst_temp_change_lag2_round2 <- extinctions_observations$min_sst_temp_change_lag2_round
-extinctions_observations <- extinctions_observations[,7:8]
-
-ggplot(aes(x=min_sst_temp_change_lag2, y = pred), data = newdd.full_ext) +
-  geom_point() +
-  geom_point(data = extinctions_observations, aes(x = min_sst_temp_change_lag2_round2, y = proportion), col = "red") +
+ggplot(aes(x=year), data = ext_model_comparisons) +
+  geom_point(aes(y = ext_observed), data = ext_model_comparisons, col = "red") +
+  geom_point(data = ext_model_comparisons, aes(y = ext_predicted), col = "black") +
+  facet_wrap(~reg) +
   theme_classic()
 
-#I wanted predicted # of extirpations in each region per year
 ```
 
 #####################
@@ -866,16 +770,84 @@ Neocrangon communis 8
 Anchoa hepsetus 8
 
 **********************
-###START HERE
 ##What if we run these models with fish only? No traits? How do inverts change the story? Because it looks like above, not a ton of invertebrates are going in and out. 
 
 ```{r getting rid of non fish}
 load("fish_nofishkey.RData")
-fish_nofishkey <- as.data.table(fish_nofishkey)
-spp_master_ztemp <- as.data.table(spp_master_ztemp)
+fish_nofishkey <- data.table(fish_nofishkey[,2:4])
+spp_master_ztemp <- data.table(spp_master_ztemp)
+
 #merge spp master and yes no fish
-spp_master_ztemp.fishonly <- merge(spp_master_ztemp, fish_nofishkey, all.y = TRUE)
-spp_master_ztemp.fishonly < spp_master_ztemp.fishonly[fish == "Y"]
+spp_master_ztemp_fishonly <- spp_master_ztemp[fish_nofishkey, on = c("reg", "spp")]
+spp_master_ztemp_fishonly2 <- spp_master_ztemp_fishonly[fish == "Y"]
+
+dim(spp_master_ztemp_fishonly2)
+
+#all species
+inverts <- setdiff(unique(spp_master_ztemp$spp), unique(spp_master_ztemp_fishonly2$spp))
+```
+
+Get species common name from wikipedia
+```{r scrape wikipedia to get species names}
+#scrape wikipedia to get common name for all of these species
+
+library(rvest)
+library(tidyverse)
+
+get_url <- function(x,y) { #function to try two links, pick one that works
+    
+  infobox <- try(
+    x %>%
+    read_html() %>%
+    html_nodes("p") %>%
+      html_text())
+  if(class(infobox) == "try-error") { infobox <- try(
+    y %>%
+    read_html() %>%
+    html_nodes("p") %>%
+    html_text())
+  if(class(infobox) == "try-error") {infobox <- NA}
+  }
+  infobox
+  }
+
+speciesnames <- as.data.table(matrix(nrow = length(inverts)))
+speciesnames[, inverts :=as.character(inverts)][,wiki:=as.character(V1)][, V1 := NULL]
+
+
+for (i in 1:length(inverts)) {
+  genus <- word(inverts[i])
+  
+    url1 <- paste0("https://en.wikipedia.org/wiki/", genus, "_(genus)") #url with genus
+    url2 <- paste0("https://en.wikipedia.org/wiki/", genus) #url without genus
+  
+  infobox <- get_url(url1,url2)
+  
+  pattern = "genus(.*?)\\." #escape backspace, and then escape period
+  
+  text <- ifelse(is.na(infobox[1]), NA, regmatches(infobox, regexpr(pattern, infobox)))
+
+  speciesnames[i, wiki := paste0(text)]
+  
+}
+
+#this gave me list of inverts, and whether they are actually inverts or fish
+
+#export to excel to make edits
+
+write.csv(speciesnames, file = "invert_yes_no.csv")
+
+```
+```{r import updated list of inverts}
+speciesnames_withedits <- data.table(read.csv("invert_yes_no_manualedits.csv"))
+
+load("fish_nofishkey.RData")
+fish_nofishkey <- data.table(fish_nofishkey[,2:4])
+
+merge_keys <- speciesnames_withedits[fish_nofishkey, on = c("inverts" = "spp")]
+merge_keys$invert <- na.replace(merge_keys$invert, no)
+
+merge_keys[,fish_update := ifelse(fish == "Y" & invert == "no" | na.omit(invert), "Y", "N")]
 
 ```
 
