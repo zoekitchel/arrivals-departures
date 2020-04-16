@@ -500,7 +500,16 @@ ggplot(data = lags_v_RVI, aes(x = col_lag)) +
   theme_bw()
 ```
 
-********
+
+
+
+
+
+
+
+
+
+************
 ##Below I'm doing a more"organic" and less perscriptive dredge
 
 What model performs better? a model with changes in the past year? or a model with changes in the year before last?

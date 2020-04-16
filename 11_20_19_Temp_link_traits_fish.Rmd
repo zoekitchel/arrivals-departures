@@ -543,8 +543,76 @@ RVI_lags
 dev.off()
 ```
 
+##Predicted VERSUS observed plots
+
+How well do these models actually predict the # of colonizations and the # of extinctions?
+
+```{r predicted vs. observed colonizations}
+library(tidyr)
+library(plyr)
+#best colonization models (all delta less than 2)
+  #max_sbt_temp_change_abs
 
 
+bestcolmod_OG <- glmer(col ~ max_sbt_temp_change_abs + (1|reg) + (1|year_factor), family = binomial, data = spp_master_ztemp, nAGQ = 0)
+
+#I wanted predicted # of colonizations in each region per region/year
+#year region observed colonizations predicted colonizations
+
+#plotting predicted versus modeled
+#unique combinations of spp, region, and max_sbt_temp_change_abs_scaled found in dataset
+model_imputs <- spp_master_ztemp[,c("spp", "reg", "year_factor", "year", "col", "now_ext", "max_sbt_temp_change_abs")]
+
+t2_col <- predict(bestcolmod_OG, newdata = model_imputs, type = "response", re.form = NULL) #setting re.form to NULL includes all random effects
+
+model_imputs$pred <- t2_col
+
+#group by region and year, sum over "col" = observations, and "pred" = predict colonizations by summing probabilities
+col_model_comparisons_OG <- model_imputs[, .(col_predicted = sum(pred), col_observed = sum(col)), by=.(year,reg)]
+
+
+ggplot(aes(x=year), data = col_model_comparisons_OG) +
+  geom_point(aes(y = col_observed), data = col_model_comparisons_OG, col = "red") +
+  geom_point(data = col_model_comparisons_OG, aes(y = col_predicted), col = "black") +
+  facet_wrap(~reg) +
+  theme_classic()
+
+
+
+```
+
+Same, predicted versus observed, but for extinctions
+```{r predicted vs. observed extinctions}
+#best extinction models (all delta less than 2)
+  #seas_sbt_temp_change_abs_lag9
+
+
+bestextmod_OG <- glmer(now_ext ~ seas_sbt_temp_change_abs_lag9 + (1|reg) + (1|year_factor), family = binomial, data = spp_master_ztemp, nAGQ = 0)
+
+#I wanted predicted # of colonizations in each region per region/year
+#year region observed colonizations predicted colonizations
+
+#plotting predicted versus modeled
+#unique combinations of spp, region, and max_sbt_temp_change_abs_scaled found in dataset
+model_imputs <- spp_master_ztemp[,c("spp", "reg", "year_factor", "year", "col", "now_ext", "seas_sbt_temp_change_abs_lag9")]
+
+t2_ext <- predict(bestextmod_OG, newdata = model_imputs, type = "response", re.form = NULL) #setting re.form to NULL includes all random effects
+
+model_imputs$pred <- t2_ext
+
+#group by region and year, sum over "col" = observations, and "pred" = predict colonizations by summing probabilities
+ext_model_comparisons_OG <- model_imputs[, .(ext_predicted = sum(pred), ext_observed = sum(now_ext)), by=.(year,reg)]
+
+
+ggplot(aes(x=year), data = ext_model_comparisons_OG) +
+  geom_point(aes(y = ext_observed), data = ext_model_comparisons_OG, col = "red") +
+  geom_point(data = ext_model_comparisons_OG, aes(y = ext_predicted), col = "black") +
+  facet_wrap(~reg) +
+  theme_classic()
+
+
+
+```
 
 
 
