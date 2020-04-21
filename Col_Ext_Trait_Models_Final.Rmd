@@ -1,0 +1,496 @@
+---
+title: "Colonization and Extinction Final Models with Traits Included"
+output: html_notebook
+---
+
+This is a cleaned version of dredge_trait_models
+Changes
+
+* species and region as random effects (not year)
+* scaling temperature values
+* setting nACQ to 0, see why [here](https://stats.stackexchange.com/questions/77313/why-cant-i-match-glmer-family-binomial-output-with-manual-implementation-of-g). 
+
+```{r setup}
+library(MuMIn)
+library(lme4)
+library(data.table)
+library(ggplot2)
+
+load("spp_master_ztemp.traits.RData")
+```
+
+Running, and ranking colonization models without traits
+
+```{r scaling temperature values}
+#extract just temperature variables to scale
+spp_master_ztemp_varsonly <- spp_master_ztemp.traits[,c(1,45:292, 301, 308, 310, 312, 313)]
+
+#names of temp variables, so I can add "_scaled" suffix
+temptraitvars <- colnames(spp_master_ztemp.traits[,c(45:292, 301, 308, 310, 312, 313)])
+
+#scale all variables, make new columns, do this by region
+spp_master_ztemp_varsonly[, paste0(temptraitvars, "_scaled") := lapply(.SD, function(x) as.vector(scale(x))), .SDcols = temptraitvars]
+
+#names of scaled columns
+scaled_cols <- grep("*_scaled", names(spp_master_ztemp_varsonly), value = T)
+
+#merge new columns back with spp_master_ztemp
+spp_master_ztemp.traits_scaled <- cbind(spp_master_ztemp.traits, spp_master_ztemp_varsonly[,scaled_cols, with = FALSE])
+
+```
+
+I will be looking at:
+
+*trophic level
+*maximum age
+*age at maturity
+*maximum body size
+
+```{r missing values}
+summary(spp_master_ztemp.traits_scaled$age.max) #702 missing
+summary(spp_master_ztemp.traits_scaled$age.maturity) #551 missing
+summary(spp_master_ztemp.traits_scaled$tl) #none missing
+summary(spp_master_ztemp.traits_scaled$length.max) #none missing
+summary(spp_master_ztemp.traits_scaled$length.infinity) #443 missing, this is highly correlated (0.82) with length max, so we'll just use length.max
+
+cor(spp_master_ztemp.traits_scaled[,.(age.max_scaled, age.maturity_scaled, tl_scaled, length.max_scaled, length.infinity_scaled)], use = "complete.obs")
+
+pairs(spp_master_ztemp.traits_scaled[,.(age.max_scaled, age.maturity_scaled, tl_scaled, length.max_scaled, length.infinity_scaled)])
+
+```
+
+Prep for dredge
+```{r prep for model runs}
+
+#temp scaled vars only
+tempvars <- names(spp_master_ztemp.traits_scaled[,314:561])
+othervars_col <- c("reg", "year", "col", "spp", "age.max_scaled", "age.maturity_scaled", "tl_scaled", "length.max_scaled")
+colstosaveforcol <- c(othervars_col, tempvars)
+#Colonization table
+colonization.reduced <- spp_master_ztemp.traits_scaled[,colstosaveforcol, with = F] #reduces to columns we need
+
+#Extinction table
+
+othervars_ext <- c("reg", "year", "now_ext", "spp", "age.max_scaled", "age.maturity_scaled", "tl_scaled", "length.max_scaled")
+colstosaveforext <- c(othervars_ext, tempvars)
+#Colonization table
+extinction.reduced <- spp_master_ztemp.traits_scaled[,colstosaveforext, with = F] #reduces to columns we need
+
+
+
+```
+
+
+Making all models for colonization
+```{r all models colonization}
+
+#playing with year as factor
+#can't get dredge to run above, so trying here with fewer variables
+colonization.reduced[,year := as.factor(year)]
+
+#for now, going with two traits and one temp variable
+#going to make loop to make all models I need to look at with single variables
+all.temp.variables <- colnames(colonization.reduced[,9:256])
+all.temp.variables.0 <- c(0, all.temp.variables) #add 0 as option so models can just include traits
+all.temp.variables.0 <- all.temp.variables.0[!grepl("*mean*", all.temp.variables.0)]#get rid of MEAN temp variables
+all.trait.variables <- c(0, "tl_scaled", "age.max_scaled","age.maturity_scaled", "length.max_scaled",
+                         "tl_scaled + age.max_scaled", "age.max_scaled + tl_scaled",
+                         "tl_scaled + age.maturity_scaled", "age.maturity_scaled + tl_scaled",
+                         "tl_scaled + length.max_scaled", "length.max_scaled + tl_scaled",
+                         "age.max_scaled + age.maturity_scaled", "age.maturity_scaled + age.max_scaled",
+                         "age.max_scaled + length.max_scaled", "length.max_scaled + age.max_scaled",
+                         "age.maturity_scaled + length.max_scaled", "length.max_scaled + age.maturity_scaled")
+
+sign <- c("+", "*")
+
+full_var_set <- as.data.table(expand.grid(all.temp.variables.0, sign, all.trait.variables))
+
+colonization_model_comparison_traits <- as.data.table(matrix(nrow = nrow(full_var_set))) 
+colonization_model_comparison_traits[, temp_variable:=as.factor(V1)][, sign:=as.factor(V1)][, trait_variable:=as.factor(V1)][, AICc:=as.numeric(V1)][, converge:= as.logical(V1)]
+colonization_model_comparison_traits[, V1 := NULL]
+
+for (i in 1:nrow(full_var_set)){
+ 
+  temp <- full_var_set$Var1[i]
+  sign <- full_var_set$Var2[i]
+  trait <- full_var_set$Var3[i]
+  
+  formula <- as.formula(paste("col ~", temp, sign, trait, "+ (1|reg) + (1|spp)"))
+  
+  mod <- glmer(formula, family = binomial, data = colonization.reduced, nAGQ = 0)
+  
+  colonization_model_comparison_traits[i,temp_variable := full_var_set$Var1[i]]
+  colonization_model_comparison_traits[i,sign := full_var_set$Var2[i]]
+  colonization_model_comparison_traits[i,trait_variable := full_var_set$Var3[i]]
+  colonization_model_comparison_traits[i,AICc := AICc(mod)]
+  
+  warning <- mod@optinfo$conv$lme4$messages[2]
+  converges <- ifelse(is.null(warning) == TRUE, T, F)
+  
+  colonization_model_comparison_traits[i, converge := converges]
+  
+  print(paste(i, nrow(colonization_model_comparison_traits), sep = "/"))
+    
+}
+
+
+save(colonization_model_comparison_traits, file = "colonization_model_comparison_traits.RData")
+
+
+```
+
+Making all models for extinction
+```{r all models extinction}
+
+#for now, going with two traits and one temp variable
+#going to make loop to make all models I need to look at with single variables
+#don't want mean
+
+extinction_model_comparison_traits <- as.data.table(matrix(nrow = nrow(full_var_set))) 
+extinction_model_comparison_traits[, temp_variable:=as.factor(V1)][, sign:=as.factor(V1)][, trait_variable:=as.factor(V1)][, AICc:=as.numeric(V1)][, converge:= as.logical(V1)]
+extinction_model_comparison_traits[, V1 := NULL]
+
+for (i in 1:nrow(full_var_set)){
+ 
+  temp <- full_var_set$Var1[i]
+  sign <- full_var_set$Var2[i]
+  trait <- full_var_set$Var3[i]
+  
+  formula <- as.formula(paste("now_ext ~", temp, sign, trait, "+ (1|reg) + (1|spp)"))
+  
+  mod <- glmer(formula, family = binomial, data = extinction.reduced, nAGQ = 0)
+  
+  extinction_model_comparison_traits[i,temp_variable := full_var_set$Var1[i]]
+  extinction_model_comparison_traits[i,sign := full_var_set$Var2[i]]
+  extinction_model_comparison_traits[i,trait_variable := full_var_set$Var3[i]]
+  extinction_model_comparison_traits[i,AICc := AICc(mod)]
+  
+  warning <- mod@optinfo$conv$lme4$messages[2]
+  converges <- ifelse(is.null(warning) == TRUE, T, F)
+  
+  extinction_model_comparison_traits[i, converge := converges]
+  
+  print(paste(i, nrow(extinction_model_comparison_traits), sep = "/"))
+    
+}
+
+save(extinction_model_comparison_traits, file = "extinction_model_comparison_traits.RData")
+
+```
+
+Next step is to look at RVI (relative variable importance)
+
+COLONIZATION
+
+```{r RVI colonization traits}
+#only raw temp has lag of 10 years, which means variable importance comparisons are unbalanced so I will get rid of these rows
+colonization_model_comparisons_traits.lag9max <- colonization_model_comparison_traits[!grepl("lag10", temp_variable), ]
+
+#add ∆AIC to tables
+min_col_AICc_trait <- min(colonization_model_comparisons_traits.lag9max[, AICc])
+colonization_model_comparisons_traits.lag9max[,"deltaAICc" := (AICc - min_col_AICc_trait)]
+
+#add relative likelihood exp( -0.5 * ∆AIC score for that model)
+colonization_model_comparisons_traits.lag9max[,"rel_likelihood" := exp((-0.5 * deltaAICc))]
+#sum relative likelihoods across all models
+colonization_model_comparisons_traits.lag9max.likelihoodsum <- sum(colonization_model_comparisons_traits.lag9max[, rel_likelihood])
+#Akaike weight for a model is this rel_likelihood devided by the sum of these values across all models
+colonization_model_comparisons_traits.lag9max[,"akaike_weight" := rel_likelihood/colonization_model_comparisons_traits.lag9max.likelihoodsum]
+
+#I want to look at relative importance FOR 
+#bottom/surface (bottom = includes sbt, grepl("sbt", variable))
+col_bottom_importance <- sum(colonization_model_comparisons_traits.lag9max[grep("sbt", temp_variable), ]$akaike_weight)
+col_surface_importance <- sum(colonization_model_comparisons_traits.lag9max[grep("sst", temp_variable), ]$akaike_weight)
+  col_bottom_importance.n <- count(colonization_model_comparisons_traits.lag9max[grepl("sbt", temp_variable), ]) #3060
+  col_surface_importance.n <- count(colonization_model_comparisons_traits.lag9max[grepl("sst", temp_variable), ]) #3060
+
+#lag/not lagged (grepl("lag", variable))
+col_lag_importance <- sum(colonization_model_comparisons_traits.lag9max[grep("lag", temp_variable), ]$akaike_weight)
+col_nolag_importance <- sum(colonization_model_comparisons_traits.lag9max[!grep("lag", temp_variable), ]$akaike_weight)
+  col_lag_importance.n <- count(colonization_model_comparisons_traits.lag9max[grepl("lag", temp_variable), ]) #5508 models include a lag
+  col_nolag_importance.n <- count(colonization_model_comparisons_traits.lag9max[!grepl("lag", temp_variable), ]) #646 don't include a lag (no lag OR trait only)
+
+
+  #34 models have NO temp variable
+  
+  
+#absolute (grepl("abs", variable))
+col_abs_importance <- sum(colonization_model_comparisons_traits.lag9max[grep("abs", temp_variable), ]$akaike_weight)
+  col_abs_importance.n <- count(colonization_model_comparisons_traits.lag9max[grepl("abs", temp_variable), ])#2040
+  
+#raw (!grepl("change"))
+col_raw_importance <- sum(colonization_model_comparisons_traits.lag9max[!grep("change", temp_variable), ][temp_variable != 0,]$akaike_weight)
+  col_raw_importance.n <- count(colonization_model_comparisons_traits.lag9max[!grepl("change", temp_variable), ][temp_variable != 0]) #2040
+
+#change (grepl("change", temp_variable), (!grepl("abs")))
+col_change_importance <- sum(colonization_model_comparisons_traits.lag9max[grep("change", temp_variable), ][!grep("abs", temp_variable),]$akaike_weight)
+  col_change_importance.n <- count(colonization_model_comparisons_traits.lag9max[grep("change", temp_variable), ][!grep("abs", temp_variable),])#2040
+
+
+#type of temp temp_variable (max, min, seas)
+col_max_temp_importance <- sum(colonization_model_comparisons_traits.lag9max[grep("max", temp_variable), ]$akaike_weight)
+col_min_temp_importance <- sum(colonization_model_comparisons_traits.lag9max[grep("min", temp_variable), ]$akaike_weight)
+col_seas_temp_importance <- sum(colonization_model_comparisons_traits.lag9max[grep("seas", temp_variable), ]$akaike_weight)
+  col_max_temp_importance.n <- count(colonization_model_comparisons_traits.lag9max[grepl("max", temp_variable), ]) #2040
+  col_min_temp_importance.n <- count(colonization_model_comparisons_traits.lag9max[grepl("min", temp_variable), ]) #2040
+  col_seas_temp_importance.n <- count(colonization_model_comparisons_traits.lag9max[grepl("seas", temp_variable), ]) #2040
+  
+
+#traits included
+col_age.max_importance <- sum(colonization_model_comparisons_traits.lag9max[grep("age.max", trait_variable), ]$akaike_weight)
+col_age.maturity_importance <- sum(colonization_model_comparisons_traits.lag9max[grep("age.maturity", trait_variable), ]$akaike_weight)
+col_tl_importance <- sum(colonization_model_comparisons_traits.lag9max[grep("tl", trait_variable), ]$akaike_weight)
+col_length.max_importance <- sum(colonization_model_comparisons_traits.lag9max[grep("length", trait_variable),]$akaike_weight)
+  col_age.max_importance.n <- count(colonization_model_comparisons_traits.lag9max[grepl("age.max", trait_variable), ]) #2534
+  col_age.maturity_importance.n <- count(colonization_model_comparisons_traits.lag9max[grepl("age.maturity", trait_variable), ]) #2534
+  col_tl_importance.n <- count(colonization_model_comparisons_traits.lag9max[grepl("tl", trait_variable), ]) #2534
+  col_length.max_importance.n <- count(colonization_model_comparisons_traits.lag9max[grepl("length", trait_variable),]) #2534
+
+
+#interaction between trait and temperature
+col_interaction_temp_trait_importance <- sum(colonization_model_comparisons_traits.lag9max[grep("\\*", sign), ]$akaike_weight)
+  col_interaction_temp_trait_importance.n <- count(colonization_model_comparisons_traits.lag9max[grepl("\\*", sign), ]) #3077
+
+
+#save this table
+save(colonization_model_comparisons_traits.lag9max, file = "colonization_models_traits_with_likelihoods.Rdata")
+```
+
+```{r put RVIs for colonization into data table}
+col_ext <- c("col","col","col","col","col", "col","col", "col", "col","col", "col","col", "col", "col","col")
+type <- c("depth", "depth", "lag", "lag", "Change?", "Change?", "Change?", "Temp", "Temp", "Temp", "Trait", "Trait", "Trait","Trait", "Interaction")
+variable <- c("bottom", "surface", "no_lag", "lagged", "absolute_value_change", "change", "raw", "Min", "Max", "Seas", "age.max", "age.maturity", "tl", "length.max", "tempxtrait")
+value <- c(col_bottom_importance, col_surface_importance, col_nolag_importance, col_lag_importance, col_abs_importance, col_change_importance, col_raw_importance, col_min_temp_importance, col_max_temp_importance, col_seas_temp_importance, col_age.max_importance, col_age.maturity_importance, col_tl_importance, col_length.max_importance, col_interaction_temp_trait_importance)
+
+RVI_col_traits <- data.table(col_ext, type, variable, value)
+```
+
+EXTINCTION
+
+```{r RVI extinction traits}
+#only raw temp has lag of 10 years, which means variable importance comparisons are unbalanced so I will get rid of these rows
+extinction_model_comparisons_traits.lag9max <- extinction_model_comparison_traits[!grepl("lag10", temp_variable), ]
+
+
+#add ∆AIC to tables
+min_ext_AICc_trait <- min(extinction_model_comparisons_traits.lag9max[, AICc])
+extinction_model_comparisons_traits.lag9max[,"deltaAICc" := (AICc - min_ext_AICc_trait)]
+
+#add relative likelihood exp( -0.5 * ∆AIC score for that model)
+extinction_model_comparisons_traits.lag9max[,"rel_likelihood" := exp((-0.5 * deltaAICc))]
+#sum relative likelihoods across all models
+extinction_model_comparisons_traits.lag9max.likelihoodsum <- sum(extinction_model_comparisons_traits.lag9max[, rel_likelihood])
+#Akaike weight for a model is this rel_likelihood devided by the sum of these values across all models
+extinction_model_comparisons_traits.lag9max[,"akaike_weight" := rel_likelihood/extinction_model_comparisons_traits.lag9max.likelihoodsum]
+
+#I want to look at relative importance FOR 
+#bottom/surface (bottom = includes sbt, grepl("sbt", variable))
+ext_bottom_importance <- sum(extinction_model_comparisons_traits.lag9max[grep("sbt", temp_variable), ]$akaike_weight)
+  ext_bottom_importance.n <- count(extinction_model_comparisons_traits.lag9max[grepl("sbt", temp_variable), ]) #3060
+ext_surface_importance <- sum(extinction_model_comparisons_traits.lag9max[grep("sst", temp_variable), ]$akaike_weight)
+  ext_surface_importance.n <- count(extinction_model_comparisons_traits.lag9max[grepl("sst", temp_variable), ]) #3060
+  
+#lag/not lagged (grepl("lag", variable))
+ext_lag_importance <- sum(extinction_model_comparisons_traits.lag9max[grep("lag", temp_variable), ]$akaike_weight)
+  ext_lag_importance.n <- count(extinction_model_comparisons_traits.lag9max[grepl("lag", temp_variable),]) #5508
+ext_nolag_importance <- sum(extinction_model_comparisons_traits.lag9max[!grep("lag", temp_variable), ]$akaike_weight)
+  ext_nolag_importance.n <- count(extinction_model_comparisons_traits.lag9max[!grepl("lag", temp_variable), ]) #646
+
+  #absolute (grepl("abs", variable))
+ext_abs_importance <- sum(extinction_model_comparisons_traits.lag9max[grep("abs", temp_variable), ]$akaike_weight)
+  ext_abs_importance.n <- count(extinction_model_comparisons_traits.lag9max[grepl("abs", temp_variable), ]) #2040
+
+  #raw (!grepl("change"))
+ext_raw_importance <- sum(extinction_model_comparisons_traits.lag9max[!grep("change", temp_variable), ][temp_variable != 0,]$akaike_weight)
+  ext_raw_importance.n <- count(extinction_model_comparisons_traits.lag9max[!grepl("change", temp_variable), ][temp_variable != 0,]) #2040
+
+#change (grepl("change", temp_variable), (!grepl("abs")))
+ext_change_importance <- sum(extinction_model_comparisons_traits.lag9max[grep("change", temp_variable), ][!grep("abs", temp_variable),]$akaike_weight)
+  ext_change_importance.n <- count(extinction_model_comparisons_traits.lag9max[grepl("change", temp_variable), ][!grepl("abs", temp_variable),])#2040
+
+#type of temp temp_variable (max, min, seas)
+ext_max_temp_importance <- sum(extinction_model_comparisons_traits.lag9max[grep("max", temp_variable), ]$akaike_weight)
+  ext_max_temp_importance.n <- count(extinction_model_comparisons_traits.lag9max[grepl("max", temp_variable), ]) #2040
+ext_min_temp_importance <- sum(extinction_model_comparisons_traits.lag9max[grep("min", temp_variable), ]$akaike_weight)
+  ext_min_temp_importance.n <- count(extinction_model_comparisons_traits.lag9max[grepl("min", temp_variable), ]) #2040
+ext_seas_temp_importance <- sum(extinction_model_comparisons_traits.lag9max[grep("seas", temp_variable), ]$akaike_weight)
+  ext_seas_temp_importance.n <- count(extinction_model_comparisons_traits.lag9max[grepl("seas", temp_variable), ]) #2040
+
+#traits included
+ext_age.max_importance <- sum(extinction_model_comparisons_traits.lag9max[grep("age.max", trait_variable), ]$akaike_weight)
+ext_age.maturity_importance <- sum(extinction_model_comparisons_traits.lag9max[grep("age.maturity", trait_variable), ]$akaike_weight)
+ext_tl_importance <- sum(extinction_model_comparisons_traits.lag9max[grep("tl", trait_variable), ]$akaike_weight)
+ext_length.max_importance <- sum(extinction_model_comparisons_traits.lag9max[grep("length", trait_variable),]$akaike_weight)
+
+  ext_age.max_importance.n <- count(extinction_model_comparisons_traits.lag9max[grepl("age.max", trait_variable), ]) #2534
+  ext_age.maturity_importance.n <- count(extinction_model_comparisons_traits.lag9max[grepl("age.maturity", trait_variable), ]) #2534
+  ext_tl_importance.n <- count(extinction_model_comparisons_traits.lag9max[grepl("tl", trait_variable), ]) #2534
+  ext_length.max_importance.n <- count(extinction_model_comparisons_traits.lag9max[grepl("length", trait_variable),]) #2534
+
+#interaction between trait and temperature
+ext_interaction_temp_trait_importance <- sum(extinction_model_comparisons_traits.lag9max[grep("\\*", sign), ]$akaike_weight)
+  ext_interaction_temp_trait_importance.n <- count(extinction_model_comparisons_traits.lag9max[grepl("\\*", sign), ]) #3077
+
+
+#save this table
+save(extinction_model_comparisons_traits.lag9max, file = "extinction_models_traits_with_likelihoods.Rdata")
+head(extinction_model_comparisons_traits.lag9max)
+```
+
+```{r put RVIs for extinction into data table}
+col_ext <- c("ext","ext","ext","ext","ext", "ext","ext", "ext", "ext","ext", "ext","ext", "ext", "ext","ext")
+type <- c("depth", "depth", "lag", "lag", "Change?", "Change?", "Change?", "Temp", "Temp", "Temp", "Trait", "Trait", "Trait","Trait", "Interaction")
+variable <- c("bottom", "surface", "no_lag", "lagged", "absolute_value_change", "change", "raw", "Min", "Max", "Seas", "age.max", "age.maturity", "tl", "length.max", "tempxtrait")
+value <- c(ext_bottom_importance, ext_surface_importance, ext_nolag_importance, ext_lag_importance, ext_abs_importance, ext_change_importance, ext_raw_importance, ext_min_temp_importance, ext_max_temp_importance, ext_seas_temp_importance, ext_age.max_importance, ext_age.maturity_importance, ext_tl_importance, ext_length.max_importance, ext_interaction_temp_trait_importance)
+
+RVI_ext_traits <- data.table(col_ext, type, variable, value)
+```
+
+Merge RVI tables for colonization and extinction with traits, and then graph
+```{r merge RVI trait tables and plot}
+RVI_trait_table <- as.data.table(rbind(RVI_col_traits, RVI_ext_traits)) #bind RVI for colonizations and extinctions
+
+RVI_trait_table.r <- RVI_trait_table[!grep("surface", variable)][!grep("lagged", variable)]
+
+#change order of factor levels
+RVI_trait_table.r[, variable := factor(variable, levels = c("bottom", "no_lag", "raw", "change", "absolute_value_change", "Min", "Max", "Seas", "age.max", "age.maturity", "tl", "length.max", "tempxtrait"))]
+
+save(RVI_trait_table, file = "RVI_trait_table.Rdata")
+
+ggplot(data = RVI_trait_table.r, aes(x=variable, y = value, fill = col_ext)) +
+  geom_bar(stat = "identity", position = "dodge") +
+  scale_x_discrete(breaks = c("bottom", "no_lag", "raw", "change", "absolute_value_change", "Min", "Max", "Seas", "age.max", "age.maturity", "tl", "length.max", "tempxtrait"), labels = c("Bottom\nTemp", "No\nLag", "Raw\nTemp", "Change in \nTemp", "| Change in\n Temp |", "Min\nTemp", "Max\nTemp", "Seas", "Age\nMax", "Age\nMaturity", "Trophic\nLevel", "Max\nLength" , "Temp*\nTrait")) +
+  labs(x = "Temperature and Trait Variables", y = "Relative Variable Importance")  +
+  theme_bw()
+
+```
+
+Another way to visualize
+```{r visualizing RVI with traits}
+#put levels into correct order for viewing
+RVI_trait_table[
+  , variable := factor(variable, levels = c("bottom", "surface", "absolute_value_change", "change", "raw", "no_lag", "lagged", "Min", "Max", "Seas", "age.max", "age.maturity", "tl","length.max", "tempxtrait"))][
+    ,type := factor(type, levels = c("Change?", "depth", "lag", "Temp", "Trait", "Interaction"))]
+#make types factors as well
+
+#colonization
+RVI_col_trait_plot <- ggplot(data = RVI_trait_table[col_ext == "col" & (type == "Trait" | type == "Interaction")], aes(x=variable, y = value)) +
+  geom_bar(stat= "identity") +
+  scale_x_discrete(breaks = c("age.max", "age.maturity", "tl", "length.max", "tempxtrait"), labels = c("Maximum\nAge", "Age of\nMaturity", "Trophic\nLevel","Max\nLength", "Temp Trait\nInteraction")) +
+  labs(x = "Trait Variables", y = "Relative Variable Importance") +
+  theme_classic() +
+  theme(text = element_text(size = 20))
+#extinction
+RVI_ext_trait_plot <- ggplot(data = RVI_trait_table[col_ext == "ext" & (type == "Trait" | type == "Interaction")], aes(x=variable, y = value)) +
+  geom_bar(stat= "identity") +
+  scale_x_discrete(breaks = c("age.max", "age.maturity", "tl","length.max",  "tempxtrait"), labels = c("Maximum\nAge", "Age of\nMaturity", "Trophic\nLevel","Max\nLength", "Temp Trait\nInteraction")) +
+  labs(x = "Trait Variables", y = "Relative Variable Importance") +
+  theme_classic() +
+  theme(text = element_text(size = 20))
+
+RVI_col_trait_plot
+RVI_ext_trait_plot
+
+save(RVI_trait_table, file = "RVI_trait_table.Rdata")
+```
+Let's see how the RVI importance varies by looking at specific lag values for these trait models
+```{r make a plot here for variability across lag values for trait models}
+#first, table for lags
+lags_v_RVI_trait <- data.table(col_lag = c(0:9), col_RVI = 0, ext_RVI = 0)
+#colonization
+lags_v_RVI_trait[1,2] <- 1-sum(colonization_model_comparisons_traits.lag9max[grep("lag", temp_variable), ]$akaike_weight)
+lags_v_RVI_trait[2,2] <- sum(colonization_model_comparisons_traits.lag9max[grep("lag1", temp_variable), ]$akaike_weight)
+lags_v_RVI_trait[3,2] <- sum(colonization_model_comparisons_traits.lag9max[grep("lag2", temp_variable), ]$akaike_weight)
+lags_v_RVI_trait[4,2] <- sum(colonization_model_comparisons_traits.lag9max[grep("lag3", temp_variable), ]$akaike_weight)
+lags_v_RVI_trait[5,2] <- sum(colonization_model_comparisons_traits.lag9max[grep("lag4", temp_variable), ]$akaike_weight)
+lags_v_RVI_trait[6,2] <- sum(colonization_model_comparisons_traits.lag9max[grep("lag5", temp_variable), ]$akaike_weight)
+lags_v_RVI_trait[7,2] <- sum(colonization_model_comparisons_traits.lag9max[grep("lag6", temp_variable), ]$akaike_weight)
+lags_v_RVI_trait[8,2] <- sum(colonization_model_comparisons_traits.lag9max[grep("lag7", temp_variable), ]$akaike_weight)
+lags_v_RVI_trait[9,2] <- sum(colonization_model_comparisons_traits.lag9max[grep("lag8", temp_variable), ]$akaike_weight)
+lags_v_RVI_trait[10,2] <- sum(colonization_model_comparisons_traits.lag9max[grep("lag9", temp_variable), ]$akaike_weight)
+#extinction
+lags_v_RVI_trait[1,3] <- 1-sum(extinction_model_comparisons_traits.lag9max[grep("lag", temp_variable), ]$akaike_weight)
+lags_v_RVI_trait[2,3] <- sum(extinction_model_comparisons_traits.lag9max[grep("lag1", temp_variable), ]$akaike_weight)
+lags_v_RVI_trait[3,3] <- sum(extinction_model_comparisons_traits.lag9max[grep("lag2", temp_variable), ]$akaike_weight)
+lags_v_RVI_trait[4,3] <- sum(extinction_model_comparisons_traits.lag9max[grep("lag3", temp_variable), ]$akaike_weight)
+lags_v_RVI_trait[5,3] <- sum(extinction_model_comparisons_traits.lag9max[grep("lag4", temp_variable), ]$akaike_weight)
+lags_v_RVI_trait[6,3] <- sum(extinction_model_comparisons_traits.lag9max[grep("lag5", temp_variable), ]$akaike_weight)
+lags_v_RVI_trait[7,3] <- sum(extinction_model_comparisons_traits.lag9max[grep("lag6", temp_variable), ]$akaike_weight)
+lags_v_RVI_trait[8,3] <- sum(extinction_model_comparisons_traits.lag9max[grep("lag7", temp_variable), ]$akaike_weight)
+lags_v_RVI_trait[9,3] <- sum(extinction_model_comparisons_traits.lag9max[grep("lag8", temp_variable), ]$akaike_weight)
+lags_v_RVI_trait[10,3] <- sum(extinction_model_comparisons_traits.lag9max[grep("lag9", temp_variable), ]$akaike_weight)
+
+RVI_lags_traits <- ggplot(data = lags_v_RVI_trait, aes(x = col_lag)) +
+  geom_line(aes(y = col_RVI), col = "blue") +
+  geom_line(aes(y = ext_RVI), col = "red", linetype = "dashed") +
+  labs(x = "Lag (years)", y = "Relative Variable Importance") +
+  theme_classic() +
+  theme(text = element_text(size = 22, color = "black")) +
+  scale_x_continuous(breaks = 0:10) +
+  scale_y_continuous(limits = 0:1)
+
+save(RVI_col_trait_plot, RVI_ext_trait_plot, RVI_lags_traits, file = "RVI_plots_traits.Rdata")
+
+setEPS()
+postscript("RVI_col_trait_plot.eps")
+RVI_col_trait_plot
+dev.off()
+
+setEPS()
+postscript("RVI_ext_trait_plot.eps")
+RVI_ext_trait_plot
+dev.off()
+
+setEPS()
+postscript("RVI_lags_trait_plot.eps")
+RVI_lags_traits
+dev.off()
+```
+
+What do interactions look like?
+
+##Colonization with Traits
+Best model: max_sst_temp_change_abs_lag1_scaled * age.maturity_scaled + age.max_scaled
+```{r col with traits}
+library(ggeffects)
+
+#model
+mod_col_trait <- glmer(col ~ max_sst_temp_change_abs_lag1_scaled * age.maturity_scaled + age.max_scaled + (1|reg) + (1|spp), family = "binomial", data = colonization.reduced, nAGQ = 0)
+
+#plot marginal effects of interactions
+dat <- ggpredict(mod_col_trait, c("max_sst_temp_change_abs_lag1_scaled [all]", "age.maturity_scaled [-0.78, 1.53, 6.67, 11.80, 24.63]"))
+
+ggplot(dat, aes(x=x, y = predicted, colour = group)) +
+  stat_smooth(method = "loess", se = F, fullrange =T) +
+  labs(colour="Age at Maturity Values", x = "Absolute change in maximum\nsurface temperature experienced a year previously (˚C scaled)", y = "Probability of Colonization",title = "Predicted Probabilities of Colonization") +
+  scale_y_continuous(breaks=c(0, 0.5, 1)) +
+  theme_classic()
+
+ggsave(path = "plots/marginal_effects", file = "predicted_probs_col_maxage.jpg")
+
+mod <- lm(spp_master_ztemp.traits_scaled$age.maturity_scaled~spp_master_ztemp.traits_scaled$age.maturity)
+summary(mod)
+
+df <- data.frame(unscaled = c(1,10,30,50,100))
+df$scaled <- mod$coefficients[1]+mod$coefficients[2]*df$unscaled
+
+```
+##Extinction with Traits
+Best model: max_sst_temp_scaled * age.maturity_scaled + age.max_scaled
+```{r ext with traits}
+library(ggeffects)
+
+#model
+mod_ext_trait <- glmer(now_ext ~ max_sst_temp_scaled * age.maturity_scaled + age.max_scaled + (1|reg) + (1|spp), family = "binomial", data = extinction.reduced, nAGQ = 0)
+
+#plot marginal effects of interactions
+dat <- ggpredict(mod_ext_trait, c("max_sst_temp_scaled [all]", "age.maturity_scaled [-0.78, 1.53, 6.67, 11.80, 24.63]"))
+
+ggplot(dat, aes(x=x, y = predicted, colour = group)) +
+  stat_smooth(method = "loess", se = F, fullrange =T) +
+  labs(colour="Age at Maturity Values", x = "Maximum surface temperature\nin the past year (˚C scaled)", y = "Probability of Extinction",title = "Predicted Probabilities of Extinction") +
+  scale_y_continuous(breaks=c(0, 0.5, 1)) +
+  theme_classic()
+
+```
+
