@@ -1,0 +1,61 @@
+---
+title: "Map of Sites"
+output: html_notebook
+---
+
+```{r setup}
+library(data.table)
+library(mapdata)
+library(maps)
+
+load("hauls_catch_Dec2017 1.RData")
+
+`%notin%` <- Negate(`%in%`)
+```
+
+```{r extract unique GPS points}
+hauls <- data.table(hauls)
+gpspointsonly <- hauls[, .(region, lat, lon)]
+gpspointsonly[, lat := round(lat, 0)][, lon := round(lon, 0)][, region := as.factor(region)]
+gpspointsonly <- unique(gpspointsonly[,.(region, lat, lon)])
+gpspointsonly <- gpspointsonly[region != "DFO_SoGulf" & region != "NWFSC_WCAnn" & region != "VIMS_NEAMAP",]
+
+
+
+```
+
+```{r set up map}
+world <- data.table(map_data('world'))
+
+north_america <- world[long >= -250 & long <= -30 & lat >= 20 & lat <= 80]
+
+NAmap <- ggplot() + geom_polygon(data = north_america, 
+                                 aes(x=long, y = lat, group = group), 
+                                 fill = "white", 
+                                 color="black") +
+    coord_fixed(xlim = c(-200, -40),  ylim = c(25, 65), ratio = 1.3)
+
+```
+Add points and polygons
+```{r add points}
+
+library(units)
+library(smoothr)
+
+NAmap + 
+  geom_point(data = gpspointsonly, aes(x=lon, y = lat, color = region), size = 0.01) +
+  geom_encircle(data = gpspointsonly, aes(x=lon, y = lat, color = region), expand = 0, s_shape = 0, spread = 0.5) +
+  theme_classic()
+
+
+
+```
+Polygons around points
+
+```{r}
+library(PerformanceAnalytics)
+mydata <- spp_master_ztemp[,.(max_sst_temp, max_sbt_temp, min_sst_temp, max_sst_temp, mean_sst_temp, mean_sbt_temp)]
+chart.Correlation(mydata, histogram = T, pch = 19)
+```
+
+

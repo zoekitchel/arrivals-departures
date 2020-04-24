@@ -8,7 +8,7 @@ library(dplyr)
 library(data.table)
 library(ggplot2)
 
-load("spp_master_ztemp.Rdata")
+load("spp_master_ztemp_scaled.Rdata")
 ```
 
 
@@ -462,11 +462,15 @@ spp_master_richness[,bt_trend_mean_abs_change_sc:=scale(bt_trend_mean_abs_change
 spp_master_richness[,year_sc:=scale(year)] #scaled year
 
 ```
+It looks like Malin gets the trend, and THEN scales, so I will try that
+```{r}
+
+```
 
 Summary data
 ```{r summary data}
 # create summary data
-trends <- spp_master_richness[,.(rich=trend(richness, year), #calculate trend in richness per year and trend in annual temp per year
+trends_zoe <- spp_master_richness[,.(rich=trend(richness, year), #calculate trend in richness per year and trend in annual temp per year
                                  bt_trend_max_abs_change = mean(bt_trend_max_abs_change) , 
                                  bt_trend_min_abs_change = mean(bt_trend_min_abs_change) , 
                                  bt_trend_mean_abs_change = mean(bt_trend_mean_abs_change),
@@ -478,23 +482,38 @@ trends <- spp_master_richness[,.(rich=trend(richness, year), #calculate trend in
                                  bt_trend_max_raw = mean(bt_trend_max_raw) ,
                                  bt_trend_min_raw = mean(bt_trend_min_raw) ,
                                  bt_trend_mean_raw = mean(bt_trend_mean_raw),
-                                 bt_trend_seas_raw = mean(bt_trend_seas_raw)), by=reg] 
+                                 bt_trend_seas_raw = mean(bt_trend_seas_raw)),  by=reg] 
 
+
+trends_zoe[,bt_trend_max_abs_change_scaled := scale(bt_trend_max_abs_change)][,
+                                 bt_trend_min_abs_change_scaled := scale(bt_trend_min_abs_change)][,
+                                 bt_trend_mean_abs_change_scaled := scale(bt_trend_mean_abs_change)][,
+                                 bt_trend_seas_abs_change_scaled := scale(bt_trend_seas_abs_change)][,
+                                 bt_trend_max_change_scaled := scale(bt_trend_max_change)][,
+                                 bt_trend_min_change_scaled := scale(bt_trend_min_change)][,
+                                 bt_trend_mean_change_scaled := scale(bt_trend_mean_change)][,
+                                 bt_trend_seas_change_scaled := scale(bt_trend_seas_change)][,
+                                 bt_trend_max_raw_scaled := scale(bt_trend_max_raw)][,
+                                 bt_trend_min_raw_scaled := scale(bt_trend_min_raw)][,
+                                 bt_trend_mean_raw_scaled := scale(bt_trend_mean_raw)][,
+                                 bt_trend_seas_raw_scaled := scale(bt_trend_seas_raw)]
+
+setkey(trends_zoe, reg)
 ```
 
 Plot Max Change and Abs
-```{r plot min}
+```{r plot max}
 #Raw
 
 #raw mods for abline
-raw_max_mod <- lm(rich~bt_trend_max_raw, data = trends)
+raw_max_mod <- lm(rich~bt_trend_max_raw, data = trends_zoe)
 summary(raw_max_mod)$r.squared
 anova(raw_max_mod)$'Pr(>F)'[1]
 # R^2 =  0.1420429
 #p value = 0.3173871
 
 
-ggplot(data = trends) +
+ggplot(data = trends_zoe) +
   geom_point(aes(x = bt_trend_max_raw, y = rich, col = reg), size = 4) +
   geom_abline(intercept = raw_max_mod$coefficients[[1]], slope = raw_max_mod$coefficients[[2]], col = "slategrey", linetype = "dashed") +
   #geom_point(aes(x = bt_trend_min_raw, y = rich), col = "blue") +
@@ -510,7 +529,7 @@ ggsave(width = 4, height = 3.5, units = "in", path = "plots/richness_change", fi
 
 
 #change mods for abline
-change_max_mod <- lm(rich~bt_trend_max_change, data = trends)
+change_max_mod <- lm(rich~bt_trend_max_change, data = trends_zoe)
 summary(change_max_mod)$r.squared
 anova(change_max_mod)$'Pr(>F)'[1]
 # R^2 = 0.1677293
@@ -518,7 +537,7 @@ anova(change_max_mod)$'Pr(>F)'[1]
 
 
 
-ggplot(data = trends) +
+ggplot(data = trends_zoe) +
   geom_point(aes(x = bt_trend_max_change, y = rich, col = reg), size = 4) +
   geom_abline(intercept = change_max_mod$coefficients[[1]], slope = change_max_mod$coefficients[[2]], col = "slategrey", linetype = "dashed") +
   #geom_point(aes(x = bt_trend_max_change, y = rich), col = "blue") +
@@ -531,14 +550,14 @@ ggsave(width = 4, height = 3.5, units = "in", path = "plots/richness_change", fi
 
 #Absolute Change
 #abs change mods for abline
-abs_change_max_mod <- lm(rich~bt_trend_max_abs_change, data = trends)
+abs_change_max_mod <- lm(rich~bt_trend_max_abs_change, data = trends_zoe)
 summary(abs_change_max_mod)$r.squared
 anova(abs_change_max_mod)$'Pr(>F)'[1]
 # R^2 = 0.1750758
 #p value = 0.2623728
 
 
-ggplot(data = trends) +
+ggplot(data = trends_zoe) +
   geom_point(aes(x = bt_trend_max_abs_change, y = rich, col = reg), size = 4) +
   geom_abline(intercept = abs_change_max_mod$coefficients[[1]], slope = abs_change_max_mod$coefficients[[2]], col = "slategrey", linetype = "dashed") +
   #geom_point(aes(x = bt_trend_max_abs_change, y = rich), col = "blue") +
@@ -555,7 +574,7 @@ Plot Min for Change and Abs
 #Raw
 
 #raw mods for abline
-raw_min_mod <- lm(rich~bt_trend_min_raw, data = trends)
+raw_min_mod <- lm(rich~bt_trend_min_raw, data = trends_zoe)
 summary(raw_min_mod)$r.squared
 anova(raw_min_mod)$'Pr(>F)'[1]
 # R^2 = 0.05175603
@@ -563,7 +582,7 @@ anova(raw_min_mod)$'Pr(>F)'[1]
 
 
 
-ggplot(data = trends) +
+ggplot(data = trends_zoe) +
   geom_point(aes(x = bt_trend_min_raw, y = rich, col = reg), size = 4) +
   geom_abline(intercept = raw_min_mod$coefficients[[1]], slope = raw_min_mod$coefficients[[2]], col = "slategrey", linetype = "dashed") +
   #geom_point(aes(x = bt_trend_min_raw, y = rich), col = "blue") +
@@ -579,7 +598,7 @@ ggsave(width = 4, height = 3.5, units = "in", path = "plots/richness_change", fi
 
 
 #change mods for abline
-change_min_mod <- lm(rich~bt_trend_min_change, data = trends)
+change_min_mod <- lm(rich~bt_trend_min_change, data = trends_zoe)
 summary(change_min_mod)$r.squared
 anova(change_min_mod)$'Pr(>F)'[1]
 # R squared: 0.525328
@@ -587,7 +606,7 @@ anova(change_min_mod)$'Pr(>F)'[1]
 
 
 
-ggplot(data = trends) +
+ggplot(data = trends_zoe) +
   geom_point(aes(x = bt_trend_min_change, y = rich, col = reg), size = 4) +
   geom_abline(intercept = change_min_mod$coefficients[[1]], slope = change_min_mod$coefficients[[2]], col = "slategrey", linetype = "dashed") +
   #geom_point(aes(x = bt_trend_min_change, y = rich), col = "blue") +
@@ -600,14 +619,14 @@ ggsave(width = 4, height = 3.5, units = "in", path = "plots/richness_change", fi
 
 #Absolute Change
 #abs change mods for abline
-abs_change_min_mod <- lm(rich~bt_trend_min_abs_change, data = trends)
+abs_change_min_mod <- lm(rich~bt_trend_min_abs_change, data = trends_zoe)
 summary(abs_change_min_mod)$r.squared
 anova(abs_change_min_mod)$'Pr(>F)'[1]
 #r squared value: 0.2929706
 #p value:0.1323295
 
 
-ggplot(data = trends) +
+ggplot(data = trends_zoe) +
   geom_point(aes(x = bt_trend_min_abs_change, y = rich, col = reg), size = 4) +
   geom_abline(intercept = abs_change_min_mod$coefficients[[1]], slope = abs_change_min_mod$coefficients[[2]], col = "slategrey", linetype = "dashed") +
   #geom_point(aes(x = bt_trend_min_abs_change, y = rich), col = "blue") +
@@ -625,14 +644,14 @@ Plot Mean for Change and Abs
 #Raw
 
 #raw mods for abline
-raw_mean_mod <- lm(rich~bt_trend_mean_raw, data = trends)
+raw_mean_mod <- lm(rich~bt_trend_mean_raw, data = trends_zoe)
 summary(raw_mean_mod)$r.squared
 anova(raw_mean_mod)$'Pr(>F)'[1]
 # R squared value: 0.1034685
 #p value: 0.3986127
 
 
-ggplot(data = trends) +
+ggplot(data = trends_zoe) +
   geom_point(aes(x = bt_trend_mean_raw, y = rich, col = reg), size = 4) +
   geom_abline(intercept = raw_mean_mod$coefficients[[1]], slope = raw_mean_mod$coefficients[[2]], col = "slategrey", linetype = "dashed") +
   #geom_point(aes(x = bt_trend_mean_raw, y = rich), col = "blue") +
@@ -648,7 +667,7 @@ ggsave(width = 4, height = 3.5, units = "in", path = "plots/richness_change", fi
 
 
 #change mods for abline
-change_mean_mod <- lm(rich~bt_trend_mean_change, data = trends)
+change_mean_mod <- lm(rich~bt_trend_mean_change, data = trends_zoe)
 summary(change_mean_mod)$r.squared
 anova(change_mean_mod)$'Pr(>F)'[1]
 #R squared: 0.3887231
@@ -656,7 +675,7 @@ anova(change_mean_mod)$'Pr(>F)'[1]
 
 
 
-ggplot(data = trends) +
+ggplot(data = trends_zoe) +
   geom_point(aes(x = bt_trend_mean_change, y = rich, col = reg), size = 4) +
   geom_abline(intercept = change_mean_mod$coefficients[[1]], slope = change_mean_mod$coefficients[[2]], col = "slategrey", linetype = "dashed") +
   #geom_point(aes(x = bt_trend_mean_change, y = rich), col = "blue") +
@@ -668,24 +687,25 @@ ggplot(data = trends) +
 ggsave(width = 4, height = 3.5, units = "in", path = "plots/richness_change", filename = "richness_trend_mean_change.jpeg")
 
 #Absolute Change
+
 #abs change mods for abline
-abs_change_mean_mod <- lm(rich~bt_trend_mean_abs_change, data = trends)
+abs_change_mean_mod <- lm(rich~bt_trend_mean_abs_change_scaled, data = trends_zoe)
 summary(abs_change_mean_mod)$r.squared
 anova(abs_change_mean_mod)$'Pr(>F)'[1]
 #R Squared: 0.1413137
 #P value: 0.3187339
 
 
-
-
-ggplot(data = trends) +
-  geom_point(aes(x = bt_trend_mean_abs_change, y = rich, col = reg), size = 4) +
+ggplot(data = trends_zoe) +
+  geom_point(aes(x = bt_trend_mean_abs_change_scaled, y = rich, col = reg), size = 4) +
   geom_abline(intercept = abs_change_mean_mod$coefficients[[1]], slope = abs_change_mean_mod$coefficients[[2]], col = "slategrey", linetype = "dashed") +
   #geom_point(aes(x = bt_trend_mean_abs_change, y = rich), col = "blue") +
   #geom_abline(intercept = abs_change_mean_mod$coefficients[[1]], slope = abs_change_mean_mod$coefficients[[2]], col = "blue") +
   labs(x = "Average Absolute Change\nin Mean Temperature (°C/yr)", y = "Average change\nin richness (spp/yr)") +
   theme_classic() +
   theme(text = element_text(size = 14))
+
+trends_zoe[,.(reg, rich, bt_trend_max_change, bt_trend_mean_change_scaled)][order(reg)]
 
 ggsave(width = 4, height = 3.5, units = "in", path = "plots/richness_change", filename = "richness_trend_mean_change_abs.jpeg")
 ```
@@ -696,14 +716,14 @@ Plot Seasonality for Change and Abs
 #Raw
 
 #raw mods for abline
-raw_seas_mod <- lm(rich~bt_trend_seas_raw, data = trends)
+raw_seas_mod <- lm(rich~bt_trend_seas_raw, data = trends_zoe)
 summary(raw_seas_mod)$r.squared
 anova(raw_seas_mod)$'Pr(>F)'[1]
 # R squared value: 0.3593094
 #p value: 0.08800772
 
 
-ggplot(data = trends) +
+ggplot(data = trends_zoe) +
   geom_point(aes(x = bt_trend_seas_raw, y = rich, col = reg), size = 4) +
   geom_abline(intercept = raw_seas_mod$coefficients[[1]], slope = raw_seas_mod$coefficients[[2]], col = "slategrey", linetype = "dashed") +
   #geom_point(aes(x = bt_trend_seas_raw, y = rich), col = "blue") +
@@ -719,7 +739,7 @@ ggsave(width = 4, height = 3.5, units = "in", path = "plots/richness_change", fi
 
 
 #change mods for abline
-change_seas_mod <- lm(rich~bt_trend_seas_change, data = trends)
+change_seas_mod <- lm(rich~bt_trend_seas_change, data = trends_zoe)
 summary(change_seas_mod)$r.squared
 anova(change_seas_mod)$'Pr(>F)'[1]
 #R squared: 0.000239069
@@ -727,7 +747,7 @@ anova(change_seas_mod)$'Pr(>F)'[1]
 
 
 
-ggplot(data = trends) +
+ggplot(data = trends_zoe) +
   geom_point(aes(x = bt_trend_seas_change, y = rich, col = reg), size = 4) +
   geom_abline(intercept = change_seas_mod$coefficients[[1]], slope = change_seas_mod$coefficients[[2]], col = "slategrey", linetype = "dashed") +
   #geom_point(aes(x = bt_trend_seas_change, y = rich), col = "blue") +
@@ -740,7 +760,7 @@ ggsave(width = 4, height = 3.5, units = "in", path = "plots/richness_change", fi
 
 #Absolute Change
 #abs change mods for abline
-abs_change_seas_mod <- lm(rich~bt_trend_seas_abs_change, data = trends)
+abs_change_seas_mod <- lm(rich~bt_trend_seas_abs_change, data = trends_zoe)
 summary(abs_change_seas_mod)$r.squared
 anova(abs_change_seas_mod)$'Pr(>F)'[1]
 #R Squared: 7.524088e-05
@@ -749,7 +769,7 @@ anova(abs_change_seas_mod)$'Pr(>F)'[1]
 
 
 
-ggplot(data = trends) +
+ggplot(data = trends_zoe) +
   geom_point(aes(x = bt_trend_seas_abs_change, y = rich, col = reg), size = 4) +
   geom_abline(intercept = abs_change_seas_mod$coefficients[[1]], slope = abs_change_seas_mod$coefficients[[2]], col = "slategrey", linetype = "dashed") +
   #geom_point(aes(x = bt_trend_seas_abs_change, y = rich), col = "blue") +
@@ -760,3 +780,20 @@ ggplot(data = trends) +
 
 ggsave(width = 4, height = 3.5, units = "in", path = "plots/richness_change", filename = "richness_trend_seas_change_abs.jpeg")
 ```
+Compare Zoe temp patterns to Ryan's temp patterns
+```{r temp comparisons}
+load("comm_master.RData")
+ryan_reduced <- comm_master[,.(reg, year, naive_rich, bt_ann)][,name:="RYAN"]
+zoe_reduced <- unique(spp_master_ztemp[, bt_ann_z := mean(mean_sbt_temp), by = .(reg, year)][,name:="ZOE"][,.(reg, year, bt_ann_z)])
+
+setkey(ryan_reduced, reg, year)
+setkey(zoe_reduced, reg, year)
+merge <- ryan_reduced[zoe_reduced]
+
+ggplot(data = merge, aes(x = year)) +
+  geom_point(aes(y = bt_ann), color = "blue") +
+  geom_point(aes(y = bt_ann_z), color = "red") +
+  facet_wrap(~reg) +
+  theme_bw()
+```
+
