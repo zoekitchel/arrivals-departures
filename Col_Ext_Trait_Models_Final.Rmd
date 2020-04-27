@@ -494,3 +494,73 @@ ggplot(dat, aes(x=x, y = predicted, colour = group)) +
 
 ```
 
+How well do these models actually predict the # of colonizations and the # of extinctions?
+
+```{r predicted vs. observed colonizations scaled}
+library(tidyr)
+library(plyr)
+#best colonization trait models (all delta less than 2)
+  #max_sst_temp_change_abs_lag1_scaled * age.maturity_scaled + age.max_scaled 0.00
+  #seas_sst_temp_change_abs_scaled + age.maturity_scaled + age.max_scaled 1.43
+
+
+bestcolmod_scaled_traits <- glmer(col ~ max_sst_temp_change_abs_lag1_scaled * age.maturity_scaled + age.max_scaled + (1|reg) + (1|spp), family = binomial, data = spp_master_ztemp.traits_scaled, nAGQ = 0)
+
+#I wanted predicted # of colonizations in each region per region/year
+#year region observed colonizations predicted colonizations
+
+#plotting predicted versus modeled
+#unique combinations of spp, region, and max_sbt_temp_change_abs_scaled found in dataset
+model_imputs <- spp_master_ztemp.traits_scaled[,.(spp, reg, year, col, now_ext, max_sst_temp_change_abs_lag1_scaled, age.maturity_scaled, age.max_scaled)]
+
+model_imputs <- na.omit(model_imputs)
+
+t2_col <- predict(bestcolmod_scaled_traits, newdata = model_imputs, type = "response", re.form = NULL) #setting re.form to NULL includes all random effects
+
+model_imputs$pred <- t2_col
+
+#group by region and year, sum over "col" = observations, and "pred" = predict colonizations by summing probabilities
+col_model_comparisons <- model_imputs[, .(col_predicted = sum(pred), col_observed = sum(col)), by=.(year,reg)]
+
+
+ggplot(aes(x=year), data = col_model_comparisons) +
+  geom_point(aes(y = col_observed), data = col_model_comparisons, col = "red") +
+  geom_point(data = col_model_comparisons, aes(y = col_predicted), col = "black") +
+  facet_wrap(~reg) +
+  theme_classic()
+
+```
+
+And extinctions?
+
+```{r predicted vs. observed extinctions scaled}
+#best extinction trait models (all delta less than 2)
+ #max_sst_temp_scaled    * age.maturity_scaled + age.max_scaled 0.000000
+ #max_sst_temp_lag1_scaled    * age.maturity_scaled + age.max_scaled 1.884106
+
+
+bestextmod_scaled_traits <- glmer(now_ext ~ max_sst_temp_scaled * age.maturity_scaled + age.max_scaled + (1|reg) + (1|spp), family = binomial, data = spp_master_ztemp.traits_scaled, nAGQ = 0)
+
+#I wanted predicted # of extinctions in each region per region/year
+#year region observed extinctions predicted extinctions
+
+#plotting predicted versus modeled
+#unique combinations of spp, region, and max_sst_temp_scaled found in dataset
+model_imputs <- spp_master_ztemp.traits_scaled[,.(spp, reg, year, col, now_ext, max_sst_temp_scaled, age.maturity_scaled, age.max_scaled)]
+
+model_imputs <- na.omit(model_imputs)
+
+t2_ext <- predict(bestextmod_scaled_traits, newdata = model_imputs, type = "response", re.form = NULL) #setting re.form to NULL includes all random effects
+
+model_imputs$pred <- t2_ext
+
+#group by region and year, sum over "now_ext" = observations, and "pred" = predict extinctions by summing probabilities
+ext_model_comparisons <- model_imputs[, .(ext_predicted = sum(pred), ext_observed = sum(now_ext)), by=.(year,reg)]
+
+
+ggplot(aes(x=year), data = ext_model_comparisons) +
+  geom_point(aes(y = ext_observed), data = ext_model_comparisons, col = "red") +
+  geom_point(data = ext_model_comparisons, aes(y = ext_predicted), col = "black") +
+  facet_wrap(~reg) +
+  theme_classic()
+```
