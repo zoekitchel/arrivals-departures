@@ -35,6 +35,8 @@ tempvars <- colnames(spp_master_ztemp[,45:292])
 #scale all variables, make new columns, do this by region
 spp_master_ztemp_varsonly[, paste0(tempvars, "_scaled") := lapply(.SD, function(x) as.vector(scale(x))), .SDcols = tempvars]
 
+save(spp_master_ztemp_scaled, file = "spp_master_ztemp_scaled.RData")
+
 #names of scaled columns
 scaled_cols <- grep("*_scaled", names(spp_master_ztemp_varsonly), value = T)
 

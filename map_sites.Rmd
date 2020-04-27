@@ -46,9 +46,6 @@ NAmap <- ggplot() + geom_polygon(data = north_america,
 ```
 Add points and polygons
 ```{r add points}
-library(ggalt)
-library(ggforce)
-library(concaveman)
 
 
 NAplot_polygons <- ggplot() + geom_polygon(data = north_america, 
@@ -66,11 +63,6 @@ NAplot_polygons <- ggplot() + geom_polygon(data = north_america,
 ggsave(plot = NAplot_polygons, file = "NAplot_polygons.eps")
 
 ```
-Polygons around points
-
-
-
-
 
 
 
