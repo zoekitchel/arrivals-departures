@@ -22,7 +22,7 @@ load("spp_master_ztemp.RData")
 
 Running, and ranking colonization models without traits
 
-Here, I scaled all temperature values across all regions, and included species as a random effect. In order to do this, I had to change the algorithm slightly--nAGQ = 0.
+##Here, I scaled all temperature values across all regions, and included species as a random effect. In order to do this, I had to change the algorithm slightly--nAGQ = 0.
 
 ```{r colonization models without traits}
 
@@ -64,6 +64,7 @@ for (i in 1:length(variables_scaled)){
 #by setting nACQ to 0, all models converged
 
 ```
+
 Extinction Models without Traits
 ```{r extinction models without traits}
 #see setup above
@@ -88,6 +89,7 @@ for (i in 1:length(variables_scaled)){
 
 
 ```
+
 Relative Variable Importance
 ```{r get rid of any models using mean}
 colonization_model_comparison_spprandom_scaled_nomean <- colonization_model_comparison_spprandom_scaled[!grepl("mean",variable),]
@@ -137,7 +139,10 @@ col_change_importance <- sum(colonization_model_comparison_spprandom_scaled_nome
 col_max_temp_importance <- sum(colonization_model_comparison_spprandom_scaled_nomean[grep("max", variable), ]$akaike_weight)
 col_min_temp_importance <- sum(colonization_model_comparison_spprandom_scaled_nomean[grep("min", variable), ]$akaike_weight)
 col_seas_temp_importance <- sum(colonization_model_comparison_spprandom_scaled_nomean[grep("seas", variable), ]$akaike_weight)
+
+save(colonization_model_comparison_spprandom_scaled_nomean, file = "colonization_model_comparison_spprandom_scaled_nomean.RData")
 ```
+
 Relative Variable Importance for Extinction Models
 ```{r RVI extinction}
 #add ∆AIC to tables
@@ -173,6 +178,8 @@ ext_change_importance <- sum(extinction_model_comparison_spprandom_scaled_nomean
 ext_max_temp_importance <- sum(extinction_model_comparison_spprandom_scaled_nomean[grep("max", variable), ]$akaike_weight)
 ext_min_temp_importance <- sum(extinction_model_comparison_spprandom_scaled_nomean[grep("min", variable), ]$akaike_weight)
 ext_seas_temp_importance <- sum(extinction_model_comparison_spprandom_scaled_nomean[grep("seas", variable), ]$akaike_weight)
+
+save(extinction_model_comparison_spprandom_scaled_nomean, file = "extinction_model_comparison_spprandom_scaled_nomean.RData")
 ```
 
 Let's see how the RVI importance varies by looking at specific lag values
@@ -219,6 +226,7 @@ value <- c(col_bottom_importance, col_surface_importance, col_nolag_importance, 
 
 RVI_col <- data.table(col_ext, type, variable, value)
 ```
+
 Table for RVI data for Extinction
 ```{r put RVIs for extinction into data table}
 col_ext <- c("ext","ext","ext","ext","ext", "ext", "ext", "ext", "ext", "ext")
@@ -320,6 +328,23 @@ ggplot(aes(x=year), data = col_model_comparisons) +
 
 ```
 
+Instead, I want to look at these with accumulation of colonizations
+```{r plot colonization with cumulative sum of extinctions}
+
+col_model_comparisons[,col_obs_sum := cumsum(col_observed), by = reg]
+col_model_comparisons[,col_pred_sum := cumsum(col_predicted), by = reg]
+
+ggplot(aes(x=year), data = col_model_comparisons) +
+  geom_point(aes(y = col_obs_sum), data = col_model_comparisons, col = "red") +
+  geom_point(data = col_model_comparisons, aes(y = col_pred_sum), col = "black", size = 1) +
+  labs(x="Year", y = "Cumulative sum of colonizations") +
+  facet_wrap(~reg) +
+  theme_classic()
+
+
+```
+
+
 
 ```{r extinction predictions versus observed scaled}
 
@@ -352,6 +377,43 @@ ggplot(aes(x=year), data = ext_model_comparisons) +
   facet_wrap(~reg) +
   theme_classic()
 ```
+
+Instead, I want to look at these with accumulation of extinctions
+```{r plot extinction with cumulative sum of extinctions}
+
+ext_model_comparisons[,ext_obs_sum := cumsum(ext_observed), by = reg]
+ext_model_comparisons[,ext_pred_sum := cumsum(ext_predicted), by = reg]
+
+ggplot(aes(x=year), data = ext_model_comparisons) +
+  geom_point(aes(y = ext_obs_sum), data = ext_model_comparisons, col = "red") +
+  geom_point(data = ext_model_comparisons, aes(y = ext_pred_sum), col = "black", size = 1) +
+  labs(x="Year", y = "Cumulative sum of extinctions") +
+  facet_wrap(~reg) +
+  theme_classic()
+
+
+```
+
+Cumulative species richness change
+```{r cumulative species richness change}
+#from colonizations
+cumulative_richness <- col_model_comparisons[,.(reg, year, col_obs_sum, col_pred_sum)]
+ext_obs_sum <- ext_model_comparisons[,.(ext_obs_sum)]
+ext_pred_sum <- ext_model_comparisons[,.(ext_pred_sum)]
+cumulative_richness[,ext_obs_sum := ext_obs_sum]
+cumulative_richness[,ext_pred_sum := ext_pred_sum]
+
+cumulative_richness[,richness_obs_sum := col_obs_sum-ext_obs_sum][,richness_pred_sum := col_pred_sum-ext_pred_sum]
+
+#plot richness over time predicted versus observed
+ggplot(aes(x=year), data = cumulative_richness) +
+  geom_point(aes(y = richness_obs_sum), col = "red") +
+  geom_point(aes(y = richness_pred_sum), col = "black", size = 1) +
+  labs(x="Year", y = "Cumulative Richness") +
+  facet_wrap(~reg) +
+  theme_classic()
+```
+
 
 #Here, I do the same thing, but only include spp as random effect and reset model algorithm. I do NOT scale temperature values. 
 
@@ -819,6 +881,7 @@ for (i in 1:length(variables_scaled)){
 
 
 ```
+
 Extinction Models without Traits
 ```{r extinction models without traits for fish only}
 #see setup above
@@ -842,6 +905,7 @@ for (i in 1:length(variables_scaled)){
 
 
 ```
+
 Relative Variable Importance
 ```{r get rid of any models using mean for fish only}
 colonization_model_comparison_spprandom_scaled_fishonly_nomean <- colonization_model_comparison_spprandom_scaled_fishonly[!grepl("mean",variable),]
@@ -892,6 +956,7 @@ col_max_temp_importance_fishonly <- sum(colonization_model_comparison_spprandom_
 col_min_temp_importance_fishonly <- sum(colonization_model_comparison_spprandom_scaled_fishonly_nomean[grep("min", variable), ]$akaike_weight)
 col_seas_temp_importance_fishonly <- sum(colonization_model_comparison_spprandom_scaled_fishonly_nomean[grep("seas", variable), ]$akaike_weight)
 ```
+
 Relative Variable Importance for Extinction Models
 ```{r RVI extinction for fish only}
 #add ∆AIC to tables
@@ -973,6 +1038,7 @@ value <- c(col_bottom_importance_fishonly, col_surface_importance_fishonly, col_
 
 RVI_col_fishonly <- data.table(col_ext, type, variable, value)
 ```
+
 Table for RVI data for Extinction
 ```{r put RVIs for extinction into data table for fish only}
 col_ext <- c("ext","ext","ext","ext","ext", "ext", "ext", "ext", "ext", "ext")
@@ -1073,6 +1139,7 @@ ggplot(aes(x=year), data = col_model_comparisons_fishonly) +
 
 
 ```
+
 All regions together?
 ```{r all reg together 1|spp scaled fish only predicted versus observed colonizations}
 ggplot(aes(x=year), data = col_model_comparisons_fishonly) +
