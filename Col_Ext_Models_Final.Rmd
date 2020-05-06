@@ -403,15 +403,33 @@ ext_pred_sum <- ext_model_comparisons[,.(ext_pred_sum)]
 cumulative_richness[,ext_obs_sum := ext_obs_sum]
 cumulative_richness[,ext_pred_sum := ext_pred_sum]
 
-cumulative_richness[,richness_obs_sum := col_obs_sum-ext_obs_sum][,richness_pred_sum := col_pred_sum-ext_pred_sum]
+cumulative_richness[, Observed := col_obs_sum-ext_obs_sum][, Predicted := col_pred_sum-ext_pred_sum]
+
+cumulative_richness.r <- cumulative_richness[,.(reg, year, Observed, Predicted)]
+
+#wide to long
+cumulative_richness.r <- melt(cumulative_richness.r, id.vars = c("reg", "year"), measure.vars = c("Observed", "Predicted"), variable.name = "Richness", value.name = "value")
+
+
+
+
 
 #plot richness over time predicted versus observed
-ggplot(aes(x=year), data = cumulative_richness) +
-  geom_point(aes(y = richness_obs_sum), col = "red") +
-  geom_point(aes(y = richness_pred_sum), col = "black", size = 1) +
+cum_richness_plot <- ggplot(aes(x=year, y = value, color = Richness), data = cumulative_richness.r) +
+  geom_point(size = 1) +
+  geom_hline(yintercept = 0) +
   labs(x="Year", y = "Cumulative Richness") +
   facet_wrap(~reg) +
-  theme_classic()
+  theme_classic() +
+  scale_color_manual(values = c("Observed" = 'coral3' , "Predicted" = 'deepskyblue4')) +
+  theme(plot.title = element_text(size = 17),
+        legend.title = element_text(size = 17),
+        legend.text=element_text(size = 15),
+        strip.text = element_text(size = 12),
+        axis.title = element_text(size = 14))
+
+ggsave(cum_richness_plot, file = "cum_richness_plot.jpg")
+ggsave(cum_richness_plot, file = "cum_richness_plot.eps")
 ```
 
 
