@@ -412,11 +412,12 @@ cumulative_richness.r <- melt(cumulative_richness.r, id.vars = c("reg", "year"),
 
 
 
-
+#rename region levels for plotting
+levels(cumulative_richness.r$reg) <- c("Aleutian Islands", "E. Bering Sea", "Gulf of Mexico", "Gulf of Alaska", "Northeast US", "Newfoundland", "Southeast US", "Scotian Shelf", "West Coast US")
 
 #plot richness over time predicted versus observed
 cum_richness_plot <- ggplot(aes(x=year, y = value, color = Richness), data = cumulative_richness.r) +
-  geom_point(size = 1) +
+  geom_point(size = 2) +
   geom_hline(yintercept = 0) +
   labs(x="Year", y = "Cumulative Richness") +
   facet_wrap(~reg) +

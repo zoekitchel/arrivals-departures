@@ -255,6 +255,18 @@ col_interaction_temp_trait_importance <- sum(colonization_model_comparisons_trai
 #save this table
 save(colonization_model_comparisons_traits.lag9max, file = "colonization_models_traits_with_likelihoods.Rdata")
 ```
+Best model stats?
+```{r best model stats for models with traits}
+mod_col_trait <- glmer(col ~ max_sst_temp_change_abs_lag1_scaled * age.maturity_scaled + age.max_scaled + (1|spp) + (1|reg), data = colonization.reduced, nAGQ = 0, family = binomial)
+
+summary(mod_col_trait)
+
+#R^2 (coefficient of determination based on likelihood ratio test)
+#adj.r.squared: Nagelkerke's modified R^2 statistic
+library(MuMIn)
+r.squaredLR(mod_col_trait)
+
+```
 
 ```{r put RVIs for colonization into data table}
 col_ext <- c("col","col","col","col","col", "col","col", "col", "col","col", "col","col", "col", "col","col")
@@ -264,6 +276,7 @@ value <- c(col_bottom_importance, col_surface_importance, col_nolag_importance, 
 
 RVI_col_traits <- data.table(col_ext, type, variable, value)
 ```
+
 
 EXTINCTION
 
@@ -344,6 +357,19 @@ variable <- c("bottom", "surface", "no_lag", "lagged", "absolute_value_change", 
 value <- c(ext_bottom_importance, ext_surface_importance, ext_nolag_importance, ext_lag_importance, ext_abs_importance, ext_change_importance, ext_raw_importance, ext_min_temp_importance, ext_max_temp_importance, ext_seas_temp_importance, ext_age.max_importance, ext_age.maturity_importance, ext_tl_importance, ext_length.max_importance, ext_interaction_temp_trait_importance)
 
 RVI_ext_traits <- data.table(col_ext, type, variable, value)
+```
+
+Best model stats?
+```{r best model stats for extinction models with traits}
+mod_ext_trait <- glmer(now_ext ~max_sst_temp_scaled * age.maturity_scaled + age.max_scaled + (1|spp) + (1|reg), data = extinction.reduced, nAGQ = 0, family = binomial)
+
+summary(mod_ext_trait)
+
+#R^2 (coefficient of determination based on likelihood ratio test)
+#adj.r.squared: Nagelkerke's modified R^2 statistic
+r.squaredLR(mod_ext_trait)
+
+
 ```
 
 Merge RVI tables for colonization and extinction with traits, and then graph
@@ -461,10 +487,12 @@ mod_col_trait <- glmer(col ~ max_sst_temp_change_abs_lag1_scaled * age.maturity_
 dat <- ggpredict(mod_col_trait, c("max_sst_temp_change_abs_lag1_scaled [all]", "age.maturity_scaled [-0.78, 1.53, 6.67, 11.80, 24.63]"))
 
 ggplot(dat, aes(x=x, y = predicted, colour = group)) +
-  stat_smooth(method = "loess", se = F, fullrange =T) +
-  labs(colour="Age at Maturity Values", x = "Absolute change in maximum\nsurface temperature experienced a year previously (˚C scaled)", y = "Probability of Colonization",title = "Predicted Probabilities of Colonization") +
+  geom_line(size = 1) +
+  labs(colour="Age at Maturity Values", x = "Absolute change in maximum surface temperature\nexperienced a year previously (˚C centered and scaled)", y = "Probability of Colonization",title = "Predicted Probabilities of Colonization") +
   scale_y_continuous(breaks=c(0, 0.5, 1)) +
-  theme_classic()
+  theme_classic() +
+  scale_color_brewer(palette = "Set1") +
+  theme(text=element_text(size = 14))
 
 ggsave(path = "plots/marginal_effects", file = "predicted_probs_col_maxage.jpg")
 
@@ -487,10 +515,12 @@ mod_ext_trait <- glmer(now_ext ~ max_sst_temp_scaled * age.maturity_scaled + age
 dat <- ggpredict(mod_ext_trait, c("max_sst_temp_scaled [all]", "age.maturity_scaled [-0.78, 1.53, 6.67, 11.80, 24.63]"))
 
 ggplot(dat, aes(x=x, y = predicted, colour = group)) +
-  stat_smooth(method = "loess", se = F, fullrange =T) +
-  labs(colour="Age at Maturity Values", x = "Maximum surface temperature\nin the past year (˚C scaled)", y = "Probability of Extinction",title = "Predicted Probabilities of Extinction") +
+  geom_line(size = 1) +
+  labs(colour="Age at Maturity Values", x = "Maximum surface temperature in the\npast year (˚C centered and scaled)", y = "Probability of Extinction",title = "Predicted Probabilities of Extinction") +
   scale_y_continuous(breaks=c(0, 0.5, 1)) +
-  theme_classic()
+  theme_classic() +
+  scale_color_brewer(palette = "Set1") +
+  theme(text=element_text(size = 14))
 
 ```
 

@@ -177,12 +177,10 @@ Plot Mean for Change and Abs bottom
 
 #raw mods for abline
 raw_mean_mod <- lm(rich~bt_trend_mean_raw, data = trends_zoe)
-summary(raw_mean_mod)$r.squared
-anova(raw_mean_mod)$'Pr(>F)'[1]
-# R squared value: 0.1034685
-#p value: 0.3986127
+raw_mean_mod_abs <- lm(rich~abs(bt_trend_mean_raw), data = trends_zoe)
 
-#change in temp over time
+
+#change in temp over time (unhash to compare with Ryan)
 ggplot() +
   geom_point(data = trends_zoe, aes(x = bt_trend_mean_raw, y = rich, col = reg), size = 4) +
   geom_point(data = trends, aes(x = temp, y = rich_naive, col = reg), size = 4, shape = 1) + #compare with ryan's data
@@ -192,17 +190,22 @@ ggplot() +
   theme_classic() +
   theme(text = element_text(size = 14))
 
-#absolute value of change in temp over time
+#rename region levels for plotting
+levels(trends_zoe$reg) <- c("Aleutian Islands", "E. Bering Sea", "Gulf of Mexico", "Gulf of Alaska", "Northeast US", "Newfoundland", "Southeast US", "Scotian Shelf", "West Coast US")
+
+#absolute value of change in temp over time (unhash to compare with Ryan)
 ggplot() +
   geom_point(data = trends_zoe, aes(x = abs(bt_trend_mean_raw), y = rich, col = reg), size = 4) +
-  geom_point(data = trends, aes(x = abs(temp), y = rich_naive, col = reg), size = 4, shape = 1) + #compare with ryan's data
-  geom_abline(intercept = raw_mean_mod$coefficients[[1]], slope = raw_mean_mod$coefficients[[2]], col = "slategrey", linetype = "dashed") +
-  geom_abline(intercept = mod$coefficients[[1]], slope = mod$coefficients[[2]], col = "black", linetype = "dashed") +
-  labs(x = "abs(Trend in Mean Temperature) (°C/yr)", y = "Average change\nin richness (spp/yr)") +
+  #geom_point(data = trends, aes(x = abs(temp), y = rich_naive, col = reg), size = 4, shape = 1) + #compare with ryan's data
+  geom_abline(intercept = raw_mean_mod_abs$coefficients[[1]], slope = raw_mean_mod_abs$coefficients[[2]], col = "slategrey", linetype = "dashed") +
+  #geom_abline(intercept = mod$coefficients[[1]], slope = mod$coefficients[[2]], col = "black", linetype = "dashed") + #compare with Ryan
+  labs(x = "abs(Trend in Mean Temperature) (°C/yr)", y = "Average change\nin richness (spp/yr)", col = "Region") +
   theme_classic() +
-  theme(text = element_text(size = 14))
+  theme(text = element_text(size = 20)) +
+  scale_color_brewer(palette = "Set1")
 
-ggsave(width = 4, height = 3.5, units = "in", path = "plots/richness_change", filename = "richness_trend_mean_raw.jpeg")
+ggsave(path = "plots/richness_change", filename = "richness_trend_mean_raw_abs.jpeg")
+ggsave(path = "plots/richness_change", filename = "richness_trend_mean_raw_abs.eps")
   
 
 ```
