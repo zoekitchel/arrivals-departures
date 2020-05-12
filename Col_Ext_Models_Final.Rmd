@@ -214,7 +214,12 @@ ggplot(data = lags_v_RVI_spprandom_scaled, aes(x = col_lag)) +
   geom_line(aes(y = ext_RVI), col = "red") +
   labs(x = "Lag", y = "Relative Variable Importance") +
   scale_color_discrete() + #how to make a legend
-  theme_bw()
+  theme_classic() +
+  theme(text = element_text(size = 20)) +
+  scale_x_continuous(breaks = c(0:9))
+
+ggsave(file = "RVI_lags_scaled.jpeg")
+ggsave(file = "RVI_lags_scaled.eps")
 ```
 
 Table for RVI data for Colonization
