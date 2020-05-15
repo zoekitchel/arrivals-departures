@@ -308,6 +308,9 @@ library(plyr)
 
 bestcolmod_scaled <- glmer(col ~ max_sbt_temp_change_abs_scaled + (1|reg) + (1|spp), family = binomial, data = spp_master_ztemp_scaled, nAGQ = 0)
 
+interceptcolmod_scaled <- glmer(col ~ (1|reg) + (1|spp), family = binomial, data = spp_master_ztemp_scaled, nAGQ = 0)
+
+
 #I wanted predicted # of colonizations in each region per region/year
 #year region observed colonizations predicted colonizations
 
@@ -317,15 +320,19 @@ model_imputs <- spp_master_ztemp_scaled[,c("spp", "reg", "year", "col", "now_ext
 
 t2_col <- predict(bestcolmod_scaled, newdata = model_imputs, type = "response", re.form = NULL) #setting re.form to NULL includes all random effects
 
+t2_col_null <- predict(interceptcolmod_scaled, newdata = model_imputs, type = "response", re.form = NULL) #setting re.form to NULL includes all random effects
+
 model_imputs$pred <- t2_col
+model_imputs$pred_null <- t2_col_null
 
 #group by region and year, sum over "col" = observations, and "pred" = predict colonizations by summing probabilities
-col_model_comparisons <- model_imputs[, .(col_predicted = sum(pred), col_observed = sum(col)), by=.(year,reg)]
+col_model_comparisons <- model_imputs[, .(col_predicted = sum(pred), col_predicted_null = sum(pred_null), col_observed = sum(col)), by=.(year,reg)]
 
 
 ggplot(aes(x=year), data = col_model_comparisons) +
   geom_point(aes(y = col_observed), data = col_model_comparisons, col = "red") +
   geom_point(data = col_model_comparisons, aes(y = col_predicted), col = "black") +
+  geom_point(data = col_model_comparisons, aes(y = col_predicted_null), col = "blue") +
   facet_wrap(~reg) +
   theme_classic()
 
@@ -338,10 +345,12 @@ Instead, I want to look at these with accumulation of colonizations
 
 col_model_comparisons[,col_obs_sum := cumsum(col_observed), by = reg]
 col_model_comparisons[,col_pred_sum := cumsum(col_predicted), by = reg]
+col_model_comparisons[,col_pred_sum_null := cumsum(col_predicted_null), by = reg]
 
 ggplot(aes(x=year), data = col_model_comparisons) +
   geom_point(aes(y = col_obs_sum), data = col_model_comparisons, col = "red") +
   geom_point(data = col_model_comparisons, aes(y = col_pred_sum), col = "black", size = 1) +
+  geom_point(data = col_model_comparisons, aes(y = col_pred_sum_null), col = "blue", size = 1) +
   labs(x="Year", y = "Cumulative sum of colonizations") +
   facet_wrap(~reg) +
   theme_classic()
@@ -361,6 +370,8 @@ ggplot(aes(x=year), data = col_model_comparisons) +
 
 bestextmod_scaled <- glmer(now_ext ~ min_sst_temp_change_lag2_scaled + (1|reg) + (1|spp), family = binomial, data = spp_master_ztemp_scaled, nAGQ = 0)
 
+interceptextmod_scaled <- glmer(now_ext ~ (1|reg) + (1|spp), family = binomial, data = spp_master_ztemp_scaled, nAGQ = 0)
+
 #I wanted predicted # of colonizations in each region per region/year
 #year region observed colonizations predicted colonizations
 
@@ -369,16 +380,19 @@ bestextmod_scaled <- glmer(now_ext ~ min_sst_temp_change_lag2_scaled + (1|reg) +
 model_imputs <- spp_master_ztemp_scaled[,c("spp", "reg", "year", "col", "now_ext", "min_sst_temp_change_lag2_scaled")]
 
 t2_ext <- predict(bestextmod_scaled, newdata = model_imputs, type = "response", re.form = NULL) #setting re.form to NULL includes all random effects
+t2_ext_null <- predict(interceptextmod_scaled, newdata = model_imputs, type = "response", re.form = NULL) #setting re.form to NULL includes all random effects
 
 model_imputs$pred <- t2_ext
+model_imputs$pred_null <- t2_ext_null
 
 #group by region and year, sum over "ext" = observations, and "pred" = predict colonizations by summing probabilities
-ext_model_comparisons <- model_imputs[, .(ext_predicted = sum(pred), ext_observed = sum(now_ext)), by=.(year,reg)]
+ext_model_comparisons <- model_imputs[, .(ext_predicted = sum(pred), ext_predicted_null = sum(pred_null), ext_observed = sum(now_ext)), by=.(year,reg)]
 
 
 ggplot(aes(x=year), data = ext_model_comparisons) +
   geom_point(aes(y = ext_observed), data = ext_model_comparisons, col = "red") +
   geom_point(data = ext_model_comparisons, aes(y = ext_predicted), col = "black") +
+  geom_point(data = ext_model_comparisons, aes(y=ext_predicted_null), col = "blue") +
   facet_wrap(~reg) +
   theme_classic()
 ```
@@ -388,10 +402,12 @@ Instead, I want to look at these with accumulation of extinctions
 
 ext_model_comparisons[,ext_obs_sum := cumsum(ext_observed), by = reg]
 ext_model_comparisons[,ext_pred_sum := cumsum(ext_predicted), by = reg]
+ext_model_comparisons[,ext_pred_sum_null := cumsum(ext_predicted_null), by = reg]
 
 ggplot(aes(x=year), data = ext_model_comparisons) +
   geom_point(aes(y = ext_obs_sum), data = ext_model_comparisons, col = "red") +
   geom_point(data = ext_model_comparisons, aes(y = ext_pred_sum), col = "black", size = 1) +
+  geom_point(data = ext_model_comparisons, aes(y = ext_pred_sum_null), col = "blue", size = 0.5) +
   labs(x="Year", y = "Cumulative sum of extinctions") +
   facet_wrap(~reg) +
   theme_classic()
@@ -402,18 +418,20 @@ ggplot(aes(x=year), data = ext_model_comparisons) +
 Cumulative species richness change
 ```{r cumulative species richness change}
 #from colonizations
-cumulative_richness <- col_model_comparisons[,.(reg, year, col_obs_sum, col_pred_sum)]
+cumulative_richness <- col_model_comparisons[,.(reg, year, col_obs_sum, col_pred_sum, col_pred_sum_null)]
 ext_obs_sum <- ext_model_comparisons[,.(ext_obs_sum)]
 ext_pred_sum <- ext_model_comparisons[,.(ext_pred_sum)]
+ext_pred_sum_null <- ext_model_comparisons[,.(ext_pred_sum_null)]
 cumulative_richness[,ext_obs_sum := ext_obs_sum]
 cumulative_richness[,ext_pred_sum := ext_pred_sum]
+cumulative_richness[,ext_pred_sum_null := ext_pred_sum_null]
 
-cumulative_richness[, Observed := col_obs_sum-ext_obs_sum][, Predicted := col_pred_sum-ext_pred_sum]
+cumulative_richness[, Observed := col_obs_sum-ext_obs_sum][, Predicted := col_pred_sum-ext_pred_sum][, Predicted_null := col_pred_sum_null - ext_pred_sum_null]
 
-cumulative_richness.r <- cumulative_richness[,.(reg, year, Observed, Predicted)]
+cumulative_richness.r <- cumulative_richness[,.(reg, year, Observed, Predicted, Predicted_null)]
 
 #wide to long
-cumulative_richness.r <- melt(cumulative_richness.r, id.vars = c("reg", "year"), measure.vars = c("Observed", "Predicted"), variable.name = "Richness", value.name = "value")
+cumulative_richness.r <- melt(cumulative_richness.r, id.vars = c("reg", "year"), measure.vars = c("Observed", "Predicted", "Predicted_null"), variable.name = "Richness", value.name = "value")
 
 
 
@@ -421,18 +439,21 @@ cumulative_richness.r <- melt(cumulative_richness.r, id.vars = c("reg", "year"),
 levels(cumulative_richness.r$reg) <- c("Aleutian Islands", "E. Bering Sea", "Gulf of Mexico", "Gulf of Alaska", "Northeast US", "Newfoundland", "Southeast US", "Scotian Shelf", "West Coast US")
 
 #plot richness over time predicted versus observed
-cum_richness_plot <- ggplot(aes(x=year, y = value, color = Richness), data = cumulative_richness.r) +
+cum_richness_plot <- ggplot(aes(x=year, y = value, color = Richness, shape = Richness), data = cumulative_richness.r) +
   geom_point(size = 2) +
   geom_hline(yintercept = 0) +
   labs(x="Year", y = "Cumulative Richness") +
-  facet_wrap(~reg) +
+  facet_wrap(~reg, scales = "free_y") +
   theme_classic() +
-  scale_color_manual(values = c("Observed" = 'coral3' , "Predicted" = 'deepskyblue4')) +
+  scale_color_manual(values = c("Observed" = 'coral3' , "Predicted" = 'deepskyblue4', "Predicted_null" = 'black')) +
+  scale_shape_manual(values = c("Observed" = 19 , "Predicted" = 19, "Predicted_null" = 20)) +
   theme(plot.title = element_text(size = 17),
         legend.title = element_text(size = 17),
         legend.text=element_text(size = 15),
         strip.text = element_text(size = 12),
         axis.title = element_text(size = 14))
+
+cum_richness_plot
 
 ggsave(cum_richness_plot, file = "cum_richness_plot.jpg")
 ggsave(cum_richness_plot, file = "cum_richness_plot.eps")
