@@ -457,6 +457,8 @@ cum_richness_plot
 
 ggsave(cum_richness_plot, file = "cum_richness_plot.jpg")
 ggsave(cum_richness_plot, file = "cum_richness_plot.eps")
+
+?ggsave
 ```
 
 

@@ -535,6 +535,8 @@ library(plyr)
 
 bestcolmod_scaled_traits <- glmer(col ~ max_sst_temp_change_abs_lag1_scaled * age.maturity_scaled + age.max_scaled + (1|reg) + (1|spp), family = binomial, data = spp_master_ztemp.traits_scaled, nAGQ = 0)
 
+interceptcolmod_scaled_traits <- glmer(col ~ (1|reg) + (1|spp), family = binomial, data = spp_master_ztemp.traits_scaled, nAGQ = 0)
+
 summary(bestcolmod_scaled_traits)
 
 #I wanted predicted # of colonizations in each region per region/year
@@ -547,11 +549,13 @@ model_imputs_col_traits <- spp_master_ztemp.traits_scaled[,.(spp, reg, year, col
 model_imputs_col_traits <- na.omit(model_imputs_col_traits) #get rid of any rows without data for all variables
 
 t2_col <- predict(bestcolmod_scaled_traits, newdata = model_imputs_col_traits, type = "response", re.form = NULL) #setting re.form to NULL includes all random effects
+t2_col_null <- predict(interceptcolmod_scaled_traits, newdata = model_imputs_col_traits, type = "response", re.form = NULL)
 
 model_imputs_col_traits$pred <- t2_col
+model_imputs_col_traits$pred_null <- t2_col_null
 
 #group by region and year, sum over "col" = observations, and "pred" = predict colonizations by summing probabilities
-col_model_comparisons_traits <- model_imputs_col_traits[, .(col_predicted = sum(pred), col_observed = sum(col)), by=.(year,reg)]
+col_model_comparisons_traits <- model_imputs_col_traits[, .(col_predicted = sum(pred), col_predicted_null = sum(pred_null), col_observed = sum(col)), by=.(year,reg)]
 
 
 ggplot(aes(x=year), data = col_model_comparisons_traits) +
@@ -571,6 +575,8 @@ And extinctions?
 
 bestextmod_scaled_traits <- glmer(now_ext ~ max_sst_temp_scaled * age.maturity_scaled + age.max_scaled + (1|reg) + (1|spp), family = binomial, data = spp_master_ztemp.traits_scaled, nAGQ = 0)
 
+interceptextmod_scaled_traits <- glmer(now_ext ~ (1|reg) + (1|spp), family = binomial, data = spp_master_ztemp.traits_scaled, nAGQ = 0)
+
 summary(bestextmod_scaled_traits)
 
 #I wanted predicted # of extinctions in each region per region/year
@@ -583,11 +589,13 @@ model_imputs_ext_traits <- spp_master_ztemp.traits_scaled[,.(spp, reg, year, now
 model_imputs_ext_traits <- na.omit(model_imputs_ext_traits)
 
 t2_ext <- predict(bestextmod_scaled_traits, newdata = model_imputs_ext_traits, type = "response", re.form = NULL) #setting re.form to NULL includes all random effects
+t2_ext_null <- predict(interceptextmod_scaled_traits, newdata = model_imputs_ext_traits, type = "response", re.form = NULL)
 
 model_imputs_ext_traits$pred <- t2_ext
+model_imputs_ext_traits$pred_null <- t2_ext_null
 
 #group by region and year, sum over "now_ext" = observations, and "pred" = predict extinctions by summing probabilities
-ext_model_comparisons_traits <- model_imputs_ext_traits[, .(ext_predicted = sum(pred), ext_observed = sum(now_ext)), by=.(year,reg)]
+ext_model_comparisons_traits <- model_imputs_ext_traits[, .(ext_predicted = sum(pred), ext_predicted_null = sum(pred_null),  ext_observed = sum(now_ext)), by=.(year,reg)]
 
 
 ggplot(aes(x=year), data = ext_model_comparisons_traits) +
@@ -604,6 +612,7 @@ Start with colonization models
 ```{r richness accumulation for trait models}
 col_model_comparisons_traits[,col_obs_sum := cumsum(col_observed), by = reg]
 col_model_comparisons_traits[,col_pred_sum := cumsum(col_predicted), by = reg]
+col_model_comparisons_traits[,col_pred_sum_null := cumsum(col_predicted_null), by = reg]
 
 ggplot(aes(x=year), data = col_model_comparisons_traits) +
   geom_point(aes(y = col_obs_sum), data = col_model_comparisons_traits, col = "red") +
@@ -621,6 +630,7 @@ Now, accumulation of extinctions
 
 ext_model_comparisons_traits[,ext_obs_sum := cumsum(ext_observed), by = reg]
 ext_model_comparisons_traits[,ext_pred_sum := cumsum(ext_predicted), by = reg]
+ext_model_comparisons_traits[,ext_pred_sum_null := cumsum(ext_predicted_null), by = reg]
 
 ggplot(aes(x=year), data = ext_model_comparisons_traits) +
   geom_point(aes(y = ext_obs_sum), data = ext_model_comparisons_traits, col = "red") +
@@ -637,18 +647,20 @@ ggplot(aes(x=year), data = ext_model_comparisons_traits) +
 Cumulative species richness change
 ```{r cumulative species richness change}
 #from colonizations
-cumulative_richness_traits <- col_model_comparisons_traits[,.(reg, year, col_obs_sum, col_pred_sum)]
+cumulative_richness_traits <- col_model_comparisons_traits[,.(reg, year, col_obs_sum, col_pred_sum, col_pred_sum_null)]
 ext_obs_sum <- ext_model_comparisons_traits[,.(ext_obs_sum)]
 ext_pred_sum <- ext_model_comparisons_traits[,.(ext_pred_sum)]
+ext_pred_sum_null <- ext_model_comparisons_traits[,.(ext_pred_sum_null)]
 cumulative_richness_traits[,ext_obs_sum := ext_obs_sum]
 cumulative_richness_traits[,ext_pred_sum := ext_pred_sum]
+cumulative_richness_traits[,ext_pred_sum_null := ext_pred_sum_null]
 
-cumulative_richness_traits[, Observed := col_obs_sum-ext_obs_sum][, Predicted := col_pred_sum-ext_pred_sum]
+cumulative_richness_traits[, Observed := col_obs_sum-ext_obs_sum][, Predicted := col_pred_sum-ext_pred_sum][, Predicted_null := col_pred_sum_null-ext_pred_sum_null]
 
-cumulative_richness_traits.r <- cumulative_richness_traits[,.(reg, year, Observed, Predicted)]
+cumulative_richness_traits.r <- cumulative_richness_traits[,.(reg, year, Observed, Predicted, Predicted_null)]
 
 #wide to long
-cumulative_richness_traits.r <- melt(cumulative_richness_traits.r, id.vars = c("reg", "year"), measure.vars = c("Observed", "Predicted"), variable.name = "Richness", value.name = "value")
+cumulative_richness_traits.r <- melt(cumulative_richness_traits.r, id.vars = c("reg", "year"), measure.vars = c("Observed", "Predicted", "Predicted_null"), variable.name = "Richness", value.name = "value")
 
 
 
@@ -656,18 +668,21 @@ cumulative_richness_traits.r <- melt(cumulative_richness_traits.r, id.vars = c("
 levels(cumulative_richness_traits.r$reg) <- c("Aleutian Islands", "E. Bering Sea", "Gulf of Mexico", "Gulf of Alaska", "Northeast US", "Newfoundland", "Southeast US", "Scotian Shelf", "West Coast US")
 
 #plot richness over time predicted versus observed
-cum_richness_plot_traits <- ggplot(aes(x=year, y = value, color = Richness), data = cumulative_richness_traits.r) +
+cum_richness_plot_traits <- ggplot(aes(x=year, y = value, color = Richness, shape = Richness), data = cumulative_richness_traits.r) +
   geom_point(size = 2) +
   geom_hline(yintercept = 0) +
   labs(x="Year", y = "Cumulative Richness") +
-  facet_wrap(~reg) +
+  facet_wrap(~reg, scales = "free_y") +
   theme_classic() +
-  scale_color_manual(values = c("Observed" = 'coral3' , "Predicted" = 'deepskyblue4')) +
+  scale_color_manual(values = c("Observed" = 'coral3' , "Predicted" = 'deepskyblue4', "Predicted_null" = 'black')) +
+  scale_shape_manual(values = c("Observed" = 19 , "Predicted" = 19, "Predicted_null" = 20)) +
   theme(plot.title = element_text(size = 17),
         legend.title = element_text(size = 17),
         legend.text=element_text(size = 15),
         strip.text = element_text(size = 12),
         axis.title = element_text(size = 14))
+
+cum_richness_plot_traits
 
 ggsave(cum_richness_plot_traits, file = "cum_richness_plot_traits.jpg")
 ggsave(cum_richness_plot_traits, file = "cum_richness_plot_traits.eps")
