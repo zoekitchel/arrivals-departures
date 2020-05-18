@@ -461,6 +461,55 @@ ggsave(cum_richness_plot, file = "cum_richness_plot.eps")
 ?ggsave
 ```
 
+In response to plots above, Malin: "Perhaps worth one more set of plots to understand what’s going on: each point would be a year, x-axis would be observed change in richness, y-axis would be predicted change in richness. One set of plots for each of the three models (null, temp, temp+trait), each sub-plot would be a region, as you have here."
+
+```{r observed versus predicted change in richness}
+setkey(cumulative_richness.r, Richness, reg, year)
+cumulative_richness.r[, delta_value := value-shift(value), by = .(reg, Richness)]
+
+#have to cast to wide to make x = observed change and y = predicted change
+cumulative_richness.r.w <- dcast(cumulative_richness.r, reg + year ~ Richness, value.var = "delta_value")
+
+```
+```{r plotting observed versus predicted change in richness}
+
+#plot richness over time predicted null versus observed
+delta_richness_plot_null <- ggplot(data = cumulative_richness.r.w, aes(x = Observed, y = Predicted_null)) +
+  geom_point() +
+  labs(x="Observed Change\nin Richness", y = "Predicted Change in\nRichness (Null Model)") +
+  facet_wrap(~reg) +
+  theme_classic() +
+  geom_abline(intercept = 0, slope = 1, color = "grey", linetype = "dashed") +
+  theme(plot.title = element_text(size = 17),
+        legend.title = element_text(size = 17),
+        legend.text=element_text(size = 15),
+        strip.text = element_text(size = 12),
+        axis.title = element_text(size = 14))
+
+delta_richness_plot_null
+
+#plot richness over time predicted versus observed
+delta_richness_plot <- ggplot(data = cumulative_richness.r.w, aes(x = Observed, y = Predicted)) +
+  geom_point() +
+  labs(x="Observed Change\nin Richness", y = "Predicted Change in\nRichness (Temperature Model)") +
+  facet_wrap(~reg) +
+  theme_classic() +
+  geom_abline(intercept = 0, slope = 1, color = "grey", linetype = "dashed") +
+  theme(plot.title = element_text(size = 17),
+        legend.title = element_text(size = 17),
+        legend.text=element_text(size = 15),
+        strip.text = element_text(size = 12),
+        axis.title = element_text(size = 14))
+
+delta_richness_plot
+
+ggsave(delta_richness_plot_null, file = "delta_richness_plot_null.jpg")
+ggsave(delta_richness_plot, file = "delta_richness_plot.jpg")
+
+
+```
+
+
 
 #Here, I do the same thing, but only include spp as random effect and reset model algorithm. I do NOT scale temperature values. 
 
