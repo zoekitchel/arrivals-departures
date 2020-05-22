@@ -95,13 +95,18 @@ Relative Variable Importance
 colonization_model_comparison_spprandom_scaled_nomean <- colonization_model_comparison_spprandom_scaled[!grepl("mean",variable),]
 
 extinction_model_comparison_spprandom_scaled_nomean <- extinction_model_comparison_spprandom_scaled[!grepl("mean",variable),]
+colnames(extinction_model_comparison_spprandom_scaled_nomean)
+#add null to tables
+interceptcolmod_scaled <- glmer(col ~ (1|spp) + (1|reg), family = binomial, nAGQ = 0, data = spp_master_ztemp_scaled)
+interceptextmod_scaled <- glmer(now_ext ~ (1|reg) + (1|spp), family = binomial, data = spp_master_ztemp_scaled, nAGQ = 0)
 
-#comparison to null
-col_mod_null <- glmer(col ~ (1|reg) + (1|spp), family = binomial, data = spp_master_ztemp_scaled, nAGQ = 0)
-AICc(col_mod_null)-min(colonization_model_comparison_spprandom_scaled$AICc)
 
-ext_mod_null <- glmer(ext ~ (1|reg) + (1|spp), family = binomial, data = spp_master_ztemp_scaled, nAGQ = 0)
-AICc(ext_mod_null)-min(extinction_model_comparison_spprandom_scaled$AICc)
+col_null <- data.frame("null", "-", "-", AICc(interceptcolmod_scaled))
+ext_null <- data.frame("null", "-", "-", AICc(interceptextmod_scaled))
+
+colonization_model_comparison_spprandom_scaled_nomean <- rbind(colonization_model_comparison_spprandom_scaled_nomean, col_null, use.names = F)
+
+extinction_model_comparison_spprandom_scaled_nomean <- rbind(extinction_model_comparison_spprandom_scaled_nomean, ext_null, use.names = F)
 ```
 
 Relative Variable Importance for Colonization Models
@@ -141,6 +146,7 @@ col_min_temp_importance <- sum(colonization_model_comparison_spprandom_scaled_no
 col_seas_temp_importance <- sum(colonization_model_comparison_spprandom_scaled_nomean[grep("seas", variable), ]$akaike_weight)
 
 save(colonization_model_comparison_spprandom_scaled_nomean, file = "colonization_model_comparison_spprandom_scaled_nomean.RData")
+
 ```
 
 Relative Variable Importance for Extinction Models
