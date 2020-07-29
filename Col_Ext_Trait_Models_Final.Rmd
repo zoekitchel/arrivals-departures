@@ -484,12 +484,16 @@ library(ggeffects)
 
 #model
 mod_col_trait <- glmer(col ~ max_sst_temp_change_abs_lag1_scaled * age.maturity_scaled + age.max_scaled + (1|reg) + (1|spp), family = "binomial", data = colonization.reduced, nAGQ = 0)
-
+min(colonization.reduced$max_sst_temp_change_abs_lag1_scaled)
+max(colonization.reduced$max_sst_temp_change_abs_lag1_scaled)
 #plot marginal effects of interactions
-dat <- ggpredict(mod_col_trait, c("max_sst_temp_change_abs_lag1_scaled [all]", "age.maturity_scaled [-0.78, 1.53, 6.67, 11.80, 24.63]"))
+values <- seq(-1.2, 5.5, by = 0.01)
+dat <- ggpredict(mod_col_trait, c("max_sst_temp_change_abs_lag1_scaled[all]", "age.maturity_scaled [-0.78, 1.53, 6.67, 11.80, 24.63]"))
+
+summary(colonization.reduced$max_sst_temp_change_abs_lag1_scaled)
 
 ggplot(dat, aes(x=x, y = predicted, colour = group)) +
-  geom_line(size = 1) +
+  geom_point(size = 1) +
   labs(colour="Age at Maturity Values", x = "Absolute change in maximum surface temperature\nexperienced a year previously (˚C centered and scaled)", y = "Probability of Colonization",title = "Predicted Probabilities of Colonization") +
   scale_y_continuous(breaks=c(0, 0.5, 1)) +
   theme_classic() +
@@ -517,7 +521,7 @@ mod_ext_trait <- glmer(now_ext ~ max_sst_temp_scaled * age.maturity_scaled + age
 dat <- ggpredict(mod_ext_trait, c("max_sst_temp_scaled [all]", "age.maturity_scaled [-0.78, 1.53, 6.67, 11.80, 24.63]"))
 
 ggplot(dat, aes(x=x, y = predicted, colour = group)) +
-  geom_line(size = 1) +
+  geom_point(size = 1) +
   labs(colour="Age at Maturity Values", x = "Maximum surface temperature in the\npast year (˚C centered and scaled)", y = "Probability of Extinction",title = "Predicted Probabilities of Extinction") +
   scale_y_continuous(breaks=c(0, 0.5, 1)) +
   theme_classic() +

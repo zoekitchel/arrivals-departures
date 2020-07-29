@@ -17,7 +17,7 @@ library(lme4)
 library(data.table)
 library(ggplot2)
 
-load("spp_master_ztemp.RData")
+load("spp_master_ztemp_seus_buoy_seus_buoys.RData")
 ```
 
 Running, and ranking colonization models without traits
@@ -27,35 +27,36 @@ Running, and ranking colonization models without traits
 ```{r colonization models without traits}
 
 #extract just temperature variables to scale
-spp_master_ztemp_varsonly <- spp_master_ztemp[,c(1,45:292)]
+spp_master_ztemp_seus_buoy_varsonly <- spp_master_ztemp_seus_buoy[,c(1,45:292)]
 
 #names of temp variables, so I can add "_scaled" suffix
-tempvars <- colnames(spp_master_ztemp[,45:292])
+tempvars <- colnames(spp_master_ztemp_seus_buoy[,45:292])
 
 #scale all variables, make new columns, do this by region
-spp_master_ztemp_varsonly[, paste0(tempvars, "_scaled") := lapply(.SD, function(x) as.vector(scale(x))), .SDcols = tempvars]
+spp_master_ztemp_seus_buoy_varsonly[, paste0(tempvars, "_scaled") := lapply(.SD, function(x) as.vector(scale(x))), .SDcols = tempvars]
 
-save(spp_master_ztemp_scaled, file = "spp_master_ztemp_scaled.RData")
 
 #names of scaled columns
-scaled_cols <- grep("*_scaled", names(spp_master_ztemp_varsonly), value = T)
+scaled_cols <- grep("*_scaled", names(spp_master_ztemp_seus_buoy_varsonly), value = T)
 
-#merge new columns back with spp_master_ztemp
-spp_master_ztemp_scaled <- cbind(spp_master_ztemp, spp_master_ztemp_varsonly[,scaled_cols, with = FALSE])
+#merge new columns back with spp_master_ztemp_seus_buoy
+spp_master_ztemp_seus_buoy_scaled <- cbind(spp_master_ztemp_seus_buoy, spp_master_ztemp_seus_buoy_varsonly[,scaled_cols, with = FALSE])
+
+save(spp_master_ztemp_seus_buoy_scaled, file = "spp_master_ztemp_seus_buoy_scaled.RData")
 
 #going to make loop to make all models I need to look at with single variables
-variables_scaled <- colnames(spp_master_ztemp_scaled[,scaled_cols, with = FALSE])
+variables_scaled <- colnames(spp_master_ztemp_seus_buoy_scaled[,scaled_cols, with = FALSE])
 
-colonization_model_comparison_spprandom_scaled <- as.data.table(matrix(nrow = length(variables_scaled)))
-colonization_model_comparison_spprandom_scaled[, variable:=as.factor(V1)][, coef:=as.numeric(V1)][, p_value:=as.numeric(V1)][, AICc:=as.numeric(V1)]
-colonization_model_comparison_spprandom_scaled[, V1 := NULL]
+colonization_model_comparison_spprandom_scaled_seus_update <- as.data.table(matrix(nrow = length(variables_scaled)))
+colonization_model_comparison_spprandom_scaled_seus_update[, variable:=as.factor(V1)][, coef:=as.numeric(V1)][, p_value:=as.numeric(V1)][, AICc:=as.numeric(V1)]
+colonization_model_comparison_spprandom_scaled_seus_update[, V1 := NULL]
 
 for (i in 1:length(variables_scaled)){
-  mod <- glmer(col ~ get(variables_scaled[i]) + (1|reg) + (1|spp), family = binomial, data = spp_master_ztemp_scaled, nAGQ = 0)
-  colonization_model_comparison_spprandom_scaled[i,variable := variables_scaled[i]]
-  colonization_model_comparison_spprandom_scaled[i,coef := coef(summary(mod))[,"Estimate"][2]]
-  colonization_model_comparison_spprandom_scaled[i,p_value := coef(summary(mod))[,"Pr(>|z|)"][2]]
-  colonization_model_comparison_spprandom_scaled[i,AICc := AICc(mod)]
+  mod <- glmer(col ~ get(variables_scaled[i]) + (1|reg) + (1|spp), family = binomial, data = spp_master_ztemp_seus_buoy_scaled, nAGQ = 0)
+  colonization_model_comparison_spprandom_scaled_seus_update[i,variable := variables_scaled[i]]
+  colonization_model_comparison_spprandom_scaled_seus_update[i,coef := coef(summary(mod))[,"Estimate"][2]]
+  colonization_model_comparison_spprandom_scaled_seus_update[i,p_value := coef(summary(mod))[,"Pr(>|z|)"][2]]
+  colonization_model_comparison_spprandom_scaled_seus_update[i,AICc := AICc(mod)]
   
   print(paste(i, length(variables_scaled), sep = "/"))
     
@@ -69,16 +70,16 @@ Extinction Models without Traits
 ```{r extinction models without traits}
 #see setup above
 
-extinction_model_comparison_spprandom_scaled <- as.data.table(matrix(nrow = length(variables_scaled)))
-extinction_model_comparison_spprandom_scaled[, variable:=as.factor(V1)][, coef:=as.numeric(V1)][, p_value:=as.numeric(V1)][, AICc:=as.numeric(V1)]
-extinction_model_comparison_spprandom_scaled[, V1 := NULL]
+extinction_model_comparison_spprandom_scaled_seus_update <- as.data.table(matrix(nrow = length(variables_scaled)))
+extinction_model_comparison_spprandom_scaled_seus_update[, variable:=as.factor(V1)][, coef:=as.numeric(V1)][, p_value:=as.numeric(V1)][, AICc:=as.numeric(V1)]
+extinction_model_comparison_spprandom_scaled_seus_update[, V1 := NULL]
 
 for (i in 1:length(variables_scaled)){
-  mod <- glmer(now_ext ~ get(variables_scaled[i]) + (1|reg) + (1|spp), family = binomial, data = spp_master_ztemp_scaled, nAGQ = 0)
-  extinction_model_comparison_spprandom_scaled[i,variable := variables_scaled[i]]
-  extinction_model_comparison_spprandom_scaled[i,coef := coef(summary(mod))[,"Estimate"][2]]
-  extinction_model_comparison_spprandom_scaled[i,p_value := coef(summary(mod))[,"Pr(>|z|)"][2]]
-  extinction_model_comparison_spprandom_scaled[i,AICc := AICc(mod)]
+  mod <- glmer(now_ext ~ get(variables_scaled[i]) + (1|reg) + (1|spp), family = binomial, data = spp_master_ztemp_seus_buoy_scaled, nAGQ = 0)
+  extinction_model_comparison_spprandom_scaled_seus_update[i,variable := variables_scaled[i]]
+  extinction_model_comparison_spprandom_scaled_seus_update[i,coef := coef(summary(mod))[,"Estimate"][2]]
+  extinction_model_comparison_spprandom_scaled_seus_update[i,p_value := coef(summary(mod))[,"Pr(>|z|)"][2]]
+  extinction_model_comparison_spprandom_scaled_seus_update[i,AICc := AICc(mod)]
   
   print(paste(i, length(variables_scaled), sep = "/"))
     
@@ -92,132 +93,134 @@ for (i in 1:length(variables_scaled)){
 
 Relative Variable Importance
 ```{r get rid of any models using mean}
-colonization_model_comparison_spprandom_scaled_nomean <- colonization_model_comparison_spprandom_scaled[!grepl("mean",variable),]
+colonization_model_comparison_spprandom_scaled_seus_update_nomean <- colonization_model_comparison_spprandom_scaled_seus_update[!grepl("mean",variable),]
 
-extinction_model_comparison_spprandom_scaled_nomean <- extinction_model_comparison_spprandom_scaled[!grepl("mean",variable),]
-colnames(extinction_model_comparison_spprandom_scaled_nomean)
+extinction_model_comparison_spprandom_scaled_seus_update_nomean <- extinction_model_comparison_spprandom_scaled_seus_update[!grepl("mean",variable),]
+colnames(extinction_model_comparison_spprandom_scaled_seus_update_nomean)
 #add null to tables
-interceptcolmod_scaled <- glmer(col ~ (1|spp) + (1|reg), family = binomial, nAGQ = 0, data = spp_master_ztemp_scaled)
-interceptextmod_scaled <- glmer(now_ext ~ (1|reg) + (1|spp), family = binomial, data = spp_master_ztemp_scaled, nAGQ = 0)
+interceptcolmod_scaled <- glmer(col ~ (1|spp) + (1|reg), family = binomial, nAGQ = 0, data = spp_master_ztemp_seus_buoy_scaled)
+interceptextmod_scaled <- glmer(now_ext ~ (1|reg) + (1|spp), family = binomial, data = spp_master_ztemp_seus_buoy_scaled, nAGQ = 0)
 
 
 col_null <- data.frame("null", "-", "-", AICc(interceptcolmod_scaled))
 ext_null <- data.frame("null", "-", "-", AICc(interceptextmod_scaled))
 
-colonization_model_comparison_spprandom_scaled_nomean <- rbind(colonization_model_comparison_spprandom_scaled_nomean, col_null, use.names = F)
+colonization_model_comparison_spprandom_scaled_seus_update_nomean <- rbind(colonization_model_comparison_spprandom_scaled_seus_update_nomean, col_null, use.names = F)
 
-extinction_model_comparison_spprandom_scaled_nomean <- rbind(extinction_model_comparison_spprandom_scaled_nomean, ext_null, use.names = F)
+extinction_model_comparison_spprandom_scaled_seus_update_nomean <- rbind(extinction_model_comparison_spprandom_scaled_seus_update_nomean, ext_null, use.names = F)
 ```
 
 Relative Variable Importance for Colonization Models
 ```{r RVI colonization}
 #add ∆AIC to tables
-min_col_AICc <- min(colonization_model_comparison_spprandom_scaled_nomean[, AICc])
-colonization_model_comparison_spprandom_scaled_nomean[,"deltaAICc" := (AICc - min_col_AICc)]
+min_col_AICc <- min(colonization_model_comparison_spprandom_scaled_seus_update_nomean[, AICc])
+colonization_model_comparison_spprandom_scaled_seus_update_nomean[,"deltaAICc" := (AICc - min_col_AICc)]
 
 #add relative likelihood exp( -0.5 * ∆AIC score for that model)
-colonization_model_comparison_spprandom_scaled_nomean[,"rel_likelihood" := exp((-0.5 * deltaAICc))]
+colonization_model_comparison_spprandom_scaled_seus_update_nomean[,"rel_likelihood" := exp((-0.5 * deltaAICc))]
 #sum relative likelihoods across all models
-colonization_model_comparison_spprandom_scaled_nomean.likelihoodsum <- sum(colonization_model_comparison_spprandom_scaled_nomean[, rel_likelihood])
+colonization_model_comparison_spprandom_scaled_seus_update_nomean.likelihoodsum <- sum(colonization_model_comparison_spprandom_scaled_seus_update_nomean[, rel_likelihood])
 #Akaike weight for a model is this rel_likelihood devided by the sum of these values across all models
-colonization_model_comparison_spprandom_scaled_nomean[,"akaike_weight" := rel_likelihood/colonization_model_comparison_spprandom_scaled_nomean.likelihoodsum]
+colonization_model_comparison_spprandom_scaled_seus_update_nomean[,"akaike_weight" := rel_likelihood/colonization_model_comparison_spprandom_scaled_seus_update_nomean.likelihoodsum]
 
 #I want to look at relative importance FOR 
 #bottom/surface (bottom = includes sbt, grepl("sbt", variable))
-col_bottom_importance <- sum(colonization_model_comparison_spprandom_scaled_nomean[grep("sbt", variable), ]$akaike_weight)
-col_surface_importance <- sum(colonization_model_comparison_spprandom_scaled_nomean[grep("sst", variable), ]$akaike_weight)
+col_bottom_importance <- sum(colonization_model_comparison_spprandom_scaled_seus_update_nomean[grep("sbt", variable), ]$akaike_weight)
+col_surface_importance <- sum(colonization_model_comparison_spprandom_scaled_seus_update_nomean[grep("sst", variable), ]$akaike_weight)
 
 #lag/not lagged (grepl("lag", variable))
-col_lag_importance <- sum(colonization_model_comparison_spprandom_scaled_nomean[grep("lag", variable), ]$akaike_weight)
-col_nolag_importance <- sum(colonization_model_comparison_spprandom_scaled_nomean[!grep("lag", variable), ]$akaike_weight)
+col_lag_importance <- sum(colonization_model_comparison_spprandom_scaled_seus_update_nomean[grep("lag", variable), ]$akaike_weight)
+col_nolag_importance <- sum(colonization_model_comparison_spprandom_scaled_seus_update_nomean[!grep("lag", variable), ]$akaike_weight)
 
 #absolute (grepl("abs", variable))
-col_abs_importance <- sum(colonization_model_comparison_spprandom_scaled_nomean[grep("abs", variable), ]$akaike_weight)
+col_abs_importance <- sum(colonization_model_comparison_spprandom_scaled_seus_update_nomean[grep("abs", variable), ]$akaike_weight)
 
 #raw (!grepl("change"))
-col_raw_importance <- sum(colonization_model_comparison_spprandom_scaled_nomean[!grep("change", variable), ]$akaike_weight)
+col_raw_importance <- sum(colonization_model_comparison_spprandom_scaled_seus_update_nomean[!grep("change", variable), ]$akaike_weight)
 
 #change (grepl("change", variable), (!grepl("abs")))
-col_change_importance <- sum(colonization_model_comparison_spprandom_scaled_nomean[grep("change", variable), ][!grep("abs", variable),]$akaike_weight)
+col_change_importance <- sum(colonization_model_comparison_spprandom_scaled_seus_update_nomean[grep("change", variable), ][!grep("abs", variable),]$akaike_weight)
 
 #type of temp variable (max, min, seas)
-col_max_temp_importance <- sum(colonization_model_comparison_spprandom_scaled_nomean[grep("max", variable), ]$akaike_weight)
-col_min_temp_importance <- sum(colonization_model_comparison_spprandom_scaled_nomean[grep("min", variable), ]$akaike_weight)
-col_seas_temp_importance <- sum(colonization_model_comparison_spprandom_scaled_nomean[grep("seas", variable), ]$akaike_weight)
+col_max_temp_importance <- sum(colonization_model_comparison_spprandom_scaled_seus_update_nomean[grep("max", variable), ]$akaike_weight)
+col_min_temp_importance <- sum(colonization_model_comparison_spprandom_scaled_seus_update_nomean[grep("min", variable), ]$akaike_weight)
+col_seas_temp_importance <- sum(colonization_model_comparison_spprandom_scaled_seus_update_nomean[grep("seas", variable), ]$akaike_weight)
 
-save(colonization_model_comparison_spprandom_scaled_nomean, file = "colonization_model_comparison_spprandom_scaled_nomean.RData")
+save(colonization_model_comparison_spprandom_scaled_seus_update_nomean, file = "colonization_model_comparison_spprandom_scaled_seus_update_nomean.RData")
 
 ```
 
 Relative Variable Importance for Extinction Models
 ```{r RVI extinction}
+load("colonization_model_comparison_spprandom_scaled_seus_update_nomean.RData")
 #add ∆AIC to tables
-min_ext_AICc <- min(extinction_model_comparison_spprandom_scaled_nomean[, AICc])
-extinction_model_comparison_spprandom_scaled_nomean[,"deltaAICc" := (AICc - min_ext_AICc)]
+min_ext_AICc <- min(extinction_model_comparison_spprandom_scaled_seus_update_nomean[, AICc])
+extinction_model_comparison_spprandom_scaled_seus_update_nomean[,"deltaAICc" := (AICc - min_ext_AICc)]
 
 #add relative likelihood exp( -0.5 * ∆AIC score for that model)
-extinction_model_comparison_spprandom_scaled_nomean[,"rel_likelihood" := exp((-0.5 * deltaAICc))]
+extinction_model_comparison_spprandom_scaled_seus_update_nomean[,"rel_likelihood" := exp((-0.5 * deltaAICc))]
 #sum relative likelihoods across all models
-extinction_model_comparison_spprandom_scaled_nomean.likelihoodsum <- sum(extinction_model_comparison_spprandom_scaled_nomean[, rel_likelihood])
+extinction_model_comparison_spprandom_scaled_seus_update_nomean.likelihoodsum <- sum(extinction_model_comparison_spprandom_scaled_seus_update_nomean[, rel_likelihood])
 #Akaike weight for a model is this rel_likelihood devided by the sum of these values across all models
-extinction_model_comparison_spprandom_scaled_nomean[,"akaike_weight" := rel_likelihood/extinction_model_comparison_spprandom_scaled_nomean.likelihoodsum]
+extinction_model_comparison_spprandom_scaled_seus_update_nomean[,"akaike_weight" := rel_likelihood/extinction_model_comparison_spprandom_scaled_seus_update_nomean.likelihoodsum]
 
 #I want to look at relative importance FOR 
 #bottom/surface (bottom = includes sbt, grepl("sbt", variable))
-ext_bottom_importance <- sum(extinction_model_comparison_spprandom_scaled_nomean[grep("sbt", variable), ]$akaike_weight)
-ext_surface_importance <- sum(extinction_model_comparison_spprandom_scaled_nomean[grep("sst", variable), ]$akaike_weight)
+ext_bottom_importance <- sum(extinction_model_comparison_spprandom_scaled_seus_update_nomean[grep("sbt", variable), ]$akaike_weight)
+ext_surface_importance <- sum(extinction_model_comparison_spprandom_scaled_seus_update_nomean[grep("sst", variable), ]$akaike_weight)
 
 #lag/not lagged (grepl("lag", variable))
-ext_lag_importance <- sum(extinction_model_comparison_spprandom_scaled_nomean[grep("lag", variable), ]$akaike_weight)
-ext_nolag_importance <- sum(extinction_model_comparison_spprandom_scaled_nomean[!grep("lag", variable), ]$akaike_weight)
+ext_lag_importance <- sum(extinction_model_comparison_spprandom_scaled_seus_update_nomean[grep("lag", variable), ]$akaike_weight)
+ext_nolag_importance <- sum(extinction_model_comparison_spprandom_scaled_seus_update_nomean[!grep("lag", variable), ]$akaike_weight)
 
 #absolute (grepl("abs", variable))
-ext_abs_importance <- sum(extinction_model_comparison_spprandom_scaled_nomean[grep("abs", variable), ]$akaike_weight)
+ext_abs_importance <- sum(extinction_model_comparison_spprandom_scaled_seus_update_nomean[grep("abs", variable), ]$akaike_weight)
 
 #raw (!grepl("change"))
-ext_raw_importance <- sum(extinction_model_comparison_spprandom_scaled_nomean[!grep("change", variable), ]$akaike_weight)
+ext_raw_importance <- sum(extinction_model_comparison_spprandom_scaled_seus_update_nomean[!grep("change", variable), ]$akaike_weight)
 
 #change (grepl("change", variable), (!grepl("abs")))
-ext_change_importance <- sum(extinction_model_comparison_spprandom_scaled_nomean[grep("change", variable), ][!grep("abs", variable),]$akaike_weight)
+ext_change_importance <- sum(extinction_model_comparison_spprandom_scaled_seus_update_nomean[grep("change", variable), ][!grep("abs", variable),]$akaike_weight)
 
 #type of temp variable (max, min, seas)
-ext_max_temp_importance <- sum(extinction_model_comparison_spprandom_scaled_nomean[grep("max", variable), ]$akaike_weight)
-ext_min_temp_importance <- sum(extinction_model_comparison_spprandom_scaled_nomean[grep("min", variable), ]$akaike_weight)
-ext_seas_temp_importance <- sum(extinction_model_comparison_spprandom_scaled_nomean[grep("seas", variable), ]$akaike_weight)
+ext_max_temp_importance <- sum(extinction_model_comparison_spprandom_scaled_seus_update_nomean[grep("max", variable), ]$akaike_weight)
+ext_min_temp_importance <- sum(extinction_model_comparison_spprandom_scaled_seus_update_nomean[grep("min", variable), ]$akaike_weight)
+ext_seas_temp_importance <- sum(extinction_model_comparison_spprandom_scaled_seus_update_nomean[grep("seas", variable), ]$akaike_weight)
 
-save(extinction_model_comparison_spprandom_scaled_nomean, file = "extinction_model_comparison_spprandom_scaled_nomean.RData")
+save(extinction_model_comparison_spprandom_scaled_seus_update_nomean, file = "extinction_model_comparison_spprandom_scaled_seus_update_nomean.RData")
 ```
 
 Let's see how the RVI importance varies by looking at specific lag values
 ```{r make a plot here for variability across lag values}
+load("extinction_model_comparison_spprandom_scaled_seus_update_nomean.RData")
 #first, table for lags
 lags_v_RVI_spprandom_scaled <- data.table(col_lag = c(0:9), col_RVI = 0, ext_RVI = 0)
 #colonization
-lags_v_RVI_spprandom_scaled[1,2] <- 1-sum(colonization_model_comparison_spprandom_scaled_nomean[grep("lag", variable), ]$akaike_weight)
-lags_v_RVI_spprandom_scaled[2,2] <- sum(colonization_model_comparison_spprandom_scaled_nomean[grep("lag1", variable), ]$akaike_weight)
-lags_v_RVI_spprandom_scaled[3,2] <- sum(colonization_model_comparison_spprandom_scaled_nomean[grep("lag2", variable), ]$akaike_weight)
-lags_v_RVI_spprandom_scaled[4,2] <- sum(colonization_model_comparison_spprandom_scaled_nomean[grep("lag3", variable), ]$akaike_weight)
-lags_v_RVI_spprandom_scaled[5,2] <- sum(colonization_model_comparison_spprandom_scaled_nomean[grep("lag4", variable), ]$akaike_weight)
-lags_v_RVI_spprandom_scaled[6,2] <- sum(colonization_model_comparison_spprandom_scaled_nomean[grep("lag5", variable), ]$akaike_weight)
-lags_v_RVI_spprandom_scaled[7,2] <- sum(colonization_model_comparison_spprandom_scaled_nomean[grep("lag6", variable), ]$akaike_weight)
-lags_v_RVI_spprandom_scaled[8,2] <- sum(colonization_model_comparison_spprandom_scaled_nomean[grep("lag7", variable), ]$akaike_weight)
-lags_v_RVI_spprandom_scaled[9,2] <- sum(colonization_model_comparison_spprandom_scaled_nomean[grep("lag8", variable), ]$akaike_weight)
-lags_v_RVI_spprandom_scaled[10,2] <- sum(colonization_model_comparison_spprandom_scaled_nomean[grep("lag9", variable), ]$akaike_weight)
+lags_v_RVI_spprandom_scaled[1,2] <- 1-sum(colonization_model_comparison_spprandom_scaled_seus_update_nomean[grep("lag", variable), ]$akaike_weight)
+lags_v_RVI_spprandom_scaled[2,2] <- sum(colonization_model_comparison_spprandom_scaled_seus_update_nomean[grep("lag1", variable), ]$akaike_weight)
+lags_v_RVI_spprandom_scaled[3,2] <- sum(colonization_model_comparison_spprandom_scaled_seus_update_nomean[grep("lag2", variable), ]$akaike_weight)
+lags_v_RVI_spprandom_scaled[4,2] <- sum(colonization_model_comparison_spprandom_scaled_seus_update_nomean[grep("lag3", variable), ]$akaike_weight)
+lags_v_RVI_spprandom_scaled[5,2] <- sum(colonization_model_comparison_spprandom_scaled_seus_update_nomean[grep("lag4", variable), ]$akaike_weight)
+lags_v_RVI_spprandom_scaled[6,2] <- sum(colonization_model_comparison_spprandom_scaled_seus_update_nomean[grep("lag5", variable), ]$akaike_weight)
+lags_v_RVI_spprandom_scaled[7,2] <- sum(colonization_model_comparison_spprandom_scaled_seus_update_nomean[grep("lag6", variable), ]$akaike_weight)
+lags_v_RVI_spprandom_scaled[8,2] <- sum(colonization_model_comparison_spprandom_scaled_seus_update_nomean[grep("lag7", variable), ]$akaike_weight)
+lags_v_RVI_spprandom_scaled[9,2] <- sum(colonization_model_comparison_spprandom_scaled_seus_update_nomean[grep("lag8", variable), ]$akaike_weight)
+lags_v_RVI_spprandom_scaled[10,2] <- sum(colonization_model_comparison_spprandom_scaled_seus_update_nomean[grep("lag9", variable), ]$akaike_weight)
 #extinction
-lags_v_RVI_spprandom_scaled[1,3] <- 1-sum(extinction_model_comparison_spprandom_scaled_nomean[grep("lag", variable), ]$akaike_weight)
-lags_v_RVI_spprandom_scaled[2,3] <- sum(extinction_model_comparison_spprandom_scaled_nomean[grep("lag1", variable), ]$akaike_weight)
-lags_v_RVI_spprandom_scaled[3,3] <- sum(extinction_model_comparison_spprandom_scaled_nomean[grep("lag2", variable), ]$akaike_weight)
-lags_v_RVI_spprandom_scaled[4,3] <- sum(extinction_model_comparison_spprandom_scaled_nomean[grep("lag3", variable), ]$akaike_weight)
-lags_v_RVI_spprandom_scaled[5,3] <- sum(extinction_model_comparison_spprandom_scaled_nomean[grep("lag4", variable), ]$akaike_weight)
-lags_v_RVI_spprandom_scaled[6,3] <- sum(extinction_model_comparison_spprandom_scaled_nomean[grep("lag5", variable), ]$akaike_weight)
-lags_v_RVI_spprandom_scaled[7,3] <- sum(extinction_model_comparison_spprandom_scaled_nomean[grep("lag6", variable), ]$akaike_weight)
-lags_v_RVI_spprandom_scaled[8,3] <- sum(extinction_model_comparison_spprandom_scaled_nomean[grep("lag7", variable), ]$akaike_weight)
-lags_v_RVI_spprandom_scaled[9,3] <- sum(extinction_model_comparison_spprandom_scaled_nomean[grep("lag8", variable), ]$akaike_weight)
-lags_v_RVI_spprandom_scaled[10,3] <- sum(extinction_model_comparison_spprandom_scaled_nomean[grep("lag9", variable), ]$akaike_weight)
+lags_v_RVI_spprandom_scaled[1,3] <- 1-sum(extinction_model_comparison_spprandom_scaled_seus_update_nomean[grep("lag", variable), ]$akaike_weight)
+lags_v_RVI_spprandom_scaled[2,3] <- sum(extinction_model_comparison_spprandom_scaled_seus_update_nomean[grep("lag1", variable), ]$akaike_weight)
+lags_v_RVI_spprandom_scaled[3,3] <- sum(extinction_model_comparison_spprandom_scaled_seus_update_nomean[grep("lag2", variable), ]$akaike_weight)
+lags_v_RVI_spprandom_scaled[4,3] <- sum(extinction_model_comparison_spprandom_scaled_seus_update_nomean[grep("lag3", variable), ]$akaike_weight)
+lags_v_RVI_spprandom_scaled[5,3] <- sum(extinction_model_comparison_spprandom_scaled_seus_update_nomean[grep("lag4", variable), ]$akaike_weight)
+lags_v_RVI_spprandom_scaled[6,3] <- sum(extinction_model_comparison_spprandom_scaled_seus_update_nomean[grep("lag5", variable), ]$akaike_weight)
+lags_v_RVI_spprandom_scaled[7,3] <- sum(extinction_model_comparison_spprandom_scaled_seus_update_nomean[grep("lag6", variable), ]$akaike_weight)
+lags_v_RVI_spprandom_scaled[8,3] <- sum(extinction_model_comparison_spprandom_scaled_seus_update_nomean[grep("lag7", variable), ]$akaike_weight)
+lags_v_RVI_spprandom_scaled[9,3] <- sum(extinction_model_comparison_spprandom_scaled_seus_update_nomean[grep("lag8", variable), ]$akaike_weight)
+lags_v_RVI_spprandom_scaled[10,3] <- sum(extinction_model_comparison_spprandom_scaled_seus_update_nomean[grep("lag9", variable), ]$akaike_weight)
 
 ggplot(data = lags_v_RVI_spprandom_scaled, aes(x = col_lag)) +
-  geom_line(aes(y = col_RVI), col = "blue") +
-  geom_line(aes(y = ext_RVI), col = "red") +
+  geom_line(aes(y = col_RVI), ) +
+  geom_line(aes(y = ext_RVI), linetype = "dashed") +
   labs(x = "Lag", y = "Relative Variable Importance") +
   scale_color_discrete() + #how to make a legend
   theme_classic() +
@@ -231,8 +234,8 @@ ggsave(file = "RVI_lags_scaled.eps")
 Table for RVI data for Colonization
 ```{r put RVIs for colonization into data table}
 col_ext <- c("col","col","col","col","col", "col","col", "col", "col","col")
-type <- c("depth", "depth", "lag", "lag", "Change?", "Change?", "Change?", "Temp", "Temp", "Temp")
-variable <- c("bottom", "surface", "no_lag", "lagged", "absolute_value_change", "change", "raw", "Min", "Max", "Seas")
+type <- c("Depth", "Depth", "lag", "lag", "Transformation", "Transformation", "Transformation", "Measurement", "Measurement", "Measurement")
+variable <- c("Bottom", "Surface", "no_lag", "lagged", "|Change|", "Change", "Raw", "Min", "Max", "Seas")
 value <- c(col_bottom_importance, col_surface_importance, col_nolag_importance, col_lag_importance, col_abs_importance, col_change_importance, col_raw_importance, col_min_temp_importance, col_max_temp_importance, col_seas_temp_importance)
 
 RVI_col <- data.table(col_ext, type, variable, value)
@@ -241,8 +244,8 @@ RVI_col <- data.table(col_ext, type, variable, value)
 Table for RVI data for Extinction
 ```{r put RVIs for extinction into data table}
 col_ext <- c("ext","ext","ext","ext","ext", "ext", "ext", "ext", "ext", "ext")
-type <- c("depth", "depth", "lag", "lag", "Change?", "Change?", "Change?", "Temp", "Temp", "Temp")
-variable <- c("bottom", "surface", "no_lag", "lagged", "absolute_value_change", "change", "raw", "Min", "Max", "Seas")
+type <- c("Depth", "Depth", "lag", "lag", "Transformation", "Transformation", "Transformation", "Measurement", "Measurement", "Measurement")
+variable <- c("Bottom", "Surface", "no_lag", "lagged", "|Change|", "Change", "Raw", "Min", "Max", "Seas")
 value <- c(ext_bottom_importance, ext_surface_importance, ext_nolag_importance, ext_lag_importance, ext_abs_importance, ext_change_importance, ext_raw_importance, ext_min_temp_importance, ext_max_temp_importance, ext_seas_temp_importance)
 
 RVI_ext <- data.table(col_ext, type, variable, value)
@@ -252,16 +255,17 @@ Merge RVI tables for colonization and extinction, and then graph
 ```{r merge RVI tables and plot}
 RVI_table <- as.data.table(rbind(RVI_col, RVI_ext)) #bind RVI for colonizations and extinctions
 
-RVI_table.r <- RVI_table[!grep("surface", variable)][!grep("lagged", variable)]
+RVI_table.r <- RVI_table[!grep("Surface", variable)][!grep("lagged", variable)]
 
 #change order of factor levels
-RVI_table.r[, variable := factor(variable, levels = c("bottom", "no_lag", "raw", "change", "absolute_value_change", "Min", "Max", "Seas"))]
+RVI_table.r[, variable := factor(variable, levels = c("Bottom", "no_lag", "Raw", "Change", "|Change|", "Min", "Max", "Seas"))]
 
 save(RVI_table, file = "RVI_table.Rdata")
 
 ggplot(data = RVI_table.r, aes(x=variable, y = value, fill = col_ext)) +
   geom_bar(stat = "identity", position = "dodge") +
-  scale_x_discrete(breaks = c("bottom", "no_lag", "raw", "change", "absolute_value_change", "Min", "Max", "Seas"), labels = c("Bottom Temp", "No Lag", "Raw Temp", "Change in \nTemp", "| Change in\n Temp |", "Min Temp", "Max Temp", "Seas")) +
+  scale_x_discrete(breaks = c("Bottom", "no_lag", "Raw", "Change", "|Change|", "Min", "Max", "Seas"), 
+                   labels = c("Bottom Temp", "No Lag", "Raw Temp", "Change in \nTemp", "| Change in\n Temp |", "Min Temp", "Max Temp", "Seas")) +
   labs(x = "Temperature Variables", y = "Relative Variable Importance")  +
   theme_bw()
 
@@ -271,40 +275,46 @@ Another way to visualize is stacked bar plot.
 
 ```{r RVI stacked plot}
 #put levels into correct order for viewing
-RVI_table[, variable := factor(variable, levels = c("bottom", "surface", "absolute_value_change", "change", "raw", "no_lag", "lagged", "Min", "Max", "Seas"))]
+RVI_table[, variable := factor(variable, levels = c("Bottom", "Surface", "|Change|", "Change", "Raw", "no_lag", "lagged", "Min", "Max", "Seas"))]
 #make types factors as well
 RVI_table[,type := as.factor(type)]
 
+library(wesanderson)
+pal <- wes_palette("GrandBudapest1", 8, type = "continuous")
+
 #colonization
-RVI_col_plot <- ggplot(data = RVI_table[col_ext == "col",], aes(x=type, y = value, fill = variable)) +
-  geom_bar(stat="identity", color = "black") +
-  scale_x_discrete(breaks = c("Change?", "depth", "lag", "Temp"), labels = c("Change in\ntemp?", "Measurement\nDepth", "Lagged?", "Temp")) +
+RVI_col_plot <- ggplot(data = RVI_table[col_ext == "col" & type != "lag",], aes(x=type, y = value, fill = variable)) +
+  geom_bar(stat="identity", color = "black", size = 0) +
+  scale_x_discrete(breaks = c("Transformation", "Depth", "Measurement"), labels = c("Transformation", "Depth", "Measurement")) +
   labs(x = "Temperature Variables", y = "Relative Variable Importance") +
   theme_classic() +
-  theme(text = element_text(size = 22)
+  theme(text = element_text(size = 20)
         #, legend.position = "none"
-        )
+        ) +
+  scale_fill_manual(values = pal)
 
 #extinction
-RVI_ext_plot <- ggplot(data = RVI_table[col_ext == "ext",], aes(x=type, y = value, fill = variable)) +
-  geom_bar(stat="identity", color = "black") +
-  scale_x_discrete(breaks = c("Change?", "depth", "lag", "Temp"), labels = c("Change in\ntemp?", "Measurement\nDepth", "Lagged?", "Temp")) +
+RVI_ext_plot <- ggplot(data = RVI_table[col_ext == "ext" & type != "lag",], aes(x=type, y = value, fill = variable)) +
+  geom_bar(stat="identity", color = "black", size = 0) +
+  scale_x_discrete(breaks = c("Transformation", "Depth", "Measurement"), labels = c("Transformation", "Depth", "Measurement")) +
   labs(x = "Temperature Variables", y = "Relative Variable Importance") +
   theme_classic()  +
-  theme(text = element_text(size = 22)
+  theme(text = element_text(size = 20)
         #, legend.position = "none"
-        )
+        ) +
+  scale_fill_manual(values = pal)
 
 RVI_table
 RVI_col_plot
 RVI_ext_plot
 
-
 ```
 
+***********
 How well do these models actually predict the # of colonizations and the # of extinctions?
 
 ```{r predicted vs. observed colonizations scaled}
+
 library(tidyr)
 library(plyr)
 #best colonization models (all delta less than 2)
@@ -312,9 +322,9 @@ library(plyr)
   #max_sst_temp_change_abs_lag1_scaled
 
 
-bestcolmod_scaled <- glmer(col ~ max_sbt_temp_change_abs_scaled + (1|reg) + (1|spp), family = binomial, data = spp_master_ztemp_scaled, nAGQ = 0)
+bestcolmod_scaled <- glmer(col ~ max_sbt_temp_change_abs_scaled + (1|reg) + (1|spp), family = binomial, data = spp_master_ztemp_seus_buoy_scaled, nAGQ = 0)
 
-interceptcolmod_scaled <- glmer(col ~ (1|reg) + (1|spp), family = binomial, data = spp_master_ztemp_scaled, nAGQ = 0)
+interceptcolmod_scaled <- glmer(col ~ (1|reg) + (1|spp), family = binomial, data = spp_master_ztemp_seus_buoy_scaled, nAGQ = 0)
 
 
 #I wanted predicted # of colonizations in each region per region/year
@@ -322,7 +332,7 @@ interceptcolmod_scaled <- glmer(col ~ (1|reg) + (1|spp), family = binomial, data
 
 #plotting predicted versus modeled
 #unique combinations of spp, region, and max_sbt_temp_change_abs_scaled found in dataset
-model_imputs <- spp_master_ztemp_scaled[,c("spp", "reg", "year", "col", "now_ext", "max_sbt_temp_change_abs_scaled")]
+model_imputs <- spp_master_ztemp_seus_buoy_scaled[,c("spp", "reg", "year", "col", "now_ext", "max_sbt_temp_change_abs_scaled")]
 
 t2_col <- predict(bestcolmod_scaled, newdata = model_imputs, type = "response", re.form = NULL) #setting re.form to NULL includes all random effects
 
@@ -374,16 +384,16 @@ ggplot(aes(x=year), data = col_model_comparisons) +
   #min_sbt_temp_change_lag7_scaled
 
 
-bestextmod_scaled <- glmer(now_ext ~ min_sst_temp_change_lag2_scaled + (1|reg) + (1|spp), family = binomial, data = spp_master_ztemp_scaled, nAGQ = 0)
+bestextmod_scaled <- glmer(now_ext ~ min_sst_temp_change_lag2_scaled + (1|reg) + (1|spp), family = binomial, data = spp_master_ztemp_seus_buoy_scaled, nAGQ = 0)
 
-interceptextmod_scaled <- glmer(now_ext ~ (1|reg) + (1|spp), family = binomial, data = spp_master_ztemp_scaled, nAGQ = 0)
+interceptextmod_scaled <- glmer(now_ext ~ (1|reg) + (1|spp), family = binomial, data = spp_master_ztemp_seus_buoy_scaled, nAGQ = 0)
 
 #I wanted predicted # of colonizations in each region per region/year
 #year region observed colonizations predicted colonizations
 
 #plotting predicted versus modeled
 #unique combinations of spp, region, and max_sbt_temp_change_abs_scaled found in dataset
-model_imputs <- spp_master_ztemp_scaled[,c("spp", "reg", "year", "col", "now_ext", "min_sst_temp_change_lag2_scaled")]
+model_imputs <- spp_master_ztemp_seus_buoy_scaled[,c("spp", "reg", "year", "col", "now_ext", "min_sst_temp_change_lag2_scaled")]
 
 t2_ext <- predict(bestextmod_scaled, newdata = model_imputs, type = "response", re.form = NULL) #setting re.form to NULL includes all random effects
 t2_ext_null <- predict(interceptextmod_scaled, newdata = model_imputs, type = "response", re.form = NULL) #setting re.form to NULL includes all random effects
@@ -516,7 +526,7 @@ ggsave(delta_richness_plot, file = "delta_richness_plot.jpg")
 ```
 
 
-
+***********
 #Here, I do the same thing, but only include spp as random effect and reset model algorithm. I do NOT scale temperature values. 
 
 Running, and ranking colonization models without traits
@@ -524,14 +534,14 @@ Running, and ranking colonization models without traits
 ```{r colonization models with 1|spp but not scaled without traits}
 
 #going to make loop to make all models I need to look at with single variables
-variables <- grep("_s.t_", names(spp_master_ztemp), value = T)
+variables <- grep("_s.t_", names(spp_master_ztemp_seus_buoy), value = T)
 
 colonization_model_comparison_spprandom <- as.data.table(matrix(nrow = length(variables)))
 colonization_model_comparison_spprandom[, variable:=as.factor(V1)][, coef:=as.numeric(V1)][, p_value:=as.numeric(V1)][, AICc:=as.numeric(V1)]
 colonization_model_comparison_spprandom[, V1 := NULL]
 
 for (i in 1:length(variables)){
-  mod <- glmer(col ~ get(variables[i]) + (1|reg) + (1|spp), family = binomial, data = spp_master_ztemp, nAGQ = 0)
+  mod <- glmer(col ~ get(variables[i]) + (1|reg) + (1|spp), family = binomial, data = spp_master_ztemp_seus_buoy, nAGQ = 0)
   colonization_model_comparison_spprandom[i,variable := variables[i]]
   colonization_model_comparison_spprandom[i,coef := coef(summary(mod))[,"Estimate"][2]]
   colonization_model_comparison_spprandom[i,p_value := coef(summary(mod))[,"Pr(>|z|)"][2]]
@@ -544,7 +554,7 @@ for (i in 1:length(variables)){
 #by setting nACQ to 0, all models converged
 
 
-col_mod_null <- glmer(col ~ (1|reg) + (1|spp), family = binomial, data = spp_master_ztemp, nAGQ = 0)
+col_mod_null <- glmer(col ~ (1|reg) + (1|spp), family = binomial, data = spp_master_ztemp_seus_buoy, nAGQ = 0)
 AICc(col_mod_null)-min(colonization_model_comparison_spprandom$AICc)
 ```
 Extinction Models without Traits, NOT scaled
@@ -556,7 +566,7 @@ extinction_model_comparison_spprandom[, variable:=as.factor(V1)][, coef:=as.nume
 extinction_model_comparison_spprandom[, V1 := NULL]
 
 for (i in 1:length(variables)){
-  mod <- glmer(now_ext ~ get(variables[i]) + (1|reg) + (1|spp), family = binomial, data = spp_master_ztemp, nAGQ = 0)
+  mod <- glmer(now_ext ~ get(variables[i]) + (1|reg) + (1|spp), family = binomial, data = spp_master_ztemp_seus_buoy, nAGQ = 0)
   extinction_model_comparison_spprandom[i,variable := variables[i]]
   extinction_model_comparison_spprandom[i,coef := coef(summary(mod))[,"Estimate"][2]]
   extinction_model_comparison_spprandom[i,p_value := coef(summary(mod))[,"Pr(>|z|)"][2]]
@@ -577,10 +587,10 @@ colonization_model_comparison_spprandom_nomean <- colonization_model_comparison_
 extinction_model_comparison_spprandom_nomean <- extinction_model_comparison_spprandom[!grepl("mean",variable),]
 
 #comparison to null
-col_mod_null <- glmer(col ~ (1|reg) + (1|spp), family = binomial, data = spp_master_ztemp, nAGQ = 0)
+col_mod_null <- glmer(col ~ (1|reg) + (1|spp), family = binomial, data = spp_master_ztemp_seus_buoy, nAGQ = 0)
 AICc(col_mod_null)-min(colonization_model_comparison_spprandom$AICc)
 
-ext_mod_null <- glmer(ext ~ (1|reg) + (1|spp), family = binomial, data = spp_master_ztemp, nAGQ = 0)
+ext_mod_null <- glmer(ext ~ (1|reg) + (1|spp), family = binomial, data = spp_master_ztemp_seus_buoy, nAGQ = 0)
 AICc(ext_mod_null)-min(extinction_model_comparison_spprandom$AICc)
 ```
 
@@ -773,14 +783,14 @@ How well do these models actually predict the # of colonizations and the # of ex
   #max_sst_temp_change_abs_lag1
   #min_sbt_temp_change_abs_lag5
 
-bestcolmod_notscaled <- glmer(col ~ max_sbt_temp_change_abs + (1|reg) + (1|spp), family = binomial, data = spp_master_ztemp, nAGQ = 0)
+bestcolmod_notscaled <- glmer(col ~ max_sbt_temp_change_abs + (1|reg) + (1|spp), family = binomial, data = spp_master_ztemp_seus_buoy, nAGQ = 0)
 
 #I wanted predicted # of colonizations in each region per region/year
 #year region observed colonizations predicted colonizations
 
 #plotting predicted versus modeled
 #unique combinations of spp, region, and max_sbt_temp_change_abs_scaled found in dataset
-model_imputs <- spp_master_ztemp[,c("spp", "reg", "year", "now_ext", "col", "max_sbt_temp_change_abs")]
+model_imputs <- spp_master_ztemp_seus_buoy[,c("spp", "reg", "year", "now_ext", "col", "max_sbt_temp_change_abs")]
 
 t2_col <- predict(bestcolmod_notscaled, newdata = model_imputs, type = "response", re.form = NULL) #setting re.form to NULL includes all random effects
 
@@ -806,14 +816,14 @@ Extinction predictions versus observations, with 1|spp as random effect but not 
   #min_sbt_temp_change_lag7
 
 
-bestextmod_notscaled <- glmer(now_ext ~ min_sst_temp_change_lag2 + (1|reg) + (1|spp), family = binomial, data = spp_master_ztemp, nAGQ = 0)
+bestextmod_notscaled <- glmer(now_ext ~ min_sst_temp_change_lag2 + (1|reg) + (1|spp), family = binomial, data = spp_master_ztemp_seus_buoy, nAGQ = 0)
 
 #I wanted predicted # of extinctions in each region per region/year
 #year region observed extinctions predicted extinctions
 
 #plotting predicted versus modeled
 #unique combinations of spp, region, and max_sbt_temp_change_abs_scaled found in dataset
-model_imputs <- spp_master_ztemp[,c("spp", "reg", "year", "now_ext", "col", "min_sst_temp_change_lag2")]
+model_imputs <- spp_master_ztemp_seus_buoy[,c("spp", "reg", "year", "now_ext", "col", "min_sst_temp_change_lag2")]
 
 t2_col <- predict(bestextmod_notscaled, newdata = model_imputs, type = "response", re.form = NULL) #setting re.form to NULL includes all random effects
 
@@ -836,8 +846,8 @@ ggplot(aes(x=year), data = ext_model_comparisons) +
 ##Are there some species that colonize or go extinct way more than others?
 
 ```{r colonizations by species}
-colonizations_bysppreg <- spp_master_ztemp_scaled[, sum(col), by = .(spp, reg)] #total colonizations by spp and reg
-colonizations_byspp <- spp_master_ztemp_scaled[, sum(col), by = .(spp)] #total colonizations by spp
+colonizations_bysppreg <- spp_master_ztemp_seus_buoy_scaled[, sum(col), by = .(spp, reg)] #total colonizations by spp and reg
+colonizations_byspp <- spp_master_ztemp_seus_buoy_scaled[, sum(col), by = .(spp)] #total colonizations by spp
 ```
 
 # Species most likely to colonize by region:
@@ -889,8 +899,8 @@ Triglops murrayi 9 Moustache sculpin
 
 
 ```{r extinctions by species}
-extinctions_bysppreg <- spp_master_ztemp_scaled[, sum(now_ext), by = .(spp, reg)] #total extinctions by spp and reg
-extinctions_byspp <- spp_master_ztemp_scaled[, sum(now_ext), by = .(spp)] #total extinctions by spp
+extinctions_bysppreg <- spp_master_ztemp_seus_buoy_scaled[, sum(now_ext), by = .(spp, reg)] #total extinctions by spp and reg
+extinctions_byspp <- spp_master_ztemp_seus_buoy_scaled[, sum(now_ext), by = .(spp)] #total extinctions by spp
 ```
 
 # Species most likely to go extinct by region:
@@ -947,10 +957,10 @@ traits <- fread("TraitCollectionFishNAtlanticNEPacificContShelf (3).csv")
 fish <- data.table(spp = unique(traits$taxon), fish = "Y")
 
 #combine with spp master
-spp_master_ztemp_scaled_fishonly <- merge(spp_master_ztemp_scaled, fish, all.x = T)
+spp_master_ztemp_seus_buoy_scaled_fishonly <- merge(spp_master_ztemp_seus_buoy_scaled, fish, all.x = T)
 
 #get rid of any rows that aren't observations of fish
-spp_master_ztemp_scaled_fishonly2 <- spp_master_ztemp_scaled_fishonly[fish == "Y",]
+spp_master_ztemp_seus_buoy_scaled_fishonly2 <- spp_master_ztemp_seus_buoy_scaled_fishonly[fish == "Y",]
 
 ```
 
@@ -959,21 +969,21 @@ Running models for fish only
 ```{r colonization models without traits for fish only}
 
 #names of scaled columns
-scaled_cols <- grep("*_scaled", names(spp_master_ztemp_scaled_fishonly2), value = T)
+scaled_cols <- grep("*_scaled", names(spp_master_ztemp_seus_buoy_scaled_fishonly2), value = T)
 
 #going to make loop to make all models I need to look at with single variables
-variables_scaled <- colnames(spp_master_ztemp_scaled_fishonly2[,scaled_cols, with = FALSE])
+variables_scaled <- colnames(spp_master_ztemp_seus_buoy_scaled_fishonly2[,scaled_cols, with = FALSE])
 
-colonization_model_comparison_spprandom_scaled_fishonly <- as.data.table(matrix(nrow = length(variables_scaled)))
-colonization_model_comparison_spprandom_scaled_fishonly[, variable:=as.factor(V1)][, coef:=as.numeric(V1)][, p_value:=as.numeric(V1)][, AICc:=as.numeric(V1)]
-colonization_model_comparison_spprandom_scaled_fishonly[, V1 := NULL]
+colonization_model_comparison_spprandom_scaled_seus_update_fishonly <- as.data.table(matrix(nrow = length(variables_scaled)))
+colonization_model_comparison_spprandom_scaled_seus_update_fishonly[, variable:=as.factor(V1)][, coef:=as.numeric(V1)][, p_value:=as.numeric(V1)][, AICc:=as.numeric(V1)]
+colonization_model_comparison_spprandom_scaled_seus_update_fishonly[, V1 := NULL]
 
 for (i in 1:length(variables_scaled)){
-  mod <- glmer(col ~ get(variables_scaled[i]) + (1|reg) + (1|spp), family = binomial, data = spp_master_ztemp_scaled_fishonly2, nAGQ = 0)
-  colonization_model_comparison_spprandom_scaled_fishonly[i,variable := variables_scaled[i]]
-  colonization_model_comparison_spprandom_scaled_fishonly[i,coef := coef(summary(mod))[,"Estimate"][2]]
-  colonization_model_comparison_spprandom_scaled_fishonly[i,p_value := coef(summary(mod))[,"Pr(>|z|)"][2]]
-  colonization_model_comparison_spprandom_scaled_fishonly[i,AICc := AICc(mod)]
+  mod <- glmer(col ~ get(variables_scaled[i]) + (1|reg) + (1|spp), family = binomial, data = spp_master_ztemp_seus_buoy_scaled_fishonly2, nAGQ = 0)
+  colonization_model_comparison_spprandom_scaled_seus_update_fishonly[i,variable := variables_scaled[i]]
+  colonization_model_comparison_spprandom_scaled_seus_update_fishonly[i,coef := coef(summary(mod))[,"Estimate"][2]]
+  colonization_model_comparison_spprandom_scaled_seus_update_fishonly[i,p_value := coef(summary(mod))[,"Pr(>|z|)"][2]]
+  colonization_model_comparison_spprandom_scaled_seus_update_fishonly[i,AICc := AICc(mod)]
   
   print(paste(i, length(variables_scaled), sep = "/"))
     
@@ -988,16 +998,16 @@ Extinction Models without Traits
 ```{r extinction models without traits for fish only}
 #see setup above
 
-extinction_model_comparison_spprandom_scaled_fishonly <- as.data.table(matrix(nrow = length(variables_scaled)))
-extinction_model_comparison_spprandom_scaled_fishonly[, variable:=as.factor(V1)][, coef:=as.numeric(V1)][, p_value:=as.numeric(V1)][, AICc:=as.numeric(V1)]
-extinction_model_comparison_spprandom_scaled_fishonly[, V1 := NULL]
+extinction_model_comparison_spprandom_scaled_seus_update_fishonly <- as.data.table(matrix(nrow = length(variables_scaled)))
+extinction_model_comparison_spprandom_scaled_seus_update_fishonly[, variable:=as.factor(V1)][, coef:=as.numeric(V1)][, p_value:=as.numeric(V1)][, AICc:=as.numeric(V1)]
+extinction_model_comparison_spprandom_scaled_seus_update_fishonly[, V1 := NULL]
 
 for (i in 1:length(variables_scaled)){
-  mod <- glmer(now_ext ~ get(variables_scaled[i]) + (1|reg) + (1|spp), family = binomial, data = spp_master_ztemp_scaled_fishonly2, nAGQ = 0)
-  extinction_model_comparison_spprandom_scaled_fishonly[i,variable := variables_scaled[i]]
-  extinction_model_comparison_spprandom_scaled_fishonly[i,coef := coef(summary(mod))[,"Estimate"][2]]
-  extinction_model_comparison_spprandom_scaled_fishonly[i,p_value := coef(summary(mod))[,"Pr(>|z|)"][2]]
-  extinction_model_comparison_spprandom_scaled_fishonly[i,AICc := AICc(mod)]
+  mod <- glmer(now_ext ~ get(variables_scaled[i]) + (1|reg) + (1|spp), family = binomial, data = spp_master_ztemp_seus_buoy_scaled_fishonly2, nAGQ = 0)
+  extinction_model_comparison_spprandom_scaled_seus_update_fishonly[i,variable := variables_scaled[i]]
+  extinction_model_comparison_spprandom_scaled_seus_update_fishonly[i,coef := coef(summary(mod))[,"Estimate"][2]]
+  extinction_model_comparison_spprandom_scaled_seus_update_fishonly[i,p_value := coef(summary(mod))[,"Pr(>|z|)"][2]]
+  extinction_model_comparison_spprandom_scaled_seus_update_fishonly[i,AICc := AICc(mod)]
   
   print(paste(i, length(variables_scaled), sep = "/"))
     
@@ -1010,90 +1020,90 @@ for (i in 1:length(variables_scaled)){
 
 Relative Variable Importance
 ```{r get rid of any models using mean for fish only}
-colonization_model_comparison_spprandom_scaled_fishonly_nomean <- colonization_model_comparison_spprandom_scaled_fishonly[!grepl("mean",variable),]
+colonization_model_comparison_spprandom_scaled_seus_update_fishonly_nomean <- colonization_model_comparison_spprandom_scaled_seus_update_fishonly[!grepl("mean",variable),]
 
-extinction_model_comparison_spprandom_scaled_fishonly_nomean <- extinction_model_comparison_spprandom_scaled_fishonly[!grepl("mean",variable),]
+extinction_model_comparison_spprandom_scaled_seus_update_fishonly_nomean <- extinction_model_comparison_spprandom_scaled_seus_update_fishonly[!grepl("mean",variable),]
 
 #comparison to null
-col_mod_null <- glmer(col ~ (1|reg) + (1|spp), family = binomial, data = spp_master_ztemp_scaled_fishonly2, nAGQ = 0)
-AICc(col_mod_null)-min(colonization_model_comparison_spprandom_scaled_fishonly_nomean$AICc)
+col_mod_null <- glmer(col ~ (1|reg) + (1|spp), family = binomial, data = spp_master_ztemp_seus_buoy_scaled_fishonly2, nAGQ = 0)
+AICc(col_mod_null)-min(colonization_model_comparison_spprandom_scaled_seus_update_fishonly_nomean$AICc)
 
-ext_mod_null <- glmer(ext ~ (1|reg) + (1|spp), family = binomial, data = spp_master_ztemp_scaled_fishonly2, nAGQ = 0)
-AICc(ext_mod_null)-min(extinction_model_comparison_spprandom_scaled_fishonly_nomean$AICc)
+ext_mod_null <- glmer(ext ~ (1|reg) + (1|spp), family = binomial, data = spp_master_ztemp_seus_buoy_scaled_fishonly2, nAGQ = 0)
+AICc(ext_mod_null)-min(extinction_model_comparison_spprandom_scaled_seus_update_fishonly_nomean$AICc)
 ```
 
 Relative Variable Importance for Colonization Models
 ```{r RVI colonization for fish only}
 #add ∆AIC to tables
-min_col_AICc_fishonly <- min(colonization_model_comparison_spprandom_scaled_fishonly_nomean[, AICc])
-colonization_model_comparison_spprandom_scaled_fishonly_nomean[,"deltaAICc" := (AICc - min_col_AICc_fishonly)]
+min_col_AICc_fishonly <- min(colonization_model_comparison_spprandom_scaled_seus_update_fishonly_nomean[, AICc])
+colonization_model_comparison_spprandom_scaled_seus_update_fishonly_nomean[,"deltaAICc" := (AICc - min_col_AICc_fishonly)]
 
 #add relative likelihood exp( -0.5 * ∆AIC score for that model)
-colonization_model_comparison_spprandom_scaled_fishonly_nomean[,"rel_likelihood" := exp((-0.5 * deltaAICc))]
+colonization_model_comparison_spprandom_scaled_seus_update_fishonly_nomean[,"rel_likelihood" := exp((-0.5 * deltaAICc))]
 #sum relative likelihoods across all models
-colonization_model_comparison_spprandom_scaled_fishonly_nomean.likelihoodsum <- sum(colonization_model_comparison_spprandom_scaled_fishonly_nomean[, rel_likelihood])
+colonization_model_comparison_spprandom_scaled_seus_update_fishonly_nomean.likelihoodsum <- sum(colonization_model_comparison_spprandom_scaled_seus_update_fishonly_nomean[, rel_likelihood])
 #Akaike weight for a model is this rel_likelihood devided by the sum of these values across all models
-colonization_model_comparison_spprandom_scaled_fishonly_nomean[,"akaike_weight" := rel_likelihood/colonization_model_comparison_spprandom_scaled_fishonly_nomean.likelihoodsum]
+colonization_model_comparison_spprandom_scaled_seus_update_fishonly_nomean[,"akaike_weight" := rel_likelihood/colonization_model_comparison_spprandom_scaled_seus_update_fishonly_nomean.likelihoodsum]
 
 #I want to look at relative importance FOR 
 #bottom/surface (bottom = includes sbt, grepl("sbt", variable))
-col_bottom_importance_fishonly <- sum(colonization_model_comparison_spprandom_scaled_fishonly_nomean[grep("sbt", variable), ]$akaike_weight)
-col_surface_importance_fishonly <- sum(colonization_model_comparison_spprandom_scaled_fishonly_nomean[grep("sst", variable), ]$akaike_weight)
+col_bottom_importance_fishonly <- sum(colonization_model_comparison_spprandom_scaled_seus_update_fishonly_nomean[grep("sbt", variable), ]$akaike_weight)
+col_surface_importance_fishonly <- sum(colonization_model_comparison_spprandom_scaled_seus_update_fishonly_nomean[grep("sst", variable), ]$akaike_weight)
 
 #lag/not lagged (grepl("lag", variable))
-col_lag_importance_fishonly <- sum(colonization_model_comparison_spprandom_scaled_fishonly_nomean[grep("lag", variable), ]$akaike_weight)
-col_nolag_importance_fishonly <- sum(colonization_model_comparison_spprandom_scaled_fishonly_nomean[!grep("lag", variable), ]$akaike_weight)
+col_lag_importance_fishonly <- sum(colonization_model_comparison_spprandom_scaled_seus_update_fishonly_nomean[grep("lag", variable), ]$akaike_weight)
+col_nolag_importance_fishonly <- sum(colonization_model_comparison_spprandom_scaled_seus_update_fishonly_nomean[!grep("lag", variable), ]$akaike_weight)
 
 #absolute (grepl("abs", variable))
-col_abs_importance_fishonly <- sum(colonization_model_comparison_spprandom_scaled_fishonly_nomean[grep("abs", variable), ]$akaike_weight)
+col_abs_importance_fishonly <- sum(colonization_model_comparison_spprandom_scaled_seus_update_fishonly_nomean[grep("abs", variable), ]$akaike_weight)
 
 #raw (!grepl("change"))
-col_raw_importance_fishonly <- sum(colonization_model_comparison_spprandom_scaled_fishonly_nomean[!grep("change", variable), ]$akaike_weight)
+col_raw_importance_fishonly <- sum(colonization_model_comparison_spprandom_scaled_seus_update_fishonly_nomean[!grep("change", variable), ]$akaike_weight)
 
 #change (grepl("change", variable), (!grepl("abs")))
-col_change_importance_fishonly <- sum(colonization_model_comparison_spprandom_scaled_fishonly_nomean[grep("change", variable), ][!grep("abs", variable),]$akaike_weight)
+col_change_importance_fishonly <- sum(colonization_model_comparison_spprandom_scaled_seus_update_fishonly_nomean[grep("change", variable), ][!grep("abs", variable),]$akaike_weight)
 
 #type of temp variable (max, min, seas)
-col_max_temp_importance_fishonly <- sum(colonization_model_comparison_spprandom_scaled_fishonly_nomean[grep("max", variable), ]$akaike_weight)
-col_min_temp_importance_fishonly <- sum(colonization_model_comparison_spprandom_scaled_fishonly_nomean[grep("min", variable), ]$akaike_weight)
-col_seas_temp_importance_fishonly <- sum(colonization_model_comparison_spprandom_scaled_fishonly_nomean[grep("seas", variable), ]$akaike_weight)
+col_max_temp_importance_fishonly <- sum(colonization_model_comparison_spprandom_scaled_seus_update_fishonly_nomean[grep("max", variable), ]$akaike_weight)
+col_min_temp_importance_fishonly <- sum(colonization_model_comparison_spprandom_scaled_seus_update_fishonly_nomean[grep("min", variable), ]$akaike_weight)
+col_seas_temp_importance_fishonly <- sum(colonization_model_comparison_spprandom_scaled_seus_update_fishonly_nomean[grep("seas", variable), ]$akaike_weight)
 ```
 
 Relative Variable Importance for Extinction Models
 ```{r RVI extinction for fish only}
 #add ∆AIC to tables
-min_ext_AICc_fishonly <- min(extinction_model_comparison_spprandom_scaled_fishonly_nomean[, AICc])
-extinction_model_comparison_spprandom_scaled_fishonly_nomean[,"deltaAICc" := (AICc - min_ext_AICc_fishonly)]
+min_ext_AICc_fishonly <- min(extinction_model_comparison_spprandom_scaled_seus_update_fishonly_nomean[, AICc])
+extinction_model_comparison_spprandom_scaled_seus_update_fishonly_nomean[,"deltaAICc" := (AICc - min_ext_AICc_fishonly)]
 
 #add relative likelihood exp( -0.5 * ∆AIC score for that model)
-extinction_model_comparison_spprandom_scaled_fishonly_nomean[,"rel_likelihood" := exp((-0.5 * deltaAICc))]
+extinction_model_comparison_spprandom_scaled_seus_update_fishonly_nomean[,"rel_likelihood" := exp((-0.5 * deltaAICc))]
 #sum relative likelihoods across all models
-extinction_model_comparison_spprandom_scaled_fishonly_nomean.likelihoodsum <- sum(extinction_model_comparison_spprandom_scaled_fishonly_nomean[, rel_likelihood])
+extinction_model_comparison_spprandom_scaled_seus_update_fishonly_nomean.likelihoodsum <- sum(extinction_model_comparison_spprandom_scaled_seus_update_fishonly_nomean[, rel_likelihood])
 #Akaike weight for a model is this rel_likelihood devided by the sum of these values across all models
-extinction_model_comparison_spprandom_scaled_fishonly_nomean[,"akaike_weight" := rel_likelihood/extinction_model_comparison_spprandom_scaled_fishonly_nomean.likelihoodsum]
+extinction_model_comparison_spprandom_scaled_seus_update_fishonly_nomean[,"akaike_weight" := rel_likelihood/extinction_model_comparison_spprandom_scaled_seus_update_fishonly_nomean.likelihoodsum]
 
 #I want to look at relative importance FOR 
 #bottom/surface (bottom = includes sbt, grepl("sbt", variable))
-ext_bottom_importance_fishonly <- sum(extinction_model_comparison_spprandom_scaled_fishonly_nomean[grep("sbt", variable), ]$akaike_weight)
-ext_surface_importance_fishonly <- sum(extinction_model_comparison_spprandom_scaled_fishonly_nomean[grep("sst", variable), ]$akaike_weight)
+ext_bottom_importance_fishonly <- sum(extinction_model_comparison_spprandom_scaled_seus_update_fishonly_nomean[grep("sbt", variable), ]$akaike_weight)
+ext_surface_importance_fishonly <- sum(extinction_model_comparison_spprandom_scaled_seus_update_fishonly_nomean[grep("sst", variable), ]$akaike_weight)
 
 #lag/not lagged (grepl("lag", variable))
-ext_lag_importance_fishonly <- sum(extinction_model_comparison_spprandom_scaled_fishonly_nomean[grep("lag", variable), ]$akaike_weight)
-ext_nolag_importance_fishonly <- sum(extinction_model_comparison_spprandom_scaled_fishonly_nomean[!grep("lag", variable), ]$akaike_weight)
+ext_lag_importance_fishonly <- sum(extinction_model_comparison_spprandom_scaled_seus_update_fishonly_nomean[grep("lag", variable), ]$akaike_weight)
+ext_nolag_importance_fishonly <- sum(extinction_model_comparison_spprandom_scaled_seus_update_fishonly_nomean[!grep("lag", variable), ]$akaike_weight)
 
 #absolute (grepl("abs", variable))
-ext_abs_importance_fishonly <- sum(extinction_model_comparison_spprandom_scaled_fishonly_nomean[grep("abs", variable), ]$akaike_weight)
+ext_abs_importance_fishonly <- sum(extinction_model_comparison_spprandom_scaled_seus_update_fishonly_nomean[grep("abs", variable), ]$akaike_weight)
 
 #raw (!grepl("change"))
-ext_raw_importance_fishonly <- sum(extinction_model_comparison_spprandom_scaled_fishonly_nomean[!grep("change", variable), ]$akaike_weight)
+ext_raw_importance_fishonly <- sum(extinction_model_comparison_spprandom_scaled_seus_update_fishonly_nomean[!grep("change", variable), ]$akaike_weight)
 
 #change (grepl("change", variable), (!grepl("abs")))
-ext_change_importance_fishonly <- sum(extinction_model_comparison_spprandom_scaled_fishonly_nomean[grep("change", variable), ][!grep("abs", variable),]$akaike_weight)
+ext_change_importance_fishonly <- sum(extinction_model_comparison_spprandom_scaled_seus_update_fishonly_nomean[grep("change", variable), ][!grep("abs", variable),]$akaike_weight)
 
 #type of temp variable (max, min, seas)
-ext_max_temp_importance_fishonly <- sum(extinction_model_comparison_spprandom_scaled_fishonly_nomean[grep("max", variable), ]$akaike_weight)
-ext_min_temp_importance_fishonly <- sum(extinction_model_comparison_spprandom_scaled_fishonly_nomean[grep("min", variable), ]$akaike_weight)
-ext_seas_temp_importance_fishonly <- sum(extinction_model_comparison_spprandom_scaled_fishonly_nomean[grep("seas", variable), ]$akaike_weight)
+ext_max_temp_importance_fishonly <- sum(extinction_model_comparison_spprandom_scaled_seus_update_fishonly_nomean[grep("max", variable), ]$akaike_weight)
+ext_min_temp_importance_fishonly <- sum(extinction_model_comparison_spprandom_scaled_seus_update_fishonly_nomean[grep("min", variable), ]$akaike_weight)
+ext_seas_temp_importance_fishonly <- sum(extinction_model_comparison_spprandom_scaled_seus_update_fishonly_nomean[grep("seas", variable), ]$akaike_weight)
 ```
 
 Let's see how the RVI importance varies by looking at specific lag values
@@ -1101,27 +1111,27 @@ Let's see how the RVI importance varies by looking at specific lag values
 #first, table for lags
 lags_v_RVI_spprandom_scaled_fishonly <- data.table(col_lag = c(0:9), col_RVI = 0, ext_RVI = 0)
 #colonization
-lags_v_RVI_spprandom_scaled_fishonly[1,2] <- 1-sum(colonization_model_comparison_spprandom_scaled_fishonly_nomean[grep("lag", variable), ]$akaike_weight)
-lags_v_RVI_spprandom_scaled_fishonly[2,2] <- sum(colonization_model_comparison_spprandom_scaled_fishonly_nomean[grep("lag1", variable), ]$akaike_weight)
-lags_v_RVI_spprandom_scaled_fishonly[3,2] <- sum(colonization_model_comparison_spprandom_scaled_fishonly_nomean[grep("lag2", variable), ]$akaike_weight)
-lags_v_RVI_spprandom_scaled_fishonly[4,2] <- sum(colonization_model_comparison_spprandom_scaled_fishonly_nomean[grep("lag3", variable), ]$akaike_weight)
-lags_v_RVI_spprandom_scaled_fishonly[5,2] <- sum(colonization_model_comparison_spprandom_scaled_fishonly_nomean[grep("lag4", variable), ]$akaike_weight)
-lags_v_RVI_spprandom_scaled_fishonly[6,2] <- sum(colonization_model_comparison_spprandom_scaled_fishonly_nomean[grep("lag5", variable), ]$akaike_weight)
-lags_v_RVI_spprandom_scaled_fishonly[7,2] <- sum(colonization_model_comparison_spprandom_scaled_fishonly_nomean[grep("lag6", variable), ]$akaike_weight)
-lags_v_RVI_spprandom_scaled_fishonly[8,2] <- sum(colonization_model_comparison_spprandom_scaled_fishonly_nomean[grep("lag7", variable), ]$akaike_weight)
-lags_v_RVI_spprandom_scaled_fishonly[9,2] <- sum(colonization_model_comparison_spprandom_scaled_fishonly_nomean[grep("lag8", variable), ]$akaike_weight)
-lags_v_RVI_spprandom_scaled_fishonly[10,2] <- sum(colonization_model_comparison_spprandom_scaled_fishonly_nomean[grep("lag9", variable), ]$akaike_weight)
+lags_v_RVI_spprandom_scaled_fishonly[1,2] <- 1-sum(colonization_model_comparison_spprandom_scaled_seus_update_fishonly_nomean[grep("lag", variable), ]$akaike_weight)
+lags_v_RVI_spprandom_scaled_fishonly[2,2] <- sum(colonization_model_comparison_spprandom_scaled_seus_update_fishonly_nomean[grep("lag1", variable), ]$akaike_weight)
+lags_v_RVI_spprandom_scaled_fishonly[3,2] <- sum(colonization_model_comparison_spprandom_scaled_seus_update_fishonly_nomean[grep("lag2", variable), ]$akaike_weight)
+lags_v_RVI_spprandom_scaled_fishonly[4,2] <- sum(colonization_model_comparison_spprandom_scaled_seus_update_fishonly_nomean[grep("lag3", variable), ]$akaike_weight)
+lags_v_RVI_spprandom_scaled_fishonly[5,2] <- sum(colonization_model_comparison_spprandom_scaled_seus_update_fishonly_nomean[grep("lag4", variable), ]$akaike_weight)
+lags_v_RVI_spprandom_scaled_fishonly[6,2] <- sum(colonization_model_comparison_spprandom_scaled_seus_update_fishonly_nomean[grep("lag5", variable), ]$akaike_weight)
+lags_v_RVI_spprandom_scaled_fishonly[7,2] <- sum(colonization_model_comparison_spprandom_scaled_seus_update_fishonly_nomean[grep("lag6", variable), ]$akaike_weight)
+lags_v_RVI_spprandom_scaled_fishonly[8,2] <- sum(colonization_model_comparison_spprandom_scaled_seus_update_fishonly_nomean[grep("lag7", variable), ]$akaike_weight)
+lags_v_RVI_spprandom_scaled_fishonly[9,2] <- sum(colonization_model_comparison_spprandom_scaled_seus_update_fishonly_nomean[grep("lag8", variable), ]$akaike_weight)
+lags_v_RVI_spprandom_scaled_fishonly[10,2] <- sum(colonization_model_comparison_spprandom_scaled_seus_update_fishonly_nomean[grep("lag9", variable), ]$akaike_weight)
 #extinction
-lags_v_RVI_spprandom_scaled_fishonly[1,3] <- 1-sum(extinction_model_comparison_spprandom_scaled_fishonly_nomean[grep("lag", variable), ]$akaike_weight)
-lags_v_RVI_spprandom_scaled_fishonly[2,3] <- sum(extinction_model_comparison_spprandom_scaled_fishonly_nomean[grep("lag1", variable), ]$akaike_weight)
-lags_v_RVI_spprandom_scaled_fishonly[3,3] <- sum(extinction_model_comparison_spprandom_scaled_fishonly_nomean[grep("lag2", variable), ]$akaike_weight)
-lags_v_RVI_spprandom_scaled_fishonly[4,3] <- sum(extinction_model_comparison_spprandom_scaled_fishonly_nomean[grep("lag3", variable), ]$akaike_weight)
-lags_v_RVI_spprandom_scaled_fishonly[5,3] <- sum(extinction_model_comparison_spprandom_scaled_fishonly_nomean[grep("lag4", variable), ]$akaike_weight)
-lags_v_RVI_spprandom_scaled_fishonly[6,3] <- sum(extinction_model_comparison_spprandom_scaled_fishonly_nomean[grep("lag5", variable), ]$akaike_weight)
-lags_v_RVI_spprandom_scaled_fishonly[7,3] <- sum(extinction_model_comparison_spprandom_scaled_fishonly_nomean[grep("lag6", variable), ]$akaike_weight)
-lags_v_RVI_spprandom_scaled_fishonly[8,3] <- sum(extinction_model_comparison_spprandom_scaled_fishonly_nomean[grep("lag7", variable), ]$akaike_weight)
-lags_v_RVI_spprandom_scaled_fishonly[9,3] <- sum(extinction_model_comparison_spprandom_scaled_fishonly_nomean[grep("lag8", variable), ]$akaike_weight)
-lags_v_RVI_spprandom_scaled_fishonly[10,3] <- sum(extinction_model_comparison_spprandom_scaled_fishonly_nomean[grep("lag9", variable), ]$akaike_weight)
+lags_v_RVI_spprandom_scaled_fishonly[1,3] <- 1-sum(extinction_model_comparison_spprandom_scaled_seus_update_fishonly_nomean[grep("lag", variable), ]$akaike_weight)
+lags_v_RVI_spprandom_scaled_fishonly[2,3] <- sum(extinction_model_comparison_spprandom_scaled_seus_update_fishonly_nomean[grep("lag1", variable), ]$akaike_weight)
+lags_v_RVI_spprandom_scaled_fishonly[3,3] <- sum(extinction_model_comparison_spprandom_scaled_seus_update_fishonly_nomean[grep("lag2", variable), ]$akaike_weight)
+lags_v_RVI_spprandom_scaled_fishonly[4,3] <- sum(extinction_model_comparison_spprandom_scaled_seus_update_fishonly_nomean[grep("lag3", variable), ]$akaike_weight)
+lags_v_RVI_spprandom_scaled_fishonly[5,3] <- sum(extinction_model_comparison_spprandom_scaled_seus_update_fishonly_nomean[grep("lag4", variable), ]$akaike_weight)
+lags_v_RVI_spprandom_scaled_fishonly[6,3] <- sum(extinction_model_comparison_spprandom_scaled_seus_update_fishonly_nomean[grep("lag5", variable), ]$akaike_weight)
+lags_v_RVI_spprandom_scaled_fishonly[7,3] <- sum(extinction_model_comparison_spprandom_scaled_seus_update_fishonly_nomean[grep("lag6", variable), ]$akaike_weight)
+lags_v_RVI_spprandom_scaled_fishonly[8,3] <- sum(extinction_model_comparison_spprandom_scaled_seus_update_fishonly_nomean[grep("lag7", variable), ]$akaike_weight)
+lags_v_RVI_spprandom_scaled_fishonly[9,3] <- sum(extinction_model_comparison_spprandom_scaled_seus_update_fishonly_nomean[grep("lag8", variable), ]$akaike_weight)
+lags_v_RVI_spprandom_scaled_fishonly[10,3] <- sum(extinction_model_comparison_spprandom_scaled_seus_update_fishonly_nomean[grep("lag9", variable), ]$akaike_weight)
 
 ggplot(data = lags_v_RVI_spprandom_scaled_fishonly, aes(x = col_lag)) +
   geom_line(aes(y = col_RVI), col = "blue") +
@@ -1215,14 +1225,14 @@ library(plyr)
 
 
 
-bestcolmod_scaled_fishonly <- glmer(col ~ seas_sst_temp_change_abs_scaled + (1|reg) + (1|spp), family = binomial, data = spp_master_ztemp_scaled_fishonly2, nAGQ = 0)
+bestcolmod_scaled_fishonly <- glmer(col ~ seas_sst_temp_change_abs_scaled + (1|reg) + (1|spp), family = binomial, data = spp_master_ztemp_seus_buoy_scaled_fishonly2, nAGQ = 0)
 
 #I wanted predicted # of colonizations in each region per region/year
 #year region observed colonizations predicted colonizations
 
 #plotting predicted versus modeled
 #unique combinations of spp, region, and max_sbt_temp_change_abs_scaled found in dataset
-model_imputs <- spp_master_ztemp_scaled_fishonly2[,c("spp", "reg", "year", "col", "now_ext", "seas_sst_temp_change_abs_scaled")]
+model_imputs <- spp_master_ztemp_seus_buoy_scaled_fishonly2[,c("spp", "reg", "year", "col", "now_ext", "seas_sst_temp_change_abs_scaled")]
 
 t2_col <- predict(bestcolmod_scaled_fishonly, newdata = model_imputs, type = "response", re.form = NULL) #setting re.form to NULL includes all random effects
 
@@ -1262,14 +1272,14 @@ Predicted extinctions versus observed for 1|spp models for fish only scaled
   #seas_sst_temp_change_abs_lag1_scaled 
   #seas_sst_temp_change_abs_lag6_scaled  
 
-bestextmod_scaled_fishonly <- glmer(now_ext ~ min_sbt_temp_change_abs_lag5_scaled + (1|reg) + (1|spp), family = binomial, data = spp_master_ztemp_scaled_fishonly2, nAGQ = 0)
+bestextmod_scaled_fishonly <- glmer(now_ext ~ min_sbt_temp_change_abs_lag5_scaled + (1|reg) + (1|spp), family = binomial, data = spp_master_ztemp_seus_buoy_scaled_fishonly2, nAGQ = 0)
 
 #I wanted predicted # of colonizations in each region per region/year
 #year region observed colonizations predicted colonizations
 
 #plotting predicted versus modeled
 #unique combinations of spp, region, and max_sbt_temp_change_abs_scaled found in dataset
-model_imputs <- spp_master_ztemp_scaled_fishonly2[,c("spp", "reg", "year", "col", "now_ext", "min_sbt_temp_change_abs_lag5_scaled")]
+model_imputs <- spp_master_ztemp_seus_buoy_scaled_fishonly2[,c("spp", "reg", "year", "col", "now_ext", "min_sbt_temp_change_abs_lag5_scaled")]
 
 t2_ext <- predict(bestextmod_scaled_fishonly, newdata = model_imputs, type = "response", re.form = NULL) #setting re.form to NULL includes all random effects
 

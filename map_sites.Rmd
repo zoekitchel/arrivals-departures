@@ -73,3 +73,23 @@ NAplot_polygons <- ggplot() + geom_polygon(data = north_america,
 ggsave(plot = NAplot_polygons, file = "NAplot_polygons.eps")
 
 ```
+```{r add SEUS points}
+NAplot_polygons_SEUS <- ggplot() + geom_polygon(data = north_america, 
+                                 aes(x=long, y = lat, group = group), 
+                                 fill = "white", 
+                                 color="black", size = 0.02) +
+            coord_fixed(xlim = c(-82, -70),  ylim = c(27, 36), ratio = 1.3) + 
+            geom_point(data = gpspointsonly[!is.na(Regions)], aes(x=lon, y = lat, color = Regions), size = 1) +
+            geom_point(data = latlon_seus, aes(x=lon, y = lat), color = "black") +
+            guides(color = guide_legend(override.aes = list(size = 1))) +
+            geom_jitter() +
+            theme_bw() +
+            labs(x=paste0("Longitude (", "\u00b0", "E)"), y = paste0("Latitude (", "\u00b0", "N)"))+
+            theme(panel.grid = element_blank())
+
+NAplot_polygons_SEUS
+
+ggsave(NAplot_polygons_SEUS, file = "NAplot_polygons_SEUS.png")
+```
+
+
