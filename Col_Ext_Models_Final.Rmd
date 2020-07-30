@@ -17,7 +17,7 @@ library(lme4)
 library(data.table)
 library(ggplot2)
 
-load("spp_master_ztemp_seus_buoy_seus_buoys.RData")
+load("spp_master_ztemp_seus_buoys.RData")
 ```
 
 Running, and ranking colonization models without traits
@@ -95,20 +95,26 @@ Relative Variable Importance
 ```{r get rid of any models using mean}
 colonization_model_comparison_spprandom_scaled_seus_update_nomean <- colonization_model_comparison_spprandom_scaled_seus_update[!grepl("mean",variable),]
 
+colnames(colonization_model_comparison_spprandom_scaled_seus_update_nomean)
+
 extinction_model_comparison_spprandom_scaled_seus_update_nomean <- extinction_model_comparison_spprandom_scaled_seus_update[!grepl("mean",variable),]
-colnames(extinction_model_comparison_spprandom_scaled_seus_update_nomean)
+
+
+```
+What about null models?
+```{r null models}
 #add null to tables
 interceptcolmod_scaled <- glmer(col ~ (1|spp) + (1|reg), family = binomial, nAGQ = 0, data = spp_master_ztemp_seus_buoy_scaled)
+
 interceptextmod_scaled <- glmer(now_ext ~ (1|reg) + (1|spp), family = binomial, data = spp_master_ztemp_seus_buoy_scaled, nAGQ = 0)
 
 
-col_null <- data.frame("null", "-", "-", AICc(interceptcolmod_scaled))
-ext_null <- data.frame("null", "-", "-", AICc(interceptextmod_scaled))
+AICc(interceptcolmod_scaled)-min(colonization_model_comparison_spprandom_scaled_seus_update_nomean$AICc)
+AICc(interceptextmod_scaled)-min(extinction_model_comparison_spprandom_scaled_seus_update_nomean$AICc)
 
-colonization_model_comparison_spprandom_scaled_seus_update_nomean <- rbind(colonization_model_comparison_spprandom_scaled_seus_update_nomean, col_null, use.names = F)
 
-extinction_model_comparison_spprandom_scaled_seus_update_nomean <- rbind(extinction_model_comparison_spprandom_scaled_seus_update_nomean, ext_null, use.names = F)
 ```
+
 
 Relative Variable Importance for Colonization Models
 ```{r RVI colonization}
@@ -274,40 +280,69 @@ ggplot(data = RVI_table.r, aes(x=variable, y = value, fill = col_ext)) +
 Another way to visualize is stacked bar plot.
 
 ```{r RVI stacked plot}
-#put levels into correct order for viewing
-RVI_table[, variable := factor(variable, levels = c("Bottom", "Surface", "|Change|", "Change", "Raw", "no_lag", "lagged", "Min", "Max", "Seas"))]
-#make types factors as well
-RVI_table[,type := as.factor(type)]
+#put levels into correct order for viewing, and add dummy level for legend
+RVI_col[, variable := factor(variable, levels = c("Bottom", "Surface","  ", "Raw", "Change", "|Change|", "no_lag", "lagged", "Min", "Max", "Seas"))]
+RVI_col[, type := factor(type, levels = c("Depth", "Transformation", "Measurement", "lag"))]
+
+RVI_col_nolag <- RVI_col[type != "lag",]
+RVI_col_nolag[, type := factor(type, levels = c("Depth", "Transformation", "Measurement"))][, variable := factor(variable, levels = c("Bottom", "Surface","  ", "Raw", "Change", "|Change|", "Min", "Max", "Seas"))]
+
+#and again for extinction
+RVI_ext[, variable := factor(variable, levels = c("Bottom", "Surface","  ", "Raw", "Change", "|Change|", "no_lag", "lagged", "Min", "Max", "Seas"))]
+RVI_ext[, type := factor(type, levels = c("Depth", "Transformation", "Measurement", "lag"))]
+
+RVI_ext_nolag <- RVI_ext[type != "lag",]
+RVI_ext_nolag[, type := factor(type, levels = c("Depth", "Transformation", "Measurement"))][, variable := factor(variable, levels = c("Bottom", "Surface","  ", "Raw", "Change", "|Change|", "Min", "Max", "Seas"))]
+
+
 
 library(wesanderson)
 pal <- wes_palette("GrandBudapest1", 8, type = "continuous")
+colors <- c(pal[1], pal[2], "#FFFFFF", pal[3], pal[4], pal[5], pal[6], pal[7], pal[8])
 
 #colonization
-RVI_col_plot <- ggplot(data = RVI_table[col_ext == "col" & type != "lag",], aes(x=type, y = value, fill = variable)) +
-  geom_bar(stat="identity", color = "black", size = 0) +
+RVI_col_plot <- ggplot(data = RVI_col_nolag, aes(x=type, y = value, fill = variable)) +
+  geom_bar(stat="identity", color = "black", size = 0, width = 0.8) +
   scale_x_discrete(breaks = c("Transformation", "Depth", "Measurement"), labels = c("Transformation", "Depth", "Measurement")) +
   labs(x = "Temperature Variables", y = "Relative Variable Importance") +
   theme_classic() +
-  theme(text = element_text(size = 20)
+  theme(text = element_text(size = 11.5), 
+        legend.position = "top", 
+        legend.title = element_blank(), 
+        legend.spacing.x = unit(0.2, 'cm'),
+        legend.justification = "center",
+        aspect.ratio = (1),
         #, legend.position = "none"
         ) +
-  scale_fill_manual(values = pal)
+  guides(fill=guide_legend(ncol=3)) +
+  scale_fill_manual(values = colors,
+                    breaks = levels(RVI_col$variable),
+                    labels = levels(RVI_col$variable),
+                    drop = F)
 
 #extinction
-RVI_ext_plot <- ggplot(data = RVI_table[col_ext == "ext" & type != "lag",], aes(x=type, y = value, fill = variable)) +
-  geom_bar(stat="identity", color = "black", size = 0) +
+RVI_ext_plot <- ggplot(data = RVI_ext_nolag, aes(x=type, y = value, fill = variable)) +
+  geom_bar(stat="identity", color = "black", size = 0, width = 0.8) +
   scale_x_discrete(breaks = c("Transformation", "Depth", "Measurement"), labels = c("Transformation", "Depth", "Measurement")) +
   labs(x = "Temperature Variables", y = "Relative Variable Importance") +
-  theme_classic()  +
-  theme(text = element_text(size = 20)
+  theme_classic() +
+  theme(text = element_text(size = 11.5), 
+        legend.position = "top", 
+        legend.title = element_blank(), 
+        legend.spacing.x = unit(0.2, 'cm'),
+        legend.justification = "center",
+        aspect.ratio = (1),
         #, legend.position = "none"
         ) +
-  scale_fill_manual(values = pal)
+  guides(fill=guide_legend(ncol=3)) +
+  scale_fill_manual(values = colors,
+                    breaks = levels(RVI_col$variable),
+                    labels = levels(RVI_col$variable),
+                    drop = F)
 
 RVI_table
 RVI_col_plot
 RVI_ext_plot
-
 ```
 
 ***********
@@ -318,11 +353,12 @@ How well do these models actually predict the # of colonizations and the # of ex
 library(tidyr)
 library(plyr)
 #best colonization models (all delta less than 2)
-  #max_sbt_temp_change_abs_scaled
+  #seas_sst_temp_scaled
   #max_sst_temp_change_abs_lag1_scaled
 
 
-bestcolmod_scaled <- glmer(col ~ max_sbt_temp_change_abs_scaled + (1|reg) + (1|spp), family = binomial, data = spp_master_ztemp_seus_buoy_scaled, nAGQ = 0)
+
+bestcolmod_scaled <- glmer(col ~ seas_sst_temp_scaled + (1|reg) + (1|spp), family = binomial, data = spp_master_ztemp_seus_buoy_scaled, nAGQ = 0)
 
 interceptcolmod_scaled <- glmer(col ~ (1|reg) + (1|spp), family = binomial, data = spp_master_ztemp_seus_buoy_scaled, nAGQ = 0)
 
@@ -332,7 +368,7 @@ interceptcolmod_scaled <- glmer(col ~ (1|reg) + (1|spp), family = binomial, data
 
 #plotting predicted versus modeled
 #unique combinations of spp, region, and max_sbt_temp_change_abs_scaled found in dataset
-model_imputs <- spp_master_ztemp_seus_buoy_scaled[,c("spp", "reg", "year", "col", "now_ext", "max_sbt_temp_change_abs_scaled")]
+model_imputs <- spp_master_ztemp_seus_buoy_scaled[,c("spp", "reg", "year", "col", "now_ext", "seas_sst_temp_scaled")]
 
 t2_col <- predict(bestcolmod_scaled, newdata = model_imputs, type = "response", re.form = NULL) #setting re.form to NULL includes all random effects
 
@@ -348,7 +384,7 @@ col_model_comparisons <- model_imputs[, .(col_predicted = sum(pred), col_predict
 ggplot(aes(x=year), data = col_model_comparisons) +
   geom_point(aes(y = col_observed), data = col_model_comparisons, col = "red") +
   geom_point(data = col_model_comparisons, aes(y = col_predicted), col = "black") +
-  geom_point(data = col_model_comparisons, aes(y = col_predicted_null), col = "blue") +
+#  geom_point(data = col_model_comparisons, aes(y = col_predicted_null), col = "blue") +
   facet_wrap(~reg) +
   theme_classic()
 
@@ -379,12 +415,11 @@ ggplot(aes(x=year), data = col_model_comparisons) +
 ```{r extinction predictions versus observed scaled}
 
 #best extinction model (all delta less than 2)
+  #seas_sst_temp_lag3_scaled
   #min_sst_temp_change_lag2_scaled
-  #seas_sst_temp_change_lag2_scaled
-  #min_sbt_temp_change_lag7_scaled
 
 
-bestextmod_scaled <- glmer(now_ext ~ min_sst_temp_change_lag2_scaled + (1|reg) + (1|spp), family = binomial, data = spp_master_ztemp_seus_buoy_scaled, nAGQ = 0)
+bestextmod_scaled <- glmer(now_ext ~ seas_sst_temp_lag3_scaled + (1|reg) + (1|spp), family = binomial, data = spp_master_ztemp_seus_buoy_scaled, nAGQ = 0)
 
 interceptextmod_scaled <- glmer(now_ext ~ (1|reg) + (1|spp), family = binomial, data = spp_master_ztemp_seus_buoy_scaled, nAGQ = 0)
 
@@ -393,7 +428,7 @@ interceptextmod_scaled <- glmer(now_ext ~ (1|reg) + (1|spp), family = binomial, 
 
 #plotting predicted versus modeled
 #unique combinations of spp, region, and max_sbt_temp_change_abs_scaled found in dataset
-model_imputs <- spp_master_ztemp_seus_buoy_scaled[,c("spp", "reg", "year", "col", "now_ext", "min_sst_temp_change_lag2_scaled")]
+model_imputs <- spp_master_ztemp_seus_buoy_scaled[,c("spp", "reg", "year", "col", "now_ext", "seas_sst_temp_lag3_scaled")]
 
 t2_ext <- predict(bestextmod_scaled, newdata = model_imputs, type = "response", re.form = NULL) #setting re.form to NULL includes all random effects
 t2_ext_null <- predict(interceptextmod_scaled, newdata = model_imputs, type = "response", re.form = NULL) #setting re.form to NULL includes all random effects
@@ -487,6 +522,7 @@ cumulative_richness.r[, delta_value := value-shift(value), by = .(reg, Richness)
 cumulative_richness.r.w <- dcast(cumulative_richness.r, reg + year ~ Richness, value.var = "delta_value")
 
 ```
+
 ```{r plotting observed versus predicted change in richness}
 
 #plot richness over time predicted null versus observed

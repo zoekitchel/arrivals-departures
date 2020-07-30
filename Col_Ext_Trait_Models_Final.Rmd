@@ -16,17 +16,17 @@ library(lme4)
 library(data.table)
 library(ggplot2)
 
-load("spp_master_ztemp.traits.RData")
+load("spp_master_ztemp_seus_buoy.traits.RData")
 ```
 
 Running, and ranking colonization models without traits
 
 ```{r scaling temperature values}
 #extract just temperature variables to scale
-spp_master_ztemp_varsonly <- spp_master_ztemp.traits[,c(1,45:292, 301, 308, 310, 312, 313)]
+spp_master_ztemp_varsonly <- spp_master_ztemp_seus_buoy.traits[,c(1,45:292, 301, 308, 310, 312, 313)]
 
 #names of temp variables, so I can add "_scaled" suffix
-temptraitvars <- colnames(spp_master_ztemp.traits[,c(45:292, 301, 308, 310, 312, 313)])
+temptraitvars <- colnames(spp_master_ztemp_seus_buoy.traits[,c(45:292, 301, 308, 310, 312, 313)])
 
 #scale all variables, make new columns, do this by region
 spp_master_ztemp_varsonly[, paste0(temptraitvars, "_scaled") := lapply(.SD, function(x) as.vector(scale(x))), .SDcols = temptraitvars]
@@ -35,9 +35,9 @@ spp_master_ztemp_varsonly[, paste0(temptraitvars, "_scaled") := lapply(.SD, func
 scaled_cols <- grep("*_scaled", names(spp_master_ztemp_varsonly), value = T)
 
 #merge new columns back with spp_master_ztemp
-spp_master_ztemp.traits_scaled <- cbind(spp_master_ztemp.traits, spp_master_ztemp_varsonly[,scaled_cols, with = FALSE])
+spp_master_ztemp_seus_buoy.traits_scaled <- cbind(spp_master_ztemp_seus_buoy.traits, spp_master_ztemp_varsonly[,scaled_cols, with = FALSE])
 
-save(spp_master_ztemp.traits_scaled, file = "spp_master_ztemp.traits_scaled.RData")
+save(spp_master_ztemp_seus_buoy.traits_scaled, file = "spp_master_ztemp_seus_buoy.traits_scaled.RData")
 
 ```
 
@@ -49,15 +49,15 @@ I will be looking at:
 *maximum body size
 
 ```{r missing values}
-summary(spp_master_ztemp.traits_scaled$age.max) #702 missing
-summary(spp_master_ztemp.traits_scaled$age.maturity) #551 missing
-summary(spp_master_ztemp.traits_scaled$tl) #none missing
-summary(spp_master_ztemp.traits_scaled$length.max) #none missing
-summary(spp_master_ztemp.traits_scaled$length.infinity) #443 missing, this is highly correlated (0.82) with length max, so we'll just use length.max
+summary(spp_master_ztemp_seus_buoy.traits_scaled$age.max) #702 missing
+summary(spp_master_ztemp_seus_buoy.traits_scaled$age.maturity) #551 missing
+summary(spp_master_ztemp_seus_buoy.traits_scaled$tl) #none missing
+summary(spp_master_ztemp_seus_buoy.traits_scaled$length.max) #none missing
+summary(spp_master_ztemp_seus_buoy.traits_scaled$length.infinity) #443 missing, this is highly correlated (0.82) with length max, so we'll just use length.max
 
-cor(spp_master_ztemp.traits_scaled[,.(age.max_scaled, age.maturity_scaled, tl_scaled, length.max_scaled, length.infinity_scaled)], use = "complete.obs")
+cor(spp_master_ztemp_seus_buoy.traits_scaled[,.(age.max_scaled, age.maturity_scaled, tl_scaled, length.max_scaled, length.infinity_scaled)], use = "complete.obs")
 
-pairs(spp_master_ztemp.traits_scaled[,.(age.max_scaled, age.maturity_scaled, tl_scaled, length.max_scaled, length.infinity_scaled)])
+pairs(spp_master_ztemp_seus_buoy.traits_scaled[,.(age.max_scaled, age.maturity_scaled, tl_scaled, length.max_scaled, length.infinity_scaled)])
 
 ```
 
@@ -65,18 +65,18 @@ Prep for dredge
 ```{r prep for model runs}
 
 #temp scaled vars only
-tempvars <- names(spp_master_ztemp.traits_scaled[,314:561])
+tempvars <- names(spp_master_ztemp_seus_buoy.traits_scaled[,314:561])
 othervars_col <- c("reg", "year", "col", "spp", "age.max_scaled", "age.maturity_scaled", "tl_scaled", "length.max_scaled")
 colstosaveforcol <- c(othervars_col, tempvars)
 #Colonization table
-colonization.reduced <- spp_master_ztemp.traits_scaled[,colstosaveforcol, with = F] #reduces to columns we need
+colonization.reduced <- spp_master_ztemp_seus_buoy.traits_scaled[,colstosaveforcol, with = F] #reduces to columns we need
 
 #Extinction table
 
 othervars_ext <- c("reg", "year", "now_ext", "spp", "age.max_scaled", "age.maturity_scaled", "tl_scaled", "length.max_scaled")
 colstosaveforext <- c(othervars_ext, tempvars)
 #Colonization table
-extinction.reduced <- spp_master_ztemp.traits_scaled[,colstosaveforext, with = F] #reduces to columns we need
+extinction.reduced <- spp_master_ztemp_seus_buoy.traits_scaled[,colstosaveforext, with = F] #reduces to columns we need
 
 
 
@@ -449,8 +449,8 @@ lags_v_RVI_trait[9,3] <- sum(extinction_model_comparisons_traits.lag9max[grep("l
 lags_v_RVI_trait[10,3] <- sum(extinction_model_comparisons_traits.lag9max[grep("lag9", temp_variable), ]$akaike_weight)
 
 RVI_lags_traits <- ggplot(data = lags_v_RVI_trait, aes(x = col_lag)) +
-  geom_line(aes(y = col_RVI), col = "blue") +
-  geom_line(aes(y = ext_RVI), col = "red", linetype = "dashed") +
+  geom_line(aes(y = col_RVI)) +
+  geom_line(aes(y = ext_RVI), linetype = "dashed") +
   labs(x = "Lag (years)", y = "Relative Variable Importance") +
   theme_classic() +
   theme(text = element_text(size = 22, color = "black")) +
@@ -479,56 +479,112 @@ What do interactions look like?
 
 ##Colonization with Traits
 Best model: max_sst_temp_change_abs_lag1_scaled * age.maturity_scaled + age.max_scaled
-```{r col with traits}
-library(ggeffects)
 
-#model
+```{r predicted values colonization}
+library(ggfortify)
+library(wesanderson)
+pal <- wes_palette("GrandBudapest1", 5, type = "continuous")
+
 mod_col_trait <- glmer(col ~ max_sst_temp_change_abs_lag1_scaled * age.maturity_scaled + age.max_scaled + (1|reg) + (1|spp), family = "binomial", data = colonization.reduced, nAGQ = 0)
-min(colonization.reduced$max_sst_temp_change_abs_lag1_scaled)
-max(colonization.reduced$max_sst_temp_change_abs_lag1_scaled)
-#plot marginal effects of interactions
-values <- seq(-1.2, 5.5, by = 0.01)
-dat <- ggpredict(mod_col_trait, c("max_sst_temp_change_abs_lag1_scaled[all]", "age.maturity_scaled [-0.78, 1.53, 6.67, 11.80, 24.63]"))
 
-summary(colonization.reduced$max_sst_temp_change_abs_lag1_scaled)
+#reverse to agematurity unscaled
+mod_col_reverse_scaled_agematurity <- lm(age.maturity ~ age.maturity_scaled, data = spp_master_ztemp_seus_buoy.traits_scaled) 
 
-ggplot(dat, aes(x=x, y = predicted, colour = group)) +
-  geom_point(size = 1) +
-  labs(colour="Age at Maturity Values", x = "Absolute change in maximum surface temperature\nexperienced a year previously (˚C centered and scaled)", y = "Probability of Colonization",title = "Predicted Probabilities of Colonization") +
+mod_col_forward_scaled_agematurity <- lm(age.maturity_scaled ~ age.maturity, data = spp_master_ztemp_seus_buoy.traits_scaled)
+
+age_match <- data.table(ages_we_want = c(1, 10, 50, 80, 100))
+age_match[,age.maturity_scaled := ages_we_want * mod_col_forward_scaled_agematurity$coefficients[2]+mod_col_forward_scaled_agematurity$coefficients[1]]
+
+temp_col_newdata <- runif(500,min(spp_master_ztemp_seus_buoy.traits_scaled$max_sst_temp_change_abs_lag1_scaled), max(spp_master_ztemp_seus_buoy.traits_scaled$max_sst_temp_change_abs_lag1_scaled))
+
+temp_agematurity_newdata <- age_match[,age.maturity_scaled]
+
+
+temp_agemax_newdata <- mean(spp_master_ztemp_seus_buoy.traits_scaled$max_sst_temp_change_abs_lag1_scaled)
+
+col_newdata_traits <- expand.grid("max_sst_temp_change_abs_lag1_scaled" = temp_col_newdata, "age.maturity_scaled" = temp_agematurity_newdata, "age.max_scaled" = temp_agemax_newdata)
+
+
+preds <- predict(mod_col_trait, newdata = col_newdata_traits, re.form = NA, type = "response")
+preds_predictors <- data.table(cbind(col_newdata_traits, preds))
+preds_predictors <- preds_predictors[age_match, on = "age.maturity_scaled"]
+
+#I want x axis to be meaningful
+mod_col_reverse_scaledtemp <- lm(max_sst_temp_change_abs_lag1 ~ max_sst_temp_change_abs_lag1_scaled, data = spp_master_ztemp_seus_buoy.traits_scaled)
+
+
+preds_predictors[,max_sst_temp_change_abs_lag1 := mod_col_reverse_scaledtemp$coefficients[2]*max_sst_temp_change_abs_lag1_scaled + mod_col_reverse_scaledtemp$coefficients[1] ]
+
+#reverse order of ages to match
+preds_predictors$ages_we_want <- factor(preds_predictors$ages_we_want, levels=c("100", "80", "50", "10", "1"))
+
+
+ggplot(data = preds_predictors, aes(x = max_sst_temp_change_abs_lag1, y = preds, color = as.factor(ages_we_want))) +
+  geom_line(size = 1.5) +
+  labs(colour="Age at Maturity", x = "Absolute change in maximum surface temperature\nexperienced a year previously (˚C)", y = "Probability of Colonization",title = "Predicted Probabilities of Colonization") +
   scale_y_continuous(breaks=c(0, 0.5, 1)) +
   theme_classic() +
-  scale_color_brewer(palette = "Set1") +
+  scale_color_manual(values = pal) +
   theme(text=element_text(size = 14))
 
 ggsave(path = "plots/marginal_effects", file = "predicted_probs_col_maxage.jpg")
 
-mod <- lm(spp_master_ztemp.traits_scaled$age.maturity_scaled~spp_master_ztemp.traits_scaled$age.maturity)
-summary(mod)
 
-df <- data.frame(unscaled = c(1,10,30,50,100))
-df$scaled <- mod$coefficients[1]+mod$coefficients[2]*df$unscaled
+
 
 ```
+
 ##Extinction with Traits
 Best model: max_sst_temp_scaled * age.maturity_scaled + age.max_scaled
-```{r ext with traits}
-library(ggeffects)
 
-#model
+```{r predicted values extirpation}
 mod_ext_trait <- glmer(now_ext ~ max_sst_temp_scaled * age.maturity_scaled + age.max_scaled + (1|reg) + (1|spp), family = "binomial", data = extinction.reduced, nAGQ = 0)
 
-#plot marginal effects of interactions
-dat <- ggpredict(mod_ext_trait, c("max_sst_temp_scaled [all]", "age.maturity_scaled [-0.78, 1.53, 6.67, 11.80, 24.63]"))
+#reverse to agematurity unscaled
+mod_ext_reverse_scaled_agematurity <- lm(age.maturity ~ age.maturity_scaled, data = spp_master_ztemp_seus_buoy.traits_scaled) 
 
-ggplot(dat, aes(x=x, y = predicted, colour = group)) +
-  geom_point(size = 1) +
-  labs(colour="Age at Maturity Values", x = "Maximum surface temperature in the\npast year (˚C centered and scaled)", y = "Probability of Extinction",title = "Predicted Probabilities of Extinction") +
+mod_ext_forward_scaled_agematurity <- lm(age.maturity_scaled ~ age.maturity, data = spp_master_ztemp_seus_buoy.traits_scaled)
+
+age_match <- data.table(ages_we_want = c(1, 10, 50, 80, 100))
+age_match[,age.maturity_scaled := ages_we_want * mod_ext_forward_scaled_agematurity$coefficients[2]+mod_ext_forward_scaled_agematurity$coefficients[1]]
+
+temp_ext_newdata <- runif(500,min(spp_master_ztemp_seus_buoy.traits_scaled$max_sst_temp_scaled), max(spp_master_ztemp_seus_buoy.traits_scaled$max_sst_temp_change_scaled))
+
+temp_agematurity_newdata <- age_match[,age.maturity_scaled]
+
+
+temp_agemax_newdata <- mean(spp_master_ztemp_seus_buoy.traits_scaled$max_sst_temp_scaled)
+
+ext_newdata_traits <- expand.grid("max_sst_temp_scaled" = temp_ext_newdata, "age.maturity_scaled" = temp_agematurity_newdata, "age.max_scaled" = temp_agemax_newdata)
+
+
+preds_ext <- predict(mod_ext_trait, newdata = ext_newdata_traits, re.form = NA, type = "response")
+preds_predictors_ext <- data.table(cbind(ext_newdata_traits, preds_ext))
+preds_predictors_ext <- preds_predictors_ext[age_match, on = "age.maturity_scaled"]
+
+#I want x axis to be meaningful
+mod_ext_reverse_scaledtemp <- lm(max_sst_temp ~ max_sst_temp_scaled, data = spp_master_ztemp_seus_buoy.traits_scaled)
+
+
+preds_predictors_ext[,max_sst_temp := mod_ext_reverse_scaledtemp$coefficients[2]*max_sst_temp_scaled + mod_ext_reverse_scaledtemp$coefficients[1] ]
+
+#reverse order of ages to match
+preds_predictors_ext$ages_we_want <- factor(preds_predictors_ext$ages_we_want, levels=c("100", "80", "50", "10", "1"))
+
+
+ggplot(data = preds_predictors_ext, aes(x = max_sst_temp, y = preds, color = as.factor(ages_we_want))) +
+  geom_line(size = 1.5) +
+  labs(colour="Age at Maturity", x = "Maximum Surface Temperature (˚C)", y = "Probability of Extirpation",title = "Predicted Probabilities of Extirpation") +
   scale_y_continuous(breaks=c(0, 0.5, 1)) +
   theme_classic() +
-  scale_color_brewer(palette = "Set1") +
+  scale_color_manual(values = pal) +
   theme(text=element_text(size = 14))
 
+ggsave(path = "plots/marginal_effects", file = "predicted_probs_ext_maxage.jpg")
+
+
 ```
+
 
 How well do these models actually predict the # of colonizations and the # of extinctions?
 
@@ -539,9 +595,9 @@ library(plyr)
   #max_sst_temp_change_abs_lag1_scaled * age.maturity_scaled + age.max_scaled
 
 
-bestcolmod_scaled_traits <- glmer(col ~ max_sst_temp_change_abs_lag1_scaled * age.maturity_scaled + age.max_scaled + (1|reg) + (1|spp), family = binomial, data = spp_master_ztemp.traits_scaled, nAGQ = 0)
+bestcolmod_scaled_traits <- glmer(col ~ max_sst_temp_change_abs_lag1_scaled * age.maturity_scaled + age.max_scaled + (1|reg) + (1|spp), family = binomial, data = spp_master_ztemp_seus_buoy.traits_scaled, nAGQ = 0)
 
-interceptcolmod_scaled_traits <- glmer(col ~ (1|reg) + (1|spp), family = binomial, data = spp_master_ztemp.traits_scaled, nAGQ = 0)
+interceptcolmod_scaled_traits <- glmer(col ~ (1|reg) + (1|spp), family = binomial, data = spp_master_ztemp_seus_buoy.traits_scaled, nAGQ = 0)
 
 summary(bestcolmod_scaled_traits)
 
@@ -550,7 +606,7 @@ summary(bestcolmod_scaled_traits)
 
 #plotting predicted versus modeled
 #unique combinations of spp, region, and max_sbt_temp_change_abs_scaled found in dataset
-model_imputs_col_traits <- spp_master_ztemp.traits_scaled[,.(spp, reg, year, col, max_sst_temp_change_abs_lag1_scaled, age.maturity_scaled, age.max_scaled)]
+model_imputs_col_traits <- spp_master_ztemp_seus_buoy.traits_scaled[,.(spp, reg, year, col, max_sst_temp_change_abs_lag1_scaled, age.maturity_scaled, age.max_scaled)]
 
 model_imputs_col_traits <- na.omit(model_imputs_col_traits) #get rid of any rows without data for all variables
 
@@ -579,9 +635,9 @@ And extinctions?
  #max_sst_temp_scaled    * age.maturity_scaled + age.max_scaled 0.000000
 
 
-bestextmod_scaled_traits <- glmer(now_ext ~ max_sst_temp_scaled * age.maturity_scaled + age.max_scaled + (1|reg) + (1|spp), family = binomial, data = spp_master_ztemp.traits_scaled, nAGQ = 0)
+bestextmod_scaled_traits <- glmer(now_ext ~ max_sst_temp_scaled * age.maturity_scaled + age.max_scaled + (1|reg) + (1|spp), family = binomial, data = spp_master_ztemp_seus_buoy.traits_scaled, nAGQ = 0)
 
-interceptextmod_scaled_traits <- glmer(now_ext ~ (1|reg) + (1|spp), family = binomial, data = spp_master_ztemp.traits_scaled, nAGQ = 0)
+interceptextmod_scaled_traits <- glmer(now_ext ~ (1|reg) + (1|spp), family = binomial, data = spp_master_ztemp_seus_buoy.traits_scaled, nAGQ = 0)
 
 summary(bestextmod_scaled_traits)
 
@@ -590,7 +646,7 @@ summary(bestextmod_scaled_traits)
 
 #plotting predicted versus modeled
 #unique combinations of spp, region, and max_sst_temp_scaled found in dataset
-model_imputs_ext_traits <- spp_master_ztemp.traits_scaled[,.(spp, reg, year, now_ext, max_sst_temp_scaled, age.maturity_scaled, age.max_scaled)]
+model_imputs_ext_traits <- spp_master_ztemp_seus_buoy.traits_scaled[,.(spp, reg, year, now_ext, max_sst_temp_scaled, age.maturity_scaled, age.max_scaled)]
 
 model_imputs_ext_traits <- na.omit(model_imputs_ext_traits)
 

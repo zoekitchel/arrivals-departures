@@ -8,7 +8,7 @@ library(dplyr)
 library(data.table)
 library(ggplot2)
 
-load("spp_master_ztemp.Rdata")
+load("spp_master_ztemp_seus_buoys.Rdata")
 load('comm_master.RData') #ryan's table
 ```
 
@@ -83,21 +83,21 @@ dev.off()
 Add trends and new variables
 ```{r trends and new var}
 #new column for richness
-spp_master_ztemp[,richness:=sum(present), by = .(year, reg)]
+spp_master_ztemp_seus_buoy[,richness:=sum(present), by = .(year, reg)]
 
 #raw
-spp_master_ztemp[,bt_trend_max:=trend(max_sbt_temp,year), by=reg] #average yearly bottom temp
-spp_master_ztemp[,bt_trend_min:=trend(min_sbt_temp,year), by=reg] #average yearly bottom temp
-spp_master_ztemp[,bt_trend_seas:=trend(seas_sbt_temp,year), by=reg] #average yearly bottom temp
-spp_master_ztemp[,bt_trend_mean:=trend(mean_sbt_temp,year), by=reg] #average yearly bottom temp
-spp_master_ztemp[,st_trend_mean:=trend(mean_sst_temp,year), by=reg] #average yearly bottom temp
+spp_master_ztemp_seus_buoy[,bt_trend_max:=trend(max_sbt_temp,year), by=reg] #average yearly bottom temp
+spp_master_ztemp_seus_buoy[,bt_trend_min:=trend(min_sbt_temp,year), by=reg] #average yearly bottom temp
+spp_master_ztemp_seus_buoy[,bt_trend_seas:=trend(seas_sbt_temp,year), by=reg] #average yearly bottom temp
+spp_master_ztemp_seus_buoy[,bt_trend_mean:=trend(mean_sbt_temp,year), by=reg] #average yearly bottom temp
+spp_master_ztemp_seus_buoy[,st_trend_mean:=trend(mean_sst_temp,year), by=reg] #average yearly bottom temp
 
 ```
 
 Summary data
 ```{r summary data}
 # create summary data
-spp_master_richness <- unique(spp_master_ztemp[,.(reg, year, richness,bt_trend_max, bt_trend_min, bt_trend_mean, bt_trend_seas, st_trend_mean)])
+spp_master_richness <- unique(spp_master_ztemp_seus_buoy[,.(reg, year, richness,bt_trend_max, bt_trend_min, bt_trend_mean, bt_trend_seas, st_trend_mean)])
 
 trends_zoe <- spp_master_richness[,.(rich=trend(richness, year), #calculate trend in richness per year and trend in annual temp per year
                                  bt_trend_max_raw = mean(bt_trend_max) ,
@@ -268,7 +268,7 @@ Compare Zoe temp patterns to Ryan's temp patterns
 ```{r temp comparisons}
 load("comm_master.RData")
 ryan_reduced <- comm_master[,.(reg, year, naive_rich, bt_ann)][,name:="RYAN"]
-zoe_reduced <- unique(spp_master_ztemp[, bt_ann_z := mean(mean_sbt_temp), by = .(reg, year)][,name:="ZOE"][,.(reg, year, bt_ann_z)])
+zoe_reduced <- unique(spp_master_ztemp_seus_buoy[, bt_ann_z := mean(mean_sbt_temp), by = .(reg, year)][,name:="ZOE"][,.(reg, year, bt_ann_z)])
 
 setkey(ryan_reduced, reg, year)
 setkey(zoe_reduced, reg, year)
@@ -284,7 +284,7 @@ ggplot(data = merge, aes(x = year)) +
 
 Zoe's temp
 ```{r zoe temp plots}
-ggplot(data = spp_master_ztemp, aes(x = year, y = mean_sbt_temp)) +
+ggplot(data = spp_master_ztemp_seus_buoy, aes(x = year, y = mean_sbt_temp)) +
   geom_point() +
   facet_wrap(~reg) +
   theme_bw()

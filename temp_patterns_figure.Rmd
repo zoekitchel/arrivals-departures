@@ -7,11 +7,11 @@ output: html_notebook
 library(ggplot2)
 library(data.table)
 
-load("spp_master_ztemp.Rdata")
+load("spp_master_ztemp_seus_buoys.Rdata")
 ```
 
 ```{r temp in all regions over time}
-ggplot(data = spp_master_ztemp, aes(x=year)) +
+ggplot(data = spp_master_ztemp_seus_buoy, aes(x=year)) +
   geom_point(aes(y = max_sbt_temp), col = "red") +
   geom_point(aes(y = seas_sbt_temp), col = "slategrey") +
   geom_point(aes(y = min_sbt_temp), col = "blue") +
@@ -19,9 +19,9 @@ ggplot(data = spp_master_ztemp, aes(x=year)) +
   labs(y = "Bottom Temperature (˚C)", x = "Year") +
   theme_bw()
 
-ggsave(file = "temp_over_time_bottom.jpg")
+ggsave(file = "temp_over_time_bottom_seusbuoy.jpg")
 
-ggplot(data = spp_master_ztemp, aes(x=year)) +
+ggplot(data = spp_master_ztemp_seus_buoy, aes(x=year)) +
   geom_point(aes(y = max_sst_temp), col = "red") +
   geom_point(aes(y = seas_sst_temp), col = "slategrey") +
   geom_point(aes(y = min_sst_temp), col = "blue") +
@@ -29,6 +29,6 @@ ggplot(data = spp_master_ztemp, aes(x=year)) +
   labs(y = "Surface Temperature (˚C)", x = "Year") +
   theme_bw()
 
-ggsave(file = "temp_over_time_surface.jpg")
+ggsave(file = "temp_over_time_surface_seusbuoy›.jpg")
 ```
 
