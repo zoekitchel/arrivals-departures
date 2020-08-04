@@ -86,183 +86,347 @@ Add trends and new variables
 spp_master_ztemp_seus_buoy[,richness:=sum(present), by = .(year, reg)]
 
 #raw
-spp_master_ztemp_seus_buoy[,bt_trend_max:=trend(max_sbt_temp,year), by=reg] #average yearly bottom temp
-spp_master_ztemp_seus_buoy[,bt_trend_min:=trend(min_sbt_temp,year), by=reg] #average yearly bottom temp
-spp_master_ztemp_seus_buoy[,bt_trend_seas:=trend(seas_sbt_temp,year), by=reg] #average yearly bottom temp
-spp_master_ztemp_seus_buoy[,bt_trend_mean:=trend(mean_sbt_temp,year), by=reg] #average yearly bottom temp
+spp_master_ztemp_seus_buoy[,bt_trend_max:=trend(max_sbt_temp,year), by=reg] #coef of max_sbt_temp~year
+spp_master_ztemp_seus_buoy[,bt_trend_min:=trend(min_sbt_temp,year), by=reg] #coef of min_sbt_temp~year
+spp_master_ztemp_seus_buoy[,bt_trend_seas:=trend(seas_sbt_temp,year), by=reg] #coef of seas_sbt_temp~year
+spp_master_ztemp_seus_buoy[,bt_trend_mean:=trend(mean_sbt_temp,year), by=reg] #coef of mean_sbt_temp~year
+
 spp_master_ztemp_seus_buoy[,st_trend_mean:=trend(mean_sst_temp,year), by=reg] #average yearly bottom temp
+spp_master_ztemp_seus_buoy[,st_trend_max:=trend(max_sst_temp,year), by=reg] #average yearly bottom temp
+spp_master_ztemp_seus_buoy[,st_trend_min:=trend(min_sst_temp,year), by=reg] #average yearly bottom temp
+spp_master_ztemp_seus_buoy[,st_trend_seas:=trend(seas_sst_temp,year), by=reg] #average yearly bottom temp
 
 ```
 
 Summary data
 ```{r summary data}
 # create summary data
-spp_master_richness <- unique(spp_master_ztemp_seus_buoy[,.(reg, year, richness,bt_trend_max, bt_trend_min, bt_trend_mean, bt_trend_seas, st_trend_mean)])
+spp_master_richness <- unique(spp_master_ztemp_seus_buoy[,.(reg, year, richness,bt_trend_max, bt_trend_min, bt_trend_mean, bt_trend_seas, st_trend_mean, st_trend_max, st_trend_min, st_trend_seas)])
 
 trends_zoe <- spp_master_richness[,.(rich=trend(richness, year), #calculate trend in richness per year and trend in annual temp per year
                                  bt_trend_max_raw = mean(bt_trend_max) ,
                                  bt_trend_min_raw = mean(bt_trend_min) ,
                                  bt_trend_mean_raw = mean(bt_trend_mean),
                                  bt_trend_seas_raw = mean(bt_trend_seas),
-                                 st_trend_mean_raw = mean(st_trend_mean)),  by=reg]
+                                 
+                                 st_trend_mean_raw = mean(st_trend_mean),
+                                 st_trend_max_raw = mean(st_trend_max),
+                                 st_trend_min_raw = mean(st_trend_min),
+                                 st_trend_seas_raw = mean(st_trend_seas)),  by=reg]
 
 
 trends_zoe[,bt_trend_max_raw_scaled := scale(bt_trend_max_raw)][,
                                  bt_trend_min_raw_scaled := scale(bt_trend_min_raw)][,
-                                 bt_trend_mean_raw_scaled := scale(bt_trend_mean_raw)][,
+                                 bt_trend_max_raw_scaled := scale(bt_trend_max_raw)][,
                                  bt_trend_seas_raw_scaled := scale(bt_trend_seas_raw)][,
-                                 st_trend_mean_raw_scaled := scale(st_trend_mean_raw)]
+                                 st_trend_mean_raw_scaled := scale(st_trend_mean_raw)][,
+                                 st_trend_max_raw_scaled := scale(st_trend_max_raw)][,
+                                 st_trend_min_raw_scaled := scale(st_trend_min_raw)][,
+                                 st_trend_seas_raw_scaled := scale(st_trend_seas_raw)]
 
 trends_zoe.r <- trends_zoe[,.SD[1], by = reg]
 
-
 ```
 
-Plot Max Change and Abs
-```{r plot max}
-#Raw
+##RAW CHANGE
+
+Plot Max Change
+```{r plot max raw}
+#Raw Bottom maximum temp
 
 #raw mods for abline
-raw_max_mod <- lm(rich~bt_trend_max_raw, data = trends_zoe.r)
-summary(raw_max_mod)$r.squared
-anova(raw_max_mod)$'Pr(>F)'[1]
-# R^2 =  0.1420429
-#p value = 0.3173871
+raw_max_mod_sbt <- lm(rich~bt_trend_max_raw, data = trends_zoe.r)
+
 
 
 ggplot(data = trends_zoe) +
   geom_point(aes(x = bt_trend_max_raw, y = rich, col = reg), size = 4) +
-  geom_abline(intercept = raw_max_mod$coefficients[[1]], slope = raw_max_mod$coefficients[[2]], col = "slategrey", linetype = "dashed") +
-  #geom_point(aes(x = bt_trend_min_raw, y = rich), col = "blue") +
-  #geom_abline(intercept = raw_min_mod$coefficients[[1]], slope = raw_min_mod$coefficients[[2]], col = "blue") +
-  labs(x = "Average\nMaximum Temperature (°C)", y = "Average change\nin richness (spp/yr)") +
+  geom_abline(intercept = raw_max_mod_sbt$coefficients[[1]], slope = raw_max_mod_sbt$coefficients[[2]], col = "slategrey", linetype = "dashed") +
+  labs(x = "Avg Change in Maximum Bottom Temperature (°C)", y = "Average change\nin richness (spp/yr)") +
   theme_classic() +
   theme(text = element_text(size = 14))
 
-ggsave(width = 4, height = 3.5, units = "in", path = "plots/richness_change", filename = "richness_trend_max_raw.jpeg")
+ggsave(path = "plots/richness_change", filename = "richness_trend_max_sbt.jpeg")
+```
+
+```{r plot max surface raw}
+#Raw surface maximum temp
+
+#raw mods for abline
+raw_max_mod_sst <- lm(rich~st_trend_max_raw, data = trends_zoe.r)
+
+
+ggplot(data = trends_zoe) +
+  geom_point(aes(x = st_trend_max_raw, y = rich, col = reg), size = 4) +
+  geom_abline(intercept = raw_max_mod_sst$coefficients[[1]], slope = raw_max_mod_sst$coefficients[[2]], col = "slategrey", linetype = "dashed") +
+  labs(x = "Avg Change in Maximum Surface Temperature (°C)", y = "Average change\nin richness (spp/yr)") +
+  theme_classic() +
+  theme(text = element_text(size = 14))
+
+ggsave(path = "plots/richness_change", filename = "richness_trend_max_sst.jpeg")
 
 ```
 
-Plot Min for Change and Abs
-```{r min plots}
-#Raw
+Plot min Change
+```{r plot min raw}
+#Raw Bottom minimum temp
 
 #raw mods for abline
-raw_min_mod <- lm(rich~bt_trend_min_raw, data = trends_zoe)
-summary(raw_min_mod)$r.squared
-anova(raw_min_mod)$'Pr(>F)'[1]
-# R^2 = 0.05175603
-#p value = 0.5560681
+raw_min_mod_sbt <- lm(rich~bt_trend_min_raw, data = trends_zoe.r)
 
 
 
 ggplot(data = trends_zoe) +
   geom_point(aes(x = bt_trend_min_raw, y = rich, col = reg), size = 4) +
-  geom_abline(intercept = raw_min_mod$coefficients[[1]], slope = raw_min_mod$coefficients[[2]], col = "slategrey", linetype = "dashed") +
-  #geom_point(aes(x = bt_trend_min_raw, y = rich), col = "blue") +
-  #geom_abline(intercept = raw_min_mod$coefficients[[1]], slope = raw_min_mod$coefficients[[2]], col = "blue") +
-  labs(x = "Average\nMinimum Temperature (°C)", y = "Average change\nin richness (spp/yr)") +
+  geom_abline(intercept = raw_min_mod_sbt$coefficients[[1]], slope = raw_min_mod_sbt$coefficients[[2]], col = "slategrey", linetype = "dashed") +
+  labs(x = "Avg Change in Minimum Bottom Temperature (°C)", y = "Average change\nin richness (spp/yr)") +
   theme_classic() +
   theme(text = element_text(size = 14))
 
-ggsave(width = 4, height = 3.5, units = "in", path = "plots/richness_change", filename = "richness_trend_min_raw.jpeg")
-  
+ggsave(path = "plots/richness_change", filename = "richness_trend_min_sbt.jpeg")
+```
+
+```{r plot min surface raw}
+#Raw surface minimum temp
+
+#raw mods for abline
+raw_min_mod_sst <- lm(rich~st_trend_min_raw, data = trends_zoe.r)
+
+
+ggplot(data = trends_zoe) +
+  geom_point(aes(x = st_trend_min_raw, y = rich, col = reg), size = 4) +
+  geom_abline(intercept = raw_min_mod_sst$coefficients[[1]], slope = raw_min_mod_sst$coefficients[[2]], col = "slategrey", linetype = "dashed") +
+  labs(x = "Avg Change in Minimum Surface Temperature (°C)", y = "Average change\nin richness (spp/yr)") +
+  theme_classic() +
+  theme(text = element_text(size = 14))
+
+ggsave(path = "plots/richness_change", filename = "richness_trend_min_sst.jpeg")
 
 ```
 
-
-Plot Mean for Change and Abs bottom
-```{r mean plots}
-#Raw
+Plot mean Change
+```{r plot mean raw}
+#Raw Bottom Mean temp
 
 #raw mods for abline
-raw_mean_mod <- lm(rich~bt_trend_mean_raw, data = trends_zoe)
-raw_mean_mod_abs <- lm(rich~abs(bt_trend_mean_raw), data = trends_zoe)
+raw_mean_mod_sbt <- lm(rich~bt_trend_mean_raw, data = trends_zoe.r)
 
 
-#change in temp over time (unhash to compare with Ryan)
-ggplot() +
-  geom_point(data = trends_zoe, aes(x = bt_trend_mean_raw, y = rich, col = reg), size = 4) +
-  geom_point(data = trends, aes(x = temp, y = rich_naive, col = reg), size = 4, shape = 1) + #compare with ryan's data
-  geom_abline(intercept = raw_mean_mod$coefficients[[1]], slope = raw_mean_mod$coefficients[[2]], col = "slategrey", linetype = "dashed") +
-  geom_abline(intercept = mod$coefficients[[1]], slope = mod$coefficients[[2]], col = "black", linetype = "dashed") +
-  labs(x = "Trend in Mean Temperature (°C/yr)", y = "Average change\nin richness (spp/yr)") +
+
+ggplot(data = trends_zoe) +
+  geom_point(aes(x = bt_trend_mean_raw, y = rich, col = reg), size = 4) +
+  geom_abline(intercept = raw_mean_mod_sbt$coefficients[[1]], slope = raw_mean_mod_sbt$coefficients[[2]], col = "slategrey", linetype = "dashed") +
+  labs(x = "Avg Change in Mean Bottom Temperature (°C)", y = "Average change\nin richness (spp/yr)") +
   theme_classic() +
   theme(text = element_text(size = 14))
 
-#rename region levels for plotting
-levels(trends_zoe$reg) <- c("Aleutian Islands", "E. Bering Sea", "Gulf of Mexico", "Gulf of Alaska", "Northeast US", "Newfoundland", "Southeast US", "Scotian Shelf", "West Coast US")
-
-#absolute value of change in temp over time (unhash to compare with Ryan)
-ggplot() +
-  geom_point(data = trends_zoe, aes(x = abs(bt_trend_mean_raw), y = rich, col = reg), size = 4) +
-  #geom_point(data = trends, aes(x = abs(temp), y = rich_naive, col = reg), size = 4, shape = 1) + #compare with ryan's data
-  geom_abline(intercept = raw_mean_mod_abs$coefficients[[1]], slope = raw_mean_mod_abs$coefficients[[2]], col = "slategrey", linetype = "dashed") +
-  #geom_abline(intercept = mod$coefficients[[1]], slope = mod$coefficients[[2]], col = "black", linetype = "dashed") + #compare with Ryan
-  labs(x = "abs(Trend in Mean Temperature) (°C/yr)", y = "Average change\nin richness (spp/yr)", col = "Region") +
-  theme_classic() +
-  theme(text = element_text(size = 20)) +
-  scale_color_brewer(palette = "Set1")
-
-ggsave(path = "plots/richness_change", filename = "richness_trend_mean_raw_abs.jpeg")
-ggsave(path = "plots/richness_change", filename = "richness_trend_mean_raw_abs.eps")
-  
-
+ggsave(path = "plots/richness_change", filename = "richness_trend_mean_sbt.jpeg")
 ```
-Plot change and abs for surface (just for comparison)
-```{r mean plots surface}
-#Raw
+
+```{r plot mean surface raw}
+#Raw surface mean temp
 
 #raw mods for abline
-raw_mean_mod_st <- lm(rich~st_trend_mean_raw, data = trends_zoe)
+raw_mean_mod_sst <- lm(rich~st_trend_mean_raw, data = trends_zoe.r)
 
-#change in temp over time
-ggplot() +
-  geom_point(data = trends_zoe, aes(x = st_trend_mean_raw, y = rich, col = reg), size = 4) +
-  geom_abline(intercept = raw_mean_mod$coefficients[[1]], slope = raw_mean_mod$coefficients[[2]], col = "slategrey", linetype = "dashed") +
-  labs(x = "Trend in Mean STemperature (°C/yr)", y = "Average change\nin richness (spp/yr)") +
+
+ggplot(data = trends_zoe) +
+  geom_point(aes(x = st_trend_mean_raw, y = rich, col = reg), size = 4) +
+  geom_abline(intercept = raw_mean_mod_sst$coefficients[[1]], slope = raw_mean_mod_sst$coefficients[[2]], col = "slategrey", linetype = "dashed") +
+  labs(x = "Avg Change in Mean Surface Temperature (°C)", y = "Average change\nin richness (spp/yr)") +
   theme_classic() +
   theme(text = element_text(size = 14))
 
-#absolute value of change in temp over time
-ggplot() +
-  geom_point(data = trends_zoe, aes(x = abs(st_trend_mean_raw), y = rich, col = reg), size = 4) +
-  geom_abline(intercept = raw_mean_mod_st$coefficients[[1]], slope = raw_mean_mod_st$coefficients[[2]], col = "slategrey", linetype = "dashed") +
-  labs(x = "abs(Trend in Mean STemperature) (°C/yr)", y = "Average change\nin richness (spp/yr)") +
-  theme_classic() +
-  theme(text = element_text(size = 14))
-
-ggsave(width = 4, height = 3.5, units = "in", path = "plots/richness_change", filename = "richness_trend_mean_raw.jpeg")
-  
+ggsave(path = "plots/richness_change", filename = "richness_trend_mean_sst.jpeg")
 
 ```
 
-Plot Seasonality for Change and Abs
-```{r Seasonality plots}
-#Raw
+Plot seas Change
+```{r plot seas raw}
+#Raw Bottom seas temp
 
 #raw mods for abline
-raw_seas_mod <- lm(rich~bt_trend_seas_raw, data = trends_zoe)
-summary(raw_seas_mod)$r.squared
-anova(raw_seas_mod)$'Pr(>F)'[1]
-# R squared value: 0.3593094
-#p value: 0.08800772
+raw_seas_mod_sbt <- lm(rich~bt_trend_seas_raw, data = trends_zoe.r)
+
 
 
 ggplot(data = trends_zoe) +
   geom_point(aes(x = bt_trend_seas_raw, y = rich, col = reg), size = 4) +
-  geom_abline(intercept = raw_seas_mod$coefficients[[1]], slope = raw_seas_mod$coefficients[[2]], col = "slategrey", linetype = "dashed") +
-  #geom_point(aes(x = bt_trend_seas_raw, y = rich), col = "blue") +
-  #geom_abline(intercept = raw_seas_mod$coefficients[[1]], slope = raw_seas_mod$coefficients[[2]], col = "blue") +
-  labs(x = "Average\nTemperature\nSeasonality (°C)", y = "Average change\nin richness (spp/yr)") +
+  geom_abline(intercept = raw_seas_mod_sbt$coefficients[[1]], slope = raw_seas_mod_sbt$coefficients[[2]], col = "slategrey", linetype = "dashed") +
+  labs(x = "Avg Change in Bottom Temperature Seasonality (°C)", y = "Average change\nin richness (spp/yr)") +
   theme_classic() +
   theme(text = element_text(size = 14))
 
-ggsave(width = 4, height = 3.5, units = "in", path = "plots/richness_change", filename = "richness_trend_seas_raw.jpeg")
-  
- 
+ggsave(path = "plots/richness_change", filename = "richness_trend_seas_sbt.jpeg")
 ```
 
+```{r plot seas surface raw}
+#Raw surface seas temp
+
+#raw mods for abline
+raw_seas_mod_sst <- lm(rich~st_trend_seas_raw, data = trends_zoe.r)
+
+
+ggplot(data = trends_zoe) +
+  geom_point(aes(x = st_trend_seas_raw, y = rich, col = reg), size = 4) +
+  geom_abline(intercept = raw_seas_mod_sst$coefficients[[1]], slope = raw_seas_mod_sst$coefficients[[2]], col = "slategrey", linetype = "dashed") +
+  labs(x = "Avg Change in Surface Temperature Seasonality (°C)", y = "Average change\nin richness (spp/yr)") +
+  theme_classic() +
+  theme(text = element_text(size = 14))
+
+ggsave(path = "plots/richness_change", filename = "richness_trend_seas_sst.jpeg")
+
+```
+
+##Absolute value of change
+Plot Max Change
+```{r plot max}
+#Raw Bottom maximum temp
+
+#raw mods for abline
+raw_max_mod_sbt_abs <- lm(rich~abs(bt_trend_max_raw), data = trends_zoe.r)
+
+summary(raw_max_mod_sbt_abs)
+
+ggplot(data = trends_zoe) +
+  geom_point(aes(x = abs(bt_trend_max_raw), y = rich, col = reg), size = 4) +
+  geom_abline(intercept = raw_max_mod_sbt_abs$coefficients[[1]], slope = raw_max_mod_sbt_abs$coefficients[[2]], col = "slategrey", linetype = "dashed") +
+  labs(x = "Magnitude of Avg Change in Maximum Bottom Temperature (°C)", y = "Average change\nin richness (spp/yr)") +
+  theme_classic() +
+  theme(text = element_text(size = 14))
+
+ggsave(path = "plots/richness_change", filename = "richness_trend_max_sbt_abs.jpeg")
+```
+
+```{r plot max surface}
+#Raw surface maximum temp
+
+#raw mods for abline
+raw_max_mod_sst_abs <- lm(rich~abs(st_trend_max_raw), data = trends_zoe.r)
+
+
+ggplot(data = trends_zoe) +
+  geom_point(aes(x = abs(st_trend_max_raw), y = rich, col = reg), size = 4) +
+  geom_abline(intercept = raw_max_mod_sst_abs$coefficients[[1]], slope = raw_max_mod_sst_abs$coefficients[[2]], col = "slategrey", linetype = "dashed") +
+  labs(x = "Magnitude of Avg Change in Maximum Surface Temperature (°C)", y = "Average change\nin richness (spp/yr)") +
+  theme_classic() +
+  theme(text = element_text(size = 14))
+
+ggsave(path = "plots/richness_change", filename = "richness_trend_max_sst_abs.jpeg")
+
+```
+
+Plot min Change
+```{r plot min}
+#Raw Bottom minimum temp
+
+#raw mods for abline
+raw_min_mod_sbt_abs <- lm(rich~abs(bt_trend_min_raw), data = trends_zoe.r)
+
+
+
+ggplot(data = trends_zoe) +
+  geom_point(aes(x = abs(bt_trend_min_raw), y = rich, col = reg), size = 4) +
+  geom_abline(intercept = raw_min_mod_sbt_abs$coefficients[[1]], slope = raw_min_mod_sbt_abs$coefficients[[2]], col = "slategrey", linetype = "dashed") +
+  labs(x = "Magnitude of Avg Change in Minimum Bottom Temperature (°C)", y = "Average change\nin richness (spp/yr)") +
+  theme_classic() +
+  theme(text = element_text(size = 14))
+
+ggsave(path = "plots/richness_change", filename = "richness_trend_min_sbt_abs.jpeg")
+```
+
+```{r plot min surface}
+#Raw surface minimum temp
+
+#raw mods for abline
+raw_min_mod_sst_abs <- lm(rich~abs(st_trend_min_raw), data = trends_zoe.r)
+
+
+ggplot(data = trends_zoe) +
+  geom_point(aes(x = abs(st_trend_min_raw), y = rich, col = reg), size = 4) +
+  geom_abline(intercept = raw_min_mod_sst_abs$coefficients[[1]], slope = raw_min_mod_sst_abs$coefficients[[2]], col = "slategrey", linetype = "dashed") +
+  labs(x = "Magnitude of Avg Change in Minimum Surface Temperature (°C)", y = "Average change\nin richness (spp/yr)") +
+  theme_classic() +
+  theme(text = element_text(size = 14))
+
+ggsave(path = "plots/richness_change", filename = "richness_trend_min_sst_abs.jpeg")
+
+```
+
+Plot mean Change
+```{r plot mean abs}
+#Raw Bottom Mean temp
+
+#raw mods for abline
+raw_mean_mod_sbt_abs <- lm(rich~abs(bt_trend_mean_raw), data = trends_zoe.r)
+
+
+
+ggplot(data = trends_zoe) +
+  geom_point(aes(x = abs(bt_trend_mean_raw), y = rich, col = reg), size = 4) +
+  geom_abline(intercept = raw_mean_mod_sbt_abs$coefficients[[1]], slope = raw_mean_mod_sbt_abs$coefficients[[2]], col = "slategrey", linetype = "dashed") +
+  labs(x = "Magnitude of Avg Change in Mean Bottom Temperature (°C)", y = "Average change\nin richness (spp/yr)") +
+  theme_classic() +
+  theme(text = element_text(size = 14))
+
+ggsave(path = "plots/richness_change", filename = "richness_trend_mean_sbt_abs.jpeg")
+```
+
+```{r plot mean surface abs}
+#Raw surface mean temp
+
+#raw mods for abline
+raw_mean_mod_sst_abs <- lm(rich~abs(st_trend_mean_raw), data = trends_zoe.r)
+
+
+ggplot(data = trends_zoe) +
+  geom_point(aes(x = abs(st_trend_mean_raw), y = rich, col = reg), size = 4) +
+  geom_abline(intercept = raw_mean_mod_sst_abs$coefficients[[1]], slope = raw_mean_mod_sst_abs$coefficients[[2]], col = "slategrey", linetype = "dashed") +
+  labs(x = "Magnitude of Avg Change in Mean Surface Temperature (°C)", y = "Average change\nin richness (spp/yr)") +
+  theme_classic() +
+  theme(text = element_text(size = 14))
+
+ggsave(path = "plots/richness_change", filename = "richness_trend_mean_sst_abs.jpeg")
+
+```
+
+Plot seas Change
+```{r plot seas}
+#Raw Bottom seas temp
+
+#raw mods for abline
+raw_seas_mod_sbt_abs <- lm(rich~abs(bt_trend_seas_raw), data = trends_zoe.r)
+
+
+
+ggplot(data = trends_zoe) +
+  geom_point(aes(x = abs(bt_trend_seas_raw), y = rich, col = reg), size = 4) +
+  geom_abline(intercept = raw_seas_mod_sbt_abs$coefficients[[1]], slope = raw_seas_mod_sbt_abs$coefficients[[2]], col = "slategrey", linetype = "dashed") +
+  labs(x = "Magnitude of Avg Change in Bottom Temperature Seasonality (°C)", y = "Average change\nin richness (spp/yr)") +
+  theme_classic() +
+  theme(text = element_text(size = 14))
+
+ggsave(path = "plots/richness_change", filename = "richness_trend_seas_sbt_abs.jpeg")
+```
+
+```{r plot seas surface}
+#Raw surface seas temp
+
+#raw mods for abline
+raw_seas_mod_sst_abs <- lm(rich~abs(st_trend_seas_raw), data = trends_zoe.r)
+
+
+ggplot(data = trends_zoe) +
+  geom_point(aes(x = abs(st_trend_seas_raw), y = rich, col = reg), size = 4) +
+  geom_abline(intercept = raw_seas_mod_sst_abs$coefficients[[1]], slope = raw_seas_mod_sst_abs$coefficients[[2]], col = "slategrey", linetype = "dashed") +
+  labs(x = "Magnitude of Avg Change in Surface Temperature Seasonality (°C)", y = "Average change\nin richness (spp/yr)") +
+  theme_classic() +
+  theme(text = element_text(size = 14))
+
+ggsave(path = "plots/richness_change", filename = "richness_trend_seas_sst_abs.jpeg")
+
+```
+********
 
 Compare Zoe temp patterns to Ryan's temp patterns
 ```{r temp comparisons}

@@ -116,7 +116,7 @@ for each month-year t and each buoy i
 seus_temp_mod <- lmer(month_avg ~ as.factor(date.f) + (1|Location), data = se_hourly_temp.narm) #month and year together
 
 save(seus_temp_mod, file = "seus_temp_mod.RData")
-
+load("seus_temp_mod.RData")
 summary(seus_temp_mod)
 
 
@@ -377,22 +377,19 @@ predicted_sst_seus_monthly[,sst_seas_annual := sst_max_annual - sst_min_annual]
 
 
 ```{r yearly min and max and seas from observations}
-se_hourly_temp.narm.r <- data.table(se_hourly_temp.narm.r)
-se_hourly_temp.narm.r[,sst_min_annual := min(month_avg), by = c("Location", "year")]
-se_hourly_temp.narm.r[,sst_max_annual := max(month_avg), by = c("Location", "year")]
-se_hourly_temp.narm.r[,sst_seas_annual := sst_max_annual - sst_min_annual]
+se_hourly_temp.narm <- data.table(se_hourly_temp.narm)
+se_hourly_temp.narm[,sst_min_annual := min(month_avg), by = c("Location", "year")]
+se_hourly_temp.narm[,sst_max_annual := max(month_avg), by = c("Location", "year")]
+se_hourly_temp.narm[,sst_seas_annual := sst_max_annual - sst_min_annual]
 ```
 
 
 Unique values
-```{r unique model}
-seus_temp <- unique(predicted_sst_seus_monthly, by = c("Location", "year"))
+```{r unique model temp values}
+seus_temp <- unique(predicted_sst_seus_monthly, by = c("Location", "year", "month"))
 
 #reorder factors
-seus_temp$Location <- factor(seus_temp$Location, levels = c("41001_east_hatteras","41037_wrightsville" , "fpsn7_fryingpanNC", "41004_charleston", "41008_savannah","sauf1_staugustineFL", "41009_canaveral" ))
-
-fct_rev(levels)
-
+seus_temp$Location <- factor(seus_temp$Location, levels = c("41001_east_hatteras","41037_wrightsville" , "fpsn7_fryingpanNC", "41004_charleston","svls1_savannahlight", "41005_SC", "41008_savannah","sauf1_staugustineFL", "41009_canaveral"))
 
 ggplot(data = seus_temp, aes(x = year)) +
   geom_point(aes(y = sst_min_annual), color= "blue") +
@@ -402,14 +399,13 @@ ggplot(data = seus_temp, aes(x = year)) +
   theme_bw()
 
 ggsave(width = 3, height = 9, file = "seus_buoy_data_modeled.png")
-
 ```
 
 
 ```{r unique observations}
-seus_temp_obs <- unique(se_hourly_temp.narm.r, by = c("Location", "year"))
+seus_temp_obs <- unique(se_hourly_temp.narm, by = c("Location", "year", "month"))
 
-seus_temp_obs$Location <- factor(seus_temp_obs$Location, levels = c("41001_east_hatteras","41037_wrightsville" , "fpsn7_fryingpanNC", "41004_charleston", "41008_savannah","sauf1_staugustineFL", "41009_canaveral" ))
+seus_temp_obs$Location <- factor(seus_temp_obs$Location, levels = c("41001_east_hatteras","41037_wrightsville" , "fpsn7_fryingpanNC", "41004_charleston","svls1_savannahlight", "41005_SC", "41008_savannah","sauf1_staugustineFL", "41009_canaveral"))
 
 ggplot(data = seus_temp_obs, aes(x = year)) +
   geom_point(aes(y = sst_min_annual), color= "blue") +
@@ -420,44 +416,67 @@ ggplot(data = seus_temp_obs, aes(x = year)) +
 
 ggsave(width = 3, height = 9, file = "seus_buoy_data_observed.png")
 
+
 ```
-Now, average temp values from model. 
+Plot modeled versus observed (modeled on y axis and observed on x axis). We need Location, Year, sst_min_annual, sst_max_annual, sst_seas_annual.
+```{r observed versus modeled for each region}
+#observed
+observed_reduced_seus <- seus_temp_obs[,.(Location, year, month, sst_min_annual, sst_max_annual, sst_seas_annual, month_avg)][,type := "obs"]
+predicted_reduced_seus <- seus_temp[,.(Location, year, month, sst_min_annual, sst_max_annual, sst_seas_annual, sst_month_sst)][,type := "pred"]
+
+pred_obs_seus <-  predicted_reduced_seus[observed_reduced_seus, on = c("Location", "year", "month")]
 
 
-
-
-
-
-
-
-
-
-
-
-
-```{r plot st. augustine, charleston, east hatteras over time}
-subset <- se_hourly_temp.narm[Location %in% c("sauf1_staugustineFL", "41001_east_hatteras", "41004_charleston")]
-
-subset[,sst_min_annual := min(month_avg), by = c("Location", "year")]
-subset[,sst_max_annual := max(month_avg), by = c("Location", "year")]
-subset[,sst_seas_annual := sst_max_annual - sst_min_annual]
-
-subset_reduced <- unique(subset, by = c("Location", "year"))
-
-ggplot(data = subset_reduced, aes(x = year)) +
-  geom_point(aes(y = sst_min_annual), color = "blue") +
-  geom_point(aes(y = sst_max_annual), color = "red") +
+#monthly
+summary(pred_obs_seus)
+ggplot(data = pred_obs_seus) +
+  geom_point(aes(x = month_avg , y = sst_month_sst)) +
+  geom_abline(slope = 1) +
   facet_wrap(~Location) +
-  theme_bw()
+  labs(x = "Observed Monthly Avg Temp", y = "Predicted Monthly Avg Temp") +
+  theme_classic()
+
+ggsave(file = "predicted_obs_temp_seus_monthly.jpg")
+
+#yearly
+ggplot(data = pred_obs_seus) +
+  geom_point(aes(x = i.sst_max_annual, y = sst_max_annual)) +
+  geom_abline(slope = 1) +
+  facet_wrap(~Location) +
+  labs(x = "Observed Maximum Annual Temperature", y = "Predicted Maximum Annual Temperature") +
+  theme_classic()
+
+ggsave(file = "predicted_obs_temp_seus_maxannual.jpg")
+
+ggplot(data = pred_obs_seus) +
+  geom_point(aes(x = i.sst_min_annual, y = sst_min_annual)) +
+  geom_abline(slope = 1) +
+  facet_wrap(~Location) +
+  labs(x = "Observed Minimum Annual Temperature", y = "Predicted Minimum Annual Temperature") +
+  theme_classic()
+
+ggsave(file = "predicted_obs_temp_seus_minannual.jpg")
+
+ggplot(data = pred_obs_seus) +
+  geom_point(aes(x = i.sst_seas_annual, y = sst_seas_annual)) +
+  geom_abline(slope = 1) +
+  facet_wrap(~Location) +
+  labs(x = "Observed Annual Temperature Seasonality", y = "Predicted Annual Temperature Seasonality") +
+  theme_classic()
+  
+ggsave(file = "predicted_obs_temp_seus_seusannual.jpg")
 ```
+
+
 
 
 ```{r plot where buoys are}
 library(dplyr)
-latlon_seus <- se_hourly_temp.narm[,.(lat,lon)]
+library(ggrepel)
+latlon_seus <- se_hourly_temp.narm[,.(lat,lon, Location)]
 
 latlon_seus <- latlon_seus %>% 
-  select(lat,lon) %>% 
+  select(lat,lon, Location) %>% 
   unique
 
 
@@ -469,12 +488,12 @@ southeast <- subset(states, region %in% c("north carolina", "south carolina", "v
     coord_fixed(1.3) +
 	geom_point(data = latlon_seus,  # Add points
 		aes(x = lon, y = lat), color = "red") +
+    geom_text_repel(data = latlon_seus, 
+               aes(x = lon, y = lat, label = Location), size = 2.5, nudge_x = 4) +
 	theme_classic() +  # Remove ugly grey background
 	xlab("Longitude") +
 	ylab("Latitude"))
-```
 
-```{r temp over time from model}
 
 
 ```

@@ -512,6 +512,52 @@ ggsave(cum_richness_plot, file = "cum_richness_plot.eps")
 ?ggsave
 ```
 
+Another plot looking only at observed cumulative richness, and NOT predicted richness. 
+```{r cum richness observed alone}
+library(dplyr)
+
+#pull col/ext from spp master
+spp_master_ztemp_seus_buoy.r <- spp_master_ztemp_seus_buoy[,.(col_count = sum(col, na.rm = T), ext_count = sum(now_ext, na.rm = T), observations = .N), by = .(reg, year)][, richness_yearly := col_count-ext_count][ ,cumulative_richness := cumsum(richness_yearly), by = .(reg)]
+
+levels(spp_master_ztemp_seus_buoy.r[,reg])
+
+#rename levels for plotting and linking to hauls
+setattr(spp_master_ztemp_seus_buoy.r[["reg"]],"levels",c("Aleutian Islands", "E. Bering Sea", "Gulf of Mexico", "Gulf of Alaska", "Northeast US", "Newfoundland", "Southeast US", "Scotian Shelf", "West Coast US"))
+
+
+
+#plot 
+cum_richness_plot <- ggplot(aes(x=year), data = spp_master_ztemp_seus_buoy.r) +
+  geom_point(aes(y = cumulative_richness), pch = 20) +
+  geom_hline(yintercept = 0) +
+  labs(x="Year", y = "Cumulative Richness") +
+  facet_wrap(~reg, scales = c("free"))+
+  theme_classic()
+  
+cum_richness_plot
+
+
+```
+
+```{r observations per region}
+region_observations <- spp_master_ztemp_seus_buoy.r[,.(obs_yearly = mean(observations)), by = .(reg)]
+reg_obs_plot <- ggplot(data = region_observations, aes(x = reg, y = obs_yearly)) +
+  geom_bar(stat = "identity", width = 0.9, color = "black", fill = "black") +
+  ylab("Species in Region") +
+  xlab("Region") +
+  theme_classic() +
+  theme(axis.text.x = element_text(angle = 90))
+
+library(gridExtra)
+grid.arrange(cum_richness_plot, reg_obs_plot, ncol = 1, nrow = 2, heights =  c(3/5,2/5))
+
+ggsave(width = 10, height = 8, file = "cumrichnessplot.jpg")
+
+```
+
+
+
+
 In response to plots above, Malin: "Perhaps worth one more set of plots to understand what’s going on: each point would be a year, x-axis would be observed change in richness, y-axis would be predicted change in richness. One set of plots for each of the three models (null, temp, temp+trait), each sub-plot would be a region, as you have here."
 
 ```{r observed versus predicted change in richness}

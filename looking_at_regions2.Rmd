@@ -9,34 +9,25 @@ library(ggplot2)
 library(lme4)
 library(dplyr)
 
-load("~/Documents/grad school/Rutgers/LabWork/Colonization_Extinction/spp_master_ztemp.Rdata")
+load("spp_master_ztemp.Rdata")
 
 ```
 First, let's get some regional statistics
 ```{r regional stats}
 #count colonizations by region
 col <- spp_master_ztemp %>%
-  group_by(reg) %>%
+  group_by(reg, year) %>%
   summarise(sum(col))
 
 #count extinctions by region
 ext <- spp_master_ztemp %>%
-  group_by(reg) %>%
+  group_by(reg, year) %>%
   summarise(sum(now_ext))
 
 #count observations by region
 count <- spp_master_ztemp %>%
-  group_by(reg) %>%
+  group_by(reg, year) %>%
   summarise(n())
-
-#first year
-year.first <- spp_master_ztemp %>%
-  group_by(reg) %>%
-  summarise(min(year))
-#last year
-year.last <- spp_master_ztemp %>%
-  group_by(reg) %>%
-  summarise(max(year))
 
 region_summaries <- cbind(count, col[,2], ext[,2], year.first[,2], year.last[,2])
 colnames(region_summaries) <- c("reg", "n", "n.col", "n.ext", "year.first","year.last")
