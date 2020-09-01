@@ -487,6 +487,15 @@ pal <- wes_palette("GrandBudapest1", 5, type = "continuous")
 
 mod_col_trait <- glmer(col ~ max_sst_temp_change_abs_lag1_scaled * age.maturity_scaled + age.max_scaled + (1|reg) + (1|spp), family = "binomial", data = colonization.reduced, nAGQ = 0)
 
+
+#temp only col trait model seas_sst_temp_scaled
+mod_col_trait_notraits <- glmer(col ~ seas_sst_temp_scaled + (1|reg) + (1|spp), family = "binomial", data = colonization.reduced, nAGQ = 0)
+summary(mod_col_trait_notraits)
+
+#trait only col trait model
+mod_col_trait_notemp <- glmer(col ~ age.maturity_scaled + age.max_scaled + (1|reg) + (1|spp), family = "binomial", data = colonization.reduced, nAGQ = 0)
+summary(mod_col_trait_notemp)
+
 #reverse to agematurity unscaled
 mod_col_reverse_scaled_agematurity <- lm(age.maturity ~ age.maturity_scaled, data = spp_master_ztemp_seus_buoy.traits_scaled) 
 
@@ -539,6 +548,19 @@ Best model: max_sst_temp_scaled * age.maturity_scaled + age.max_scaled
 
 ```{r predicted values extirpation}
 mod_ext_trait <- glmer(now_ext ~ max_sst_temp_scaled * age.maturity_scaled + age.max_scaled + (1|reg) + (1|spp), family = "binomial", data = extinction.reduced, nAGQ = 0)
+
+hist(spp_master_ztemp_seus_buoy.traits$max_sst_temp, 100)
+
+#second best ext trait model
+mod_ext_trait_2 <- glmer(now_ext ~ max_sst_temp_lag1_scaled * age.maturity_scaled + age.max_scaled + (1|reg) + (1|spp), family = "binomial", data = extinction.reduced, nAGQ = 0)
+
+#temp only ext trait model min_sst_temp_lag3_scaled
+mod_ext_trait_notraits <- glmer(now_ext ~ min_sst_temp_lag3_scaled + (1|reg) + (1|spp), family = "binomial", data = extinction.reduced, nAGQ = 0)
+
+
+#trait only ext trait model
+mod_ext_trait_notemp <- glmer(now_ext ~ age.maturity_scaled + age.max_scaled + (1|reg) + (1|spp), family = "binomial", data = extinction.reduced, nAGQ = 0)
+summary(mod_ext_trait_notemp)
 
 #reverse to agematurity unscaled
 mod_ext_reverse_scaled_agematurity <- lm(age.maturity ~ age.maturity_scaled, data = spp_master_ztemp_seus_buoy.traits_scaled) 

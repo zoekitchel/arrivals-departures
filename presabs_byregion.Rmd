@@ -1,0 +1,58 @@
+---
+title: "Region PresAbs Species Figure"
+output: html_notebook
+---
+
+```{r setup}
+library(data.table)
+
+load("spp_master_ztemp_seus_buoys.RData")
+```
+
+```{r data setup}
+#rename region factors for plotting
+spp_master_ztemp_seus_buoy[, region := factor(reg, labels = c("Aleutian Islands", "Eastern Bering Sea", "Gulf of Mexico", "Gulf of Alaska", "Northeast US", "Newfoundland","Southeast US","Scotian Shelf" ,"West Coast Triennial"))]
+
+#make spp a factor
+spp_master_ztemp_seus_buoy[, spp := factor(spp)]
+#reverse order for plotting
+spp_master_ztemp_seus_buoy[, spp := factor(spp, levels = rev(levels(spp)))]
+
+
+ggplot(spp_master_ztemp_seus_buoy, aes(year, as.factor(spp))) + 
+  geom_tile(aes(fill = factor(present)), color = "grey", size = 0.01) +
+  facet_wrap(~region, scales="free") +
+  scale_fill_manual(values = c("white", "black"), breaks = c(0,1), labels = c("Absent", "Present")) +
+  labs(x = "Year", y = "Species") +
+  theme(legend.title = element_blank(),
+        axis.text.y = element_text(size = 0.8),
+        axis.text.x = element_text(size = 8),
+        strip.text.x = element_text(size = 10),
+        axis.ticks = element_blank())
+
+ggsave("region_presabs.pdf", width = 10, height = 8, units = "in")
+
+```
+
+Highlight:
+Colonizers:
+
+* AI: Pandalus (cold-water prawn) is a genus of shrimp in the family Pandalidae. 
+* EBS: Metridium farcimen is a species of sea anemone in the family Metridiidae. It is commonly known as the giant plumose anemone or white-plumed anemone. It is found in the eastern Pacific Ocean from Alaska down to Catalina Island, California.
+* GMEX: The Atlantic sea nettle (Chrysaora quinquecirrha), also known as the East Coast sea nettle or US Atlantic sea nettle, is a species of jellyfish that inhabits the Atlantic coast of the United States. 
+* GOA: Eumicrotremus phrynoides, Toad Lumpsucker
+* NEUS: Bathypolypus arcticus is a deep sea octopus that is typically found at depths from 200-600 m in the Atlantic Ocean (Boyle 1987). 
+* NEWF: Gersemia rubiformis, commonly known as the sea strawberry, is a species of soft coral in the family Nephtheidae. 
+* SA: The scaled sardine, Harengula jaguana, is a herring-like fish in the family Clupeidae. It is native to coastal waters of the western Atlantic Ocean, from the Gulf of Mexico (where it is known as the pilchard or whitebait) down to Brazil where it is called mata.**good example
+* WCTRI: North-Pacific argentine, Argentina sialis (herring)
+
+Extirpators:
+* AI: Chlamys rubida is a species of bivalve mollusc in the family Pectinidae found on the west coast of North America from the Gulf of Alaska to San Diego, California.
+* EBS: Chrysaora melanaster, commonly known as the northern sea nettle or brown jellyfish, is a species of jellyfish native to the northern Pacific Ocean and adjacent parts of the Arctic Ocean.
+* GMEX: Ovalipes stephensoni, swimming crab
+* NEUS: Rock sea bass, Centropristis philadelphica
+* NEWF: Lycoides reticulatus, arctic eel pout
+* SA: The scrawled cowfish (Acanthostracion quadricornis) is a species of boxfish native to the eastern Atlantic. (really interesting examples in SA where most species leaving, very few coming, which is opposite from all other regions)
+* WCTRI: Plumose anenome, Metridium dianthus is an anemone of very variable form. 
+
+
