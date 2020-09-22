@@ -1,0 +1,155 @@
+class,order,family,genus,genus,lvl_dvp,hbt,lat,lat_n,lat_s,length_avg,width_avg,length_max,width_max,fecundity,weight_avg,weight_max
+malacostraca,decapoda,pandalidae,atlantopandalus,propinqvus,NA,benthopelagic,34.459,72.42516667,37.96699905,NA,NA,NA,NA,NA,0.045,NA
+cephalopoda,oegopsida,gonatidae,berryteuthis,magister,direct,pelagic,25.53,61.66659927,36.13299942,340,NA,430,NA,40000,NA,2.6
+malacostraca,decapoda,pasiphaeidae,pasiphaea,multidentata,NA,pelagic,100.932,75.332,-25.6,NA,NA,105,NA,NA,NA,NA
+malacostraca,decapoda,sergestidae,sergestes,arcticus,planktotrophic,pelagic,125.408,71.481,-53.92667007,NA,NA,14,NA,NA,NA,NA
+asteroidea,notomyotida,benthopectinidae,cheiraster,dawsoni,NA,benthic,11.25,56.9073,45.6647,NA,NA,170,NA,NA,NA,NA
+malacostraca,decapoda,oregoniidae,chionoecetes,bairdi,planktotrophic ,benthic,12,60,48,NA,NA,15,140,200000,0.997,NA
+bivalvia,pectinida,pectinidae,chlamys,rubida ,planktotrophic,benthic,40.029,68.27999878,28.25,60,NA,70,NA,NA,NA,NA
+cephalopoda,octopoda,enteroctopodidae,enteroctopus,dofleini ,direct,benthic,45,67,22,550,NA,NA,NA,50000,60,272
+echinoidea,clypeasteroida,echinarachniidae,echinarachnius,parma,planktotrophic,benthic,101.254,75.03166962,-26.222,75,NA,NA,NA,NA,NA,NA
+asteroidea,valvatida,solasteridae,crossaster,papposus,lecithotrophic,benthic,48.23,82.15000153,33.92499924,150,NA,300,NA,6000,NA,NA
+gastropoda,littorinimorpha,cymatiidae,fusitriton,oregonensis,planktotrophic,benthic,22.28,55,32.7157,85,NA,130,64,1500000,0.051,NA
+cephalopoda,sepiida,sepiolidae,rossia,pacifica,direct,benthic,29.45,61.45000076,32,40,NA,NA,NA,NA,NA,NA
+echinoidea,camarodonta,strongylocentrotidae,strongylocentrotus,droebachiensis ,planktotrophic ,benthic,38.283,"	76.0500",38,78,NA,80,NA,150000,NA,NA
+asteroidea,forcipulatida,asteriidae,asterias,amurensis,planktotrophic,benthic,111.163,68,-43,450,NA,500,NA,20000000,NA,NA
+asteroidea,forcipulatida,asteriidae,leptasterias,polaris,lecithotrophic,benthic,33.0855,"	74.6840",42,174,NA,500,NA,3000,NA,NA
+malacostraca,decapoda,oregoniidae,hyas,coarctatus,planktotrophic,benthic,32.5849,"		71.8149",39,60,49,NA,NA,4750,NA,0.75
+bivalvia,pectinida,pectinidae,patinopecten,caurinus ,planktotrophic ,benthic,28,64,36,165,NA,300,NA,NA,NA,NA
+asteroidea,forcipulatida,asteriidae,pycnopodia,helianthoides ,lecithotrophic,benthic,22.2843,55,32.7157,525,NA,1000,NA,NA,5,NA
+malacostraca,decapoda,geryonidae,chaceon,quinquedens ,planktotrophic,benthic,89.7,54.12,-35.58000183,80,NA,180,NA,215000,NA,NA
+malacostraca,decapoda,sicyoniidae,sicyonia,brevirostris ,lecithotrophic,benthic,32.253,43.45029831,11.1965,NA,NA,150,NA,NA,NA,NA
+malacostraca,decapoda,oregoniidae,chionoecetes,opilio,planktotrophic,benthic,32.788,71.97732,39.189967,NA,97.5,NA,150,86000,0.5,1.35
+gastropoda,neogastropoda,buccinidae,buccinum,scalariforme,NA,benthic,33.867,76.96585083,43.09999847,65,NA,85,NA,NA,NA,NA
+gastropoda,neogastropoda,buccinidae,neptunea,lyrata,direct,benthic,30.203,70,40,90,NA,200,NA,NA,NA,NA
+malacostraca,decapoda,aethridae,hepatus,epheliticus,planktotrophic,benthic,16.138,35,18,NA,NA,60,NA,NA,NA,NA
+asteroidea,paxillosida,luidiidae,luidia,foliolata,planktotrophic,benthic,27.867,59.86700058,32,NA,NA,600,NA,100000,NA,NA
+asteroidea,valvatida,goniasteridae,hippasteria,phrygiana,NA,benthic,146.405,76.96585083,-69.44,NA,NA,200,NA,NA,NA,NA
+asteroidea,forcipulatida,asteriidae,rathbunaster,californicus,lecithotrophic,benthic,14.0712,46.07167053,32,NA,NA,NA,NA,NA,NA,NA
+malacostraca,stomatopoda,squillidae,squilla,empusa,planktotrophic ,benthic,38.707,43.68999863,4.982999802,185,NA,NA,NA,50000,NA,NA
+malacostraca,decapoda,leucosiidae,persephona,mediterranea,NA,benthic,59.196,35.22700119,-23.9694,NA,39.5,60,20,NA,NA,NA
+malacostraca,decapoda,oregoniidae,hyas,lyratus,planktotrophic,benthic,13.8,61.8183,48.02000046,NA,NA,NA,NA,NA,NA,NA
+malacostraca,decapoda,lithodidae,lithodes,aequispinus,lecithotrophic,benthic,19.751,59.3666687,39.6155,NA,NA,40,NA,4500,NA,NA
+bivalvia,mytilida,mytilidae,modiolus,modiolus,planktotrophic,benthic,71.736,67.07533333,-4.66149,150,NA,200,NA,1000000,NA,NA
+malacostraca,decapoda,oregoniidae,oregonia,gracilis,NA,benthic,50.401,60.52000046,10.1185,NA,30,75,NA,NA,NA,NA
+echinoidea,camarodonta,strongylocentrotidae,strongylocentrotus,fragilis,planktotrophic,benthic,26.466,54,28,100,NA,NA,NA,NA,NA,NA
+ophiuroidea,euryalida,gorgonocephalidae,gorgonocephalus,eucnemis,planktotrophic,benthic,118.522,81.92299652,-36.59999847,80,NA,760,NA,NA,NA,NA
+bivalvia,cardiida,cardiidae,ciliatocardium,ciliatum,NA,benthic,66.248,"	78.2488",12,NA,NA,75,NA,NA,NA,NA
+malacostraca,decapoda,crangonidae,crangon,dalli    ,planktotrophic,benthic,18.65,67.5,48.85,NA,NA,NA,NA,NA,NA,NA
+gastropoda,neogastropoda,buccinidae,buccinum,polare,planktotrophic,benthic,27.068,71.97732,44.9095235,NA,NA,67,NA,NA,NA,NA
+gastropoda,neogastropoda,buccinidae,buccinum,angulosum,planktotrophic,benthic,10.948,70.93000031,59.98167038,NA,NA,NA,NA,NA,NA,NA
+gastropoda,neogastropoda,buccinidae,buccinum,plectrum,planktotrophic,benthic,21.564,69.79666901,48.23333333,NA,NA,60,NA,NA,NA,NA
+gastropoda,neogastropoda,buccinidae,clinopegma,magnum,NA,benthic,12.883,71.90038,59.01699829,NA,NA,NA,NA,NA,NA,NA
+malacostraca,decapoda,nephropidae,homarus,americanus,planktotrophic,benthic,19,54,35,250,NA,1100,NA,75000,NA,20
+malacostraca,decapoda,ovalipidae,ovalipes,ocellatus   ,NA,benthic,19.683,48.35,28.66721916,NA,NA,65,87,200000,NA,NA
+bivalvia,mytilida,mytilidae,musculus,discors   ,planktotrophic,benthic,87.155,81.125,-6.03,NA,NA,55,NA,NA,NA,NA
+gastropoda,neogastropoda,buccinidae,plicifusus,kroeyeri,NA,benthic,23.02,71.16,48.14,NA,NA,85,NA,NA,NA,NA
+asteroidea,velatida,pterasteridae,pteraster,obscurus,lecithotrophic,benthic,33.842,"	80.1170",46,NA,NA,NA,NA,NA,NA,NA
+bivalvia,pectinida,pectinidae,amusium,papyraceum,planktotrophic ,benthic,28.1,30.05,1.95,53,NA,NA,NA,NA,NA,NA
+malacostraca,decapoda,inachoididae,anasimus,latus,NA,benthic,28.18,"	34.1333",5.95,NA,NA,NA,NA,NA,NA,NA
+polychaeta,phyllodocida,polynoidae,eunoe,depressa,planktotrophic,benthic,50.616,72,"	20.9150",NA,NA,30,NA,NA,NA,NA
+gastropoda,littorinimorpha,naticidae,euspira,pallida,planktotrophic,benthic,70.625,81,11,NA,NA,NA,NA,NA,NA,NA
+asteroidea,forcipulatida,asteriidae,evasterias,echinosoma,lecithotrophic,benthic,20.113,68,48,960,NA,NA,NA,NA,NA,NA
+malacostraca,decapoda,cancridae,glebocarcinus,oregonensis,NA,benthic,12.49,60,48,NA,NA,40,50,NA,NA,NA
+malacostraca,decapoda,crangonidae,neocrangon,communis,planktotrophic,benthic,22.931,72,49,70,NA,80,NA,2200,NA,NA
+bivalvia,cardiida,tellinidae,tellina,lutea,NA,benthic,3.72,67,63,100,NA,NA,NA,NA,NA,NA
+malacostraca,decapoda,calappidae,calappa,sulcata,NA,benthic,30.241,35,5,NA,NA,NA,145,NA,0.29,0.72
+malacostraca,decapoda,penaeidae,farfantepenaeus,aztecus,lecithotrophic,benthic,54.24,51.7406,-2.5,NA,NA,220,NA,55000,NA,NA
+malacostraca,decapoda,penaeidae,farfantepenaeus,duorarum,lecithotrophic,benthic,31.02,38.9826,7.963799953,NA,NA,280,NA,NA,NA,NA
+malacostraca,decapoda,epialtidae,libinia,emarginata,lecithotrophic,benthic,26.768,44.97985204,18.21105766,60.6,NA,100,NA,NA,NA,NA
+cephalopoda,octopoda,bathypolypodidae,bathypolypus,arcticus,direct,benthic,71.9,81.23329926,9.3294,60,NA,100,NA,NA,NA,0.4
+malacostraca,decapoda,thoridae,lebbeus,polaris ,lecithotrophic,benthic,43,80,37.07500076,NA,NA,NA,NA,NA,NA,NA
+malacostraca,decapoda,lithodidae,lithodes,maja,lecithotrophic,benthic,36.099,71.86516667,35.76666641,NA,NA,120,NA,8500,NA,2
+malacostraca,decapoda,ovalipidae,ovalipes,stephensoni,NA,benthic,17.47,41.75,24.28365,NA,NA,NA,NA,NA,NA,NA
+malacostraca,decapoda,thoridae,lebbeus,groenlandicus ,lecithotrophic,benthic,28.1,69.06700134,40.96699905,40,NA,107,NA,NA,NA,NA
+malacostraca,decapoda,menippidae,menippe,mercenaria,planktotrophic,benthic,25.61,35,9.39965833,NA,NA,NA,NA,6000000,NA,NA
+polychaeta,phyllodocida,polynoidae,eunoe,nodosa,planktotrophic,benthic,31.208,72.4252,41.217,NA,NA,90,30,NA,NA,NA
+asteroidea,forcipulatida,asteriidae,lethasterias,nanimensis,lecithotrophic,benthic,22.7,"	68.7500","	46.0500",NA,NA,NA,NA,NA,NA,NA
+bivalvia,venerida,mactridae,mactromeris,polynyma,NA,benthic,16.64,60.307,43.6667,NA,NA,140,NA,NA,NA,NA
+gastropoda,neogastropoda,buccinidae,neptunea,heros ,direct,benthic,5.156,71.6757,66.52,NA,NA,NA,NA,NA,NA,NA
+gastropoda,neogastropoda,buccinidae,neptunea,ventricosa,direct,benthic,8.282,71.5318,63.25,NA,NA,111,NA,NA,NA,NA
+ophiuroidea,ophiurida,ophiuridae,ophiura,sarsii,NA,benthic,40.5,75,34.5,NA,NA,35,NA,NA,NA,NA
+malacostraca,decapoda,pandalidae,pandalus,eous,planktotrophic,benthic,15.671,53.5639,37.8935,NA,NA,NA,NA,NA,NA,NA
+malacostraca,decapoda,pandalidae,pandalus,goniurus,planktotrophic,benthic,23.48,71.74145,48.25999832,NA,NA,80,NA,1800,NA,NA
+malacostraca,decapoda,lithodidae,paralithodes,camtschaticus,planktotrophic,benthic,35.55,71.25066667,35.70000076,NA,NA,220,NA,228950,NA,10
+malacostraca,decapoda,cheiragonidae,telmessus,cheiragonus,NA,benthic,25.97,67.77,41.8,NA,NA,100,NA,NA,NA,NA
+gastropoda,nudibranchia,tritoniidae,tritonia,tetraquetra,planktotrophic,benthic,17.83,52.54,34.705,NA,NA,215,NA,NA,NA,NA
+gastropoda,neogastropoda,buccinidae,volutopsius,fragilis,planktotrophic ,benthic,NA,NA,NA,100,NA,130,NA,NA,NA,NA
+bivalvia,arcida,arcidae,aNAdara,secernenda,planktotrophic ,benthic,50.2,32.21,-17.9961,NA,NA,220,NA,NA,NA,NA
+malacostra,decapoda,peNAeidae,litopeNAeus,setiferus,lecithotrophic,benthic,63.275,39.342,-23.93300056,NA,NA,200,NA,1000000,NA,NA
+malacostraca,decapoda,peNAeidae,parapeNAeus,politus,lecithotrophic,benthic,31.056,40.09999847,9.04316667,NA,NA,NA,NA,NA,NA,NA
+malacostraca,decapoda,peNAeidae,rimapeNAeus,constrictus,lecithotrophic,benthic,69.561,38.71884918,-30.8416996,80,NA,90,NA,NA,NA,NA
+malacostraca,decapoda,sicyoniidae,sicyonia,burkenroadi  ,lecithotrophic,benthic,43.267,30.25043488,-13.0170002,NA,NA,NA,NA,NA,NA,NA
+malacostraca,decapoda,sicyoniidae,sicyonia,dorsalis,lecithotrophic,benthic,60.983,33.73329926,-27.25,NA,NA,70,NA,NA,NA,NA
+malacostraca,stomatopoda,squillidae,squilla,chydaea,planktotrophic,benthic,21.736,30.25043488,8.513683319,150,NA,200,NA,NA,NA,NA
+gastropoda,neogastropoda,volutidae,arctomelon,stearnsii,NA,benthic,7.027,61,54,115,NA,160,NA,NA,NA,NA
+echinoidea,spatangoida,schizasteridae,brisaster,latifrons,NA,benthic,35.434,59,24,NA,NA,NA,NA,NA,NA,NA
+asteroidea,paxillosida,ctenodiscidae ,ctenodiscus,crispatus,NA,benthic,117.116,81,NA,NA,NA,NA,NA,NA,NA,NA
+malacostraca,decapoda,paguridae,labidochirus,splendescens,NA,benthic,23.742,71.900383,48.15832901,NA,NA,NA,NA,NA,NA,NA
+malacostraca,decapoda,lithodidae,lopholithodes,foraminatus,planktotrophic ,benthic,23.49,60.13000107,36.6444397,NA,NA,NA,NA,NA,NA,NA
+malacostraca,decapoda,paguridae,pagurus,brandti,planktotrophic,benthic,45.261,71.6757431,26.41530037,NA,NA,NA,NA,NA,NA,NA
+malacostraca,decapoda,paguridae,pagurus,ochotensis,planktotrophic,benthic,26.583,58.58332825,32,NA,NA,50,NA,NA,NA,NA
+malacostraca,decapoda,pandalidae,pandalus,jordani,planktotrophic,benthic,27.09,59.795,32.7052,NA,NA,30,NA,3000,NA,NA
+asteroidea,forcipulatida,asteriidae,stylasterias,forreri,planktotrophic,benthic,22,55,33,NA,NA,500,NA,NA,NA,NA
+malacostraca,decapoda,cancridae,cancer,borealis,NA,benthic,35.957,48.08333,12.1259,NA,NA,160,NA,NA,NA,NA
+malacostraca,decapoda,crangonidae,crangon,septemspinosa,planktotrophic,benthic,25.27,57.24,31.96999931,NA,NA,70,NA,NA,NA,NA
+merostomata,xiphosurida,limulidae,limulus,polyphemus,NA,benthic,23.78,44.58,20.8,NA,NA,600,NA,10000,NA,1.8
+malacostraca,decapoda,pandalidae,pandalus,montagui,planktotrophic,benthic,69.85,74.64908833,4.800000191,160,NA,190,NA,1600,NA,NA
+bivalvia,pectinida,pectinidae,placopecten,magellanicus,NA,benthic,106.2972,65.009,-41.2882,NA,NA,200,NA,95000000,NA,NA
+malacostraca,decapoda,oregoniidae,hyas,araneus,planktotrophic,benthic,40.1085,78.96175,38.8533287,NA,NA,120,NA,NA,NA,NA
+malacostraca,decapoda,crangonidae,sabinea,septemcarinata,planktotrophic,benthic,37.71,80,42.29999924,NA,NA,NA,NA,NA,NA,NA
+malacostraca,decapoda,calappidae,calappa,flammea,NA,benthic,30.32,41.52000046,11.1965,NA,NA,NA,NA,NA,NA,NA
+malacostraca,decapoda,paguridae,pagurus,pollicaris,NA,benthic,23.706,41.91699982,18.21105766,NA,NA,50,NA,NA,NA,NA
+malacostraca,decapoda,pilumnidae,pilumnus,sayi,NA,benthic,26.486,35.34167099,8.85616667,NA,NA,NA,NA,NA,NA,NA
+malacostraca,decapoda,peNAeidae,xiphopeNAeus,kroyeri,lecithotrophic,benthic,63.339,35.20600128,-28.0333,NA,NA,115,NA,NA,NA,NA
+malacostraca,decapoda,cancridae,metacarcinus,magister,planktotrophic,benthic,22.928,60.695,37.76699829,NA,NA,225,NA,2500000,NA,NA
+malacostraca,decapoda,pandalidae,pandalus,platyceros,planktotrophic,benthic,26.715,60.2317,33.51699829,NA,NA,300,NA,5000,NA,NA
+asteroidea,forcipulatida,asteriidae,pisaster,brevispinus,planktotrophic,benthic,20.754,54.29999924,33.5454,NA,NA,600,NA,40000000,NA,NA
+malacostraca,decapoda,cheiragonidae,erimacrus,isenbeckii,NA,benthic,28.0034,66.5533,38.54999924,NA,NA,NA,NA,NA,NA,NA
+malacostraca,decapoda,pandalidae,pandalus,borealis,planktotrophic,benthopelagic,44.94,80.62333333,35.68333435,20,NA,30,NA,2750,NA,NA
+malacostraca,decapoda,pandalidae,pandalopsis,dispar,planktotrophic,benthopelagic,13.103,56.9073,43.8041,200,NA,NA,NA,NA,NA,NA
+malacostraca,decapoda,portunidae,callinectes,sapidus,planktotrophic,benthopelagic,93.297,55.296138,-38.009998,NA,NA,227,NA,NA,NA,NA
+cephalopoda,myopsida,loliginidae,doryteuthis ,pealeii,direct,benthopelagic,56.48,48.48042,-8,NA,NA,500,NA,NA,NA,NA
+malacostraca,decapoda,portunidae,portunus,gibbesii,NA,benthopelagic,62.926,39.22303333,-23.7033,NA,NA,37,76,NA,NA,NA
+malacostraca,decapoda,portunidae,callinectes,ornatus,planktotrophic,benthopelagic,67.977,35.19400024,-32.78333333,NA,NA,130,NA,NA,NA,NA
+gastropoda,neogastropoda,buccinidae,volutopsius,middendorffii,NA,benthic,NA,NA,NA,110,60,NA,NA,NA,NA,NA
+cephalopoda,myopsida,loliginidae,lolliguncula,brevis,direct,pelagic,81.917,43.90000153,-38.01699829,NA,NA,120,NA,NA,NA,NA
+gastropoda,pleurobranchida,pleurobranchaeidae,pleurobranchaea,californica,planktotrophic,benthic,14.874,47.53177,32.65800095,NA,NA,210,NA,NA,NA,NA
+malacostraca,decapoda,crangonidae,argis,dentata   ,lecithotrophic,benthic,29.009,71.50944,42.5,NA,NA,NA,NA,NA,NA,NA
+malacostraca,decapoda,paguridae,pagurus,aleuticus,NA,benthic,10.766,"	56.916",46.15,NA,NA,NA,NA,NA,NA,NA
+anthozoa,actiniaria,metridiidae,metridium,farcimen,NA,benthic,118,70,-48.3603,NA,NA,100,NA,NA,NA,NA
+gastropoda,neogastropoda,buccinidae,neptunea,pribiloffensis,direct,benthic,15.91,57.16,41.25,NA,NA,150,NA,NA,NA,NA
+malacostraca,decapoda,paiphaeidae,pasiphaea,pacifica,NA,pelagic,28.629,60.6783,32.04999924,20,NA,22,NA,66,NA,NA
+malacostraca,decapoda,crangonidae,pontophilus,norvegicus,planktotrophic,benthic,39.2101,73.44316667,34.23332977,NA,NA,75,NA,NA,NA,NA
+malacostraca,decapoda,crangonidae,sabinea,sarsii,planktotrophic,benthopelagic,32.7321,71.414935,38.68299866,NA,NA,NA,NA,NA,NA,NA
+scyphozoa,semaeostomeae,pelagiidae,chrysaora,melanaster,NA,pelagic,59.4,69,10,NA,NA,600,300,NA,NA,NA
+gastropoda,neogastropoda,cochlespiridae,aforia,circinata,planktotrophic ,NA,20.7631,"	59.8667",39,19,NA,NA,NA,NA,NA,NA
+malacostraca,decapoda,portunidae,achelous,spinicarpus ,planktotrophic,NA,67.55,34.8666687,-32.68333333,23,NA,NA,NA,NA,NA,NA
+ascidiacea,stolidobranchia,pyuridae,boltenia,ovifera,lecithotrophic,NA,41.14,81.23999786,40.09999847,NA,NA,80,NA,NA,NA,NA
+anthozoa,actiniaria,liponematidae,liponema,brevicorne  ,NA,NA,22.379,55.50999832,33.13000107,NA,NA,NA,NA,NA,NA,NA
+gastropoda,neogastropoda,buccinidae,pyrulofusus,melonis,NA,NA,NA,NA,NA,200,NA,NA,NA,NA,NA,NA
+gymnolaemata,cheilostomatida,flustridae,serratiflustra,serrulata,NA,NA,52.116,79.73333333,27.616667,NA,NA,NA,NA,NA,NA,NA
+demospongiae,suberitida,halichondriidae,halichondria,panicea,lecithotrophic,NA,142.656,70,-72,NA,NA,600,NA,NA,NA,NA
+anthozoa,actiniaria,actiniidae,urticina,crassicornis,lecithotrophic,NA,115.08,77,-38,NA,NA,NA,NA,NA,NA,NA
+anthozoa,alcyoNAcea,nephtheidae,gersemia,rubiformis,NA,NA,43,80,37.1233,NA,NA,100,NA,NA,NA,NA
+gastropoda,neogastropoda,buccinidae,beringius,behringii,NA,NA,4.322,70.322,66,NA,NA,NA,NA,NA,NA,NA
+ascidiacea,stolidobranchia,pyuridae,halocynthia,aurantium,NA,NA,29.373,71.3734,42,NA,NA,150,NA,NA,NA,NA
+gastropoda,neogastropoda,buccinidae,neptunea,borealis ,direct,NA,5.196,71.6757,66.48,NA,NA,NA,NA,NA,NA,NA
+malacostraca,decapoda,lithodidae,paralithodes,platypus,planktotrophic,NA,16.131,71.8907,55.76,NA,NA,220,NA,150000,NA,4.5
+gastropoda,neogastropoda,buccinidae,pyrulofusus,deformis,planktotrophic ,NA,5.4,"	71.9004",66.5,120,NA,170,NA,NA,NA,NA
+bivalvia,adapedonta,pharidae,siliqua,alta,planktotrophic ,NA,2.795,60.5103,57.715,NA,NA,NA,NA,NA,NA,NA
+anthozoa,actiniaria,actinostolidae,stomphia,coccinea,planktotrophic ,NA,114.4,78.16000366,-36.2436,NA,NA,125,NA,NA,NA,NA
+ascidiacea,stolidobranchia,styelidae,styela,rustica,lecithotrophic,NA,143.358,81.125,-62.2333,NA,NA,NA,NA,NA,NA,NA
+malacostraca,decapoda,portunidae,achelous,spinimanus,NA,NA,36.063,"		34.9830",-1.0833,NA,NA,NA,NA,NA,NA,NA
+malacostraca,decapoda,portunidae,areNAeus,cribrarius,NA,NA,69.44,37.31,-32.1322,NA,NA,NA,NA,NA,NA,NA
+malacostraca,decapoda,portunidae,callinectes,similis,planktotrophic,NA,9.265,35,26.3347,NA,NA,122,95,NA,NA,NA
+scyphozoa,semaeostomeae,pelagiidae,chrysaora,quinquecirrha,planktotrophic ,NA,36.08,40.92,4.84,NA,NA,400,NA,NA,NA,NA
+malacostraca,decapoda,ovalipidae,ovalipes,floridaus,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA
+malacostraca,decapoda,parthenopidae,parthenopoides,massena  ,NA,NA,11.298,43.229,31.93,NA,NA,NA,NA,NA,NA,NA
+hexactinellida,sceptrulophora,aphrocallistidae,aphrocallistes,vastus,lecithotrophic,NA,54.668,60.27835,5.6111,NA,NA,900,NA,NA,NA,NA
+malacostraca,stomatopoda,squillidae,gibbesia,neglecta ,NA,NA,59.255,35.35277939,-23.9019,NA,NA,110,NA,NA,NA,NA
+asteroidea,valvatida,goniasteridae,mediaster,aequalis,lecithotrophic,NA,28.965,60.965,32,NA,NA,250,NA,NA,NA,NA
+scyphozoa,semaeostomeae,cyaneidae,cyanea,capillata,NA,pelagic,119.638,78.34,-41.298228,55,NA,2290,NA,100000,NA,NA
+holothuroidea,dendrochirotida,cucumariidae,cucumaria,fallax  ,lecithotrophic,pelagic,3.825,54.82500076,51,NA,NA,260,NA,8800,NA,NA
+cephalopoda,oegopsida,ommastrephidae,illex ,illecebrosus,direct,pelagic,84.939,57.751,-27.18829918,NA,NA,340,NA,100000,NA,1
+cephalopoda,myopsida,loliginidae,doryteuthis ,pleii,direct,pelagic,61.65,44,-17.6465,NA,NA,370,NA,14310,NA,NA
