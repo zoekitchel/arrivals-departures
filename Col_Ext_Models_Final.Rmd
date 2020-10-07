@@ -240,7 +240,7 @@ ggsave(file = "RVI_lags_scaled.eps")
 Table for RVI data for Colonization
 ```{r put RVIs for colonization into data table}
 col_ext <- c("col","col","col","col","col", "col","col", "col", "col","col")
-type <- c("Depth", "Depth", "lag", "lag", "Transformation", "Transformation", "Transformation", "Measurement", "Measurement", "Measurement")
+type <- c("Depth", "Depth", "lag", "lag", "Transformation", "Transformation", "Transformation", "Metric", "Metric", "Metric")
 variable <- c("Bottom", "Surface", "no_lag", "lagged", "|Change|", "Change", "Raw", "Min", "Max", "Seas")
 value <- c(col_bottom_importance, col_surface_importance, col_nolag_importance, col_lag_importance, col_abs_importance, col_change_importance, col_raw_importance, col_min_temp_importance, col_max_temp_importance, col_seas_temp_importance)
 
@@ -250,7 +250,7 @@ RVI_col <- data.table(col_ext, type, variable, value)
 Table for RVI data for Extinction
 ```{r put RVIs for extinction into data table}
 col_ext <- c("ext","ext","ext","ext","ext", "ext", "ext", "ext", "ext", "ext")
-type <- c("Depth", "Depth", "lag", "lag", "Transformation", "Transformation", "Transformation", "Measurement", "Measurement", "Measurement")
+type <- c("Depth", "Depth", "lag", "lag", "Transformation", "Transformation", "Transformation", "Metric", "Metric", "Metric")
 variable <- c("Bottom", "Surface", "no_lag", "lagged", "|Change|", "Change", "Raw", "Min", "Max", "Seas")
 value <- c(ext_bottom_importance, ext_surface_importance, ext_nolag_importance, ext_lag_importance, ext_abs_importance, ext_change_importance, ext_raw_importance, ext_min_temp_importance, ext_max_temp_importance, ext_seas_temp_importance)
 
@@ -282,17 +282,17 @@ Another way to visualize is stacked bar plot.
 ```{r RVI stacked plot}
 #put levels into correct order for viewing, and add dummy level for legend
 RVI_col[, variable := factor(variable, levels = c("Bottom", "Surface","  ", "Raw", "Change", "|Change|", "no_lag", "lagged", "Min", "Max", "Seas"))]
-RVI_col[, type := factor(type, levels = c("Depth", "Transformation", "Measurement", "lag"))]
+RVI_col[, type := factor(type, levels = c("Depth", "Transformation", "Metric", "lag"))]
 
 RVI_col_nolag <- RVI_col[type != "lag",]
-RVI_col_nolag[, type := factor(type, levels = c("Depth", "Transformation", "Measurement"))][, variable := factor(variable, levels = c("Bottom", "Surface","  ", "Raw", "Change", "|Change|", "Min", "Max", "Seas"))]
+RVI_col_nolag[, type := factor(type, levels = c("Depth", "Transformation", "Metric"))][, variable := factor(variable, levels = c("Bottom", "Surface","  ", "Raw", "Change", "|Change|", "Min", "Max", "Seas"))]
 
 #and again for extinction
 RVI_ext[, variable := factor(variable, levels = c("Bottom", "Surface","  ", "Raw", "Change", "|Change|", "no_lag", "lagged", "Min", "Max", "Seas"))]
-RVI_ext[, type := factor(type, levels = c("Depth", "Transformation", "Measurement", "lag"))]
+RVI_ext[, type := factor(type, levels = c("Depth", "Transformation", "Metric", "lag"))]
 
 RVI_ext_nolag <- RVI_ext[type != "lag",]
-RVI_ext_nolag[, type := factor(type, levels = c("Depth", "Transformation", "Measurement"))][, variable := factor(variable, levels = c("Bottom", "Surface","  ", "Raw", "Change", "|Change|", "Min", "Max", "Seas"))]
+RVI_ext_nolag[, type := factor(type, levels = c("Depth", "Transformation", "Metric"))][, variable := factor(variable, levels = c("Bottom", "Surface","  ", "Raw", "Change", "|Change|", "Min", "Max", "Seas"))]
 
 
 
@@ -303,7 +303,7 @@ colors <- c(pal[1], pal[2], "#FFFFFF", pal[3], pal[4], pal[5], pal[6], pal[7], p
 #colonization
 RVI_col_plot <- ggplot(data = RVI_col_nolag, aes(x=type, y = value, fill = variable)) +
   geom_bar(stat="identity", color = "black", size = 0, width = 0.8) +
-  scale_x_discrete(breaks = c("Transformation", "Depth", "Measurement"), labels = c("Transformation", "Depth", "Measurement")) +
+  scale_x_discrete(breaks = c("Transformation", "Depth", "Metric"), labels = c("Transformation", "Depth", "Metric")) +
   labs(x = "Temperature Variables", y = "Relative Variable Importance") +
   theme_classic() +
   theme(text = element_text(size = 11.5), 
@@ -323,7 +323,7 @@ RVI_col_plot <- ggplot(data = RVI_col_nolag, aes(x=type, y = value, fill = varia
 #extinction
 RVI_ext_plot <- ggplot(data = RVI_ext_nolag, aes(x=type, y = value, fill = variable)) +
   geom_bar(stat="identity", color = "black", size = 0, width = 0.8) +
-  scale_x_discrete(breaks = c("Transformation", "Depth", "Measurement"), labels = c("Transformation", "Depth", "Measurement")) +
+  scale_x_discrete(breaks = c("Transformation", "Depth", "Metric"), labels = c("Transformation", "Depth", "Metric")) +
   labs(x = "Temperature Variables", y = "Relative Variable Importance") +
   theme_classic() +
   theme(text = element_text(size = 11.5), 
@@ -833,7 +833,7 @@ RVI_table[,type := as.factor(type)]
 #colonization
 RVI_col_plot <- ggplot(data = RVI_table[col_ext == "col",], aes(x=type, y = value, fill = variable)) +
   geom_bar(stat="identity", color = "black") +
-  scale_x_discrete(breaks = c("Change?", "depth", "lag", "Temp"), labels = c("Change in\ntemp?", "Measurement\nDepth", "Lagged?", "Temp")) +
+  scale_x_discrete(breaks = c("Change?", "depth", "lag", "Temp"), labels = c("Change in\ntemp?", "Metric\nDepth", "Lagged?", "Temp")) +
   labs(x = "Temperature Variables", y = "Relative Variable Importance") +
   theme_classic() +
   theme(text = element_text(size = 22)
@@ -843,7 +843,7 @@ RVI_col_plot <- ggplot(data = RVI_table[col_ext == "col",], aes(x=type, y = valu
 #extinction
 RVI_ext_plot <- ggplot(data = RVI_table[col_ext == "ext",], aes(x=type, y = value, fill = variable)) +
   geom_bar(stat="identity", color = "black") +
-  scale_x_discrete(breaks = c("Change?", "depth", "lag", "Temp"), labels = c("Change in\ntemp?", "Measurement\nDepth", "Lagged?", "Temp")) +
+  scale_x_discrete(breaks = c("Change?", "depth", "lag", "Temp"), labels = c("Change in\ntemp?", "Metric\nDepth", "Lagged?", "Temp")) +
   labs(x = "Temperature Variables", y = "Relative Variable Importance") +
   theme_classic()  +
   theme(text = element_text(size = 22)
@@ -1273,7 +1273,7 @@ RVI_table_fishonly[,type := as.factor(type)]
 #colonization
 RVI_col_plot_fishonly <- ggplot(data = RVI_table_fishonly[col_ext == "col",], aes(x=type, y = value, fill = variable)) +
   geom_bar(stat="identity", color = "black") +
-  scale_x_discrete(breaks = c("Change?", "depth", "lag", "Temp"), labels = c("Change in\ntemp?", "Measurement\nDepth", "Lagged?", "Temp")) +
+  scale_x_discrete(breaks = c("Change?", "depth", "lag", "Temp"), labels = c("Change in\ntemp?", "Metric\nDepth", "Lagged?", "Temp")) +
   labs(x = "Temperature Variables", y = "Relative Variable Importance") +
   theme_classic() +
   theme(text = element_text(size = 22)
@@ -1283,7 +1283,7 @@ RVI_col_plot_fishonly <- ggplot(data = RVI_table_fishonly[col_ext == "col",], ae
 #extinction
 RVI_ext_plot_fishonly <- ggplot(data = RVI_table_fishonly[col_ext == "ext",], aes(x=type, y = value, fill = variable)) +
   geom_bar(stat="identity", color = "black") +
-  scale_x_discrete(breaks = c("Change?", "depth", "lag", "Temp"), labels = c("Change in\ntemp?", "Measurement\nDepth", "Lagged?", "Temp")) +
+  scale_x_discrete(breaks = c("Change?", "depth", "lag", "Temp"), labels = c("Change in\ntemp?", "Metric\nDepth", "Lagged?", "Temp")) +
   labs(x = "Temperature Variables", y = "Relative Variable Importance") +
   theme_classic()  +
   theme(text = element_text(size = 22)
