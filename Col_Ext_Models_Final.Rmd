@@ -156,6 +156,53 @@ save(colonization_model_comparison_spprandom_scaled_seus_update_nomean, file = "
 
 ```
 
+Relative Variable Importance for Pairs of Transformation and Metric
+```{r RVI colonization Pairs Transformation and Metric}
+
+#I want to look at relative importance FOR 
+#models with raw and min
+col_raw_min_importance <- sum(colonization_model_comparison_spprandom_scaled_seus_update_nomean[grep("min", variable), ][!grep("change", variable)]$akaike_weight)
+
+#models with raw and max
+col_raw_max_importance <- sum(colonization_model_comparison_spprandom_scaled_seus_update_nomean[grep("max", variable), ][!grep("change", variable)]$akaike_weight)
+
+#models with raw and seas
+col_raw_seas_importance <- sum(colonization_model_comparison_spprandom_scaled_seus_update_nomean[grep("seas", variable), ][!grep("change", variable)]$akaike_weight)
+
+
+#models with change and min
+col_change_min_importance <- sum(colonization_model_comparison_spprandom_scaled_seus_update_nomean[grep("min_s.t_temp_change", variable), ][!grep("abs", variable)]$akaike_weight)
+
+#models with change and max
+col_change_max_importance <- sum(colonization_model_comparison_spprandom_scaled_seus_update_nomean[grep("max_s.t_temp_change", variable), ][!grep("abs", variable)]$akaike_weight)
+
+#models with change and seas
+col_change_seas_importance <- sum(colonization_model_comparison_spprandom_scaled_seus_update_nomean[grep("seas_s.t_temp_change", variable), ][!grep("abs", variable)]$akaike_weight)
+
+#models with abs change and min
+col_abs_change_min_importance <- sum(colonization_model_comparison_spprandom_scaled_seus_update_nomean[grep("min_s.t_temp_change_abs", variable), ]$akaike_weight)
+
+#models with abs change and max
+col_abs_change_max_importance <- sum(colonization_model_comparison_spprandom_scaled_seus_update_nomean[grep("max_s.t_temp_change_abs", variable), ]$akaike_weight)
+
+#models with abs change and seas
+col_abs_change_seas_importance <- sum(colonization_model_comparison_spprandom_scaled_seus_update_nomean[grep("seas_s.t_temp_change_abs", variable), ]$akaike_weight)
+
+col_transform_metric_comparison <- data.table(Transformation =
+                                                c("raw", "raw", "raw", "change", "change", "change", "abs_change", "abs_change", "abs_change"), 
+                                              Metric = 
+                                                rep(c("min", "max", "seas"), 3), 
+                                              RVI = 
+                                                c(col_raw_min_importance, col_raw_max_importance, 
+                                                  col_raw_seas_importance, col_change_min_importance, 
+                                                  col_change_max_importance, col_change_seas_importance, 
+                                                  col_abs_change_min_importance, col_abs_change_max_importance, 
+                                                  col_abs_change_seas_importance))
+
+
+```
+
+
 Relative Variable Importance for Extinction Models
 ```{r RVI extinction}
 load("colonization_model_comparison_spprandom_scaled_seus_update_nomean.RData")
@@ -195,6 +242,52 @@ ext_seas_temp_importance <- sum(extinction_model_comparison_spprandom_scaled_seu
 
 save(extinction_model_comparison_spprandom_scaled_seus_update_nomean, file = "extinction_model_comparison_spprandom_scaled_seus_update_nomean.RData")
 ```
+
+Relative Variable Importance for Pairs of Transformation and Metric
+```{r RVI extinction Pairs Transformation and Metric}
+
+#I want to look at relative importance FOR 
+#models with raw and min
+ext_raw_min_importance <- sum(extinction_model_comparison_spprandom_scaled_seus_update_nomean[grep("min", variable), ][!grep("change", variable)]$akaike_weight)
+
+#models with raw and max
+ext_raw_max_importance <- sum(extinction_model_comparison_spprandom_scaled_seus_update_nomean[grep("max", variable), ][!grep("change", variable)]$akaike_weight)
+
+#models with raw and seas
+ext_raw_seas_importance <- sum(extinction_model_comparison_spprandom_scaled_seus_update_nomean[grep("seas", variable), ][!grep("change", variable)]$akaike_weight)
+
+
+#models with change and min
+ext_change_min_importance <- sum(extinction_model_comparison_spprandom_scaled_seus_update_nomean[grep("min_s.t_temp_change", variable), ][!grep("abs", variable)]$akaike_weight)
+
+#models with change and max
+ext_change_max_importance <- sum(extinction_model_comparison_spprandom_scaled_seus_update_nomean[grep("max_s.t_temp_change", variable), ][!grep("abs", variable)]$akaike_weight)
+
+#models with change and seas
+ext_change_seas_importance <- sum(extinction_model_comparison_spprandom_scaled_seus_update_nomean[grep("seas_s.t_temp_change", variable), ][!grep("abs", variable)]$akaike_weight)
+
+#models with abs change and min
+ext_abs_change_min_importance <- sum(extinction_model_comparison_spprandom_scaled_seus_update_nomean[grep("min_s.t_temp_change_abs", variable), ]$akaike_weight)
+
+#models with abs change and max
+ext_abs_change_max_importance <- sum(extinction_model_comparison_spprandom_scaled_seus_update_nomean[grep("max_s.t_temp_change_abs", variable), ]$akaike_weight)
+
+#models with abs change and seas
+ext_abs_change_seas_importance <- sum(extinction_model_comparison_spprandom_scaled_seus_update_nomean[grep("seas_s.t_temp_change_abs", variable), ]$akaike_weight)
+
+ext_transform_metric_comparison <- data.table(Transformation =
+                                                c("raw", "raw", "raw", "change", "change", "change", "abs_change", "abs_change", "abs_change"), 
+                                              Metric = 
+                                                rep(c("min", "max", "seas"), 3), 
+                                              RVI = 
+                                                c(ext_raw_min_importance, ext_raw_max_importance, 
+                                                  ext_raw_seas_importance, ext_change_min_importance, 
+                                                  ext_change_max_importance, ext_change_seas_importance, 
+                                                  ext_abs_change_min_importance, ext_abs_change_max_importance, 
+                                                  ext_abs_change_seas_importance))
+
+```
+
 
 Let's see how the RVI importance varies by looking at specific lag values
 ```{r make a plot here for variability across lag values}
@@ -239,20 +332,22 @@ ggsave(file = "RVI_lags_scaled.eps")
 
 Table for RVI data for Colonization
 ```{r put RVIs for colonization into data table}
-col_ext <- c("col","col","col","col","col", "col","col", "col", "col","col")
-type <- c("Depth", "Depth", "lag", "lag", "Transformation", "Transformation", "Transformation", "Metric", "Metric", "Metric")
-variable <- c("Bottom", "Surface", "no_lag", "lagged", "|Change|", "Change", "Raw", "Min", "Max", "Seas")
-value <- c(col_bottom_importance, col_surface_importance, col_nolag_importance, col_lag_importance, col_abs_importance, col_change_importance, col_raw_importance, col_min_temp_importance, col_max_temp_importance, col_seas_temp_importance)
+col_ext <- c("col","col","col","col","col", "col","col", "col", "col","col","col","col","col","col", "col","col", "col", "col","col")
+type <- c("Depth", "Depth", "lag", "lag", "Transformation", "Transformation", "Transformation", "Metric", "Metric", "Metric", "Transformation x Metric", "Transformation x Metric", "Transformation x Metric", "Transformation x Metric", "Transformation x Metric", "Transformation x Metric", "Transformation x Metric", "Transformation x Metric", "Transformation x Metric")
+variable <- c("Bottom", "Surface", "no_lag", "lagged", "|Change|", "Change", "Raw", "Min", "Max", "Seas", "Raw x Min", "Raw x Max", "Raw x Seas", "Change x Min", "Change x Max", "Change x Seas", "|Change| x Min", "|Change| x Max", "|Change| x Seas")
+
+
+value <- c(col_bottom_importance, col_surface_importance, col_nolag_importance, col_lag_importance, col_abs_importance, col_change_importance, col_raw_importance, col_min_temp_importance, col_max_temp_importance, col_seas_temp_importance, col_raw_min_importance, col_raw_max_importance, col_raw_seas_importance, col_change_min_importance, col_change_max_importance, col_change_seas_importance, col_abs_change_min_importance, col_abs_change_max_importance, col_abs_change_seas_importance)
 
 RVI_col <- data.table(col_ext, type, variable, value)
 ```
 
 Table for RVI data for Extinction
 ```{r put RVIs for extinction into data table}
-col_ext <- c("ext","ext","ext","ext","ext", "ext", "ext", "ext", "ext", "ext")
-type <- c("Depth", "Depth", "lag", "lag", "Transformation", "Transformation", "Transformation", "Metric", "Metric", "Metric")
-variable <- c("Bottom", "Surface", "no_lag", "lagged", "|Change|", "Change", "Raw", "Min", "Max", "Seas")
-value <- c(ext_bottom_importance, ext_surface_importance, ext_nolag_importance, ext_lag_importance, ext_abs_importance, ext_change_importance, ext_raw_importance, ext_min_temp_importance, ext_max_temp_importance, ext_seas_temp_importance)
+col_ext <- c("ext","ext","ext","ext","ext", "ext","ext", "ext", "ext","ext","ext","ext","ext","ext", "ext","ext", "ext", "ext","ext")
+type <- c("Depth", "Depth", "lag", "lag", "Transformation", "Transformation", "Transformation", "Metric", "Metric", "Metric", "Transformation x Metric", "Transformation x Metric", "Transformation x Metric", "Transformation x Metric", "Transformation x Metric", "Transformation x Metric", "Transformation x Metric", "Transformation x Metric", "Transformation x Metric")
+variable <- c("Bottom", "Surface", "no_lag", "lagged", "|Change|", "Change", "Raw", "Min", "Max", "Seas", "Raw x Min", "Raw x Max", "Raw x Seas", "Change x Min", "Change x Max", "Change x Seas", "|Change| x Min", "|Change| x Max", "|Change| x Seas")
+value <- c(ext_bottom_importance, ext_surface_importance, ext_nolag_importance, ext_lag_importance, ext_abs_importance, ext_change_importance, ext_raw_importance, ext_min_temp_importance, ext_max_temp_importance, ext_seas_temp_importance, ext_raw_min_importance, ext_raw_max_importance, ext_raw_seas_importance, ext_change_min_importance, ext_change_max_importance, ext_change_seas_importance, ext_abs_change_min_importance, ext_abs_change_max_importance, ext_abs_change_seas_importance)
 
 RVI_ext <- data.table(col_ext, type, variable, value)
 ```
@@ -344,6 +439,122 @@ RVI_table
 RVI_col_plot
 RVI_ext_plot
 ```
+
+Let's look at just Depth and Transformation x Metric
+
+```{r Depth and Transformation x Metric plots}
+
+pal2 <- wes_palette("GrandBudapest1", 11, type = "continuous")
+colors2 <- c(pal2[1], pal2[2], "#FFFFFF", pal2[3], pal2[4], pal2[5], pal2[6], pal2[7], pal2[8], pal2[9], pal2[10], pal2[11])
+
+RVI_col_depth_trans_metric <- RVI_col[type != "lag",][type != "Transformation",][type != "Metric",]
+
+#put levels into correct order for viewing, and add dummy level for legend
+RVI_col_depth_trans_metric[, variable := factor(variable, levels = c("Bottom", "Surface","  ", "Raw x Min", "Raw x Max", "Raw x Seas", "Change x Min", "Change x Max", "Change x Seas", "|Change| x Min", "|Change| x Max", "|Change| x Seas"))]
+RVI_col_depth_trans_metric[, type := factor(type, levels = c("Depth", "Transformation x Metric"))]
+
+
+RVI_col_plot_2 <- ggplot(data = RVI_col_depth_trans_metric, aes(x=type, y = value, fill = variable)) +
+  geom_bar(stat="identity", color = "black", size = 0, width = 0.8) +
+  scale_x_discrete(breaks = c("Depth", "Transformation x Metric"), labels = c("Depth", "Transformation x Metric")) +
+  labs(x = "Temperature Variables", y = "Relative Variable Importance") +
+  theme_classic() +
+  theme(text = element_text(size = 11.5), 
+        legend.position = "top", 
+        legend.title = element_blank(), 
+        legend.spacing.x = unit(0.2, 'cm'),
+        legend.justification = "center",
+        aspect.ratio = (1),
+        #, legend.position = "none"
+        ) +
+  guides(fill=guide_legend(ncol=4)) +
+  scale_fill_manual(values = colors2,
+                    breaks = levels(RVI_col_depth_trans_metric$variable),
+                    labels = levels(RVI_col_depth_trans_metric$variable),
+                    drop = F)
+
+# And again for extinction
+RVI_ext_depth_trans_metric <- RVI_ext[type != "lag",][type != "Transformation",][type != "Metric",]
+
+#put levels into correct order for viewing, and add dummy level for legend
+RVI_ext_depth_trans_metric[, variable := factor(variable, levels = c("Bottom", "Surface","  ", "Raw x Min", "Raw x Max", "Raw x Seas", "Change x Min", "Change x Max", "Change x Seas", "|Change| x Min", "|Change| x Max", "|Change| x Seas"))]
+RVI_ext_depth_trans_metric[, type := factor(type, levels = c("Depth", "Transformation x Metric"))]
+
+
+RVI_ext_plot_2 <- ggplot(data = RVI_ext_depth_trans_metric, aes(x=type, y = value, fill = variable)) +
+  geom_bar(stat="identity", color = "black", size = 0, width = 0.8) +
+  scale_x_discrete(breaks = c("Depth", "Transformation x Metric"), labels = c("Depth", "Transformation x Metric")) +
+  labs(x = "Temperature Variables", y = "Relative Variable Importance") +
+  theme_classic() +
+  theme(text = element_text(size = 11.5), 
+        legend.position = "top", 
+        legend.title = element_blank(), 
+        legend.spacing.x = unit(0.2, 'cm'),
+        legend.justification = "center",
+        aspect.ratio = (1),
+        #, legend.position = "none"
+        ) +
+  guides(fill=guide_legend(ncol=4)) +
+  scale_fill_manual(values = colors2,
+                    breaks = levels(RVI_ext_depth_trans_metric$variable),
+                    labels = levels(RVI_ext_depth_trans_metric$variable),
+                    drop = F)
+
+RVI_col_plot_2
+RVI_ext_plot_2
+```
+
+Next step is to add the coefficients on to the bar chart. To do this, I will need to sum (aikake weight of model including variable x coefficient). I think this will be easy enough Using colonization_model_comparison_spprandom_scaled_seus_update_nomean data frame. I will add new column to data frame of aikaike weight x coefficient
+
+```{r avg coefficients for colonization models}
+#for some reason the coefficient is a factor
+colonization_model_comparison_spprandom_scaled_seus_update_nomean[,coef_num := as.numeric(as.character(coef))]
+colonization_model_comparison_spprandom_scaled_seus_update_nomean[,aw_coef := akaike_weight * coef_num]
+
+#bottom temperature avg coefficient
+colonization_bottom_temp_avg_coef <- sum(colonization_model_comparison_spprandom_scaled_seus_update_nomean[grep("sbt", variable)]$coef_num)
+
+#surface temperature avg coefficient
+colonization_surface_temp_avg_coef <- sum(colonization_model_comparison_spprandom_scaled_seus_update_nomean[grep("sst", variable)]$coef_num)
+
+#raw seasonality avg coefficient
+colonization_seas_raw_avg_coef <- 
+  sum(colonization_model_comparison_spprandom_scaled_seus_update_nomean[grep("seas", variable), ][!grep("change", variable)]$coef_num)
+
+#max abs change avg coefficient
+colonization_max_abs_change_avg_coef <- 
+  sum(colonization_model_comparison_spprandom_scaled_seus_update_nomean[grep("max_s.t_temp_change_abs", variable), ]$coef_num)
+
+
+```
+
+```{r avg coefficients for extinction models}
+#for some reason the coefficient is a factor
+extinction_model_comparison_spprandom_scaled_seus_update_nomean[,coef_num := as.numeric(as.character(coef))]
+extinction_model_comparison_spprandom_scaled_seus_update_nomean[,aw_coef := akaike_weight * coef_num]
+
+#bottom temperature avg coefficient
+extinction_bottom_temp_avg_coef <- sum(extinction_model_comparison_spprandom_scaled_seus_update_nomean[grep("sbt", variable)]$coef_num)
+
+#surface temperature avg coefficient
+extinction_surface_temp_avg_coef <- sum(extinction_model_comparison_spprandom_scaled_seus_update_nomean[grep("sst", variable)]$coef_num)
+
+#raw seasonality avg coefficient
+extinction_seas_raw_avg_coef <- 
+  sum(extinction_model_comparison_spprandom_scaled_seus_update_nomean[grep("seas", variable), ][!grep("change", variable)]$coef_num)
+
+#min change avg coefficient
+extinction_min_abs_change_avg_coef <- 
+  sum(extinction_model_comparison_spprandom_scaled_seus_update_nomean[grep("min_s.t_temp_change", variable), ][!grep("abs", variable)]$coef_num)
+
+#seas change avg coefficient
+extinction_seas_change_avg_coef <- 
+  sum(extinction_model_comparison_spprandom_scaled_seus_update_nomean[grep("seas_s.t_temp_change", variable), ][!grep("abs", variable)]$coef_num)
+
+
+```
+
+
 
 ***********
 How well do these models actually predict the # of colonizations and the # of extinctions?
