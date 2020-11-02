@@ -28,9 +28,24 @@ corr <- round(cor(reduced2), 2)
 ggcorrplot(corr, outline.color = "white", tl.cex = 1, tl.srt = 90)
 
 ggsave(file = "temp_var_correlation_plot.jpg", dpi = 1000)
-?ggsave
+
 # Get the lower triangle
 ggcorrplot(corr, hc.order = TRUE, type = "lower",
      outline.col = "white")
+
+min(corr)
+max(corr)
 ```
+Remove diagonal, and bottom half
+```{r cor shrunk}
+
+corr[lower.tri(corr, diag = TRUE)] <- NA 
+
+ggplot(data = corr) +
+  geom_histogram()
+
+#use lower.tri(res, diag = TRUE) to remove the diagonal too
+na.omit(reshape2::melt(corr))
+```
+
 
