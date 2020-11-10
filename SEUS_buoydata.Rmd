@@ -87,8 +87,10 @@ data_over_time.u$Location <- factor(data_over_time.u$Location, levels = c( "4100
 
 ggplot(data = data_over_time.u, aes(x = YYYY, y = Location, fill = as.factor(exist))) +
   geom_tile() +
-  scale_fill_manual(breaks = c("0", "1"), values = c("white", "black")) +
-  theme_classic()
+  scale_fill_manual(breaks = c("0", "1"), values = c("white", "black"), labels = c("No", "Yes")) +
+  theme_classic() +
+  labs(x="Year", "Buoy ID and Location", fill = "Data Availability")
+  
 
 ```
 
@@ -473,6 +475,7 @@ ggsave(file = "predicted_obs_temp_seus_seusannual.jpg")
 ```{r plot where buoys are}
 library(dplyr)
 library(ggrepel)
+library(maps)
 latlon_seus <- se_hourly_temp.narm[,.(lat,lon, Location)]
 
 latlon_seus <- latlon_seus %>% 
@@ -484,15 +487,14 @@ states <- map_data("state")
 southeast <- subset(states, region %in% c("north carolina", "south carolina", "virginia", "georgia", "florida"))
 
 (buoypoints <- ggplot(data = southeast) +
-    geom_polygon(aes(x = long, y = lat, group = group)) +
+    geom_polygon(aes(x = long, y = lat, group = group), fill = NA, color = "black") +
     coord_fixed(1.3) +
 	geom_point(data = latlon_seus,  # Add points
 		aes(x = lon, y = lat), color = "red") +
-    geom_text_repel(data = latlon_seus, 
-               aes(x = lon, y = lat, label = Location), size = 2.5, nudge_x = 4) +
+    #geom_text_repel(data = latlon_seus, aes(x = lon, y = lat, label = Location), size = 2.5, nudge_x = 6) +
 	theme_classic() +  # Remove ugly grey background
-	xlab("Longitude") +
-	ylab("Latitude"))
+	xlab("Longitude (˚E)") +
+	ylab("Latitude (˚N)"))
 
 
 
