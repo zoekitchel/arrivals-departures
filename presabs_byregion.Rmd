@@ -26,11 +26,12 @@ ggplot(spp_master_ztemp_seus_buoy, aes(as.factor(year), as.factor(spp))) +
   labs(x = "Year", y = "Species") +
   theme(legend.title = element_blank(),
         axis.text.y = element_text(size = 0.8),
-        axis.text.x = element_text(size = 8),
+        axis.text.x = element_text(size = 5, angle = 90, vjust = 0.5),
         strip.text.x = element_text(size = 10),
         axis.ticks = element_blank())
 
 ggsave("region_presabs.png", width = 10, height = 8, units = "in")
+ggsave("region_presabs.eps", width = 10, height = 8, units = "in")
 
 ggplot(spp_master_ztemp_seus_buoy[region == "Aleutian Islands"], aes(as.factor(year), as.factor(spp))) + 
   geom_tile(aes(fill = factor(present)), color = "grey", size = 0.01) +
