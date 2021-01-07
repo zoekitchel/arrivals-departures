@@ -118,7 +118,7 @@ for each month-year t and each buoy i
 seus_temp_mod <- lmer(month_avg ~ as.factor(date.f) + (1|Location), data = se_hourly_temp.narm) #month and year together
 
 save(seus_temp_mod, file = "seus_temp_mod.RData")
-load("seus_temp_mod.RData")
+load("/Users/zoekitchel/Documents/grad school/Rutgers/Repositories/Col_Ext/seus_temp_mod.RData")
 summary(seus_temp_mod)
 
 
@@ -252,7 +252,7 @@ for (i in first_year:nrow(predicted_sst_seus_monthly_avg)) {
     
   #surface raw
     subset_sst <- predicted_sst_seus_monthly_avg[month_julian >= this_month_julian_reverse[1] & predicted_sst_seus_monthly_avg$month_julian <= this_month_julian]
-    predicted_sst_seus_monthly_avg[(i),mean_sst_temp :=mean(subset_sst$sst_month_sst)] #max temp over the past 12 months
+    predicted_sst_seus_monthly_avg[(i),mean_sst_temp :=mean(subset_sst$sst_month_sst)] #mean temp over the past 12 months
     predicted_sst_seus_monthly_avg[(i),max_sst_temp :=max(subset_sst$sst_month_sst)] #max temp over the past 12 months
     predicted_sst_seus_monthly_avg[(i),min_sst_temp :=min(subset_sst$sst_month_sst)] #min temp over the past 12 months
     predicted_sst_seus_monthly_avg[(i),seas_sst_temp := max_sst_temp - min_sst_temp] #seasonality over the past 12 months
@@ -346,6 +346,7 @@ for (i in first_year:nrow(predicted_sst_seus_monthly_avg)) {
     }
 }  
 ```
+
 Extract only April, because that's what's actually in trawl dataset
 ```{r only April}
 seus_temp_surface <- predicted_sst_seus_monthly_avg[year >= 1990 & month == 4, c(4, 8:131)][,reg := "sa"]
@@ -361,6 +362,19 @@ colnames(seus_temp_bottom) <- bottom_colnames[2:125]
 seus_temp_final <- cbind(seus_temp_surface[,.(reg)], seus_temp_surface[,1:125], seus_temp_bottom)
 
 save(seus_temp_final, file  = "seus_temp_final_frombuoys.RData")
+load("seus_temp_final_frombuoys.RData")
+
+#plot avg temp over time
+
+ggplot(data = seus_temp_final, aes(x = year)) +
+  geom_line(aes(y = mean_sst_temp), color = "black") +
+  geom_line(aes(y = max_sst_temp), color = "red") +
+  geom_line(aes(y = min_sst_temp), color = "blue") +
+  labs(x = "Year", y = "Temperature (˚C)") +
+  lims(y = c(15,30)) +
+  theme_classic()
+
+
 
 ```
  
@@ -370,6 +384,8 @@ save(seus_temp_final, file  = "seus_temp_final_frombuoys.RData")
 ******
 Graphing monthly temperatures for each region
 ```{r yearly min and max and seas from model}
+
+
 predicted_sst_seus_monthly <- data.table(predicted_sst_seus_monthly)
 predicted_sst_seus_monthly[, year := year(date.f)]
 predicted_sst_seus_monthly[,sst_min_annual := min(preds), by = c("Location", "year")]
