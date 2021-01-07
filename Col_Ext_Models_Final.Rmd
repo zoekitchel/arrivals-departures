@@ -320,7 +320,7 @@ lags_v_RVI_spprandom_scaled[10,3] <- sum(extinction_model_comparison_spprandom_s
 ggplot(data = lags_v_RVI_spprandom_scaled, aes(x = col_lag)) +
   geom_line(aes(y = col_RVI), ) +
   geom_line(aes(y = ext_RVI), linetype = "dashed") +
-  labs(x = "Lag", y = "Relative Variable Importance") +
+  labs(x = "Lag (years)", y = "Relative Variable Importance") +
   scale_color_discrete() + #how to make a legend
   theme_classic() +
   theme(text = element_text(size = 20)) +
