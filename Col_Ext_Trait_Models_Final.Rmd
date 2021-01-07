@@ -15,6 +15,7 @@ library(MuMIn)
 library(lme4)
 library(data.table)
 library(ggplot2)
+library(plyr)
 
 load("spp_master_ztemp_seus_buoy.traits.RData")
 ```
@@ -137,6 +138,7 @@ for (i in 1:nrow(full_var_set)){
 
 
 save(colonization_model_comparison_traits, file = "colonization_model_comparison_traits.RData")
+load("colonization_model_comparison_traits.RData")
 
 
 ```
@@ -177,6 +179,8 @@ for (i in 1:nrow(full_var_set)){
 }
 
 save(extinction_model_comparison_traits, file = "extinction_model_comparison_traits.RData")
+
+load("extinction_model_comparison_traits.RData")
 
 ```
 
@@ -572,7 +576,7 @@ preds_predictors_seas$ages_we_want <- factor(preds_predictors_seas$ages_we_want,
 
 ggplot(data = preds_predictors_seas, aes(x = seas_sst_temp, y = preds_seas, color = as.factor(ages_we_want))) +
   geom_line(size = 1.5) +
-  labs(colour="Age at Maturity", x = "Surface Temperature Seasonality in Past Year (˚C)", y = "Probability of Colonization",title = "Predicted Probabilities of Colonization") +
+  #labs(colour="Age at Maturity", x = "Surface Temperature Seasonality in Past Year (˚C)", y = "Probability of Colonization",title = "Predicted Probabilities of Colonization") +
   scale_y_continuous(breaks=c(0, 0.5, 1)) +
   theme_classic() +
   scale_color_manual(values = pal) +
