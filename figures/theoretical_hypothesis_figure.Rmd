@@ -1,0 +1,33 @@
+---
+title: "Theoretical Figure Code"
+output: html_notebook
+---
+
+
+
+```{r setup}
+library(data.table)
+library(ggplot2)
+#pull in temp data
+temp <- data.table(read.csv("figures/theoretical_figure_temp.csv"))
+```
+
+Make index column
+```{r}
+nrow(temp)
+
+index_values <- seq(0, nrow(temp)-1, by = 1)
+
+temp[,index := index_values]
+```
+
+
+Plot temp over a year
+
+```{r temp over year}
+ggplot(temp) +
+  geom_smooth(aes(index, WTMP), se = F) +
+  theme_classic()
+```
+
+

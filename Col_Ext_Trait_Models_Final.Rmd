@@ -540,7 +540,7 @@ preds_predictors$ages_we_want <- factor(preds_predictors$ages_we_want, levels=c(
 
 ggplot(data = preds_predictors, aes(x = max_sst_temp_change_abs_lag1, y = preds, color = as.factor(ages_we_want))) +
   geom_line(size = 1.5) +
-  labs(colour="Age at Maturity", x = "Absolute change in maximum surface temperature\nexperienced a year previously (˚C)", y = "Probability of Colonization",title = "Predicted Probabilities of Colonization") +
+  labs(colour="Age at Maturity", x = "Absolute change in maximum surface temperature\nexperienced a year previously (˚C)", y = "Probability of Arrival",title = "Predicted Probabilities of Arrival") +
   scale_y_continuous(breaks=c(0, 0.5, 1)) +
   theme_classic() +
   scale_color_manual(values = pal) +
@@ -633,7 +633,7 @@ preds_predictors$ages_we_want <- factor(preds_predictors$ages_we_want, levels=c(
 
 ggplot(data = preds_predictors, aes(x = max_sst_temp, y = preds, color = as.factor(ages_we_want))) +
   geom_line(size = 1.5) +
-  labs(colour="Age at Maturity", x = "Maximum surface temperature (˚C)", y = "Probability of Extirpation",title = "Predicted Probabilities of Extirpation") +
+  labs(colour="Age at Maturity", x = "Maximum surface temperature (˚C)", y = "Probability of Departure",title = "Predicted Probabilities of Departure") +
   scale_y_continuous(breaks=c(0, 0.5, 1)) +
   theme_classic() +
   scale_color_manual(values = pal) +
@@ -669,7 +669,7 @@ preds_predictors_seas$ages_we_want <- factor(preds_predictors_seas$ages_we_want,
 
 ggplot(data = preds_predictors_seas, aes(x = seas_sst_temp_lag3, y = preds_seas, color = as.factor(ages_we_want))) +
   geom_line(size = 1.5) +
-  labs(colour="Age at Maturity", x = "Temperature Seasonality\nThree Years Previously (˚C)", y = "Probability of Extirpation",title = "Predicted Probabilities of Extirpation") +
+  labs(colour="Age at Maturity", x = "Temperature Seasonality\nThree Years Previously (˚C)", y = "Probability of Departure",title = "Predicted Probabilities of Departure") +
  # scale_y_continuous(breaks=c(0, 0.5, 1)) +
   theme_classic() +
   scale_color_manual(values = pal) +
