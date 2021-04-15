@@ -13,10 +13,11 @@ library(ggcorrplot)
 
 
 load("spp_master_ztemp_seus_buoys.Rdata")
+load("~/Documents/grad school/Rutgers/Repositories/Col_Ext/spp_master_ztemp_seus_buoy.traits_scaled.RData")
 ```
 
-
-```{r narrow down to variables that we need}
+Temp variables we need
+```{r narrow down to temp variables that we need}
 #columns to keep for collinearity matrix
 variable_names_reduced <- colnames(spp_master_ztemp_seus_buoy)[grepl("s.t", colnames(spp_master_ztemp_seus_buoy),)]
 variable_names_reduced2 <- variable_names_reduced[!grepl("mean|lag", variable_names_reduced)]
@@ -33,7 +34,20 @@ temperature_withlags <- spp_master_ztemp_seus_buoy[,..variable_names_all]
 
 ```
 
-Correlation Matrix
+Trait variables we need
+```{r narrow down to trait variables that we need}
+#columns to keep for collinearity matrix
+trait_vars <- c("tl", "age.maturity", "length.max", "age.max")
+
+#now, using this list reduce dt
+traits <- spp_master_ztemp_seus_buoy.traits_scaled[,..trait_vars]
+
+colnames(traits) <- c("trophic_level", "age_maturity", "length_max", "age_max")
+
+
+```
+
+Temp Correlation Matrix
 ```{r matrix all}
 corr_full <- round(cor(temperature_withlags), 2)
 
@@ -55,7 +69,15 @@ ggcorrplot(corr_subset, outline.color = "white", tl.cex = 1, tl.srt = 90, lab_si
 ggsave(file = "temp_var_correlation_plot_subset.jpg", dpi = 1000)
 
 # Get the lower triangle
-ggcorrplot(corr_subset,outline.col = "white", tl.cex = 7, tl.srt = 90)
+ggcorrplot(corr_subset,outline.col = "white", tl.cex = 7, lab =  T, lab_size = 2)
 ggsave(file = "temp_var_correlation_plot_lower_subset.jpg", dpi = 1000)
 ```
 
+Correlation matrix for traits
+```{r  trait corr}
+corr_subset_traits <- round(cor(traits, use = "complete.obs"), 2)
+
+ggcorrplot(corr_subset_traits, outline.color = "white", lab = T)
+ggsave(file = "trait_var_correlation_plot_subset.jpg", dpi = 1000)
+
+```
