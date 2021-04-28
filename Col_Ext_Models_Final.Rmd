@@ -16,34 +16,16 @@ library(MuMIn)
 library(lme4)
 library(data.table)
 library(ggplot2)
+library(here)
 
-load("spp_master_ztemp_seus_buoys.RData")
+load(here("Data","Spp_master", "spp_master_ztemp_seus_buoys_scaled.RData"))
 ```
 
 Running, and ranking colonization models without traits
 
 ##Here, I scaled all temperature values across all regions, and included species as a random effect. In order to do this, I had to change the algorithm slightly--nAGQ = 0.
 
-```{r colonization models without traits}
-
-#extract just temperature variables to scale
-spp_master_ztemp_seus_buoy_varsonly <- spp_master_ztemp_seus_buoy[,c(1,45:292)]
-
-#names of temp variables, so I can add "_scaled" suffix
-tempvars <- colnames(spp_master_ztemp_seus_buoy[,45:292])
-
-#scale all variables, make new columns, do this by region
-spp_master_ztemp_seus_buoy_varsonly[, paste0(tempvars, "_scaled") := lapply(.SD, function(x) as.vector(scale(x))), .SDcols = tempvars]
-
-
-#names of scaled columns
-scaled_cols <- grep("*_scaled", names(spp_master_ztemp_seus_buoy_varsonly), value = T)
-
-#merge new columns back with spp_master_ztemp_seus_buoy
-spp_master_ztemp_seus_buoy_scaled <- cbind(spp_master_ztemp_seus_buoy, spp_master_ztemp_seus_buoy_varsonly[,scaled_cols, with = FALSE])
-
-save(spp_master_ztemp_seus_buoy_scaled, file = "spp_master_ztemp_seus_buoy_scaled.RData")
-
+```{r colonization models}
 #going to make loop to make all models I need to look at with single variables
 variables_scaled <- colnames(spp_master_ztemp_seus_buoy_scaled[,scaled_cols, with = FALSE])
 

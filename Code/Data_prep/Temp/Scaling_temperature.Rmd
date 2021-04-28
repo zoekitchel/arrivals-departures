@@ -1,0 +1,31 @@
+---
+title: "Scaling Temperature"
+output: html_notebook
+---
+
+```{r setup}
+library(data.table)
+library(here)
+
+load(here("Data","Spp_master", "spp_master_ztemp_seus_buoys.RData"))
+```
+
+Scaling temperature values
+```{r scaling temperature}
+
+#extract just temperature variables to scale
+tempvars <- grep(pattern = "*_s.t_*",colnames(spp_master_ztemp_seus_buoy), value = T)
+spp_master_ztemp_seus_buoy_varsonly <- spp_master_ztemp_seus_buoy[,..tempvars]
+
+#scale all variables, make new columns
+spp_master_ztemp_seus_buoy_varsonly[, paste0(tempvars, "_scaled") := lapply(.SD, function(x) as.vector(scale(x))), .SDcols = tempvars]
+
+
+#names of scaled columns
+scaled_cols <- grep("*_scaled", names(spp_master_ztemp_seus_buoy_varsonly), value = T)
+
+#merge new columns back with spp_master_ztemp_seus_buoy
+spp_master_ztemp_seus_buoy_scaled <- cbind(spp_master_ztemp_seus_buoy, spp_master_ztemp_seus_buoy_varsonly[,scaled_cols, with = FALSE])
+
+save(spp_master_ztemp_seus_buoy_scaled, file = here("Data","Spp_master", "spp_master_ztemp_seus_buoy_scaled.RData"))
+```
