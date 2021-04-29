@@ -1,0 +1,30 @@
+---
+title: "Figure 3 Code"
+output: html_notebook
+---
+
+See Col_Ext_Models_Final for more context (~line 287)
+
+```{r setup}
+library(ggplot2)
+library(data.table)
+
+lags_RVI_scaled <- readRDS(here("Model_results","lags_RVI_scaled.rds"))
+```
+
+
+```{r plot}
+#visualize lags through time
+ggplot(data = lags_RVI_scaled, aes(x = arrival_lag)) +
+  geom_line(aes(y = arrival_RVI), ) +
+  geom_line(aes(y = departure_RVI), linetype = "dashed") +
+  labs(x = "Lag (years)", y = "Relative Variable Importance") +
+  scale_color_discrete() + #how to make a legend
+  theme_classic() +
+  theme(text = element_text(size = 20)) +
+  scale_x_continuous(breaks = c(0:9))
+
+ggsave(here("figures","Figure3", "Figure3.eps"))
+
+```
+

@@ -1,0 +1,70 @@
+---
+title: "Figure 4 Code"
+output: html_notebook
+---
+
+Code to make Figure 4. 
+
+```{r setup}
+library(ggplot2)
+library(data.table)
+library(wesanderson)
+library(cowplot)
+
+RVI_arrival_nolag <- readRDS(here("Model_results", "RVI_arrival_nolag.rds"))
+RVI_departure_nolag <- readRDS(here("Model_results", "RVI_departure_nolag.rds"))
+```
+
+Plot
+```{r plot}
+#arrivals
+RVI_arrival_plot <- ggplot(data = RVI_arrival_nolag, aes(x=type, y = value, fill = variable)) +
+  geom_bar(stat="identity", color = NA, size = 0, width = 0.8) +
+  scale_x_discrete(breaks = c("Depth", "Transformation", "Metric"), labels = c("Depth", "Transformation", "Metric")) +
+  labs(x = "Temperature Variables", y = "Relative Variable Importance") +
+  theme_classic() +
+  theme(text = element_text(size = 11.5), 
+        legend.position = "top", 
+        legend.title = element_blank(), 
+        legend.spacing.x = unit(0.2, 'cm'),
+        legend.justification = "center",
+        aspect.ratio = (1),
+        #, legend.position = "none"
+        ) +
+  guides(fill=guide_legend(ncol=3)) +
+  scale_fill_manual(values = colors,
+                    drop = F)
+
+ggsave(here("figures","figure4","Figure4a.eps" ))
+
+#departure
+RVI_departure_plot <- ggplot(data = RVI_departure_nolag, aes(x=type, y = value, fill = variable)) +
+  geom_bar(stat="identity", color = NA, size = 0, width = 0.8) +
+  scale_x_discrete(breaks = c("Depth", "Transformation", "Metric"), labels = c("Depth", "Transformation", "Metric")) +
+  labs(x = "Temperature Variables", y = "Relative Variable Importance") +
+  theme_classic() +
+  theme(text = element_text(size = 11.5), 
+        legend.position = "top", 
+        legend.title = element_blank(), 
+        legend.spacing.x = unit(0.2, 'cm'),
+        legend.justification = "center",
+        aspect.ratio = (1),
+        #, legend.position = "none"
+        ) +
+  guides(fill=guide_legend(ncol=3)) +
+  scale_fill_manual(values = colors,
+                    drop = F)
+
+ggsave(here("figures","figure4","Figure4b.eps" ))
+
+
+
+```
+
+Arrange side by side
+```{r arrange}
+figure4 <- plot_grid(RVI_arrival_plot, RVI_departure_plot, labels = c("a.", "b."))
+
+ggsave(here("figures","figure4","Figure4.eps"))
+```
+
