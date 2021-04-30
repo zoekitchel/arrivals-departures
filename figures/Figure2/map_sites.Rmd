@@ -7,10 +7,12 @@ output: html_notebook
 library(data.table)
 library(mapdata)
 library(maps)
-library(plyr)
+library(tidyverse)
 library(ggplot2)
+library(here)
+library(wesanderson)
 
-load("hauls_catch_Dec2017 1.RData")
+load(here::here("Data","Spp_observations","hauls_catch_Dec2017 1.RData"))
 
 
 ```
@@ -57,7 +59,6 @@ NAmap <- ggplot() + geom_polygon(data = north_america,
 Add points and polygons
 ```{r add points}
 #color palette
-library(wesanderson)
 pal <- wes_palette("GrandBudapest1", 9, type = "continuous")
 
 

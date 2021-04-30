@@ -1,0 +1,56 @@
+---
+title: "Regional statistics for Supplementary Table 1"
+output: html_notebook
+---
+```{r setup}
+
+library(data.table)
+library(ggplot2)
+library(lme4)
+
+load(here::here("Data","Spp_master","spp_master_ztemp_seus_buoy_scaled.RData"))
+load(here::here("Data","Spp_master","spp_master_ztemp_seus_buoy.traits_scaled.RData"))
+
+```
+
+Regional statistics fish and inverts
+```{r regional stats fish and inverts}
+#count arrivals by region
+arrivals <- spp_master_ztemp_seus_buoy_scaled[col == 1,.N,reg]
+colnames(arrivals) <- c("reg","arrivals")
+
+#count departures by region
+departures <- spp_master_ztemp_seus_buoy_scaled[now_ext == 1,.N,reg]
+colnames(departures) <- c("reg","departures")
+
+#count observations by region
+counts <- spp_master_ztemp_seus_buoy_scaled[,.N,reg]
+colnames(counts) <- c("reg","counts")
+
+region_summaries <- cbind(counts, arrivals[,arrivals], departures[,departures])
+colnames(region_summaries) <- c("reg", "counts", "arrivals", "departures")
+
+region_summaries[,arrivals_per := round(arrivals/counts,4)][,departures_per := round(departures/counts,4)]
+```
+Regional statistics fish only
+```{r regional stats fish only}
+#order by region
+setkey(spp_master_ztemp_seus_buoy.traits_scaled, reg)
+#count arrivals by region
+arrivals_fish <- spp_master_ztemp_seus_buoy.traits_scaled[col == 1,.N,reg]
+colnames(arrivals_fish) <- c("reg","arrivals")
+
+#count departures by region
+departures_fish <- spp_master_ztemp_seus_buoy.traits_scaled[now_ext == 1,.N,reg]
+colnames(departures_fish) <- c("reg","departures")
+
+#count observations by region
+counts_fish <- spp_master_ztemp_seus_buoy.traits_scaled[,.N,reg]
+colnames(counts_fish) <- c("reg","counts")
+
+region_summaries_fish <- cbind(counts_fish, arrivals_fish[,arrivals], departures_fish[,departures])
+colnames(region_summaries_fish) <- c("reg", "counts", "arrivals", "departures")
+
+region_summaries_fish[,arrivals_per := round(arrivals/counts,4)][,departures_per := round(departures/counts,4)]
+```
+
