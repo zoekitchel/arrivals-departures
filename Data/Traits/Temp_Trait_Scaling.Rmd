@@ -1,0 +1,33 @@
+---
+title: "Scaling Temperature and Traits"
+output: html_notebook
+---
+
+```{r setup}
+library(data.table)
+library(here)
+
+load(here::here("Data","Spp_master", "spp_master_ztemp_seus_buoy.traits.RData"))
+```
+
+Scaling temperature and trait values
+```{r scaling temperature and traits}
+
+#extract just temperature variables to scale
+temptraitvars <- grep(pattern = "*_s.t_*|tl|age.maturity|length.max|age.max",colnames(spp_master_ztemp_seus_buoy.traits), value = T)
+spp_master_ztemp_seus_buoy.traits_varsonly <- spp_master_ztemp_seus_buoy.traits[,..temptraitvars][,level.tl:= NULL] #picked up level.tl column from query above, delete here
+
+#scale all variables, make new columns
+spp_master_ztemp_seus_buoy.traits_varsonly[, paste0(colnames(spp_master_ztemp_seus_buoy.traits_varsonly), "_scaled") := lapply(.SD, function(x) as.vector(scale(x))), .SDcols = colnames(spp_master_ztemp_seus_buoy.traits_varsonly)]
+
+
+#names of scaled columns
+scaled_cols <- grep("*_scaled", names(spp_master_ztemp_seus_buoy.traits_varsonly), value = T)
+
+#merge new columns back with spp_master_ztemp_seus_buoy
+spp_master_ztemp_seus_buoy.traits_scaled <- cbind(spp_master_ztemp_seus_buoy.traits, spp_master_ztemp_seus_buoy.traits_varsonly[,scaled_cols, with = FALSE])
+
+save(spp_master_ztemp_seus_buoy.traits_scaled, file = here::here("Data","Spp_master", "spp_master_ztemp_seus_buoy.traits_scaled.RData"))
+```
+
+

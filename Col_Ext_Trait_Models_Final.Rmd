@@ -1,5 +1,5 @@
 ---
-title: "Colonization and Extinction Final Models with Traits Included"
+title: "Arrival and Departure Final Models with Traits Included"
 output: html_notebook
 ---
 
@@ -17,29 +17,7 @@ library(data.table)
 library(ggplot2)
 library(plyr)
 
-load("spp_master_ztemp_seus_buoy.traits.RData")
-```
-
-Running, and ranking colonization models without traits
-
-```{r scaling temperature values}
-#extract just temperature variables to scale
-spp_master_ztemp_varsonly <- spp_master_ztemp_seus_buoy.traits[,c(1,45:292, 301, 308, 310, 312, 313)]
-
-#names of temp variables, so I can add "_scaled" suffix
-temptraitvars <- colnames(spp_master_ztemp_seus_buoy.traits[,c(45:292, 301, 308, 310, 312, 313)])
-
-#scale all variables, make new columns, do this by region
-spp_master_ztemp_varsonly[, paste0(temptraitvars, "_scaled") := lapply(.SD, function(x) as.vector(scale(x))), .SDcols = temptraitvars]
-
-#names of scaled columns
-scaled_cols <- grep("*_scaled", names(spp_master_ztemp_varsonly), value = T)
-
-#merge new columns back with spp_master_ztemp
-spp_master_ztemp_seus_buoy.traits_scaled <- cbind(spp_master_ztemp_seus_buoy.traits, spp_master_ztemp_varsonly[,scaled_cols, with = FALSE])
-
-save(spp_master_ztemp_seus_buoy.traits_scaled, file = "spp_master_ztemp_seus_buoy.traits_scaled.RData")
-
+load(here::here("Data","Spp_master","spp_master_ztemp_seus_buoy.traits_scaled.RData"))
 ```
 
 I will be looking at:
@@ -56,9 +34,9 @@ summary(spp_master_ztemp_seus_buoy.traits_scaled$tl) #none missing
 summary(spp_master_ztemp_seus_buoy.traits_scaled$length.max) #none missing
 summary(spp_master_ztemp_seus_buoy.traits_scaled$length.infinity) #443 missing, this is highly correlated (0.82) with length max, so we'll just use length.max
 
-cor(spp_master_ztemp_seus_buoy.traits_scaled[,.(age.max_scaled, age.maturity_scaled, tl_scaled, length.max_scaled, length.infinity_scaled)], use = "complete.obs")
+cor(spp_master_ztemp_seus_buoy.traits_scaled[,.(age.max_scaled, age.maturity_scaled, tl_scaled, length.max_scaled)], use = "complete.obs")
 
-pairs(spp_master_ztemp_seus_buoy.traits_scaled[,.(age.max_scaled, age.maturity_scaled, tl_scaled, length.max_scaled, length.infinity_scaled)])
+pairs(spp_master_ztemp_seus_buoy.traits_scaled[,.(age.max_scaled, age.maturity_scaled, tl_scaled, length.max_scaled)])
 
 ```
 
@@ -66,18 +44,23 @@ Prep for dredge
 ```{r prep for model runs}
 
 #temp scaled vars only
-tempvars <- names(spp_master_ztemp_seus_buoy.traits_scaled[,314:561])
-othervars_col <- c("reg", "year", "col", "spp", "age.max_scaled", "age.maturity_scaled", "tl_scaled", "length.max_scaled")
-colstosaveforcol <- c(othervars_col, tempvars)
-#Colonization table
-colonization.reduced <- spp_master_ztemp_seus_buoy.traits_scaled[,colstosaveforcol, with = F] #reduces to columns we need
+#names of scaled columns
+tempvars <- grep(".*temp.*scaled", names(spp_master_ztemp_seus_buoy.traits_scaled), value = T)
 
-#Extinction table
+#other reference and trait columns we need
+othervars_arrivals <- c("reg", "year", "col", "spp", "age.max_scaled", "age.maturity_scaled", "tl_scaled", "length.max_scaled")
 
-othervars_ext <- c("reg", "year", "now_ext", "spp", "age.max_scaled", "age.maturity_scaled", "tl_scaled", "length.max_scaled")
-colstosaveforext <- c(othervars_ext, tempvars)
-#Colonization table
-extinction.reduced <- spp_master_ztemp_seus_buoy.traits_scaled[,colstosaveforext, with = F] #reduces to columns we need
+colstosaveforarrivals <- c(othervars_col, tempvars)
+
+#Arrival table
+arrival.reduced <- spp_master_ztemp_seus_buoy.traits_scaled[,colstosaveforarrivals, with = F] #reduces to columns we need
+
+#Departure table
+
+othervars_departure <- c("reg", "year", "now_ext", "spp", "age.max_scaled", "age.maturity_scaled", "tl_scaled", "length.max_scaled")
+colstosavefordeparture <- c(othervars_departure, tempvars)
+
+departure.reduced <- spp_master_ztemp_seus_buoy.traits_scaled[,colstosavefordeparture, with = F] #reduces to columns we need
 
 
 
