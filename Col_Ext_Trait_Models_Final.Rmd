@@ -66,17 +66,18 @@ departure.reduced <- spp_master_ztemp_seus_buoy.traits_scaled[,colstosavefordepa
 
 ```
 
+#run later tonight
 
-Making all models for colonization
-```{r all models colonization}
+Making all models for arrival
+```{r all models arrival}
 
 #playing with year as factor
 #can't get dredge to run above, so trying here with fewer variables
-colonization.reduced[,year := as.factor(year)]
+arrival.reduced[,year := as.factor(year)]
 
 #for now, going with two traits and one temp variable
 #going to make loop to make all models I need to look at with single variables
-all.temp.variables <- colnames(colonization.reduced[,9:256])
+all.temp.variables <- colnames(arrival.reduced[,9:256])
 all.temp.variables.0 <- c(0, all.temp.variables) #add 0 as option so models can just include traits
 all.temp.variables.0 <- all.temp.variables.0[!grepl("*mean*", all.temp.variables.0)]#get rid of MEAN temp variables
 all.trait.variables <- c(0, "tl_scaled", "age.max_scaled","age.maturity_scaled", "length.max_scaled",
@@ -91,9 +92,9 @@ sign <- c("+", "*")
 
 full_var_set <- as.data.table(expand.grid(all.temp.variables.0, sign, all.trait.variables))
 
-colonization_model_comparison_traits <- as.data.table(matrix(nrow = nrow(full_var_set))) 
-colonization_model_comparison_traits[, temp_variable:=as.factor(V1)][, sign:=as.factor(V1)][, trait_variable:=as.factor(V1)][, AICc:=as.numeric(V1)][, converge:= as.logical(V1)]
-colonization_model_comparison_traits[, V1 := NULL]
+arrival_model_comparison_traits <- as.data.table(matrix(nrow = nrow(full_var_set))) 
+arrival_model_comparison_traits[, temp_variable:=as.factor(V1)][, sign:=as.factor(V1)][, trait_variable:=as.factor(V1)][, AICc:=as.numeric(V1)][, converge:= as.logical(V1)]
+arrival_model_comparison_traits[, V1 := NULL]
 
 for (i in 1:nrow(full_var_set)){
  
@@ -103,39 +104,38 @@ for (i in 1:nrow(full_var_set)){
   
   formula <- as.formula(paste("col ~", temp, sign, trait, "+ (1|reg) + (1|spp)"))
   
-  mod <- glmer(formula, family = binomial, data = colonization.reduced, nAGQ = 0)
+  mod <- glmer(formula, family = binomial, data = arrival.reduced, nAGQ = 0)
   
-  colonization_model_comparison_traits[i,temp_variable := full_var_set$Var1[i]]
-  colonization_model_comparison_traits[i,sign := full_var_set$Var2[i]]
-  colonization_model_comparison_traits[i,trait_variable := full_var_set$Var3[i]]
-  colonization_model_comparison_traits[i,AICc := AICc(mod)]
+  arrival_model_comparison_traits[i,temp_variable := full_var_set$Var1[i]]
+  arrival_model_comparison_traits[i,sign := full_var_set$Var2[i]]
+  arrival_model_comparison_traits[i,trait_variable := full_var_set$Var3[i]]
+  arrival_model_comparison_traits[i,AICc := AICc(mod)]
   
   warning <- mod@optinfo$conv$lme4$messages[2]
   converges <- ifelse(is.null(warning) == TRUE, T, F)
   
-  colonization_model_comparison_traits[i, converge := converges]
+  arrival_model_comparison_traits[i, converge := converges]
   
-  print(paste(i, nrow(colonization_model_comparison_traits), sep = "/"))
+  print(paste(i, nrow(arrival_model_comparison_traits), sep = "/"))
     
 }
 
 
-save(colonization_model_comparison_traits, file = "colonization_model_comparison_traits.RData")
-load("colonization_model_comparison_traits.RData")
+saveRDS(arrival_model_comparison_traits, here::here("Model_results","Traits","arrival_model_comparison_traits.rds"))
 
 
 ```
 
-Making all models for extinction
-```{r all models extinction}
+Making all models for departure
+```{r all models departure}
 
 #for now, going with two traits and one temp variable
 #going to make loop to make all models I need to look at with single variables
 #don't want mean
 
-extinction_model_comparison_traits <- as.data.table(matrix(nrow = nrow(full_var_set))) 
-extinction_model_comparison_traits[, temp_variable:=as.factor(V1)][, sign:=as.factor(V1)][, trait_variable:=as.factor(V1)][, AICc:=as.numeric(V1)][, converge:= as.logical(V1)]
-extinction_model_comparison_traits[, V1 := NULL]
+departure_model_comparison_traits <- as.data.table(matrix(nrow = nrow(full_var_set))) 
+departure_model_comparison_traits[, temp_variable:=as.factor(V1)][, sign:=as.factor(V1)][, trait_variable:=as.factor(V1)][, AICc:=as.numeric(V1)][, converge:= as.logical(V1)]
+departure_model_comparison_traits[, V1 := NULL]
 
 for (i in 1:nrow(full_var_set)){
  
@@ -145,220 +145,192 @@ for (i in 1:nrow(full_var_set)){
   
   formula <- as.formula(paste("now_ext ~", temp, sign, trait, "+ (1|reg) + (1|spp)"))
   
-  mod <- glmer(formula, family = binomial, data = extinction.reduced, nAGQ = 0)
+  mod <- glmer(formula, family = binomial, data = departure.reduced, nAGQ = 0)
   
-  extinction_model_comparison_traits[i,temp_variable := full_var_set$Var1[i]]
-  extinction_model_comparison_traits[i,sign := full_var_set$Var2[i]]
-  extinction_model_comparison_traits[i,trait_variable := full_var_set$Var3[i]]
-  extinction_model_comparison_traits[i,AICc := AICc(mod)]
+  departure_model_comparison_traits[i,temp_variable := full_var_set$Var1[i]]
+  departure_model_comparison_traits[i,sign := full_var_set$Var2[i]]
+  departure_model_comparison_traits[i,trait_variable := full_var_set$Var3[i]]
+  departure_model_comparison_traits[i,AICc := AICc(mod)]
   
   warning <- mod@optinfo$conv$lme4$messages[2]
   converges <- ifelse(is.null(warning) == TRUE, T, F)
   
-  extinction_model_comparison_traits[i, converge := converges]
+  departure_model_comparison_traits[i, converge := converges]
   
-  print(paste(i, nrow(extinction_model_comparison_traits), sep = "/"))
+  print(paste(i, nrow(departure_model_comparison_traits), sep = "/"))
     
 }
 
-save(extinction_model_comparison_traits, file = "extinction_model_comparison_traits.RData")
-
-load("extinction_model_comparison_traits.RData")
+saveRDS(departure_model_comparison_traits, here::here("Model_results","Traits","departure_model_comparison_traits.rds"))
 
 ```
 
 Next step is to look at RVI (relative variable importance)
 
-COLONIZATION
+RVI for Temperature Trait Arrival Models
 
-```{r RVI colonization traits}
+```{r RVI arrival traits}
 #only raw temp has lag of 10 years, which means variable importance comparisons are unbalanced so I will get rid of these rows
-colonization_model_comparisons_traits.lag9max <- colonization_model_comparison_traits[!grepl("lag10", temp_variable), ]
+arrival_model_comparisons_traits.lag9max <- arrival_model_comparison_traits[!grepl("lag10", temp_variable), ]
 
 #add ∆AIC to tables
-min_col_AICc_trait <- min(colonization_model_comparisons_traits.lag9max[, AICc])
-colonization_model_comparisons_traits.lag9max[,"deltaAICc" := (AICc - min_col_AICc_trait)]
+min_arrival_AICc_trait <- min(arrival_model_comparisons_traits.lag9max[, AICc])
+arrival_model_comparisons_traits.lag9max[,"deltaAICc" := (AICc - min_arrival_AICc_trait)]
 
 #add relative likelihood exp( -0.5 * ∆AIC score for that model)
-colonization_model_comparisons_traits.lag9max[,"rel_likelihood" := exp((-0.5 * deltaAICc))]
+arrival_model_comparisons_traits.lag9max[,"rel_likelihood" := exp((-0.5 * deltaAICc))]
 #sum relative likelihoods across all models
-colonization_model_comparisons_traits.lag9max.likelihoodsum <- sum(colonization_model_comparisons_traits.lag9max[, rel_likelihood])
+arrival_model_comparisons_traits.lag9max.likelihoodsum <- sum(arrival_model_comparisons_traits.lag9max[, rel_likelihood])
 #Akaike weight for a model is this rel_likelihood devided by the sum of these values across all models
-colonization_model_comparisons_traits.lag9max[,"akaike_weight" := rel_likelihood/colonization_model_comparisons_traits.lag9max.likelihoodsum]
+arrival_model_comparisons_traits.lag9max[,"akaike_weight" := rel_likelihood/arrival_model_comparisons_traits.lag9max.likelihoodsum]
 
 #I want to look at relative importance FOR 
 #bottom/surface (bottom = includes sbt, grepl("sbt", variable))
-col_bottom_importance <- sum(colonization_model_comparisons_traits.lag9max[grep("sbt", temp_variable), ]$akaike_weight)
-col_surface_importance <- sum(colonization_model_comparisons_traits.lag9max[grep("sst", temp_variable), ]$akaike_weight)
-  col_bottom_importance.n <- count(colonization_model_comparisons_traits.lag9max[grepl("sbt", temp_variable), ]) #3060
-  col_surface_importance.n <- count(colonization_model_comparisons_traits.lag9max[grepl("sst", temp_variable), ]) #3060
+arrival_bottom_importance <- sum(arrival_model_comparisons_traits.lag9max[grep("sbt", temp_variable), ]$akaike_weight)
+arrival_surface_importance <- sum(arrival_model_comparisons_traits.lag9max[grep("sst", temp_variable), ]$akaike_weight)
+  arrival_bottom_importance.n <- count(arrival_model_comparisons_traits.lag9max[grepl("sbt", temp_variable), ]) #3060
+  arrival_surface_importance.n <- count(arrival_model_comparisons_traits.lag9max[grepl("sst", temp_variable), ]) #3060
 
 #lag/not lagged (grepl("lag", variable))
-col_lag_importance <- sum(colonization_model_comparisons_traits.lag9max[grep("lag", temp_variable), ]$akaike_weight)
-col_nolag_importance <- sum(colonization_model_comparisons_traits.lag9max[!grep("lag", temp_variable), ]$akaike_weight)
-  col_lag_importance.n <- count(colonization_model_comparisons_traits.lag9max[grepl("lag", temp_variable), ]) #5508 models include a lag
-  col_nolag_importance.n <- count(colonization_model_comparisons_traits.lag9max[!grepl("lag", temp_variable), ]) #646 don't include a lag (no lag OR trait only)
+arrival_lag_importance <- sum(arrival_model_comparisons_traits.lag9max[grep("lag", temp_variable), ]$akaike_weight)
+arrival_nolag_importance <- sum(arrival_model_comparisons_traits.lag9max[!grep("lag", temp_variable), ]$akaike_weight)
+  arrival_lag_importance.n <- count(arrival_model_comparisons_traits.lag9max[grepl("lag", temp_variable), ]) #5508 models include a lag
+  arrival_nolag_importance.n <- count(arrival_model_comparisons_traits.lag9max[!grepl("lag", temp_variable), ]) #646 don't include a lag (no lag OR trait only)
 
 
   #34 models have NO temp variable
   
   
 #absolute (grepl("abs", variable))
-col_abs_importance <- sum(colonization_model_comparisons_traits.lag9max[grep("abs", temp_variable), ]$akaike_weight)
-  col_abs_importance.n <- count(colonization_model_comparisons_traits.lag9max[grepl("abs", temp_variable), ])#2040
+arrival_abs_importance <- sum(arrival_model_comparisons_traits.lag9max[grep("abs", temp_variable), ]$akaike_weight)
+  arrival_abs_importance.n <- count(arrival_model_comparisons_traits.lag9max[grepl("abs", temp_variable), ])#2040
   
 #raw (!grepl("change"))
-col_raw_importance <- sum(colonization_model_comparisons_traits.lag9max[!grep("change", temp_variable), ][temp_variable != 0,]$akaike_weight)
-  col_raw_importance.n <- count(colonization_model_comparisons_traits.lag9max[!grepl("change", temp_variable), ][temp_variable != 0]) #2040
+arrival_raw_importance <- sum(arrival_model_comparisons_traits.lag9max[!grep("change", temp_variable), ][temp_variable != 0,]$akaike_weight)
+  arrival_raw_importance.n <- count(arrival_model_comparisons_traits.lag9max[!grepl("change", temp_variable), ][temp_variable != 0]) #2040
 
 #change (grepl("change", temp_variable), (!grepl("abs")))
-col_change_importance <- sum(colonization_model_comparisons_traits.lag9max[grep("change", temp_variable), ][!grep("abs", temp_variable),]$akaike_weight)
-  col_change_importance.n <- count(colonization_model_comparisons_traits.lag9max[grep("change", temp_variable), ][!grep("abs", temp_variable),])#2040
+arrival_change_importance <- sum(arrival_model_comparisons_traits.lag9max[grep("change", temp_variable), ][!grep("abs", temp_variable),]$akaike_weight)
+  arrival_change_importance.n <- count(arrival_model_comparisons_traits.lag9max[grep("change", temp_variable), ][!grep("abs", temp_variable),])#2040
 
 
 #type of temp temp_variable (max, min, seas)
-col_max_temp_importance <- sum(colonization_model_comparisons_traits.lag9max[grep("max", temp_variable), ]$akaike_weight)
-col_min_temp_importance <- sum(colonization_model_comparisons_traits.lag9max[grep("min", temp_variable), ]$akaike_weight)
-col_seas_temp_importance <- sum(colonization_model_comparisons_traits.lag9max[grep("seas", temp_variable), ]$akaike_weight)
-  col_max_temp_importance.n <- count(colonization_model_comparisons_traits.lag9max[grepl("max", temp_variable), ]) #2040
-  col_min_temp_importance.n <- count(colonization_model_comparisons_traits.lag9max[grepl("min", temp_variable), ]) #2040
-  col_seas_temp_importance.n <- count(colonization_model_comparisons_traits.lag9max[grepl("seas", temp_variable), ]) #2040
+arrival_max_temp_importance <- sum(arrival_model_comparisons_traits.lag9max[grep("max", temp_variable), ]$akaike_weight)
+arrival_min_temp_importance <- sum(arrival_model_comparisons_traits.lag9max[grep("min", temp_variable), ]$akaike_weight)
+arrival_seas_temp_importance <- sum(arrival_model_comparisons_traits.lag9max[grep("seas", temp_variable), ]$akaike_weight)
+  arrival_max_temp_importance.n <- count(arrival_model_comparisons_traits.lag9max[grepl("max", temp_variable), ]) #2040
+  arrival_min_temp_importance.n <- count(arrival_model_comparisons_traits.lag9max[grepl("min", temp_variable), ]) #2040
+  arrival_seas_temp_importance.n <- count(arrival_model_comparisons_traits.lag9max[grepl("seas", temp_variable), ]) #2040
   
 
 #traits included
-col_age.max_importance <- sum(colonization_model_comparisons_traits.lag9max[grep("age.max", trait_variable), ]$akaike_weight)
-col_age.maturity_importance <- sum(colonization_model_comparisons_traits.lag9max[grep("age.maturity", trait_variable), ]$akaike_weight)
-col_tl_importance <- sum(colonization_model_comparisons_traits.lag9max[grep("tl", trait_variable), ]$akaike_weight)
-col_length.max_importance <- sum(colonization_model_comparisons_traits.lag9max[grep("length", trait_variable),]$akaike_weight)
-  col_age.max_importance.n <- count(colonization_model_comparisons_traits.lag9max[grepl("age.max", trait_variable), ]) #2534
-  col_age.maturity_importance.n <- count(colonization_model_comparisons_traits.lag9max[grepl("age.maturity", trait_variable), ]) #2534
-  col_tl_importance.n <- count(colonization_model_comparisons_traits.lag9max[grepl("tl", trait_variable), ]) #2534
-  col_length.max_importance.n <- count(colonization_model_comparisons_traits.lag9max[grepl("length", trait_variable),]) #2534
+arrival_age.max_importance <- sum(arrival_model_comparisons_traits.lag9max[grep("age.max", trait_variable), ]$akaike_weight)
+arrival_age.maturity_importance <- sum(arrival_model_comparisons_traits.lag9max[grep("age.maturity", trait_variable), ]$akaike_weight)
+arrival_tl_importance <- sum(arrival_model_comparisons_traits.lag9max[grep("tl", trait_variable), ]$akaike_weight)
+arrival_length.max_importance <- sum(arrival_model_comparisons_traits.lag9max[grep("length", trait_variable),]$akaike_weight)
+  arrival_age.max_importance.n <- count(arrival_model_comparisons_traits.lag9max[grepl("age.max", trait_variable), ]) #2534
+  arrival_age.maturity_importance.n <- count(arrival_model_comparisons_traits.lag9max[grepl("age.maturity", trait_variable), ]) #2534
+  arrival_tl_importance.n <- count(arrival_model_comparisons_traits.lag9max[grepl("tl", trait_variable), ]) #2534
+  arrival_length.max_importance.n <- count(arrival_model_comparisons_traits.lag9max[grepl("length", trait_variable),]) #2534
 
 
 #interaction between trait and temperature
-col_interaction_temp_trait_importance <- sum(colonization_model_comparisons_traits.lag9max[grep("\\*", sign), ]$akaike_weight)
-  col_interaction_temp_trait_importance.n <- count(colonization_model_comparisons_traits.lag9max[grepl("\\*", sign), ]) #3077
+arrival_interaction_temp_trait_importance <- sum(arrival_model_comparisons_traits.lag9max[grep("\\*", sign), ]$akaike_weight)
+  arrival_interaction_temp_trait_importance.n <- count(arrival_model_comparisons_traits.lag9max[grepl("\\*", sign), ]) #3077
 
 
 #save this table
-save(colonization_model_comparisons_traits.lag9max, file = "colonization_models_traits_with_likelihoods.Rdata")
-```
-Best model stats?
-```{r best model stats for models with traits}
-mod_col_trait <- glmer(col ~ max_sst_temp_change_abs_lag1_scaled * age.maturity_scaled + age.max_scaled + (1|spp) + (1|reg), data = colonization.reduced, nAGQ = 0, family = binomial)
-
-summary(mod_col_trait)
-
-#R^2 (coefficient of determination based on likelihood ratio test)
-#adj.r.squared: Nagelkerke's modified R^2 statistic
-library(MuMIn)
-r.squaredLR(mod_col_trait)
-
+saveRDS(arrival_model_comparisons_traits.lag9max, here:here("Model_results","Traits","arrival_models_traits_with_likelihoods.rds"))
 ```
 
-```{r put RVIs for colonization into data table}
-col_ext <- c("col","col","col","col","col", "col","col", "col", "col","col", "col","col", "col", "col","col")
+```{r put RVIs for arrival into data table}
+arrival_departure <- c("arrival","arrival","arrival","arrival","arrival", "arrival","arrival", "arrival", "arrival","arrival", "arrival","arrival", "arrival", "arrival","arrival")
 type <- c("depth", "depth", "lag", "lag", "Change?", "Change?", "Change?", "Temp", "Temp", "Temp", "Trait", "Trait", "Trait","Trait", "Interaction")
 variable <- c("bottom", "surface", "no_lag", "lagged", "absolute_value_change", "change", "raw", "Min", "Max", "Seas", "age.max", "age.maturity", "tl", "length.max", "tempxtrait")
-value <- c(col_bottom_importance, col_surface_importance, col_nolag_importance, col_lag_importance, col_abs_importance, col_change_importance, col_raw_importance, col_min_temp_importance, col_max_temp_importance, col_seas_temp_importance, col_age.max_importance, col_age.maturity_importance, col_tl_importance, col_length.max_importance, col_interaction_temp_trait_importance)
+value <- c(arrival_bottom_importance, arrival_surface_importance, arrival_nolag_importance, arrival_lag_importance, arrival_abs_importance, arrival_change_importance, arrival_raw_importance, arrival_min_temp_importance, arrival_max_temp_importance, arrival_seas_temp_importance, arrival_age.max_importance, arrival_age.maturity_importance, arrival_tl_importance, arrival_length.max_importance, arrival_interaction_temp_trait_importance)
 
-RVI_col_traits <- data.table(col_ext, type, variable, value)
+RVI_arrival_traits <- data.table(arrival_departure, type, variable, value)
 ```
 
 
-EXTINCTION
+Departure
 
-```{r RVI extinction traits}
+```{r RVI departure traits}
 #only raw temp has lag of 10 years, which means variable importance comparisons are unbalanced so I will get rid of these rows
-extinction_model_comparisons_traits.lag9max <- extinction_model_comparison_traits[!grepl("lag10", temp_variable), ]
+departure_model_comparisons_traits.lag9max <- departure_model_comparison_traits[!grepl("lag10", temp_variable), ]
 
 
 #add ∆AIC to tables
-min_ext_AICc_trait <- min(extinction_model_comparisons_traits.lag9max[, AICc])
-extinction_model_comparisons_traits.lag9max[,"deltaAICc" := (AICc - min_ext_AICc_trait)]
+min_departure_AICc_trait <- min(departure_model_comparisons_traits.lag9max[, AICc])
+departure_model_comparisons_traits.lag9max[,"deltaAICc" := (AICc - min_departure_AICc_trait)]
 
 #add relative likelihood exp( -0.5 * ∆AIC score for that model)
-extinction_model_comparisons_traits.lag9max[,"rel_likelihood" := exp((-0.5 * deltaAICc))]
+departure_model_comparisons_traits.lag9max[,"rel_likelihood" := exp((-0.5 * deltaAICc))]
 #sum relative likelihoods across all models
-extinction_model_comparisons_traits.lag9max.likelihoodsum <- sum(extinction_model_comparisons_traits.lag9max[, rel_likelihood])
+departure_model_comparisons_traits.lag9max.likelihoodsum <- sum(departure_model_comparisons_traits.lag9max[, rel_likelihood])
 #Akaike weight for a model is this rel_likelihood devided by the sum of these values across all models
-extinction_model_comparisons_traits.lag9max[,"akaike_weight" := rel_likelihood/extinction_model_comparisons_traits.lag9max.likelihoodsum]
+departure_model_comparisons_traits.lag9max[,"akaike_weight" := rel_likelihood/departure_model_comparisons_traits.lag9max.likelihoodsum]
 
 #I want to look at relative importance FOR 
 #bottom/surface (bottom = includes sbt, grepl("sbt", variable))
-ext_bottom_importance <- sum(extinction_model_comparisons_traits.lag9max[grep("sbt", temp_variable), ]$akaike_weight)
-  ext_bottom_importance.n <- count(extinction_model_comparisons_traits.lag9max[grepl("sbt", temp_variable), ]) #3060
-ext_surface_importance <- sum(extinction_model_comparisons_traits.lag9max[grep("sst", temp_variable), ]$akaike_weight)
-  ext_surface_importance.n <- count(extinction_model_comparisons_traits.lag9max[grepl("sst", temp_variable), ]) #3060
+departure_bottom_importance <- sum(departure_model_comparisons_traits.lag9max[grep("sbt", temp_variable), ]$akaike_weight)
+  departure_bottom_importance.n <- count(departure_model_comparisons_traits.lag9max[grepl("sbt", temp_variable), ]) #3060
+departure_surface_importance <- sum(departure_model_comparisons_traits.lag9max[grep("sst", temp_variable), ]$akaike_weight)
+  departure_surface_importance.n <- count(departure_model_comparisons_traits.lag9max[grepl("sst", temp_variable), ]) #3060
   
 #lag/not lagged (grepl("lag", variable))
-ext_lag_importance <- sum(extinction_model_comparisons_traits.lag9max[grep("lag", temp_variable), ]$akaike_weight)
-  ext_lag_importance.n <- count(extinction_model_comparisons_traits.lag9max[grepl("lag", temp_variable),]) #5508
-ext_nolag_importance <- sum(extinction_model_comparisons_traits.lag9max[!grep("lag", temp_variable), ]$akaike_weight)
-  ext_nolag_importance.n <- count(extinction_model_comparisons_traits.lag9max[!grepl("lag", temp_variable), ]) #646
+departure_lag_importance <- sum(departure_model_comparisons_traits.lag9max[grep("lag", temp_variable), ]$akaike_weight)
+  departure_lag_importance.n <- count(departure_model_comparisons_traits.lag9max[grepl("lag", temp_variable),]) #5508
+departure_nolag_importance <- sum(departure_model_comparisons_traits.lag9max[!grep("lag", temp_variable), ]$akaike_weight)
+  departure_nolag_importance.n <- count(departure_model_comparisons_traits.lag9max[!grepl("lag", temp_variable), ]) #646
 
   #absolute (grepl("abs", variable))
-ext_abs_importance <- sum(extinction_model_comparisons_traits.lag9max[grep("abs", temp_variable), ]$akaike_weight)
-  ext_abs_importance.n <- count(extinction_model_comparisons_traits.lag9max[grepl("abs", temp_variable), ]) #2040
+departure_abs_importance <- sum(departure_model_comparisons_traits.lag9max[grep("abs", temp_variable), ]$akaike_weight)
+  departure_abs_importance.n <- count(departure_model_comparisons_traits.lag9max[grepl("abs", temp_variable), ]) #2040
 
   #raw (!grepl("change"))
-ext_raw_importance <- sum(extinction_model_comparisons_traits.lag9max[!grep("change", temp_variable), ][temp_variable != 0,]$akaike_weight)
-  ext_raw_importance.n <- count(extinction_model_comparisons_traits.lag9max[!grepl("change", temp_variable), ][temp_variable != 0,]) #2040
+departure_raw_importance <- sum(departure_model_comparisons_traits.lag9max[!grep("change", temp_variable), ][temp_variable != 0,]$akaike_weight)
+  departure_raw_importance.n <- count(departure_model_comparisons_traits.lag9max[!grepl("change", temp_variable), ][temp_variable != 0,]) #2040
 
 #change (grepl("change", temp_variable), (!grepl("abs")))
-ext_change_importance <- sum(extinction_model_comparisons_traits.lag9max[grep("change", temp_variable), ][!grep("abs", temp_variable),]$akaike_weight)
-  ext_change_importance.n <- count(extinction_model_comparisons_traits.lag9max[grepl("change", temp_variable), ][!grepl("abs", temp_variable),])#2040
+departure_change_importance <- sum(departure_model_comparisons_traits.lag9max[grep("change", temp_variable), ][!grep("abs", temp_variable),]$akaike_weight)
+  departure_change_importance.n <- count(departure_model_comparisons_traits.lag9max[grepl("change", temp_variable), ][!grepl("abs", temp_variable),])#2040
 
 #type of temp temp_variable (max, min, seas)
-ext_max_temp_importance <- sum(extinction_model_comparisons_traits.lag9max[grep("max", temp_variable), ]$akaike_weight)
-  ext_max_temp_importance.n <- count(extinction_model_comparisons_traits.lag9max[grepl("max", temp_variable), ]) #2040
-ext_min_temp_importance <- sum(extinction_model_comparisons_traits.lag9max[grep("min", temp_variable), ]$akaike_weight)
-  ext_min_temp_importance.n <- count(extinction_model_comparisons_traits.lag9max[grepl("min", temp_variable), ]) #2040
-ext_seas_temp_importance <- sum(extinction_model_comparisons_traits.lag9max[grep("seas", temp_variable), ]$akaike_weight)
-  ext_seas_temp_importance.n <- count(extinction_model_comparisons_traits.lag9max[grepl("seas", temp_variable), ]) #2040
+departure_max_temp_importance <- sum(departure_model_comparisons_traits.lag9max[grep("max", temp_variable), ]$akaike_weight)
+  departure_max_temp_importance.n <- count(departure_model_comparisons_traits.lag9max[grepl("max", temp_variable), ]) #2040
+departure_min_temp_importance <- sum(departure_model_comparisons_traits.lag9max[grep("min", temp_variable), ]$akaike_weight)
+  departure_min_temp_importance.n <- count(departure_model_comparisons_traits.lag9max[grepl("min", temp_variable), ]) #2040
+departure_seas_temp_importance <- sum(departure_model_comparisons_traits.lag9max[grep("seas", temp_variable), ]$akaike_weight)
+  departure_seas_temp_importance.n <- count(departure_model_comparisons_traits.lag9max[grepl("seas", temp_variable), ]) #2040
 
 #traits included
-ext_age.max_importance <- sum(extinction_model_comparisons_traits.lag9max[grep("age.max", trait_variable), ]$akaike_weight)
-ext_age.maturity_importance <- sum(extinction_model_comparisons_traits.lag9max[grep("age.maturity", trait_variable), ]$akaike_weight)
-ext_tl_importance <- sum(extinction_model_comparisons_traits.lag9max[grep("tl", trait_variable), ]$akaike_weight)
-ext_length.max_importance <- sum(extinction_model_comparisons_traits.lag9max[grep("length", trait_variable),]$akaike_weight)
+departure_age.max_importance <- sum(departure_model_comparisons_traits.lag9max[grep("age.max", trait_variable), ]$akaike_weight)
+departure_age.maturity_importance <- sum(departure_model_comparisons_traits.lag9max[grep("age.maturity", trait_variable), ]$akaike_weight)
+departure_tl_importance <- sum(departure_model_comparisons_traits.lag9max[grep("tl", trait_variable), ]$akaike_weight)
+departure_length.max_importance <- sum(departure_model_comparisons_traits.lag9max[grep("length", trait_variable),]$akaike_weight)
 
-  ext_age.max_importance.n <- count(extinction_model_comparisons_traits.lag9max[grepl("age.max", trait_variable), ]) #2534
-  ext_age.maturity_importance.n <- count(extinction_model_comparisons_traits.lag9max[grepl("age.maturity", trait_variable), ]) #2534
-  ext_tl_importance.n <- count(extinction_model_comparisons_traits.lag9max[grepl("tl", trait_variable), ]) #2534
-  ext_length.max_importance.n <- count(extinction_model_comparisons_traits.lag9max[grepl("length", trait_variable),]) #2534
+  departure_age.max_importance.n <- count(departure_model_comparisons_traits.lag9max[grepl("age.max", trait_variable), ]) #2534
+  departure_age.maturity_importance.n <- count(departure_model_comparisons_traits.lag9max[grepl("age.maturity", trait_variable), ]) #2534
+  departure_tl_importance.n <- count(departure_model_comparisons_traits.lag9max[grepl("tl", trait_variable), ]) #2534
+  departure_length.max_importance.n <- count(departure_model_comparisons_traits.lag9max[grepl("length", trait_variable),]) #2534
 
 #interaction between trait and temperature
-ext_interaction_temp_trait_importance <- sum(extinction_model_comparisons_traits.lag9max[grep("\\*", sign), ]$akaike_weight)
-  ext_interaction_temp_trait_importance.n <- count(extinction_model_comparisons_traits.lag9max[grepl("\\*", sign), ]) #3077
+departure_interaction_temp_trait_importance <- sum(departure_model_comparisons_traits.lag9max[grep("\\*", sign), ]$akaike_weight)
+  departure_interaction_temp_trait_importance.n <- count(departure_model_comparisons_traits.lag9max[grepl("\\*", sign), ]) #3077
 
 
 #save this table
-save(extinction_model_comparisons_traits.lag9max, file = "extinction_models_traits_with_likelihoods.Rdata")
-head(extinction_model_comparisons_traits.lag9max)
+saveRDS(departure_model_comparisons_traits.lag9max, here:here("Model_results","Traits","departure_models_traits_with_likelihoods.rds"))
 ```
 
 ```{r put RVIs for extinction into data table}
-col_ext <- c("ext","ext","ext","ext","ext", "ext","ext", "ext", "ext","ext", "ext","ext", "ext", "ext","ext")
+arrival_departure <- c("departure","departure","departure","departure","departure", "departure","departure", "departure", "departure","departure", "departure","departure", "departure", "departure","departure")
 type <- c("depth", "depth", "lag", "lag", "Change?", "Change?", "Change?", "Temp", "Temp", "Temp", "Trait", "Trait", "Trait","Trait", "Interaction")
 variable <- c("bottom", "surface", "no_lag", "lagged", "absolute_value_change", "change", "raw", "Min", "Max", "Seas", "age.max", "age.maturity", "tl", "length.max", "tempxtrait")
-value <- c(ext_bottom_importance, ext_surface_importance, ext_nolag_importance, ext_lag_importance, ext_abs_importance, ext_change_importance, ext_raw_importance, ext_min_temp_importance, ext_max_temp_importance, ext_seas_temp_importance, ext_age.max_importance, ext_age.maturity_importance, ext_tl_importance, ext_length.max_importance, ext_interaction_temp_trait_importance)
+value <- c(departure_bottom_importance, departure_surface_importance, departure_nolag_importance, departure_lag_importance, departure_abs_importance, departure_change_importance, departure_raw_importance, departure_min_temp_importance, departure_max_temp_importance, departure_seas_temp_importance, departure_age.max_importance, departure_age.maturity_importance, departure_tl_importance, departure_length.max_importance, departure_interaction_temp_trait_importance)
 
-RVI_ext_traits <- data.table(col_ext, type, variable, value)
-```
-
-Best model stats?
-```{r best model stats for extinction models with traits}
-mod_ext_trait <- glmer(now_ext ~max_sst_temp_scaled * age.maturity_scaled + age.max_scaled + (1|spp) + (1|reg), data = extinction.reduced, nAGQ = 0, family = binomial)
-
-summary(mod_ext_trait)
-
-#R^2 (coefficient of determination based on likelihood ratio test)
-#adj.r.squared: Nagelkerke's modified R^2 statistic
-r.squaredLR(mod_ext_trait)
-
-
+RVI_departure_traits <- data.table(arrival_departure, type, variable, value)
 ```
 
 Merge RVI tables for colonization and extinction with traits, and then graph
@@ -660,219 +632,4 @@ ggplot(data = preds_predictors_seas, aes(x = seas_sst_temp_lag3, y = preds_seas,
 
 ggsave(path = "plots/marginal_effects", file = "predicted_probs_ext_maxage_seas.jpg")
 
-```
-
-
-How well do these models actually predict the # of colonizations and the # of extinctions?
-
-```{r predicted vs. observed colonizations scaled}
-library(tidyr)
-library(plyr)
-#best colonization trait models (all delta less than 2)
-  #max_sst_temp_change_abs_lag1_scaled * age.maturity_scaled + age.max_scaled
-
-
-bestcolmod_scaled_traits <- glmer(col ~ max_sst_temp_change_abs_lag1_scaled * age.maturity_scaled + age.max_scaled + (1|reg) + (1|spp), family = binomial, data = spp_master_ztemp_seus_buoy.traits_scaled, nAGQ = 0)
-
-interceptcolmod_scaled_traits <- glmer(col ~ (1|reg) + (1|spp), family = binomial, data = spp_master_ztemp_seus_buoy.traits_scaled, nAGQ = 0)
-
-summary(bestcolmod_scaled_traits)
-
-#I wanted predicted # of colonizations in each region per region/year
-#year region observed colonizations predicted colonizations
-
-#plotting predicted versus modeled
-#unique combinations of spp, region, and max_sbt_temp_change_abs_scaled found in dataset
-model_imputs_col_traits <- spp_master_ztemp_seus_buoy.traits_scaled[,.(spp, reg, year, col, max_sst_temp_change_abs_lag1_scaled, age.maturity_scaled, age.max_scaled)]
-
-model_imputs_col_traits <- na.omit(model_imputs_col_traits) #get rid of any rows without data for all variables
-
-t2_col <- predict(bestcolmod_scaled_traits, newdata = model_imputs_col_traits, type = "response", re.form = NULL) #setting re.form to NULL includes all random effects
-t2_col_null <- predict(interceptcolmod_scaled_traits, newdata = model_imputs_col_traits, type = "response", re.form = NULL)
-
-model_imputs_col_traits$pred <- t2_col
-model_imputs_col_traits$pred_null <- t2_col_null
-
-#group by region and year, sum over "col" = observations, and "pred" = predict colonizations by summing probabilities
-col_model_comparisons_traits <- model_imputs_col_traits[, .(col_predicted = sum(pred), col_predicted_null = sum(pred_null), col_observed = sum(col)), by=.(year,reg)]
-
-
-ggplot(aes(x=year), data = col_model_comparisons_traits) +
-  geom_point(aes(y = col_observed), data = col_model_comparisons_traits, col = "red") +
-  geom_point(data = col_model_comparisons_traits, aes(y = col_predicted), col = "black") +
-  facet_wrap(~reg) +
-  theme_classic()
-
-```
-
-And extinctions?
-
-```{r predicted vs. observed extinctions scaled}
-#best extinction trait models (all delta less than 2)
- #max_sst_temp_scaled    * age.maturity_scaled + age.max_scaled 0.000000
-
-
-bestextmod_scaled_traits <- glmer(now_ext ~ max_sst_temp_scaled * age.maturity_scaled + age.max_scaled + (1|reg) + (1|spp), family = binomial, data = spp_master_ztemp_seus_buoy.traits_scaled, nAGQ = 0)
-
-interceptextmod_scaled_traits <- glmer(now_ext ~ (1|reg) + (1|spp), family = binomial, data = spp_master_ztemp_seus_buoy.traits_scaled, nAGQ = 0)
-
-summary(bestextmod_scaled_traits)
-
-#I wanted predicted # of extinctions in each region per region/year
-#year region observed extinctions predicted extinctions
-
-#plotting predicted versus modeled
-#unique combinations of spp, region, and max_sst_temp_scaled found in dataset
-model_imputs_ext_traits <- spp_master_ztemp_seus_buoy.traits_scaled[,.(spp, reg, year, now_ext, max_sst_temp_scaled, age.maturity_scaled, age.max_scaled)]
-
-model_imputs_ext_traits <- na.omit(model_imputs_ext_traits)
-
-t2_ext <- predict(bestextmod_scaled_traits, newdata = model_imputs_ext_traits, type = "response", re.form = NULL) #setting re.form to NULL includes all random effects
-t2_ext_null <- predict(interceptextmod_scaled_traits, newdata = model_imputs_ext_traits, type = "response", re.form = NULL)
-
-model_imputs_ext_traits$pred <- t2_ext
-model_imputs_ext_traits$pred_null <- t2_ext_null
-
-#group by region and year, sum over "now_ext" = observations, and "pred" = predict extinctions by summing probabilities
-ext_model_comparisons_traits <- model_imputs_ext_traits[, .(ext_predicted = sum(pred), ext_predicted_null = sum(pred_null),  ext_observed = sum(now_ext)), by=.(year,reg)]
-
-
-ggplot(aes(x=year), data = ext_model_comparisons_traits) +
-  geom_point(aes(y = ext_observed), data = ext_model_comparisons_traits, col = "red") +
-  geom_point(data = ext_model_comparisons_traits, aes(y = ext_predicted), col = "black") +
-  facet_wrap(~reg) +
-  theme_classic()
-
-```
-
-What about richness accumulation??
-
-Start with colonization models
-```{r richness accumulation for trait models}
-col_model_comparisons_traits[,col_obs_sum := cumsum(col_observed), by = reg]
-col_model_comparisons_traits[,col_pred_sum := cumsum(col_predicted), by = reg]
-col_model_comparisons_traits[,col_pred_sum_null := cumsum(col_predicted_null), by = reg]
-
-ggplot(aes(x=year), data = col_model_comparisons_traits) +
-  geom_point(aes(y = col_obs_sum), data = col_model_comparisons_traits, col = "red") +
-  geom_point(data = col_model_comparisons_traits, aes(y = col_pred_sum), col = "black", size = 1) +
-  labs(x="Year", y = "Cumulative sum of colonizations") +
-  facet_wrap(~reg) +
-  theme_classic()
-
-
-```
-
-
-Now, accumulation of extinctions
-```{r plot extinction with cumulative sum of extinctions}
-
-ext_model_comparisons_traits[,ext_obs_sum := cumsum(ext_observed), by = reg]
-ext_model_comparisons_traits[,ext_pred_sum := cumsum(ext_predicted), by = reg]
-ext_model_comparisons_traits[,ext_pred_sum_null := cumsum(ext_predicted_null), by = reg]
-
-ggplot(aes(x=year), data = ext_model_comparisons_traits) +
-  geom_point(aes(y = ext_obs_sum), data = ext_model_comparisons_traits, col = "red") +
-  geom_point(data = ext_model_comparisons_traits, aes(y = ext_pred_sum), col = "black", size = 1) +
-  labs(x="Year", y = "Cumulative sum of extinctions") +
-  facet_wrap(~reg) +
-  theme_classic()
-
-
-```
-
-
-
-Cumulative species richness change
-```{r cumulative species richness change}
-#from colonizations
-cumulative_richness_traits <- col_model_comparisons_traits[,.(reg, year, col_obs_sum, col_pred_sum, col_pred_sum_null)]
-ext_obs_sum <- ext_model_comparisons_traits[,.(ext_obs_sum)]
-ext_pred_sum <- ext_model_comparisons_traits[,.(ext_pred_sum)]
-ext_pred_sum_null <- ext_model_comparisons_traits[,.(ext_pred_sum_null)]
-cumulative_richness_traits[,ext_obs_sum := ext_obs_sum]
-cumulative_richness_traits[,ext_pred_sum := ext_pred_sum]
-cumulative_richness_traits[,ext_pred_sum_null := ext_pred_sum_null]
-
-cumulative_richness_traits[, Observed := col_obs_sum-ext_obs_sum][, Predicted := col_pred_sum-ext_pred_sum][, Predicted_null := col_pred_sum_null-ext_pred_sum_null]
-
-cumulative_richness_traits.r <- cumulative_richness_traits[,.(reg, year, Observed, Predicted, Predicted_null)]
-
-#wide to long
-cumulative_richness_traits.r <- melt(cumulative_richness_traits.r, id.vars = c("reg", "year"), measure.vars = c("Observed", "Predicted", "Predicted_null"), variable.name = "Richness", value.name = "value")
-
-
-
-#rename region levels for plotting
-levels(cumulative_richness_traits.r$reg) <- c("Aleutian Islands", "E. Bering Sea", "Gulf of Mexico", "Gulf of Alaska", "Northeast US", "Newfoundland", "Southeast US", "Scotian Shelf", "West Coast US")
-
-#plot richness over time predicted versus observed
-cum_richness_plot_traits <- ggplot(aes(x=year, y = value, color = Richness, shape = Richness), data = cumulative_richness_traits.r) +
-  geom_point(size = 2) +
-  geom_hline(yintercept = 0) +
-  labs(x="Year", y = "Cumulative Richness") +
-  facet_wrap(~reg, scales = "free_y") +
-  theme_classic() +
-  scale_color_manual(values = c("Observed" = 'coral3' , "Predicted" = 'deepskyblue4', "Predicted_null" = 'black')) +
-  scale_shape_manual(values = c("Observed" = 19 , "Predicted" = 19, "Predicted_null" = 20)) +
-  theme(plot.title = element_text(size = 17),
-        legend.title = element_text(size = 17),
-        legend.text=element_text(size = 15),
-        strip.text = element_text(size = 12),
-        axis.title = element_text(size = 14))
-
-cum_richness_plot_traits
-
-ggsave(cum_richness_plot_traits, file = "cum_richness_plot_traits.jpg")
-ggsave(cum_richness_plot_traits, file = "cum_richness_plot_traits.eps")
-
-```
-
-In response to plots above, Malin: "Perhaps worth one more set of plots to understand what’s going on: each point would be a year, x-axis would be observed change in richness, y-axis would be predicted change in richness. One set of plots for each of the three models (null, temp, temp+trait), each sub-plot would be a region, as you have here."
-
-```{r observed versus predicted change in richness}
-setkey(cumulative_richness_traits.r, Richness, reg, year)
-cumulative_richness_traits.r[, delta_value := value-shift(value), by = .(reg, Richness)]
-
-#have to cast to wide to make x = observed change and y = predicted change
-cumulative_richness_traits.r.w <- dcast(cumulative_richness_traits.r, reg + year ~ Richness, value.var = "delta_value")
-
-```
-
-```{r plotting observed versus predicted change in richness for trait models}
-
-#plot richness over time predicted null versus observed
-delta_richness_plot_null_traits <- ggplot(data = cumulative_richness_traits.r.w, aes(x = Observed, y = Predicted_null)) +
-  geom_point() +
-  labs(x="Observed Change\nin Richness", y = "Predicted Change in\nRichness (Null Model)") +
-  facet_wrap(~reg) +
-  theme_classic() +
-  geom_abline(intercept = 0, slope = 1, color = "grey", linetype = "dashed") +
-  theme(plot.title = element_text(size = 17),
-        legend.title = element_text(size = 17),
-        legend.text=element_text(size = 15),
-        strip.text = element_text(size = 12),
-        axis.title = element_text(size = 14))
-
-delta_richness_plot_null_traits
-
-#plot richness over time predicted versus observed
-delta_richness_plot_traits <- ggplot(data = cumulative_richness_traits.r.w, aes(x = Observed, y = Predicted)) +
-  geom_point() +
-  labs(x="Observed Change\nin Richness", y = "Predicted Change in\nRichness (Temperature & Trait Model)") +
-  facet_wrap(~reg) +
-  theme_classic() +
-  geom_abline(intercept = 0, slope = 1, color = "grey", linetype = "dashed") +
-  theme(plot.title = element_text(size = 17),
-        legend.title = element_text(size = 17),
-        legend.text=element_text(size = 15),
-        strip.text = element_text(size = 12),
-        axis.title = element_text(size = 14))
-
-delta_richness_plot_traits
-
-
-
-ggsave(delta_richness_plot_null_traits, file = "delta_richness_plot_null_traits.jpg")
-ggsave(delta_richness_plot_traits, file = "delta_richness_plot_traits.jpg")
 ```
