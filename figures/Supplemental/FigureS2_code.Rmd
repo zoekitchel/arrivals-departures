@@ -1,0 +1,95 @@
+---
+title: "Temp and Trait Collinearity"
+output: html_notebook
+---
+
+Looking at collinearity between temperature predictors. 
+
+```{r setup}
+library(data.table)
+library(ggplot2)
+library(reshape2)
+library(ggcorrplot)
+library(cowplot)
+
+
+load(here::here("Data", "Spp_master", "spp_master_ztemp_seus_buoy_scaled.RData"))
+load(here::here("Data", "Spp_master",  "spp_master_ztemp_seus_buoy.traits_scaled.RData"))
+```
+
+Temp variables we need
+```{r narrow down to temp variables that we need}
+#columns to keep for collinearity matrix
+variable_names_reduced <- colnames(spp_master_ztemp_seus_buoy_scaled)[grepl("s.t", colnames(spp_master_ztemp_seus_buoy_scaled),)]
+
+variable_names_reduced2 <- variable_names_reduced[!grepl("mean|lag|scaled", variable_names_reduced)]
+
+#now, using this list reduce dt
+temperature_nolags <- spp_master_ztemp_seus_buoy_scaled[,..variable_names_reduced2]
+
+#all variable names for a big collinarity matrix
+variable_names_all <- variable_names_reduced[!grepl("mean|scaled", variable_names_reduced)]
+
+#now, using this list reduce dt
+temperature_withlags <- spp_master_ztemp_seus_buoy_scaled[,..variable_names_all]
+
+
+```
+
+Trait variables we need
+```{r narrow down to trait variables that we need}
+#columns to keep for collinearity matrix
+trait_vars <- c("tl", "age.maturity", "length.max", "age.max")
+
+#now, using this list reduce dt
+traits <- spp_master_ztemp_seus_buoy.traits_scaled[,..trait_vars]
+
+colnames(traits) <- c("trophic_level", "age_maturity", "length_max", "age_max")
+
+
+```
+
+Temp Correlation Matrix
+```{r matrix all}
+corr_full <- round(cor(temperature_withlags), 2)
+
+ggcorrplot(corr_full, outline.color = "white", tl.cex = 1, tl.srt = 90, lab_size = 30)
+
+
+# Get the lower triangle
+ggcorrplot(corr_full, type = "lower", outline.col = "white", tl.cex = 1, tl.srt = 90)
+
+
+```
+
+
+Correlation matrix small (no lags)
+```{r  no lags}
+corr_subset <- round(cor(temperature_nolags), 2)
+
+ggcorrplot(corr_subset, outline.color = "white", tl.cex = 1, tl.srt = 90, lab_size = 30)
+
+corr_subset_plot <- ggcorrplot(corr_subset,outline.col = "white", tl.cex = 7, lab =  T, lab_size = 1.5) + theme(legend.position = "bottom")
+ggsave(here::here("figures","Supplemental", "SupFigure2a.eps"))
+
+```
+
+Correlation matrix for traits
+```{r  trait corr}
+corr_subset_traits <- round(cor(traits, use = "complete.obs"), 2)
+
+corr_subset_traits_plot <- ggcorrplot(corr_subset_traits, outline.color = "white", lab = T,tl.cex = 10, lab_size = 1.8)
+ggsave(here::here("figures","Supplemental", "SupFigure2b.eps"), dpi = 1000)
+
+```
+Put two correlation plots together
+```{r merge plots}
+(prow <- plot_grid(corr_subset_plot + theme(legend.position = "none"),
+                  corr_subset_traits_plot + theme(legend.position = "right"),
+                  rel_widths = c(1.6, 1), nrow = 1, align = 'hv',
+                  labels = c("a.", "b."), label_x = 0, label_y = 1, vjust = 1))
+
+#save full figure
+ggsave(here::here("figures","Supplemental","FigureS2_full.eps"))
+```
+
