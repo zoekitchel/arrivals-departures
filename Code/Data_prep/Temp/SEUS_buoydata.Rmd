@@ -1,0 +1,530 @@
+---
+title: "SEUS Temp Data from Buoys"
+output: html_notebook
+---
+
+```{r setup}
+library(data.table)
+library(ggplot2)
+library(usmap)
+library(lme4)
+library(tidyverse)
+library(lubridate)
+library(here)
+
+#Excel files made by copy pasting buoy data from https://www.ndbc.noaa.gov/ July 22, 2020
+
+savannah <- fread(here::here("Data","Temperature","SEUS_buoy","NOAA_buoy_data","41008_savannah.csv"))
+fryingpanNC <- fread(here::here("Data","Temperature","SEUS_buoy","NOAA_buoy_data","fpsn7_fryingpanNC.csv"))
+canaveral <- fread(here::here("Data","Temperature","SEUS_buoy","NOAA_buoy_data","41009_canaveral.csv"))
+hatteras <- fread(here::here("Data","Temperature","SEUS_buoy","NOAA_buoy_data","41001_east_hatteras.csv"))
+staugustine <- fread(here::here("Data","Temperature","SEUS_buoy","NOAA_buoy_data","sauf1_staugustineFL.csv"))
+SC_old <- fread(here::here("Data","Temperature","SEUS_buoy","NOAA_buoy_data","41005_SC.csv"))
+charleston <- fread(here::here("Data","Temperature","SEUS_buoy","NOAA_buoy_data","41004_charleston.csv"))
+savannahlight <- fread(here::here("Data","Temperature","SEUS_buoy","NOAA_buoy_data","svls1_savannahlight.csv"))
+wrightsvilleNC <- fread(here::here("Data","Temperature","SEUS_buoy","NOAA_buoy_data","41037_wrightsvilleNC.csv"))
+```
+
+```{r subset each}
+hatteras.r <- hatteras[, .(lat, lon, Location, YYYY, MM, DD, hh, ATMP, WTMP)]
+fryingpanNC.r <- fryingpanNC[, .(lat, lon, Location, YYYY, MM, DD, hh, ATMP, WTMP)]
+wrightsvilleNC.r <- wrightsvilleNC[, .(lat, lon, Location, YYYY, MM, DD, hh, ATMP, WTMP)]
+charleston.r <- charleston[, .(lat, lon, Location, YYYY, MM, DD, hh, ATMP, WTMP)]
+SC_old.r <- SC_old[, .(lat, lon, Location, YYYY, MM, DD, hh, ATMP, WTMP)]
+savannah.r <- savannah[,.(lat, lon, Location, YYYY, MM, DD, hh, ATMP, WTMP)]
+savannahlight.r <- savannahlight[,.(lat, lon, Location, YYYY, MM, DD, hh, ATMP, WTMP)]
+staugustine.r <- staugustine[, .(lat, lon, Location, YYYY, MM, DD, hh, ATMP, WTMP)]
+canaveral.r <- canaveral[, .(lat, lon, Location, YYYY, MM, DD, hh, ATMP, WTMP)]
+
+#summary(hatteras.r) 
+#summary(fryingpanNC.r) 
+#summary(wrightsvilleNC.r) 
+#summary(charleston.r) 
+#summary(SC_old.r) 
+#summary(savannah.r) 
+#summary(savannahlight.r)
+#summary(staugustine.r) 
+#summary(canaveral.r) 
+
+```
+
+```{r merge}
+se_hourly_temp <- rbind(savannah.r, fryingpanNC.r, canaveral.r, hatteras.r, staugustine.r, wrightsvilleNC.r, charleston.r, savannahlight.r, SC_old.r)
+
+se_hourly_temp <- data.table(se_hourly_temp)
+
+se_hourly_temp[, Location := as.factor(Location)]
+
+summary(se_hourly_temp)
+str(se_hourly_temp)
+
+```
+
+Turn any temp values over 50 to NA (probably incorrect temp reading)
+```{r get rid of 999 temp values}
+se_hourly_temp[WTMP > 50, WTMP := NA]
+
+#delete all rows without data
+se_hourly_temp.narm <- se_hourly_temp[complete.cases(WTMP, Location)]
+
+```
+
+Plot year versus whether we have data
+```{r year versus data}
+year_site_combos <- expand.grid(Location = levels(se_hourly_temp$Location), YYYY = c(1980:2014))
+
+true_year_site_combos <- unique(se_hourly_temp, by = c("Location", "YYYY"))[,.(Location, YYYY)][, exist := 1]
+
+data_over_time <- rbind(year_site_combos, true_year_site_combos, fill = T)
+
+data_over_time.u <- unique(data_over_time, by = c("Location", "YYYY"), fromLast = T)
+
+data_over_time.u[is.na(data_over_time.u)] <- 0
+
+data_over_time.u$Location <- factor(data_over_time.u$Location, levels = c( "41009_canaveral", "sauf1_staugustineFL", "41008_savannah","41005_SC", "svls1_savannahlight", "41004_charleston", "fpsn7_fryingpanNC","41037_wrightsville",  "41001_east_hatteras"), labels = c("41009\ncanaveral", "sauf1\nstaugustineFL", "41008\nsavannah","41005\nSC", "svls1\nsavannahlight", "41004\ncharleston", "fpsn7\nfryingpanNC","41037\nwrightsville",  "41001\neast.hatteras"))
+
+
+dates_over_time <- ggplot(data = data_over_time.u, aes(x = YYYY, y = Location, fill = as.factor(exist))) +
+  geom_tile() +
+  scale_fill_manual(breaks = c("0", "1"), values = c("white", "black"), labels = c("No", "Yes")) +
+  theme_classic() +
+  labs(x="Year", y = "Buoy ID and Location", fill = "Data Availability")
+  
+
+```
+
+
+```{r monthly averages}
+se_hourly_temp.narm[,month_avg := mean(WTMP, na.rm = T), by = c("Location", "YYYY", "MM")]
+se_hourly_temp.narm[,date := paste(YYYY, MM, sep = "-")]
+se_hourly_temp.narm[,year := as.numeric(YYYY)]
+se_hourly_temp.narm[,month := as.numeric(MM)]
+
+se_hourly_temp.narm[,date.f := ymd(date, truncated = 1)]
+
+se_monthly_temp <- unique(se_hourly_temp.narm[,.(Location, date.f, month_avg)])
+
+
+
+```
+
+Now, I will model 
+
+mod <- lmer(T_t,i ~ YM_t + (1|B_i)) 
+
+for each month-year t and each buoy i
+
+```{r model monthly temp}
+
+
+seus_temp_mod <- lmer(month_avg ~ as.factor(date.f) + (1|Location), data = se_monthly_temp) #month and year together
+
+summary(seus_temp_mod)
+
+
+```
+
+
+```{r generate all possible Location, MM, YYYY combos and then apply predict}
+se_hourly_temp.narm$Location <- factor(se_hourly_temp.narm$Location)
+
+Location <- levels(as.factor(se_hourly_temp.narm$Location))
+date.f <- levels(as.factor(se_hourly_temp.narm$date.f))
+all_combinations <- expand.grid(Location, date.f)
+names(all_combinations) <- c("Location", "date.f")
+
+```
+
+```{r predict}
+preds <- predict(seus_temp_mod, newdata = all_combinations)
+
+predicted_sst_seus_monthly <- cbind(all_combinations, preds)
+
+```
+
+Average across months 
+```{r average across months}
+predicted_sst_seus_monthly <- data.table(predicted_sst_seus_monthly)
+predicted_sst_seus_monthly[, year := year(date.f)][, month := month(date.f)]
+predicted_sst_seus_monthly[, sst_month_sst := mean(preds), by = c("month", "year")]
+
+saveRDS(predicted_sst_seus_monthly, here::here("Data","Temperature","predicted_sst_seus_monthly.rds"))
+
+
+```
+Creating full temp variables, will have to go 12 months before first trawl which occurs in April 
+
+ * mean_sbt_temp_change_lag
+ * mean_sbt_temp_change_abs_lag
+ 
+```{r when did earliest trawl occur?}
+load(here::here("Data","Spp_observations","hauls_catch_Dec2017 1.RData")) #before = hauls_fulltempdata.Rdata
+hauls <- data.table(hauls)
+hauls.seus <- hauls[region == "SCDNR_SEUS"] #it occured in April typically except for 1989
+
+hauls.seus[,min(as.numeric(month)), by = "year"]
+
+#add month julian
+#how many months?
+year_month_key <- predicted_sst_seus_monthly[, .N, by = c('year', 'month')][,1:2]
+max_julian_month <- nrow(year_month_key)
+
+#sequence of 1:420
+julian_months <- seq(1, max_julian_month, by=1)
+
+#earliest = April, 12 months B4 April  
+
+year_month_key <- cbind(year_month_key, "month_julian" = julian_months)
+
+```
+
+I need to use this key to add julian month to data tables for sst and sbt. 
+```{r add julian month}
+#surface
+predicted_sst_seus_monthly <- predicted_sst_seus_monthly[year_month_key, on = c(year = 'year', month = 'month')]
+
+```
+ 
+ 
+```{r lags and change}
+  #surface
+    #raw
+temp.vars <- c("mean", "max", "min", "seas")
+      predicted_sst_seus_monthly[,mean_sst_temp :=numeric(.N)]
+      predicted_sst_seus_monthly[,max_sst_temp :=numeric(.N)]
+      predicted_sst_seus_monthly[,min_sst_temp :=numeric(.N)]
+      predicted_sst_seus_monthly[,seas_sst_temp :=numeric(.N)]
+
+#lag raw
+      #new columns
+raw.lag.sst.col.names <- CJ(temp.vars, 1:10)[, paste(temp.vars, 1:10, sep ="_sst_temp_lag")] #generate new raw column names
+
+      #loop to make new column names
+predicted_sst_seus_monthly[ , raw.lag.sst.col.names[1:40] := numeric(.N) ]
+      #ended here
+     
+      
+    #change
+predicted_sst_seus_monthly[, mean_sst_temp_change := numeric(.N)]
+predicted_sst_seus_monthly[, max_sst_temp_change := numeric(.N)]
+predicted_sst_seus_monthly[, min_sst_temp_change := numeric(.N)]
+predicted_sst_seus_monthly[, seas_sst_temp_change := numeric(.N)]
+
+    
+    #lag change
+      #new columns
+      change.lag.sst.col.names <- CJ(temp.vars, 1:9)[, paste(temp.vars, 1:9, sep ="_sst_temp_change_lag")]
+      
+      #loop to make new column names
+      predicted_sst_seus_monthly[ ,change.lag.sst.col.names[1:36]:=numeric(.N) ]
+      
+    #abs
+    predicted_sst_seus_monthly[, mean_sst_temp_change_abs := numeric(.N)]
+    predicted_sst_seus_monthly[, max_sst_temp_change_abs := numeric(.N)]
+    predicted_sst_seus_monthly[, min_sst_temp_change_abs := numeric(.N)]
+    predicted_sst_seus_monthly[, seas_sst_temp_change_abs := numeric(.N)]
+      
+    #lag abs
+      abs.change.lag.sst.col.names <- CJ(temp.vars, 1:9)[, paste(temp.vars, 1:9, sep ="_sst_temp_change_abs_lag")]
+      
+      #loop to make new column names
+      predicted_sst_seus_monthly[ ,abs.change.lag.sst.col.names[1:36]:=numeric(.N) ]
+  
+
+  
+#now, loop to fill these new columns, START AT 121
+setorder(predicted_sst_seus_monthly, year, month)
+first_year <- which(predicted_sst_seus_monthly==1990, arr.ind = T)[1,1][[1]]
+for (i in first_year:nrow(predicted_sst_seus_monthly)) {
+    this_month_julian <- predicted_sst_seus_monthly$month_julian[i] #identify month/year
+    monthstosubtract <- seq(from = 11, by = 12, length.out = 11) 
+    
+    this_month_julian_reverse <- NA #month/year combo back in time
+    
+    for (j in 1:length(monthstosubtract)){
+      this_month_julian_reverse[j] <- this_month_julian-monthstosubtract[j]
+    }
+    
+  #surface raw
+    subset_sst <- predicted_sst_seus_monthly[month_julian >= this_month_julian_reverse[1] & predicted_sst_seus_monthly$month_julian <= this_month_julian]
+    predicted_sst_seus_monthly[(i),mean_sst_temp :=mean(subset_sst$sst_month_sst)] #mean temp over the past 12 months
+    predicted_sst_seus_monthly[(i),max_sst_temp :=max(subset_sst$sst_month_sst)] #max temp over the past 12 months
+    predicted_sst_seus_monthly[(i),min_sst_temp :=min(subset_sst$sst_month_sst)] #min temp over the past 12 months
+    predicted_sst_seus_monthly[(i),seas_sst_temp := max_sst_temp - min_sst_temp] #seasonality over the past 12 months
+    
+  #surface raw lags 
+      for (w in 2:length(this_month_julian_reverse)) {
+        
+        subset_sst <- predicted_sst_seus_monthly[month_julian >= this_month_julian_reverse[w] & month_julian < this_month_julian_reverse[w-1]] #subsets to correct year
+        
+        indx <- which(colnames(predicted_sst_seus_monthly) == paste0("mean_sst_temp_lag", w-1)) #finds column number with right name
+        predicted_sst_seus_monthly[(i),(indx) := mean(subset_sst$sst_month_sst)] #assigns value to that cell
+        indx <- which(colnames(predicted_sst_seus_monthly) == paste0("max_sst_temp_lag", w-1))
+        predicted_sst_seus_monthly[(i),(indx) := max(subset_sst$sst_month_sst)]
+        indx <- which(colnames(predicted_sst_seus_monthly) == paste0("min_sst_temp_lag", w-1))
+        predicted_sst_seus_monthly[(i),(indx) := min(subset_sst$sst_month_sst)]
+        indx <- which(colnames(predicted_sst_seus_monthly) == paste0("seas_sst_temp_lag", w-1))
+        predicted_sst_seus_monthly[(i),(indx) := (get(paste0("max_sst_temp_lag", w-1))-get(paste0("min_sst_temp_lag", w-1)))]
+      }
+    
+    #surface change
+    predicted_sst_seus_monthly[(i),mean_sst_temp_change :=  mean_sst_temp-mean_sst_temp_lag1]
+    predicted_sst_seus_monthly[(i),max_sst_temp_change :=  max_sst_temp-max_sst_temp_lag1]
+    predicted_sst_seus_monthly[(i),min_sst_temp_change :=  min_sst_temp-min_sst_temp_lag1]
+    predicted_sst_seus_monthly[(i),seas_sst_temp_change :=  seas_sst_temp-seas_sst_temp_lag1]
+      
+    #surface lag change
+    for (h in 1:9) {
+  #--mean
+      indx_raw <- which(colnames(predicted_sst_seus_monthly) == paste0("mean_sst_temp_lag", h))
+      indx_raw.p1 <- indx_raw + 1
+      
+      temp_change <- predicted_sst_seus_monthly[(i), ..indx_raw]-predicted_sst_seus_monthly[(i), ..indx_raw.p1] #change from lag2-lag1 in raw temp
+      
+      indx_change <- which(colnames(predicted_sst_seus_monthly) == paste0("mean_sst_temp_change_lag", h)) #finds column number with right name to fill now
+      predicted_sst_seus_monthly[(i),(indx_change) := temp_change] #assigns value to that cell
+  #--max
+      indx_raw <- which(colnames(predicted_sst_seus_monthly) == paste0("max_sst_temp_lag", h))
+      indx_raw.p1 <- indx_raw + 1
+      
+      temp_change <- predicted_sst_seus_monthly[(i), ..indx_raw]-predicted_sst_seus_monthly[(i), ..indx_raw.p1] #change from lag2-lag1 in raw temp
+      
+      indx_change <- which(colnames(predicted_sst_seus_monthly) == paste0("max_sst_temp_change_lag", h)) #finds column number with right name to fill now
+      predicted_sst_seus_monthly[(i),(indx_change) := temp_change] #assigns value to that cell
+  #--min
+      indx_raw <- which(colnames(predicted_sst_seus_monthly) == paste0("min_sst_temp_lag", h))
+      indx_raw.p1 <- indx_raw + 1
+      
+      temp_change <- predicted_sst_seus_monthly[(i), ..indx_raw]-predicted_sst_seus_monthly[(i), ..indx_raw.p1] #change from lag2-lag1 in raw temp
+      
+      indx_change <- which(colnames(predicted_sst_seus_monthly) == paste0("min_sst_temp_change_lag", h)) #finds column number with right name to fill now
+      predicted_sst_seus_monthly[(i),(indx_change) := temp_change] #assigns value to that cell
+  #--seas
+      indx_raw <- which(colnames(predicted_sst_seus_monthly) == paste0("seas_sst_temp_lag", h))
+      indx_raw.p1 <- indx_raw + 1
+      
+      temp_change <- predicted_sst_seus_monthly[(i), ..indx_raw]-predicted_sst_seus_monthly[(i), ..indx_raw.p1] #change from lag2-lag1 in raw temp
+      
+      indx_change <- which(colnames(predicted_sst_seus_monthly) == paste0("seas_sst_temp_change_lag", h)) #finds column number with right name to fill now
+      predicted_sst_seus_monthly[(i),(indx_change) := temp_change] #assigns value to that cell
+    }
+    
+    #absolute value of change in sst
+    predicted_sst_seus_monthly[(i), mean_sst_temp_change_abs := abs(mean_sst_temp_change)]
+    predicted_sst_seus_monthly[(i), max_sst_temp_change_abs := abs(max_sst_temp_change)]
+    predicted_sst_seus_monthly[(i), min_sst_temp_change_abs := abs(min_sst_temp_change)]
+    predicted_sst_seus_monthly[(i), seas_sst_temp_change_abs := abs(seas_sst_temp_change)]
+  
+    #absolute value of change in sst LAGS
+    
+    for (j in 1:9) {
+  #--mean
+      indx_raw <- which(colnames(predicted_sst_seus_monthly) == paste0("mean_sst_temp_change_lag", j)) #find column with raw change value
+      temp_change_abs <- abs(predicted_sst_seus_monthly[(i),..indx_raw])
+      indx_abs <- which(colnames(predicted_sst_seus_monthly) == paste0("mean_sst_temp_change_abs_lag", j)) #find the right column to input new value
+      predicted_sst_seus_monthly[(i), (indx_abs) := temp_change_abs]
+  #--max
+      indx_raw <- which(colnames(predicted_sst_seus_monthly) == paste0("max_sst_temp_change_lag", j)) #find column with raw change value
+      temp_change_abs <- abs(predicted_sst_seus_monthly[(i),..indx_raw])
+      indx_abs <- which(colnames(predicted_sst_seus_monthly) == paste0("max_sst_temp_change_abs_lag", j)) #find the right column to input new value
+      predicted_sst_seus_monthly[(i), (indx_abs) := temp_change_abs]
+  #--min
+      indx_raw <- which(colnames(predicted_sst_seus_monthly) == paste0("min_sst_temp_change_lag", j)) #find column with raw change value
+      temp_change_abs <- abs(predicted_sst_seus_monthly[(i),..indx_raw])
+      indx_abs <- which(colnames(predicted_sst_seus_monthly) == paste0("min_sst_temp_change_abs_lag", j)) #find the right column to input new value
+      predicted_sst_seus_monthly[(i), (indx_abs) := temp_change_abs]
+  #--seas
+      indx_raw <- which(colnames(predicted_sst_seus_monthly) == paste0("seas_sst_temp_change_lag", j)) #find column with raw change value
+      temp_change_abs <- abs(predicted_sst_seus_monthly[(i),..indx_raw])
+      indx_abs <- which(colnames(predicted_sst_seus_monthly) == paste0("seas_sst_temp_change_abs_lag", j)) #find the right column to input new value
+      predicted_sst_seus_monthly[(i), (indx_abs) := temp_change_abs]
+    }
+}  
+```
+
+Extract only April (and avg temperatures calculated in relation to April), because that's what's actually in trawl dataset
+```{r only April}
+seus_temp_surface <- predicted_sst_seus_monthly[year >= 1990 & month == 4, c(4, 8:131)][,reg := "sa"]
+
+surface_colnames <- colnames(seus_temp_surface)
+
+bottom_colnames <- str_replace(surface_colnames, "sst", "sbt")
+
+seus_temp_bottom <- seus_temp_surface[,2:125]
+
+colnames(seus_temp_bottom) <- bottom_colnames[2:125]
+
+seus_temp_final <- cbind(seus_temp_surface[,.(reg)], seus_temp_surface[,1:125], seus_temp_bottom)
+
+save(seus_temp_final, file  = "seus_temp_final_frombuoys.RData")
+load("seus_temp_final_frombuoys.RData")
+
+#plot avg temp over time
+
+ggplot(data = seus_temp_final, aes(x = year)) +
+  geom_line(aes(y = mean_sst_temp), color = "black") +
+  #geom_line(aes(y = max_sst_temp), color = "red") +
+  #geom_line(aes(y = min_sst_temp), color = "blue") +
+  labs(x = "Year", y = "Temperature (˚C)") +
+  #lims(y = c(15,30)) +
+  theme_classic()
+
+
+
+```
+ 
+
+
+
+******
+Graphing monthly temperatures for each region
+```{r yearly min and max and seas from model}
+
+
+predicted_sst_seus_monthly <- data.table(predicted_sst_seus_monthly)
+predicted_sst_seus_monthly[, year := year(date.f)]
+predicted_sst_seus_monthly[,sst_min_annual := min(preds), by = c("Location", "year")]
+predicted_sst_seus_monthly[,sst_max_annual := max(preds), by = c("Location", "year")]
+predicted_sst_seus_monthly[,sst_seas_annual := sst_max_annual - sst_min_annual]
+```
+
+
+```{r yearly min and max and seas from observations}
+se_hourly_temp.narm <- data.table(se_hourly_temp.narm)
+se_hourly_temp.narm[,sst_min_annual := min(month_avg), by = c("Location", "year")]
+se_hourly_temp.narm[,sst_max_annual := max(month_avg), by = c("Location", "year")]
+se_hourly_temp.narm[,sst_seas_annual := sst_max_annual - sst_min_annual]
+```
+
+
+Unique values
+```{r unique model temp values}
+seus_temp <- unique(predicted_sst_seus_monthly, by = c("Location", "year", "month"))
+
+#reorder factors
+seus_temp$Location <- factor(seus_temp$Location, levels = c("41001_east_hatteras","41037_wrightsville" , "fpsn7_fryingpanNC", "41004_charleston","svls1_savannahlight", "41005_SC", "41008_savannah","sauf1_staugustineFL", "41009_canaveral"))
+
+ggplot(data = seus_temp, aes(x = year)) +
+  geom_point(aes(y = sst_min_annual), color= "blue") +
+  geom_point(aes(y = sst_max_annual), color = "red") +
+  facet_wrap(~Location, ncol = 1) +
+  ylim(10,35) +
+  theme_bw()
+
+ggsave(width = 3, height = 9, here::here("Data", "Temperature", "SEUS_buoy", "seus_buoy_data_modeled.png"))
+```
+
+
+```{r unique observations}
+seus_temp_obs <- unique(se_hourly_temp.narm, by = c("Location", "year", "month"))
+
+seus_temp_obs$Location <- factor(seus_temp_obs$Location, levels = c("41001_east_hatteras","41037_wrightsville" , "fpsn7_fryingpanNC", "41004_charleston","svls1_savannahlight", "41005_SC", "41008_savannah","sauf1_staugustineFL", "41009_canaveral"))
+
+ggplot(data = seus_temp_obs, aes(x = year)) +
+  geom_point(aes(y = sst_min_annual), color= "blue") +
+  geom_point(aes(y = sst_max_annual), color = "red") +
+  facet_wrap(~Location, ncol = 1) +
+  ylim(10,35) +
+  theme_bw()
+
+ggsave(width = 3, height = 9, here::here("Data", "Temperature", "SEUS_buoy", "seus_buoy_data_observed.png"))
+
+
+```
+Plot modeled versus observed (modeled on y axis and observed on x axis). We need Location, Year, sst_min_annual, sst_max_annual, sst_seas_annual.
+```{r observed versus modeled for each region}
+#observed
+observed_reduced_seus <- seus_temp_obs[,.(Location, year, month, sst_min_annual, sst_max_annual, sst_seas_annual, month_avg)][,type := "obs"]
+predicted_reduced_seus <- seus_temp[,.(Location, year, month, sst_min_annual, sst_max_annual, sst_seas_annual, sst_month_sst)][,type := "pred"]
+
+pred_obs_seus <-  predicted_reduced_seus[observed_reduced_seus, on = c("Location", "year", "month")]
+
+
+#monthly
+summary(pred_obs_seus)
+ggplot(data = pred_obs_seus) +
+  geom_point(aes(x = month_avg , y = sst_month_sst)) +
+  geom_abline(slope = 1) +
+  facet_wrap(~Location) +
+  labs(x = "Observed Monthly Avg Temp", y = "Predicted Monthly Avg Temp") +
+  theme_classic()
+
+#ggsave(file = "predicted_obs_temp_seus_monthly.jpg")
+
+#yearly
+ggplot(data = pred_obs_seus) +
+  geom_point(aes(x = i.sst_max_annual, y = sst_max_annual)) +
+  geom_abline(slope = 1) +
+  facet_wrap(~Location) +
+  labs(x = "Observed Maximum Annual Temperature", y = "Predicted Maximum Annual Temperature") +
+  theme_classic()
+
+#ggsave(file = "predicted_obs_temp_seus_maxannual.jpg")
+
+ggplot(data = pred_obs_seus) +
+  geom_point(aes(x = i.sst_min_annual, y = sst_min_annual)) +
+  geom_abline(slope = 1) +
+  facet_wrap(~Location) +
+  labs(x = "Observed Minimum Annual Temperature", y = "Predicted Minimum Annual Temperature") +
+  theme_classic()
+
+#ggsave(file = "predicted_obs_temp_seus_minannual.jpg")
+
+ggplot(data = pred_obs_seus) +
+  geom_point(aes(x = i.sst_seas_annual, y = sst_seas_annual)) +
+  geom_abline(slope = 1) +
+  facet_wrap(~Location) +
+  labs(x = "Observed Annual Temperature Seasonality", y = "Predicted Annual Temperature Seasonality") +
+  theme_classic()
+  
+#ggsave(file = "predicted_obs_temp_seus_seusannual.jpg")
+```
+
+
+```{r plot map of where buoys are}
+library(dplyr)
+library(ggrepel)
+library(maps)
+latlon_seus <- se_hourly_temp.narm[,.(lat,lon, Location)]
+
+latlon_seus <- latlon_seus %>% 
+  select(lat,lon, Location) %>% 
+  unique
+
+
+states <- map_data("state")
+southeast <- subset(states, region %in% c("north carolina", "south carolina", "virginia", "georgia", "florida"))
+
+(buoypoints <- ggplot(data = southeast) +
+    geom_polygon(aes(x = long, y = lat, group = group), fill = NA, color = "black") +
+    coord_fixed(1.3) +
+	geom_point(data = latlon_seus,  # Add points
+		aes(x = lon, y = lat), color = "red") +
+    #geom_text_repel(data = latlon_seus, aes(x = lon, y = lat, label = Location), size = 2.5, nudge_x = 6) +
+	theme_classic() +  # Remove ugly grey background
+  labs( x = paste("Longitude (\u00b0E)"), y = paste("Latitude (\u00b0N)")))
+
+ggsave(here::here("figures","Supplemental", "FigureS1a.eps"))
+
+
+
+
+
+```
+Merge figures for supplementary Figure S1
+```{r supplementary figure S1}
+(sup1_1 <- plot_grid(buoypoints, dates_over_time
+                    +
+                   theme(legend.position = "none")
+                    ,ncol = 2, rel_widths = c(1,1), rel_heights = c(1,1), axis = "tblr", align = "h", labels = c("a.","b.")))
+
+legend <- get_legend(dates_over_time)
+
+(FigureS2 <- plot_grid(sup1_1, legend, nrow = 2, rel_heights = c(5,1)))
+  
+
+ggsave(here::here("figures","Supplemental", "FigureS1.eps"), height = 4, width = 8)
+
+
+```
+

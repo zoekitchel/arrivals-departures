@@ -1,0 +1,34 @@
+---
+title: "Temp Patterns"
+output: html_notebook
+---
+
+```{r setup}
+library(ggplot2)
+library(data.table)
+
+load("spp_master_ztemp_seus_buoys.Rdata")
+```
+
+```{r temp in all regions over time}
+ggplot(data = spp_master_ztemp_seus_buoy, aes(x=year)) +
+  geom_point(aes(y = max_sbt_temp), col = "red") +
+  geom_point(aes(y = seas_sbt_temp), col = "slategrey") +
+  geom_point(aes(y = min_sbt_temp), col = "blue") +
+  facet_wrap(~reg, scales = "free") +
+  labs(y = "Bottom Temperature (˚C)", x = "Year") +
+  theme_bw()
+
+ggsave(file = "temp_over_time_bottom_seusbuoy.jpg")
+
+ggplot(data = spp_master_ztemp_seus_buoy, aes(x=year)) +
+  geom_point(aes(y = max_sst_temp), col = "red") +
+  geom_point(aes(y = seas_sst_temp), col = "slategrey") +
+  geom_point(aes(y = min_sst_temp), col = "blue") +
+  facet_wrap(~reg, scales = "free") +
+  labs(y = "Surface Temperature (˚C)", x = "Year") +
+  theme_bw()
+
+ggsave(file = "temp_over_time_surface_seusbuoy›.jpg")
+```
+

@@ -1,0 +1,113 @@
+---
+title: "OISSIT NOAA DATA"
+output: html_notebook
+---
+
+Here, I'm trying to get a better sense of how well the SODA temp data represents the SEUS. We found a significant decrease in temperature during the study period, which is not what people who are familiar with conditions in this area say has happened. Most likely, the SODA model doesn't perform well in shallow near shore areas where survey is performed in southeast US. Therefore, we compared performance to OISST temp. Overall pattern is similar, and not representative of what's actually happening in this survey area. Therefore, we decided to go with in situ buoy temperature values. 
+
+```{r setup}
+library(ncdf4)
+library(raster)
+library(data.table)
+```
+Southeast US (1990–2014, n = 25)
+
+Years downloaded one by one on May 15, 2020
+https://psl.noaa.gov/cgi-bin/DataAccess.pl?DB_dataset=NOAA+High-resolution+Blended+Analysis&DB_variable=Sea+Surface+Temperature&DB_statistic=Mean&DB_tid=86107&DB_did=132&DB_vid=2423
+
+```{r import netcdf}
+#all file names
+filenames <- list.files(here::here("Data","Temperature","OISST_NOAA_TEMP_NETCDF"), full.names = T)
+
+OISST.sst <- lapply(filenames, brick)
+
+OISST.sst
+
+
+#currently, this is in 0-360, needs to be -180-180, so I have to subtract 360˚
+OISST.sst_adj <- lapply(OISST.sst, rotate)
+
+```
+
+Extract specific GPS values for SE US sampled during during study period
+```{r SE US temp values}
+load("trawl_coordinates_1996-2000.RData")
+
+seus_points <- gpspointsonly_quarterdegreeround[region == "SCDNR_SEUS"]
+
+coordinates(seus_points) = ~ lon + lat
+
+
+temp_values_1990 <- as.data.table(extract(OISST.sst_adj[[1]], seus_points))
+temp_values_1991 <- as.data.table(extract(OISST.sst_adj[[2]], seus_points))
+temp_values_1992 <- as.data.table(extract(OISST.sst_adj[[3]], seus_points))
+temp_values_1993 <- as.data.table(extract(OISST.sst_adj[[4]], seus_points))
+temp_values_1994 <- as.data.table(extract(OISST.sst_adj[[5]], seus_points))
+temp_values_1995 <- as.data.table(extract(OISST.sst_adj[[6]], seus_points))
+temp_values_1996 <- as.data.table(extract(OISST.sst_adj[[7]], seus_points))
+temp_values_1997 <- as.data.table(extract(OISST.sst_adj[[8]], seus_points))
+temp_values_1998 <- as.data.table(extract(OISST.sst_adj[[9]], seus_points))
+temp_values_1999 <- as.data.table(extract(OISST.sst_adj[[10]], seus_points))
+temp_values_2000 <- as.data.table(extract(OISST.sst_adj[[11]], seus_points))
+temp_values_2001 <- as.data.table(extract(OISST.sst_adj[[12]], seus_points))
+temp_values_2002 <- as.data.table(extract(OISST.sst_adj[[13]], seus_points))
+temp_values_2003 <- as.data.table(extract(OISST.sst_adj[[14]], seus_points))
+temp_values_2004 <- as.data.table(extract(OISST.sst_adj[[15]], seus_points))
+temp_values_2005 <- as.data.table(extract(OISST.sst_adj[[16]], seus_points))
+temp_values_2006 <- as.data.table(extract(OISST.sst_adj[[17]], seus_points))
+temp_values_2007 <- as.data.table(extract(OISST.sst_adj[[18]], seus_points))
+temp_values_2008 <- as.data.table(extract(OISST.sst_adj[[19]], seus_points))
+temp_values_2009 <- as.data.table(extract(OISST.sst_adj[[20]], seus_points))
+temp_values_2010 <- as.data.table(extract(OISST.sst_adj[[21]], seus_points))
+temp_values_2011 <- as.data.table(extract(OISST.sst_adj[[22]], seus_points))
+temp_values_2012 <- as.data.table(extract(OISST.sst_adj[[23]], seus_points))
+temp_values_2013 <- as.data.table(extract(OISST.sst_adj[[24]], seus_points))
+temp_values_2014 <- as.data.table(extract(OISST.sst_adj[[25]], seus_points))
+temp_values_2015 <- as.data.table(extract(OISST.sst_adj[[26]], seus_points))
+
+plot(OISST.sst_adj[[1]][[1]])
+points(seus_points)
+
+object_names <- list(temp_values_1990, temp_values_1991, temp_values_1992, temp_values_1993, temp_values_1994, temp_values_1995, temp_values_1996, temp_values_1997, temp_values_1998, temp_values_1999, temp_values_2000, temp_values_2001, temp_values_2002, temp_values_2003, temp_values_2004, temp_values_2005, temp_values_2006, temp_values_2007, temp_values_2008, temp_values_2009, temp_values_2010, temp_values_2011, temp_values_2012, temp_values_2013, temp_values_2014, temp_values_2015)
+
+allvalues_wide <- do.call("cbind", object_names)
+
+allvalues_wide_latlon <- cbind(seus_points@coords, allvalues_wide)
+colnames(allvalues_wide_latlon)
+
+```
+
+Wide to long data
+```{r wide to long}
+library(lubridate)
+
+#wide to long
+SEUS_temp <- melt(allvalues_wide_latlon, id.vars = c("lat", "lon"))
+colnames(SEUS_temp) <- c("lat", "lon", "date", "sst")
+SEUS_temp[,date.edit := as_date(substr(date, 2, 11))][,year := year(date.edit)][,sst_avg := mean(sst, na.rm = T), by = year]
+
+
+
+```
+
+
+```{r temp over time}
+ggplot(data = SEUS_temp, aes(x=year, y = sst_avg)) +
+  geom_point() +
+  geom_smooth(method = lm) +
+  theme_classic()
+```
+
+Compare to SODA temp values
+
+```{r soda versus OISST}
+load("spp_master_ztemp.Rdata")
+
+ggplot(data = SEUS_temp, aes(x=year, y = sst_avg)) +
+  geom_point(color = "red") +
+  geom_smooth(method = lm, color = "red") +
+  geom_point(data = spp_master_ztemp[reg == "sa"], aes(x=year, y = mean_sst_temp), color = "blue") +
+  geom_smooth(data = spp_master_ztemp[reg == "sa"], aes(x=year, y = mean_sst_temp), method = lm, color = "blue") +
+  theme_classic()
+```
+

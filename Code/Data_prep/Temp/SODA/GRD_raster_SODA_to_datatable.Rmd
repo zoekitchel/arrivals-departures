@@ -1,0 +1,519 @@
+---
+title: "Temp_Data_All_Years"
+output: html_notebook
+---
+This will all be done in terminal R window. 
+
+This was previously called 041019_Temp_Data_All_Years.Rmd
+
+```{bash terminal setup}
+ssh zoek@amphiprion.deenr.rutgers.edu
+conda activate /local/home/zoek/enter/envs/myRenv3_5
+
+```
+
+
+```{r setup}
+library(dplyr)
+library(data.table)
+library(raster)
+library(ncdf4)
+library(lubridate)
+library(maptools)
+library(rgdal)
+library(tidyr)
+library(ggplot2)
+
+```
+
+I have already converted NetCDF files to grd raster files. 
+`col_ext/soda_bottom_sep2019.gri`
+`col_ext/soda_bottom_sep2019.grd`
+`col_ext/soda_surface_sep2019.gri`
+`col_ext/soda_surface_sep2019.grd`
+
+At this point, don't know difference between gri and grd. But, gri is 68.5 MB and .grd is 35.7 KB
+
+```{r load netcdf now rasterbrick files}
+soda_bottom <- brick("col_ext/soda_bottom_sep2019.gri")
+soda_surface <- brick("col_ext/soda_surface_sep2019.gri")
+
+```
+
+Generating coordinates I need to extract, and then average
+```{r generating coordinates to extract from hauls}
+load("col_ext/hauls_catch_Dec2017 1.RData")
+hauls <- data.table(hauls)
+cols <- c("lat", "lon", "region")
+latlongyear <- hauls[, cols, with = F]
+
+# set the key to all columns
+setkey(latlongyear)
+
+# Get unique lat lon combos
+latlongyear.u <- unique(latlongyear[list(lat, lon), nomatch = 0])
+```
+
+SET COORDINATE SYSTEM
+```{r set coordinate system}
+locations <- SpatialPoints(cbind(latlongyear.u$lon, latlongyear.u$lat), 
+                            proj4string=CRS("+proj=longlat +datum=WGS84 +ellps=WGS84 +towgs84=0,0,0"))
+jpeg("plots.jpg")
+plot(locations)
+dev.off()
+```
+
+Now, let's extract values 
+
+```{r extracting temperature values at correct GPS points}
+system.time(temp_values_sbt <- raster::extract(soda_bottom, locations))
+system.time(temp_values_sst <- raster::extract(soda_surface, locations))
+
+#column bind
+latlon_temp_values_sbt <- cbind(latlongyear.u, temp_values_sbt)
+latlon_temp_values_sst <- cbind(latlongyear.u, temp_values_sst)
+```
+
+TROUBLE SHOOTING
+#which rows are NA?
+
+latlon_temp_values_sbt[is.na(X2002.07.01),]
+#no data from 1980 ONWARDS for DFO_SoGulf
+
+##############I'll fix this at some point, but for now, I will exclude them from avg
+
+1: 47.80000 -65.58333 DFO_SoGulf
+2: 47.91667 -65.61667 DFO_SoGulf
+3: 47.91667 -65.51667 DFO_SoGulf
+4: 47.93333 -65.63333 DFO_SoGulf
+5: 47.95000 -65.80000 DFO_SoGulf
+6: 47.98333 -65.88333 DFO_SoGulf
+7: 48.00000 -65.60000 DFO_SoGulf
+
+#no data before 1980 for DFO_SoGulf and a few AFSC_GOA sites
+
+1: 45.92100  -63.50167 DFO_SoGulf         
+2: 45.93683  -63.57550 DFO_SoGulf         
+3: 45.95000  -63.53333 DFO_SoGulf          
+4: 45.99750  -63.58583 DFO_SoGulf          
+5: 55.69430 -133.45270   AFSC_GOA       
+6: 55.80966 -133.42730   AFSC_GOA        
+7: 57.53769 -156.01590   AFSC_GOA     
+
+-----
+
+I need a data.table in long format. This (sometimes) takes a while.
+
+```{r melt temp data}
+#surface
+system.time(df_long_sst <- melt(latlon_temp_values_sst, measure.vars = 4:ncol(latlon_temp_values_sst),
+               variable.name = "dateID", value.name = "temp")
+)
+
+#bottom
+system.time(df_long_sbt <- melt(latlon_temp_values_sbt, measure.vars = 4:ncol(latlon_temp_values_sbt),
+               variable.name = "dateID", value.name = "temp")
+)
+
+```
+
+We now have to split the date, and get rid of X
+
+```{r split dateID}
+#surface
+df_long_sst[, c("year", "month", "day") := tstrsplit(dateID, ".", fixed=TRUE)]
+
+df_long_sst$year <- substr(as.character(df_long_sst$year), 2, 5)
+
+#bottom
+df_long_sbt[, c("year", "month", "day") := tstrsplit(dateID, ".", fixed=TRUE)]
+
+df_long_sbt$year <- substr(as.character(df_long_sbt$year), 2, 5)
+
+```
+
+____
+
+First is to average over all points in a region for every month/year combo. This takes a while.
+```{r avg over GPS points}
+#make sure region, year, and month are all factors
+  #surface
+  nms <- c("region", "year", "month")
+  df_long_sst[, (nms) := lapply(.SD, factor), .SDcols = nms]
+  
+  #bottom
+  df_long_sbt[, (nms) := lapply(.SD, factor), .SDcols = nms]
+
+#average over year
+  #surface
+  soda_sst_monthavg <- df_long_sst[,list(sst_mean=mean(temp, na.rm=TRUE)),by=c("region", "year", "month")]
+  #bottom
+  soda_sbt_monthavg <- df_long_sbt[,list(sbt_mean=mean(temp,na.rm=TRUE)),by=c("region", "year", "month")]
+  
+  #good time to save
+
+save(soda_sst_monthavg, soda_sbt_monthavg, file = "col_ext/soda_avg_monthly_temps.Rdata")
+
+#for some reason, we're getting NA's for DFO_SoGulf and AFSC_GOA
+```
+
+It seems as though the best way to speak to the trawls data set and ask it to look for a specific year/month and then go back from that date by a specified interval is to turn all months into julian months, to eliminate year variable.
+```{r convert month year to julian month}
+#how many months?
+year_month_key <- soda_sst_monthavg[, .N, by = c('year', 'month')][,1:2]
+max_julian_month <- nrow(year_month_key)
+
+#sequence of 1:756
+julian_months <- seq(1, max_julian_month, by=1)
+
+#makekey
+year_month_key <- cbind(year_month_key, "month_julian" = julian_months)
+
+
+```
+I need to use this key to add julian month to data tables for sst and sbt. 
+```{r add julian month}
+#surface
+soda_sst_monthavg <- soda_sst_monthavg[year_month_key, on = c(year = 'year', month = 'month')]
+
+#surface
+soda_sbt_monthavg <- soda_sbt_monthavg[year_month_key, on = c(year = 'year', month = 'month')]
+
+
+```
+
+Make sure that month and year match in characters and class in `hauls` and `soda_s?t_monthavg`
+
+```{r match year month in hauls}
+hauls$year <- as.factor(hauls$year)
+hauls$month <- as.factor(hauls$month)
+setattr(hauls$month,"levels",c('01','02','03','04','05','06','07','08','09','10','11','12'))
+
+#now, add julian day to hauls data table as well
+
+hauls <- hauls[year_month_key, nomatch = 0, on = c(year = 'year', month = 'month')]
+```
+
+
+
+Now, I have to start taking averages.
+First, average over all GPS points in a region for a given year and month (this gives us avg temp per region per month)
+Second, group by year, find mean in a year
+Second, group by year, max in each year
+Second, group by year, min in each year
+Third, find difference between min and max for each year
+
+This being said, I think I should think more carefully than this. I need to look a mean, min, max for a year BEFORE the month of the trawl.. this will be a little more complicated than how I've been doing it for sure. 
+
+It also means I have to keep this mega file, and look on demand for temp data, which may not be possible. 
+
+For each haul, look at haul month, and then take data from 12 months before that date. 
+
+```{r averaging temperature values}
+#hauls to have ready to go for this step
+save(hauls, file="col_ext/hauls_10-01.Rdata")
+#turn region into factor in hauls datatable
+hauls$region <- as.factor(hauls$region)
+
+#new columns for loop to populate
+  #surface
+    #raw
+    temp.vars <- c("mean", "max", "min", "seas")
+      hauls[,mean_sst_temp :=numeric(.N)]
+      hauls[,max_sst_temp :=numeric(.N)]
+      hauls[,min_sst_temp :=numeric(.N)]
+      hauls[,seas_sst_temp :=numeric(.N)]
+    
+    
+    #lag raw
+      #new columns
+      raw.lag.sst.col.names <- CJ(temp.vars, 1:10)[, paste(temp.vars, 1:10, sep ="_sst_temp_lag")]
+      
+      #loop to make new column names
+      hauls[ ,raw.lag.sst.col.names[1:40]:=numeric(.N) ]
+      #ended here
+     
+      
+    #change
+    hauls[, mean_sst_temp_change := numeric(.N)]
+    hauls[, max_sst_temp_change := numeric(.N)]
+    hauls[, min_sst_temp_change := numeric(.N)]
+    hauls[, seas_sst_temp_change := numeric(.N)]
+
+    
+    #lag change
+      #new columns
+      change.lag.sst.col.names <- CJ(temp.vars, 1:9)[, paste(temp.vars, 1:9, sep ="_sst_temp_change_lag")]
+      
+      #loop to make new column names
+      hauls[ ,change.lag.sst.col.names[1:36]:=numeric(.N) ]
+      
+    #abs
+    hauls[, mean_sst_temp_change_abs := numeric(.N)]
+    hauls[, max_sst_temp_change_abs := numeric(.N)]
+    hauls[, min_sst_temp_change_abs := numeric(.N)]
+    hauls[, seas_sst_temp_change_abs := numeric(.N)]
+      
+    #lag abs
+      abs.change.lag.sst.col.names <- CJ(temp.vars, 1:9)[, paste(temp.vars, 1:9, sep ="_sst_temp_change_abs_lag")]
+      
+      #loop to make new column names
+      hauls[ ,abs.change.lag.sst.col.names[1:36]:=numeric(.N) ]
+  
+  #bottom
+    #raw
+    temp.vars <- c("mean", "max", "min", "seas")
+      hauls[,mean_sbt_temp :=numeric(.N)]
+      hauls[,max_sbt_temp :=numeric(.N)]
+      hauls[,min_sbt_temp :=numeric(.N)]
+      hauls[,seas_sbt_temp :=numeric(.N)]
+    
+    
+    #lag raw
+      #new columns
+      raw.lag.sbt.col.names <- CJ(temp.vars, 1:10)[, paste(temp.vars, 1:10, sep ="_sbt_temp_lag")]
+      
+      #loop to make new column names
+      hauls[ ,raw.lag.sbt.col.names[1:40]:=numeric(.N) ]
+      #ended here
+     
+      
+    #change
+    hauls[, mean_sbt_temp_change := numeric(.N)]
+    hauls[, max_sbt_temp_change := numeric(.N)]
+    hauls[, min_sbt_temp_change := numeric(.N)]
+    hauls[, seas_sbt_temp_change := numeric(.N)]
+
+    
+    #lag change
+      #new columns
+      change.lag.sbt.col.names <- CJ(temp.vars, 1:9)[, paste(temp.vars, 1:9, sep ="_sbt_temp_change_lag")]
+      
+      #loop to make new column names
+      hauls[ ,change.lag.sbt.col.names[1:36]:=numeric(.N) ]
+      
+    #abs
+    hauls[, mean_sbt_temp_change_abs := numeric(.N)]
+    hauls[, max_sbt_temp_change_abs := numeric(.N)]
+    hauls[, min_sbt_temp_change_abs := numeric(.N)]
+    hauls[, seas_sbt_temp_change_abs := numeric(.N)]
+      
+    #lag abs
+      abs.change.lag.sbt.col.names <- CJ(temp.vars, 1:9)[, paste(temp.vars, 1:9, sep ="_sbt_temp_change_abs_lag")]
+      
+      #loop to make new column names
+      hauls[ ,abs.change.lag.sbt.col.names[1:36]:=numeric(.N) ]
+  
+#now, loop to fill these new columns
+for (i in 1:nrow(hauls)) {
+    this_month_julian <- hauls$month_julian[i] #identify month/year
+    this_region <- hauls$region[i] #identify region
+    monthstosubtract <- seq(from = 11, by = 12, length.out = 11) 
+    
+    this_month_julian_reverse <- NA #month/year combo back in time
+    
+    for (j in 1:length(monthstosubtract)){
+      this_month_julian_reverse[j] <- this_month_julian-monthstosubtract[j]
+    }
+    
+  #surface raw
+    subset_sst <- soda_sst_monthavg[region == this_region & month_julian >= this_month_julian_reverse[1] & soda_sst_monthavg$month_julian <= this_month_julian]
+    
+    hauls[(i),mean_sst_temp :=mean(subset_sst$sst_mean)] #mean temperature over the past 12 months
+    hauls[(i),max_sst_temp :=max(subset_sst$sst_mean)] #max temp over the past 12 months
+    hauls[(i),min_sst_temp :=min(subset_sst$sst_mean)] #min temp over the past 12 months
+    hauls[(i),seas_sst_temp := max_sst_temp - min_sst_temp] #seasonality over the past 12 months
+    
+  #surface raw lags 
+      for (j in 2:length(this_month_julian_reverse)) {
+        
+        subset_sst <- soda_sst_monthavg[region == this_region & month_julian >= this_month_julian_reverse[j] & month_julian < this_month_julian_reverse[j-1]] #subsets to correct year
+        
+        indx <- which(colnames(hauls) == paste0("mean_sst_temp_lag", j-1)) #finds column number with right name
+        hauls[(i),(indx) := mean(subset_sst$sst_mean)] #assigns value to that cell
+        indx <- which(colnames(hauls) == paste0("max_sst_temp_lag", j-1))
+        hauls[(i),(indx) := max(subset_sst$sst_mean)]
+        indx <- which(colnames(hauls) == paste0("min_sst_temp_lag", j-1))
+        hauls[(i),(indx) := min(subset_sst$sst_mean)]
+        indx <- which(colnames(hauls) == paste0("seas_sst_temp_lag", j-1))
+        hauls[(i),(indx) := (get(paste0("max_sst_temp_lag", j-1))-get(paste0("min_sst_temp_lag", j-1)))]
+      }
+    
+    #surface change
+    hauls[(i),mean_sst_temp_change :=  mean_sst_temp-mean_sst_temp_lag1]
+    hauls[(i),max_sst_temp_change :=  max_sst_temp-max_sst_temp_lag1]
+    hauls[(i),min_sst_temp_change :=  min_sst_temp-min_sst_temp_lag1]
+    hauls[(i),seas_sst_temp_change :=  seas_sst_temp-seas_sst_temp_lag1]
+      
+    #surface lag change
+    for (j in 1:9) {
+  #--mean
+      indx_raw <- which(colnames(hauls) == paste0("mean_sst_temp_lag", j))
+      indx_raw.p1 <- indx_raw + 1
+      
+      temp_change <- hauls[(i), ..indx_raw]-hauls[(i), ..indx_raw.p1] #change from lag2-lag1 in raw temp
+      
+      indx_change <- which(colnames(hauls) == paste0("mean_sst_temp_change_lag", j)) #finds column number with right name to fill now
+      hauls[(i),(indx_change) := temp_change] #assigns value to that cell
+  #--max
+      indx_raw <- which(colnames(hauls) == paste0("max_sst_temp_lag", j))
+      indx_raw.p1 <- indx_raw + 1
+      
+      temp_change <- hauls[(i), ..indx_raw]-hauls[(i), ..indx_raw.p1] #change from lag2-lag1 in raw temp
+      
+      indx_change <- which(colnames(hauls) == paste0("max_sst_temp_change_lag", j)) #finds column number with right name to fill now
+      hauls[(i),(indx_change) := temp_change] #assigns value to that cell
+  #--min
+      indx_raw <- which(colnames(hauls) == paste0("min_sst_temp_lag", j))
+      indx_raw.p1 <- indx_raw + 1
+      
+      temp_change <- hauls[(i), ..indx_raw]-hauls[(i), ..indx_raw.p1] #change from lag2-lag1 in raw temp
+      
+      indx_change <- which(colnames(hauls) == paste0("min_sst_temp_change_lag", j)) #finds column number with right name to fill now
+      hauls[(i),(indx_change) := temp_change] #assigns value to that cell
+  #--seas
+      indx_raw <- which(colnames(hauls) == paste0("seas_sst_temp_lag", j))
+      indx_raw.p1 <- indx_raw + 1
+      
+      temp_change <- hauls[(i), ..indx_raw]-hauls[(i), ..indx_raw.p1] #change from lag2-lag1 in raw temp
+      
+      indx_change <- which(colnames(hauls) == paste0("seas_sst_temp_change_lag", j)) #finds column number with right name to fill now
+      hauls[(i),(indx_change) := temp_change] #assigns value to that cell
+    }
+    
+    #absolute value of change in sst
+    hauls[(i), mean_sst_temp_change_abs := abs(mean_sst_temp_change)]
+    hauls[(i), max_sst_temp_change_abs := abs(max_sst_temp_change)]
+    hauls[(i), min_sst_temp_change_abs := abs(min_sst_temp_change)]
+    hauls[(i), seas_sst_temp_change_abs := abs(seas_sst_temp_change)]
+  
+    #absolute value of change in sst LAGS
+    
+    for (j in 1:9) {
+  #--mean
+      indx_raw <- which(colnames(hauls) == paste0("mean_sst_temp_change_lag", j)) #find column with raw change value
+      temp_change_abs <- abs(hauls[(i),..indx_raw])
+      indx_abs <- which(colnames(hauls) == paste0("mean_sst_temp_change_abs_lag", j)) #find the right column to input new value
+      hauls[(i), (indx_abs) := temp_change_abs]
+  #--max
+      indx_raw <- which(colnames(hauls) == paste0("max_sst_temp_change_lag", j)) #find column with raw change value
+      temp_change_abs <- abs(hauls[(i),..indx_raw])
+      indx_abs <- which(colnames(hauls) == paste0("max_sst_temp_change_abs_lag", j)) #find the right column to input new value
+      hauls[(i), (indx_abs) := temp_change_abs]
+  #--min
+      indx_raw <- which(colnames(hauls) == paste0("min_sst_temp_change_lag", j)) #find column with raw change value
+      temp_change_abs <- abs(hauls[(i),..indx_raw])
+      indx_abs <- which(colnames(hauls) == paste0("min_sst_temp_change_abs_lag", j)) #find the right column to input new value
+      hauls[(i), (indx_abs) := temp_change_abs]
+  #--seas
+      indx_raw <- which(colnames(hauls) == paste0("seas_sst_temp_change_lag", j)) #find column with raw change value
+      temp_change_abs <- abs(hauls[(i),..indx_raw])
+      indx_abs <- which(colnames(hauls) == paste0("seas_sst_temp_change_abs_lag", j)) #find the right column to input new value
+      hauls[(i), (indx_abs) := temp_change_abs]
+    }
+    
+  #---------BOTTOM
+      #bottom raw
+    subset_sbt <- soda_sbt_monthavg[region == this_region & month_julian >= this_month_julian_reverse[1] & soda_sbt_monthavg$month_julian <= this_month_julian]
+    
+    hauls[(i),mean_sbt_temp :=mean(subset_sbt$sbt_mean)] #mean temperature over the past 12 months
+    hauls[(i),max_sbt_temp :=max(subset_sbt$sbt_mean)] #max temp over the past 12 months
+    hauls[(i),min_sbt_temp :=min(subset_sbt$sbt_mean)] #min temp over the past 12 months
+    hauls[(i),seas_sbt_temp := max_sbt_temp - min_sbt_temp] #seasonality over the past 12 months
+    
+  #bottom raw lags 
+      for (j in 2:length(this_month_julian_reverse)) {
+        
+        subset_sbt <- soda_sbt_monthavg[region == this_region & month_julian >= this_month_julian_reverse[j] & month_julian < this_month_julian_reverse[j-1]] #subsets to correct year
+        
+        indx <- which(colnames(hauls) == paste0("mean_sbt_temp_lag", j-1)) #finds column number with right name
+        hauls[(i),(indx) := mean(subset_sbt$sbt_mean)] #assigns value to that cell
+        indx <- which(colnames(hauls) == paste0("max_sbt_temp_lag", j-1))
+        hauls[(i),(indx) := max(subset_sbt$sbt_mean)]
+        indx <- which(colnames(hauls) == paste0("min_sbt_temp_lag", j-1))
+        hauls[(i),(indx) := min(subset_sbt$sbt_mean)]
+        indx <- which(colnames(hauls) == paste0("seas_sbt_temp_lag", j-1))
+        hauls[(i),(indx) := (get(paste0("max_sbt_temp_lag", j-1))-get(paste0("min_sbt_temp_lag", j-1)))]
+      }
+    
+    #bottom change
+    hauls[(i),mean_sbt_temp_change :=  mean_sbt_temp-mean_sbt_temp_lag1]
+    hauls[(i),max_sbt_temp_change :=  max_sbt_temp-max_sbt_temp_lag1]
+    hauls[(i),min_sbt_temp_change :=  min_sbt_temp-min_sbt_temp_lag1]
+    hauls[(i),seas_sbt_temp_change :=  seas_sbt_temp-seas_sbt_temp_lag1]
+      
+    #bottom lag change
+    for (j in 1:9) {
+  #--mean
+      indx_raw <- which(colnames(hauls) == paste0("mean_sbt_temp_lag", j))
+      indx_raw.p1 <- indx_raw + 1
+      
+      temp_change <- hauls[(i), ..indx_raw]-hauls[(i), ..indx_raw.p1] #change from lag2-lag1 in raw temp
+      
+      indx_change <- which(colnames(hauls) == paste0("mean_sbt_temp_change_lag", j)) #finds column number with right name to fill now
+      hauls[(i),(indx_change) := temp_change] #assigns value to that cell
+  #--max
+      indx_raw <- which(colnames(hauls) == paste0("max_sbt_temp_lag", j))
+      indx_raw.p1 <- indx_raw + 1
+      
+      temp_change <- hauls[(i), ..indx_raw]-hauls[(i), ..indx_raw.p1] #change from lag2-lag1 in raw temp
+      
+      indx_change <- which(colnames(hauls) == paste0("max_sbt_temp_change_lag", j)) #finds column number with right name to fill now
+      hauls[(i),(indx_change) := temp_change] #assigns value to that cell
+  #--min
+      indx_raw <- which(colnames(hauls) == paste0("min_sbt_temp_lag", j))
+      indx_raw.p1 <- indx_raw + 1
+      
+      temp_change <- hauls[(i), ..indx_raw]-hauls[(i), ..indx_raw.p1] #change from lag2-lag1 in raw temp
+      
+      indx_change <- which(colnames(hauls) == paste0("min_sbt_temp_change_lag", j)) #finds column number with right name to fill now
+      hauls[(i),(indx_change) := temp_change] #assigns value to that cell
+  #--seas
+      indx_raw <- which(colnames(hauls) == paste0("seas_sbt_temp_lag", j))
+      indx_raw.p1 <- indx_raw + 1
+      
+      temp_change <- hauls[(i), ..indx_raw]-hauls[(i), ..indx_raw.p1] #change from lag2-lag1 in raw temp
+      
+      indx_change <- which(colnames(hauls) == paste0("seas_sbt_temp_change_lag", j)) #finds column number with right name to fill now
+      hauls[(i),(indx_change) := temp_change] #assigns value to that cell
+    }
+    
+    #absolute value of change in sbt
+    hauls[(i), mean_sbt_temp_change_abs := abs(mean_sbt_temp_change)]
+    hauls[(i), max_sbt_temp_change_abs := abs(max_sbt_temp_change)]
+    hauls[(i), min_sbt_temp_change_abs := abs(min_sbt_temp_change)]
+    hauls[(i), seas_sbt_temp_change_abs := abs(seas_sbt_temp_change)]
+  
+    #absolute value of change in sbt LAGS
+    
+    for (j in 1:9) {
+  #--mean
+      indx_raw <- which(colnames(hauls) == paste0("mean_sbt_temp_change_lag", j)) #find column with raw change value
+      temp_change_abs <- abs(hauls[(i),..indx_raw])
+      indx_abs <- which(colnames(hauls) == paste0("mean_sbt_temp_change_abs_lag", j)) #find the right column to input new value
+      hauls[(i), (indx_abs) := temp_change_abs]
+  #--max
+      indx_raw <- which(colnames(hauls) == paste0("max_sbt_temp_change_lag", j)) #find column with raw change value
+      temp_change_abs <- abs(hauls[(i),..indx_raw])
+      indx_abs <- which(colnames(hauls) == paste0("max_sbt_temp_change_abs_lag", j)) #find the right column to input new value
+      hauls[(i), (indx_abs) := temp_change_abs]
+  #--min
+      indx_raw <- which(colnames(hauls) == paste0("min_sbt_temp_change_lag", j)) #find column with raw change value
+      temp_change_abs <- abs(hauls[(i),..indx_raw])
+      indx_abs <- which(colnames(hauls) == paste0("min_sbt_temp_change_abs_lag", j)) #find the right column to input new value
+      hauls[(i), (indx_abs) := temp_change_abs]
+  #--seas
+      indx_raw <- which(colnames(hauls) == paste0("seas_sbt_temp_change_lag", j)) #find column with raw change value
+      temp_change_abs <- abs(hauls[(i),..indx_raw])
+      indx_abs <- which(colnames(hauls) == paste0("seas_sbt_temp_change_abs_lag", j)) #find the right column to input new value
+      hauls[(i), (indx_abs) := temp_change_abs]
+    }
+    
+    print(paste(i, nrow(hauls), sep = "/"))
+
+}
+      
+#this takes 2 days to run
+save(hauls, file = "hauls_fulltempdata.Rdata")
+      
+```

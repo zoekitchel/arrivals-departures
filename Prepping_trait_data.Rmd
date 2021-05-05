@@ -1,0 +1,465 @@
+---
+title: "Looking at Traits"
+output: html_notebook
+---
+
+Going to look at some patterns in traits
+```{r setup}
+library(ggplot2)
+library(data.table)
+
+
+traits <- read.csv("TraitCollectionFishNAtlanticNEPacificContShelf (3).csv")
+traits <- data.table(traits)
+
+#remove duplicates
+traits.u <- unique(traits, by = c('taxon'))
+
+```
+Interested in looking at max age, trophic level, and age of maturity
+```{r trait patterns}
+ggplot(aes(x=age.max), data = traits) +
+  geom_histogram()
+
+ggplot(aes(x=age.maturity), data = traits) +
+  geom_histogram()
+
+ggplot(aes(x=tl), data = traits) +
+  geom_histogram()
+
+cor(na.omit(traits[,c(10, 17, 22)]))
+``` 
+They have a R^2 value of 0.53, so, worth it to try both. 
+
+Let's link species
+
+First, let's see if there are any errors?
+```{r linking species}
+load("spp_master_ztemp_seus_buoys.Rdata")
+spp_master_spp <- data.frame(spp = unique(spp_master_ztemp_seus_buoy$spp), origin = "spp_master")
+traits_spp <- data.frame(spp = unique(traits$taxon), origin = "traits")
+spp_all <- rbind(spp_master_spp, traits_spp)
+spp_all$spp <- as.character(spp_all$spp)
+spp_all.u <- spp_all[!duplicated(spp_all$spp),]
+
+```
+
+#Species to fix
+
+species | location
+
+Arctozenus risso | spp_master
+Arctozenus risso kroyeri | spp_master
+*Arctozenus risso in traits, so best to apply same to both Arctozenus and Artozenus risso kroyeri in spp_master
+```{r Arctozenus risso}
+row <- traits.u[taxon == "Arctozenus risso",]
+row[,taxon := "Arctozenus risso kroyeri"][, species := "risso kroyeri"]
+traits.u <- rbind(traits.u, row)
+```
+
+Myoxocephalus scorpioides | spp_master
+Myoxocephalus scorpius | spp_master
+*yes, these are different!
+
+Auxis rochei rochei | traits
+*ignore, not in our hauls
+
+Diplecogaster bimaculata | traits
+Diplecogaster bimaculata bimaculata | traits
+*ignore, not in our hauls
+
+Etrumeus teres | traits
+Etrumeus teres(sadina) | spp_master
+*change spp_master to Etrumeus teres
+```{r Etrumeus teres}
+spp_master_ztemp_seus_buoy[spp == "Etrumeus teres(sadina)", spp := "Etrumeus teres"]
+
+```
+
+Eualus gaimardii gaimardii | spp_master
+*ignore, not in trait database
+
+Gasterosteus aculeatus | traits
+Gasterosteus aculeatus williamsoni | traits
+*ignore, not in our hauls
+
+Lestidiops jayakari | traits
+Lestidiops jayakari jayakari | traits
+*ignore, not in our hauls
+
+Liparis liparis liparis | traits
+*ignore, not in our hauls
+
+Macroramphosus scolopax | traits
+Macrorhamphosus scolopax | spp_master
+*spelling error in spp_master, change to Macroramphosus scolopax
+```{r Macroramphosus scolopax}
+spp_master_ztemp_seus_buoy[spp == "Macrorhamphosus scolopax", spp := "Macroramphosus scolopax"]
+```
+
+Mullus barbatus barbatus | traits
+*ignore, not in our hauls
+
+Myliobatis freminvillei | traits
+Myliobatis freminvillii | spp_master
+*spelling error in spp_master, change to Myliobatis freminvillei
+```{r Myliobatis freminvillei}
+spp_master_ztemp_seus_buoy[spp == "Myliobatis freminvillii", spp := "Myliobatis freminvillei"]
+```
+
+
+Nicholsina usta usta | traits
+*ignore, not in our hauls
+
+Notoscopelus elongatus kroyeri | traits
+*ignore, not in our hauls
+
+Oxyporhamphus micropterus micropterus | traits
+*ignore, not in our hauls
+
+Polydactylus octoemus | spp_master
+Polydactylus octonemus | traits
+*spelling error in spp_master, change to Polydactylus octonemus
+```{r Polydactylus octonemus}
+spp_master_ztemp_seus_buoy[spp == "Polydactylus octoemus", spp := "Polydactylus octonemus"]
+```
+
+
+Salmo trutta trutta | traits
+*ignore, not in our hauls
+
+Scomberesox saurus saurus | traits
+*ignore, not in our hauls
+
+Stichaeus punctatus | spp_master
+Stichaeus punctatus punctatus | traits
+*delte one punctatus from traits
+```{r Stichaeus punctatus}
+traits.u[taxon == "Stichaeus punctatus punctatus", taxon := "Stichaeus punctatus"][species == "punctatus punctatus", species := "punctatus"]
+
+```
+
+
+Stomias boa boa | traits
+Stomias boa ferox | traits
+*ignore, not in our trawls
+
+Symphurus civitatium | traits
+Symphurus civitatum | spp_master
+*spelling error in spp_master, change to Symphurus civitatium
+```{r Symphurus civitatium}
+spp_master_ztemp_seus_buoy[spp == "Symphurus civitatum", spp := "Symphurus civitatium"]
+
+```
+
+
+Zenopsis conchifer | traits
+Zenopsis conchifera | spp_master
+*spelling error in spp_master, change to Zenopsis conchifer
+```{r Zenopsis conchifer}
+spp_master_ztemp_seus_buoy[spp == "Zenopsis conchifera", spp := "Zenopsis conchifer"]
+
+```
+
+Okay, now we can go forward. Let's link traits to spp_master with temp data
+
+```{r link traits to haul data}
+traits.u[, spp := taxon][, taxon := NULL]
+spp_master_ztemp_seus_buoy.traits <- spp_master_ztemp_seus_buoy[traits.u, nomatch = 0, on = c("spp")]
+```
+
+Now to save updated data.table with traits for species we have traits for
+```{r save}
+save(spp_master_ztemp_seus_buoy.traits, file = "spp_master_ztemp_seus_buoy.traits.Rdata")
+```
+
+*******
+Now, what happens if we add traits to our models?
+
+Let's just look at our best models
+
+Colonization
+
+max_sbt_temp_change_abs	      0.23859896	4.768169e-06	6878.288
+
+
+```{r col best models with traits too}
+#First, how does this model do with only rows that we actually have trait data for?
+spp_master_ztemp_seus_buoy.traits.na.age.max <- na.omit(spp_master_ztemp_seus_buoy.traits, cols="age.max")
+spp_master_ztemp_seus_buoy.traits.na.age.max[,year_factor := as.factor(year)]
+```
+
+Does it hold up with this limited data set?
+Now, I need to run all models again with this restricted data set
+```{r run colonizatino models again with restricted data set to only age.max species}
+#going to make loop to make all models I need to look at with single SURFACE variables
+surface_variables <- colnames(spp_master_ztemp_seus_buoy.traits.na.age.max[,45:168])
+surface_colonization_model_comparison.maxage <- as.data.table(matrix(nrow = length(surface_variables)))
+surface_colonization_model_comparison.maxage[, variable:=as.factor(V1)][, coef:=as.numeric(V1)][, p_value:=as.numeric(V1)][, AICc:=as.numeric(V1)]
+surface_colonization_model_comparison.maxage[, V1 := NULL]
+
+for (i in 1:length(surface_variables)){
+  mod <- glmer(col ~ get(surface_variables[i]) + (1|reg) + (1|year_factor), family = binomial, data = spp_master_ztemp_seus_buoy.traits.na.age.max)
+  surface_colonization_model_comparison.maxage[i,variable := surface_variables[i]]
+  surface_colonization_model_comparison.maxage[i,coef := coef(summary(mod))[,"Estimate"][2]]
+  surface_colonization_model_comparison.maxage[i,p_value := coef(summary(mod))[,"Pr(>|z|)"][2]]
+  surface_colonization_model_comparison.maxage[i,AICc := AICc(mod)]
+  
+  print(paste(i, length(surface_variables), sep = "/"))
+    
+}
+
+#looping through all possible colonization variables with single BOTTOM variables
+bottom_variables <- colnames(spp_master_ztemp_seus_buoy.traits.na.age.max[,169:292]) #same as above
+
+bottom_colonization_model_comparison.maxage <- as.data.table(matrix(nrow = length(bottom_variables)))
+bottom_colonization_model_comparison.maxage[, variable:=as.factor(V1)][, coef:=as.numeric(V1)][, p_value:=as.numeric(V1)][, AICc:=as.numeric(V1)]
+bottom_colonization_model_comparison.maxage[, V1 := NULL]
+
+for (i in 1:length(bottom_variables)){
+  mod <- glmer(col ~ get(bottom_variables[i]) + (1|reg) + (1|year_factor), family = binomial, data = spp_master_ztemp_seus_buoy.traits.na.age.max)
+  bottom_colonization_model_comparison.maxage[i,variable := bottom_variables[i]]
+  bottom_colonization_model_comparison.maxage[i,coef := coef(summary(mod))[,"Estimate"][2]]
+  bottom_colonization_model_comparison.maxage[i,p_value := coef(summary(mod))[,"Pr(>|z|)"][2]]
+  bottom_colonization_model_comparison.maxage[i,AICc := AICc(mod)]
+  
+  print(paste(i, length(bottom_variables), sep = "/"))
+    
+}
+
+#merge surface and bottom for colonization
+colonization_model_comparisons.maxage <- rbind(bottom_colonization_model_comparison.maxage, surface_colonization_model_comparison.maxage)
+#lowest AICc
+head(colonization_model_comparisons.maxage[order(AICc)], 30)
+```
+This is telling me that previous best model (max sbt temp change abs) is still good, but not the best... Therefore, it seems like we shoould be ignoring traits for now. Future analyses...
+
+```{r}
+
+
+mod.c.t.0 <- glmer(col ~ max_sbt_temp_change_abs + (1|reg) + (1|year_factor), family = binomial, data = spp_master_ztemp_seus_buoy.traits.na)
+summary(mod.c.t.0)
+#max_sbt_temp_change_abs	      0.16256 	0.00915	4242.65
+
+#max_sbt_temp_change_abs and age.max
+mod.c.t.1 <- glmer(col ~ max_sbt_temp_change_abs + age.max + (1|reg) + (1|year_factor), family = binomial, data = spp_master_ztemp_seus_buoy.traits.na)
+summary(mod.c.t.1)
+
+
+  #max_sbt_temp_change_abs and             0.155462 0.0127  4204.059
+      #                       age.max      -0.025250 1.42e-08	
+
+#interaction?
+mod.c.t.2 <- glmer(col ~ max_sbt_temp_change_abs * age.max + (1|reg) + (1|year_factor), family = binomial, data = spp_master_ztemp_seus_buoy.traits.na)
+summary(mod.c.t.2)
+  #yes, appears that max age impacts interaction with temperature
+
+AICc(mod.c.t.0, mod.c.t.1, mod.c.t.2)
+
+#what about only max age?
+mod.c.t.3 <- glmer(col ~ age.max + (1|reg) + (1|year_factor), family = binomial, data = spp_master_ztemp_seus_buoy.traits.na)
+AICc(mod.c.t.0, mod.c.t.1, mod.c.t.2, mod.c.t.3)
+
+summary(mod.c.t.3)
+
+```
+This tells us that as maximum age increases, the log odds of colonizing decreases.
+
+
+*****
+
+Extinction
+
+seas_sbt_temp_change_abs_lag9	0.16783102	0.002379916	6207.213	
+min_sst_temp_change_lag2	    -0.09468652	0.010582502	6209.860	
+min_sbt_temp_change_lag7	    -0.11564632	0.010589365	6210.022	
+
+```{r ext best models with traits too}
+#what's the best model now? #START HERE, run whole thing with restricted data set
+#does it hold up with this limited data set?
+mod.e.t.0 <- glmer(now_ext ~ seas_sbt_temp_change_abs_lag9 + (1|reg) + (1|year_factor), family = binomial, data = spp_master_ztemp_seus_buoy.traits.na)
+summary(mod.e.t.0)
+AICc(mod.e.t.0)
+
+#seas_sbt_temp_change_abs_lag9	      0.08436 	0.222 	3937.797 * not significant any more
+
+mod.e.t.0.1 <- glmer(now_ext ~ min_sst_temp_change_lag2 + (1|reg) + (1|year_factor), family = binomial, data = spp_master_ztemp_seus_buoy.traits.na)
+summary(mod.e.t.0.1)
+AICc(mod.e.t.0.1)
+
+#min_sst_temp_change_lag2	             -0.14436 	0.00304 	3930.58
+
+mod.e.t.0.2 <- glmer(now_ext ~ min_sbt_temp_change_lag7 + (1|reg) + (1|year_factor), family = binomial, data = spp_master_ztemp_seus_buoy.traits.na)
+summary(mod.e.t.0.2)
+AICc(mod.e.t.0.2)
+
+#min_sbt_temp_change_lag7	             -0.09232 	0.107 	3936.804 * not significant any more
+
+
+#seas_sbt_temp_change_abs_lag9 and age.max
+mod.e.t.1 <- glmer(now_ext ~ seas_sbt_temp_change_abs_lag9 + age.max + (1|reg) + (1|year_factor), family = binomial, data = spp_master_ztemp_seus_buoy.traits.na)
+summary(mod.e.t.1)
+AICc(mod.e.t.0, mod.e.t.1)
+
+  #seas_sbt_temp_change_abs_lag9             0.08138 0.237  3896.723
+      #                       age.max      -0.02914 4.86e-09
+
+#min_sst_temp_change_lag2 and age.max
+mod.e.t.1.1 <- glmer(now_ext ~ min_sst_temp_change_lag2 + age.max + (1|reg) + (1|year_factor), family = binomial, data = spp_master_ztemp_seus_buoy.traits.na)
+summary(mod.e.t.1.1)
+AICc(mod.e.t.0.1, mod.e.t.1.1)
+
+  #min_sst_temp_change_lag2 and             -0.144548 0.048814  3889.425
+      #                       age.max      -0.029182 4.7e-09
+          #interaction?
+                mod.e.t.1.1.i <- glmer(now_ext ~ min_sst_temp_change_lag2 * age.max + (1|reg) + (1|year_factor), family = binomial, data = spp_master_ztemp_seus_buoy.traits.na)
+                summary(mod.e.t.1.1.i)
+                AICc(mod.e.t.0.1, mod.e.t.1.1.i) #3890.142
+
+#min_sbt_temp_change_lag7 and age.max
+mod.e.t.1.2 <- glmer(now_ext ~ min_sbt_temp_change_lag7 + age.max + (1|reg) + (1|year_factor), family = binomial, data = spp_master_ztemp_seus_buoy.traits.na)
+summary(mod.e.t.1.2)
+AICc(mod.e.t.0.2, mod.e.t.1.2)
+
+  #min_sbt_temp_change_lag7 and             -0.092419 0.106  3895.634	
+      #                       age.max      -0.029175 4.75e-09
+
+
+#model with only age max
+mod.e.t.1.r <- glmer(now_ext ~ age.max + (1|reg) + (1|year_factor), family = binomial, data = spp_master_ztemp_seus_buoy.traits.na)
+summary(mod.e.t.1.r)
+AICc(mod.e.t.1.r)
+
+```
+This tells us that as maximum age increases, the log odds of going extinct decreases.
+
+
+In all cases, adding age.max decreased the AIC value from not using. The negative, is that we lose 6000 observations. `spp_master_ztemp_seus_buoy` = 18932, `spp_master_ztemp_seus_buoy_traits` = 13296 and `spp_master_ztemp_seus_buoy_traits.na` (has age.max) = 12594
+
+NEXT STEPS
+Can we make a plot for how likelihood of colonization and extinction changes with age.max?
+```{r age.max region bias?}
+ggplot(aes(x=age.max), data = spp_master_ztemp_seus_buoy.traits.na) +
+  geom_histogram() +
+  facet_wrap(~reg)
+
+#appears to be similar across regions? just many more in neus
+```
+Age of Maturity for Colonization
+```{r colonization with age of maturity}
+hist(spp_master_ztemp_seus_buoy.traits$age.maturity)
+
+
+#First, how does this model do with only rows that we actually have trait data for?
+spp_master_ztemp_seus_buoy.traits.na.age.maturity <- na.omit(spp_master_ztemp_seus_buoy.traits, cols="age.maturity")
+spp_master_ztemp_seus_buoy.traits.na.age.maturity[,year_factor := as.factor(year)]
+
+#does it hold up with this limited data set?
+mod.c.age.maturity.0 <- glmer(col ~ max_sbt_temp_change_abs + (1|reg) + (1|year_factor), family = binomial, data = spp_master_ztemp_seus_buoy.traits.na.age.maturity)
+summary(mod.c.age.maturity.0)
+AICc(mod.c.age.maturity.0)
+
+#max_sbt_temp_change_abs  0.14627  0.0233 ** 	4069.372
+
+#max_sbt_temp_change_abs and age.maturity
+mod.c.age.maturity.1 <- glmer(col ~ max_sbt_temp_change_abs + age.maturity + (1|reg) + (1|year_factor), family = binomial, data = spp_master_ztemp_seus_buoy.traits.na.age.maturity)
+summary(mod.c.age.maturity.1)
+AICc(mod.c.age.maturity.0, mod.c.age.maturity.1)
+
+
+  #max_sbt_temp_change_abs and             0.155462 0.0127  4515.642
+      #                       tl      -0.36865 0.000158	
+
+#interaction?
+mod.c.age.maturity.2 <- glmer(col ~ max_sbt_temp_change_abs * age.maturity + (1|reg) + (1|year_factor), family = binomial, data = spp_master_ztemp_seus_buoy.traits.na.age.maturity)
+summary(mod.c.tl.2)
+  #yes, appears that trophic level impacts interaction with temperature (p=0.003700), and it's the best model, AICc = 4509.615
+
+AICc(mod.c.age.maturity.0, mod.c.age.maturity.1, mod.c.age.maturity.2)
+
+#what about only age maturity?
+mod.c.age.maturity.3 <- glmer(col ~ age.maturity + (1|reg) + (1|year_factor), family = binomial, data = spp_master_ztemp_seus_buoy.traits.na.age.maturity)
+AICc(mod.c.age.maturity.3) 
+  #better with temperature as well
+
+```
+
+Let's look at some other traits maybe?
+  Trophic level? (tl)
+  
+Colonization Trophic Level
+```{r colonization with trophic level}
+hist(spp_master_ztemp_seus_buoy.traits$tl)
+
+
+#First, how does this model do with only rows that we actually have trait data for?
+spp_master_ztemp_seus_buoy.traits.na.tl <- na.omit(spp_master_ztemp_seus_buoy.traits, cols="tl")
+spp_master_ztemp_seus_buoy.traits.na.tl[,year_factor := as.factor(year)]
+
+#does it hold up with this limited data set?
+mod.c.tl.0 <- glmer(col ~ max_sbt_temp_change_abs + (1|reg) + (1|year_factor), family = binomial, data = spp_master_ztemp_seus_buoy.traits.na.tl)
+summary(mod.c.tl.0)
+AICc(mod.c.tl.0)
+
+#max_sbt_temp_change_abs	      0.18510 0.0022	4527.742
+
+#max_sbt_temp_change_abs and age.max
+mod.c.tl.1 <- glmer(col ~ max_sbt_temp_change_abs + tl + (1|reg) + (1|year_factor), family = binomial, data = spp_master_ztemp_seus_buoy.traits.na.tl)
+summary(mod.c.tl.1)
+AICc(mod.c.tl.0, mod.c.tl.1)
+
+
+  #max_sbt_temp_change_abs and             0.155462 0.0127  4515.642
+      #                       tl      -0.36865 0.000158	
+
+#interaction?
+mod.c.tl.2 <- glmer(col ~ max_sbt_temp_change_abs * tl + (1|reg) + (1|year_factor), family = binomial, data = spp_master_ztemp_seus_buoy.traits.na.tl)
+summary(mod.c.tl.2)
+  #yes, appears that trophic level impacts interaction with temperature (p=0.003700), and it's the best model, AICc = 4509.615
+
+AICc(mod.c.tl.0, mod.c.tl.1, mod.c.tl.2)
+
+#what about only trophic level?
+mod.c.tl.3 <- glmer(col ~ tl + (1|reg) + (1|year_factor), family = binomial, data = spp_master_ztemp_seus_buoy.traits.na.tl)
+AICc(mod.c.tl.3) # 4522.709
+  #better with temperature as well
+
+#one more... what about both tl and max age? are they correlated? they should be
+
+lm <- lm(spp_master_ztemp_seus_buoy.traits$tl ~ spp_master_ztemp_seus_buoy.traits$age.max)
+summary(lm)
+plot(spp_master_ztemp_seus_buoy.traits$tl, spp_master_ztemp_seus_buoy.traits$age.max)
+```
+
+Split by region?
+  build individual models in regions? or make different plots for different regions?
+```{r regional differences in col and ext}
+#total counts in each region
+spp_master_ztemp_seus_buoy %>%
+  group_by(reg) %>%
+  summarise(n())
+
+spp_master_ztemp_seus_buoy %>%
+  group_by(reg) %>%
+  summarise(sum(col)/n()) #quite even percents, NEUS a little high at 8% events are colonizations
+
+spp_master_ztemp_seus_buoy %>%
+  group_by(reg) %>%
+  summarise(sum(col)) #NEUS and EBS both high, AI very small 
+
+spp_master_ztemp_seus_buoy %>%
+  group_by(reg) %>%
+  summarise(sum(now_ext)/n()) #again, NEUS is very high, all others similar
+
+spp_master_ztemp_seus_buoy %>%
+  group_by(reg) %>%
+  summarise(sum(now_ext)) #Again, EBS, NEUS, and SA all high... why more events in these regions?
+```
+  
+Age at maturity
+```{r age at maturity}
+spp_master_ztemp_seus_buoy.traits.na.age.maturity <- na.omit(spp_master_ztemp_seus_buoy.traits, cols="age.maturity")
+ #to do
+
+```
+
