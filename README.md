@@ -16,6 +16,8 @@ Affiliations:
 
 This repository provides code to replicate analyses in the above publication. Raw species observation data from US and Canada trawl surveys can be accessed from [Ocean Adapt](https://oceanadapt.rutgers.edu/). Temperature data are from the [Simple Ocean Data Assimilation 2.2.4 and 3.3.1](https://www.soda.umd.edu/).
 
+These analyes explore whether temperature and species traits can be used to predict arrivals into new regions, and departures from previously inhabited regions for a diverse array of finfish and invertebrates in North American shelf regions. Additionally, these analyses consider whether arrivals and departures are responding similarly to temperature and trait values, and at the same time. 
+
 Road Map
 
 1. Access spp observation data from [Ocean Adapt](https://oceanadapt.rutgers.edu/). Clean and process using methods from [trawlDiversity](https://github.com/rBatt/trawlDiversity). Begin with spp_master.RData file. 
