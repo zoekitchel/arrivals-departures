@@ -32,8 +32,8 @@ Road Map
 
 Figures
 
-- Figure 1
-- Figure 2
+- [Figure 1](https://github.com/zoekitchel/colonization-extinction/blob/master/figures/Figure1/theoretical_1.pdf).
+- [Figure 2](https://github.com/zoekitchel/colonization-extinction/blob/master/figures/Figure2/region_examples_2.pdf).
 - Figure 3: [figures/Figure3/Figure3_code.Rmd](https://github.com/zoekitchel/colonization-extinction/blob/master/figures/Figure3/Figure3_code.Rmd).
 - Figure 4: [figures/Figure4/Figure4_code.Rmd](https://github.com/zoekitchel/colonization-extinction/blob/master/figures/Figure4/Figure4_code.Rmd).
 - Figure 5: 
