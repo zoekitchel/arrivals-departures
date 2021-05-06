@@ -35,14 +35,14 @@ I have already converted NetCDF files to grd raster files.
 At this point, don't know difference between gri and grd. But, gri is 68.5 MB and .grd is 35.7 KB
 
 ```{r load netcdf now rasterbrick files}
-soda_bottom <- brick("col_ext/soda_bottom_sep2019.gri")
-soda_surface <- brick("col_ext/soda_surface_sep2019.gri")
+soda_bottom <- brick(here::here("Data","Temperature","SODA","soda_bottom_sep2019.gri"))
+soda_surface <- brick(here::here("Data","Temperature","SODA","soda_surface_sep2019.gri"))
 
 ```
 
 Generating coordinates I need to extract, and then average
 ```{r generating coordinates to extract from hauls}
-load("col_ext/hauls_catch_Dec2017 1.RData")
+load(here::here("Data","Spp_observations","hauls_catch_Dec2017 1.RData"))
 hauls <- data.table(hauls)
 cols <- c("lat", "lon", "region")
 latlongyear <- hauls[, cols, with = F]
@@ -58,9 +58,7 @@ SET COORDINATE SYSTEM
 ```{r set coordinate system}
 locations <- SpatialPoints(cbind(latlongyear.u$lon, latlongyear.u$lat), 
                             proj4string=CRS("+proj=longlat +datum=WGS84 +ellps=WGS84 +towgs84=0,0,0"))
-jpeg("plots.jpg")
-plot(locations)
-dev.off()
+
 ```
 
 Now, let's extract values 
@@ -76,6 +74,12 @@ latlon_temp_values_sst <- cbind(latlongyear.u, temp_values_sst)
 
 TROUBLE SHOOTING
 #which rows are NA?
+```{r omit missing values}
+#omit rows without values
+latlon_temp_values_sbt_naomit  <- na.omit(latlon_temp_values_sbt) #only 14 values missing, ignore
+latlon_temp_values_sst_naomit  <- na.omit(latlon_temp_values_sst) #only 14 values missing, ignore
+
+```
 
 latlon_temp_values_sbt[is.na(X2002.07.01),]
 #no data from 1980 ONWARDS for DFO_SoGulf
@@ -102,16 +106,16 @@ latlon_temp_values_sbt[is.na(X2002.07.01),]
 
 -----
 
-I need a data.table in long format. This (sometimes) takes a while.
+I need a data.table in long format. This can take a while.
 
 ```{r melt temp data}
 #surface
-system.time(df_long_sst <- melt(latlon_temp_values_sst, measure.vars = 4:ncol(latlon_temp_values_sst),
+system.time(df_long_sst <- melt(latlon_temp_values_sst_naomit, measure.vars = 4:ncol(latlon_temp_values_sst_naomit),
                variable.name = "dateID", value.name = "temp")
 )
 
 #bottom
-system.time(df_long_sbt <- melt(latlon_temp_values_sbt, measure.vars = 4:ncol(latlon_temp_values_sbt),
+system.time(df_long_sbt <- melt(latlon_temp_values_sbt_naomit, measure.vars = 4:ncol(latlon_temp_values_sbt_naomit),
                variable.name = "dateID", value.name = "temp")
 )
 
@@ -151,10 +155,9 @@ First is to average over all points in a region for every month/year combo. This
   soda_sbt_monthavg <- df_long_sbt[,list(sbt_mean=mean(temp,na.rm=TRUE)),by=c("region", "year", "month")]
   
   #good time to save
+saveRDS(soda_sst_monthavg, here::here("Data","Temperature","SODA","soda_sst_month_avg.rds"))
+saveRDS(soda_sbt_monthavg, here::here("Data","Temperature","SODA","soda_sbt_month_avg.rds"))
 
-save(soda_sst_monthavg, soda_sbt_monthavg, file = "col_ext/soda_avg_monthly_temps.Rdata")
-
-#for some reason, we're getting NA's for DFO_SoGulf and AFSC_GOA
 ```
 
 It seems as though the best way to speak to the trawls data set and ask it to look for a specific year/month and then go back from that date by a specified interval is to turn all months into julian months, to eliminate year variable.
@@ -198,20 +201,15 @@ hauls <- hauls[year_month_key, nomatch = 0, on = c(year = 'year', month = 'month
 
 Now, I have to start taking averages.
 First, average over all GPS points in a region for a given year and month (this gives us avg temp per region per month)
-Second, group by year, find mean in a year
-Second, group by year, max in each year
-Second, group by year, min in each year
-Third, find difference between min and max for each year
-
-This being said, I think I should think more carefully than this. I need to look a mean, min, max for a year BEFORE the month of the trawl.. this will be a little more complicated than how I've been doing it for sure. 
-
-It also means I have to keep this mega file, and look on demand for temp data, which may not be possible. 
+Second, group by year, find mean in a year (avg monthly avg temp)
+Third, group by year, max in each year (max monthly avg temp)
+Fourth, group by year, min in each year (min monthly avg temp)
+Fifth, find difference between min and max for each year (seasonality between warmest and coolest monthly avg)
 
 For each haul, look at haul month, and then take data from 12 months before that date. 
 
 ```{r averaging temperature values}
-#hauls to have ready to go for this step
-save(hauls, file="col_ext/hauls_10-01.Rdata")
+
 #turn region into factor in hauls datatable
 hauls$region <- as.factor(hauls$region)
 
@@ -303,6 +301,8 @@ hauls$region <- as.factor(hauls$region)
       
       #loop to make new column names
       hauls[ ,abs.change.lag.sbt.col.names[1:36]:=numeric(.N) ]
+      
+setkey(hauls, month_julian)
   
 #now, loop to fill these new columns
 for (i in 1:nrow(hauls)) {
@@ -512,8 +512,11 @@ for (i in 1:nrow(hauls)) {
     print(paste(i, nrow(hauls), sep = "/"))
 
 }
-      
+ 
+
+#not sure I have to do this, because I just need 12 months before earliest haul in a region in each year, these values don't actually need to be haul specific
+
 #this takes 2 days to run
-save(hauls, file = "hauls_fulltempdata.Rdata")
+save(hauls, file = here::here("Data","Tempereature","SODA","hauls_fulltempdata.Rdata"))
       
 ```

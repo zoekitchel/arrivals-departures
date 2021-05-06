@@ -11,3 +11,6 @@ latlong_temp_values.Rdata
 SODA_montly_data_beforesplit.R
 hauls_fulltempdata.Rdata
 hauls_catch_Dec2017 1.RData
+soda_bottom_sep2019.gri
+soda_surface_sep2019.gri
+date_ssttemp_avg_SODA.Rdata

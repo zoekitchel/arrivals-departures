@@ -1,0 +1,45 @@
+---
+title: "Link SODA Temp to Spp_Master"
+output: html_notebook
+---
+
+```{r setup}
+library(data.table)
+load(here::here("Data","Temperature","SODA","hauls_fulltempdata.Rdata"))
+load(here::here("Data","Spp_master","spp_master.RData"))
+```
+
+Link species data from spp_master to temperature data
+
+```{r link species data to temp data}
+#match region names between two data tables
+reg <- levels(as.factor(spp_master$reg))
+region <- c("AFSC_Aleutians","AFSC_EBS", "SEFSC_GOMex", "AFSC_GOA", "NEFSC_NEUS", "DFO_Newfoundland", "SCDNR_SEUS", "DFO_ScotianShelf", "AFSC_WCTri")
+regions.dt <- data.table(reg, region)
+
+hauls <- hauls[regions.dt, nomatch = 0, on = c("region")]
+
+hauls[, reg := as.factor(reg)] #make region a factor in hauls
+
+```
+
+I currently have data from 12 months before each trawl event. This isn't appropriate, as my observations of arrivals and departures is per year, not per season or trawl. FOR NOW (before I speak with Malin, update spoke to Malin he agreed that this worked), I will just use earliest month in each year. 
+
+```{r only keep earlier year temp data}
+#keep one line of data for each year/region combo, and pick it based on smaller month value
+hauls2 <- hauls[hauls[, .I[1], by = c("year", "region")]$V1]
+cols <- c(5,38:286) #year, temperature, reg
+hauls2.r <- hauls2[, ..cols] #.. pulls in variable vs column name
+
+```
+
+
+```{r combine species data with temp data}
+#make sure data type for reg and year in both are consistent
+hauls2.r$year <- as.numeric(as.character(hauls2.r$year))
+spp_master[, reg := as.factor(reg)]
+#r combine species data with temp data
+spp_master_ztemp <- spp_master[hauls2.r, nomatch = 0, on = c("reg", "year")]
+head(spp_master_ztemp)
+saveRDS(spp_master_ztemp, here::here("Data","Spp_master","spp_master_ztemp.Rdata"))
+```
