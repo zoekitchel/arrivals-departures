@@ -38,11 +38,14 @@ maxdepth
 mindepth
 ```
 
-We need to follow Jim's lead,  and use SODA 2.2 for pre1980,  and then SODA 3.3 for post1980. Unfortunately,  they're accessible in different ways. We will start with1980+
+We need to follow Jim's lead (Morley et al. 2019),  and use SODA 2.2.4 for pre1980,  and then SODA 3.3.1 for post1980. Unfortunately,  they're accessible in different ways. We will start with 1980+ (SODA 3.3.1).
+
+NCO and CDO packages must be installed. For local install, we recommend using Miniconda. 
+
+SODA data was pulled from web on remote server, accessed through terminal. 
 
 ```{bash import SODA post1980}
-#install nco
-conda install -c conda-forge nco
+
 #make text file from https://www.atmos.umd.edu/~ocean/index_files/soda3.3.1_mn_ocean_reg.txt
 #add "/ocean"after regrided error on their part
 
@@ -50,12 +53,10 @@ wget-i soda3.3.1_mn_ocean_reg_import.txt
 
 ```
 
-This takes a while,  as it's100 gb of data and no way to narrow down beforehand as far as I can tell. 
+This takes a while,  as it's 100 GB of data.
 **Downloaded: 36 files, 118G in 46m13s 43.6 MB/s**
 
-```{bash extract just top/bottom layers from1980 to 2015 for each yearly file}
-#bottom
-for i in `cat soda3.3.1_mn_ocean_reg_import.txt`;do ncks -d depth,-1 "${i}" "${i%.*}_bottom.nc";done
+```{bash extract just top layer from 1980 to 2015 for each yearly file}
 
 #surface
 for i in `cat soda3.3.1_mn_ocean_reg_import.txt`;do ncks -d depth,0 "${i}" "${i%.*}_surface.nc";done #in python, 0 is the first dimension
@@ -64,8 +65,8 @@ for i in `cat soda3.3.1_mn_ocean_reg_import.txt`;do ncks -d depth,0 "${i}" "${i%
 
 Seeing now that these files in their current state actually contain multiple variables, and I only want one temp
 ```{bash extracting only temp from 1980 to 2015}
-#bottom
-for i in `cat soda3.3.1_mn_ocean_reg_import.txt`; do ncks -v temp -O "${i%.*}_bottom.nc" "${i%.*}_sbt.nc";done
+#bottom (for now, this is all depths, but will reduce once in R)
+for i in `cat soda3.3.1_mn_ocean_reg_import.txt`; do ncks -v temp -O "${i}" "${i%.*}_sbt.nc";done
 #surface
 for i in `cat soda3.3.1_mn_ocean_reg_import.txt`; do ncks -v temp -O "${i%.*}_surface.nc" "${i%.*}_sst.nc";done
 ```
@@ -87,7 +88,8 @@ But, currently, this 3.3.1 data is in 0-360, or technically 0.25-359.75 which is
 To match what we will extract from 2.2.4, we need -189.75E and -43.25E. So, we need to keep 170.25-316.75**
 
 Let's crop into two pieces, and then remerge.
-Crop to correct lat lon
+
+Crop to correct lat lon.
 ```{bash crop points to those we actually need from 0-360 from 3.3.1}
 #surface
 ncks -O -d latitude,24.25,62.25 -d longitude,170.25,316.75 soda3.3.1_1980_2015_sst.nc soda3.3.1_1980_2015_sst_crop.nc
@@ -111,24 +113,24 @@ ncap2 -O -s 'longitude=longitude-360' soda3.3.1_1980_2015_sbt_crop.nc soda3.3.1_
 
 
 Change names of dimensions to match earlier time files
-```{bash change names of dimensions and variables for1980+}
+```{bash change names of dimensions and variables for 1980+}
 #surface
 ncrename -d latitude,lat -v latitude,lat soda3.3.1_1980_2015_sst_final.nc
 ncrename -d longitude,lon -v longitude,lon soda3.3.1_1980_2015_sst_final.nc
+
 #bottom
 ncrename -d latitude,lat -v latitude,lat soda3.3.1_1980_2015_sbt_final.nc
 ncrename -d longitude,lon -v longitude,lon soda3.3.1_1980_2015_sbt_final.nc
 ```
-*Done with1980-2015*
+*Done with 1980-2015 from SODA 3.3.1*
 
 ----------
-Malin recommended extracting bottom temperature by extracting from given depth value at each GPS location from trawl rather than trying to create a bottom layer, so I will also merge but keep all depths, so I will also try this way.Surface is fine, but I have to make the bottom layer in a different way.
 
 Maximum depth = 1504 meters, so only up to 1625.7 in SODA data
 ```{bash limit to depths included in trawl survey 3.3.1}
 #limit depth to 1625.7 (closest to max in trawl survey)
 for i in `cat soda3.3.1_mn_ocean_reg_import.txt`;do ncks -O -d depth,0.,1625.7 "${i}" "${i%.*}_bottom_trawl.nc";done
-#I should keep this depth max even if I don't use Malin's recommendation because bottom temperature below this point (deepest trawl) is illogical
+#I should keep this depth max because bottom temperature below this point (deepest trawl) is illogical
 
 #only look at temperature variable
 for i in `cat soda3.3.1_mn_ocean_reg_import.txt`; do ncks -v temp -O "${i%.*}_bottom_trawl.nc" "${i%.*}_sbt_trawl.nc";done
@@ -154,21 +156,30 @@ Now,  we will import netcdf data for pre1980 from SODA 2.4.
 
 Unfortunately,  It looks like I'm going to have to import files one by one for chunks of depth.
 
-Text file with links: /Scratch/zoek_scratch/soda2.2.4_mn_ocean_reg.txt
+Text file with links: soda2.2.4_mn_ocean_reg.txt
 
 In order to give a buffer and correctly download from iridl.ldeo.columbia.edu, use -190E- -43E
 SODA 2.2.4 gives -189.75E and -43.25E which is equal to 189.75W and 43.25W OR 170.25E and -43.25E
 
 I made text file in amphiprion to bulk download `wget-i soda2.2.4_mn_ocean_reg.txt--no-check-certificate` DO THIS
 file names going in as data.nc.x etc.
-5.01-70.02: data.nc
+5.01-70.02: data.nc 
 82.92-197.79: data.nc.1
 229.48-729.35: data.nc.2
 918.37-2375.0: data.nc.3
 2625.0-4375.0: data.nc.4
 4625.0-5375.0: data.nc.5
+```
 
-```{bash merge SODA files pre1980}
+
+```{bash import 2.2.4 data using txt file}
+
+wget-i soda2.2.4_mn_ocean_reg.txt--no-check-certificate
+
+```
+
+Merge depth chunks
+```{bash merge SODA files pre 1980}
 #merge all depth chunks
 cdo merge data.n* data.pre1980.nc
 
@@ -178,6 +189,7 @@ ncks -d depth,-1 data.pre1980.nc soda2.2.4_1953_1979_sbt.nc #NCO ncks with a neg
 #only surface layer
 ncks -d depth,1 data.pre1980.nc soda2.2.4_1953_1979_sst.nc
 ```
+
 Get rid of depth dimension for surface temp files
 ```{bash delete depth dimension and variable for surface temp files}
 ncwa -a depth soda2.2.4_1953_1979_sst.nc soda2.2.4_1953_1979_sst.nc
@@ -187,6 +199,7 @@ ncks -x -v depth soda2.2.4_1953_1979_sst.nc soda2.2.4_1953_1979_sst.nc
 ncks -x -v depth soda3.3.1_1980_2015_sst_final.nc soda3.3.1_1980_2015_sst_final.nc
 
 ```
+
 We have to match time units, soda2.2.4 in 360 day and 3.3.1 in gregorian
 START HERE, maybe import first, and then play with time
 ```{bash fixing time units}
@@ -196,24 +209,15 @@ cdo -a setcalendar,standard soda2.2.4_1953_1979_sst.nc soda2.2.4_1953_1979_sst_t
 cdo -a setcalendar,standard soda2.2.4_1953_1979_sbt.nc soda2.2.4_1953_1979_sbt_timefix.nc
 ```
 ----------
-Malin recommended extracting bottom temperature by extracting from given depth value at each GPS location from trawl rather than trying to create a bottom layer, so I will also merge but keep all depths, so I will also try this way.Surface is fine, but I have to make the bottom layer in a different way.
 
 Maximum depth = 1504 meters, so only up to 1625.7 in SODA data
 ```{bash limit to depths included in trawl survey 2.2.4}
 #limit depth to 1625.7 (closest to max in trawl survey)
 ncks -O -d depth,0.,1625.7 data.pre1980.nc soda2.2.4_1953_1979_sbt_trawl_final.nc
-#I should keep this depth max even if I don't use Malin's recommendation because bottom temperature below this point (deepest trawl) is illogical
+#I should keep this depth max because bottom temperature below this point (deepest trawl) is illogical
 ```
 
 ---------
-
-
-Can't figure the time thing out, I will upload what I have.
-soda3.3.1_1980_2015_sst_final_timefix.nc*
-soda3.3.1_1980_2015_sbt_trawl_final_timefix.nc*
-soda2.2.4_1953_1979_sst.nc
-soda2.2.4_1953_1979_sbt_trawl_final.nc
-
 
 *see below for timefix specifics
 ```{bash enumerating 3.3.1 months sequentially}
@@ -223,10 +227,6 @@ ncap2 -s 'time=array(241.5,1,$time)' soda3.3.1_1980_2015_sst_final.nc soda3.3.1_
 ncap2 -s 'time=array(241.5,1,$time)' soda3.3.1_1980_2015_sbt_trawl_final.nc soda3.3.1_1980_2015_sbt_trawl_final_timefix.nc
 
 ```
-
-************
-
-I didn't use this link,  but it appears to be helpful. [ERDAPP]https://coastwatch.pfeg.noaa.gov/erddap/griddap/erdSoda331oceanmday.html.
 
 ************
 
