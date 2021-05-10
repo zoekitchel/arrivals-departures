@@ -7,7 +7,7 @@ output: html_notebook
 library(data.table)
 library(here)
 
-load(here::here("Data","Spp_master", "spp_master_ztemp_seus_buoy.traits.RData"))
+spp_master_ztemp_seus_buoy.traits <- readRDS(here::here("Data","Spp_master", "spp_master_ztemp_seus_buoy.traits.rds"))
 ```
 
 Scaling temperature and trait values
@@ -27,7 +27,7 @@ scaled_cols <- grep("*_scaled", names(spp_master_ztemp_seus_buoy.traits_varsonly
 #merge new columns back with spp_master_ztemp_seus_buoy
 spp_master_ztemp_seus_buoy.traits_scaled <- cbind(spp_master_ztemp_seus_buoy.traits, spp_master_ztemp_seus_buoy.traits_varsonly[,scaled_cols, with = FALSE])
 
-save(spp_master_ztemp_seus_buoy.traits_scaled, file = here::here("Data","Spp_master", "spp_master_ztemp_seus_buoy.traits_scaled.RData"))
+saveRDS(spp_master_ztemp_seus_buoy.traits_scaled, file = here::here("Data","Spp_master", "spp_master_ztemp_seus_buoy.traits_scaled.rds"))
 ```
 
 

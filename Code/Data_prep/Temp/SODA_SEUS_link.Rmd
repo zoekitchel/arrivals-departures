@@ -1,0 +1,42 @@
+---
+title: "Linking SODA and SEUS Buoy Data for Temperature"
+output: html_notebook
+---
+
+This code links SODA data to SEUS buoy data
+
+```{r setup}
+library(data.table)
+
+spp_master_ztemp <- readRDS(here::here("Data","Spp_master","spp_master_ztemp.rds"))
+seus_temp_final_frombuoys <- readRDS(here::here("Data","Temperature","SEUS_buoy", "seus_temp_final_frombuoys.rds"))
+
+
+```
+
+Link SEUS temp data
+```{r new SEUS temp data}
+
+colnames(spp_master_ztemp[,45:292]) == colnames(seus_temp_final_frombuoys[,3:250]) #check to make sure column names are right
+
+spp_master_ztemp.nosa <- spp_master_ztemp[reg != "sa"] #remove southeast US
+
+spp_master_ztemp.saonly <- spp_master_ztemp[reg == "sa", 1:44] #only southeast US
+
+#make reg into character vector 
+spp_master_ztemp.saonly[,reg := as.character(reg)]
+
+#set keys
+setkey(spp_master_ztemp.saonly, reg, year)
+setkey(seus_temp_final_frombuoys, reg, year)
+
+spp_master_ztemp.saonly.full <- spp_master_ztemp.saonly[seus_temp_final_frombuoys, on = c("reg","year")]
+
+#final merge back with other regions
+spp_master_ztemp_seus_buoy <- rbind(spp_master_ztemp.nosa, spp_master_ztemp.saonly.full)
+
+save(spp_master_ztemp_seus_buoy, file = "spp_master_ztemp_seus_buoys.RData")
+saveRDS(spp_master_ztemp_seus_buoy,file = here::here("Data","Spp_master","spp_master_ztemp_seus_buoy.rds"))
+
+```
+

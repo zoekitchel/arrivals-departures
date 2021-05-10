@@ -3,6 +3,8 @@ title: "SEUS Temp Data from Buoys"
 output: html_notebook
 ---
 
+This code models SEUS temp through time from NOAA temp buoys. Output: seus_temp_final_frombuoys.RData
+
 ```{r setup}
 library(data.table)
 library(ggplot2)
@@ -23,6 +25,7 @@ SC_old <- fread(here::here("Data","Temperature","SEUS_buoy","NOAA_buoy_data","41
 charleston <- fread(here::here("Data","Temperature","SEUS_buoy","NOAA_buoy_data","41004_charleston.csv"))
 savannahlight <- fread(here::here("Data","Temperature","SEUS_buoy","NOAA_buoy_data","svls1_savannahlight.csv"))
 wrightsvilleNC <- fread(here::here("Data","Temperature","SEUS_buoy","NOAA_buoy_data","41037_wrightsvilleNC.csv"))
+
 ```
 
 ```{r subset each}
@@ -356,8 +359,9 @@ colnames(seus_temp_bottom) <- bottom_colnames[2:125]
 
 seus_temp_final <- cbind(seus_temp_surface[,.(reg)], seus_temp_surface[,1:125], seus_temp_bottom)
 
-save(seus_temp_final, file  = "seus_temp_final_frombuoys.RData")
-load("seus_temp_final_frombuoys.RData")
+seus_temp_final_unique <- unique(seus_temp_final)
+
+saveRDS(seus_temp_final_unique, here::here("Data","Temperature","SEUS_buoy", "seus_temp_final_frombuoys.rds"))
 
 #plot avg temp over time
 

@@ -17,7 +17,7 @@ library(data.table)
 library(ggplot2)
 library(plyr)
 
-load(here::here("Data","Spp_master","spp_master_ztemp_seus_buoy.traits_scaled.RData"))
+spp_master_ztemp_seus_buoy.traits_scaled <- readRDS(here::here("Data","Spp_master","spp_master_ztemp_seus_buoy.traits_scaled.rds"))
 ```
 
 I will be looking at:
@@ -241,6 +241,7 @@ arrival_interaction_temp_trait_importance <- sum(arrival_model_comparisons_trait
 
 #save this table
 saveRDS(arrival_model_comparisons_traits.lag9max, here:here("Model_results","Traits","arrival_models_traits_with_likelihoods.rds"))
+saveRDS(arrival_model_comparisons_traits.lag9max, here:here("tables","arrival_models_traits_with_likelihoods.rds"))
 ```
 
 ```{r put RVIs for arrival into data table}
@@ -322,6 +323,7 @@ departure_interaction_temp_trait_importance <- sum(departure_model_comparisons_t
 
 #save this table
 saveRDS(departure_model_comparisons_traits.lag9max, here:here("Model_results","Traits","departure_models_traits_with_likelihoods.rds"))
+saveRDS(departure_model_comparisons_traits.lag9max, here:here("tables","departure_models_traits_with_likelihoods.rds"))
 ```
 
 ```{r put RVIs for extinction into data table}

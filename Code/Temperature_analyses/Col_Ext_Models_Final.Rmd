@@ -19,7 +19,7 @@ library(ggplot2)
 library(here)
 library(wesanderson) # to color plots
 
-load(here("Data","Spp_master", "spp_master_ztemp_seus_buoy_scaled.RData"))
+spp_master_ztemp_seus_buoy_scaled <- readRDS(here("Data","Spp_master", "spp_master_ztemp_seus_buoy_scaled.rds"))
 ```
 
 Running, and ranking arrival models without traits
@@ -145,7 +145,8 @@ arrival_seas_temp_importance <- sum(arrival_model_comparison_nomean[grep("seas",
 arrival_model_comparison_nomean_akaikeweights <- arrival_model_comparison_nomean
 
 saveRDS(arrival_model_comparison_nomean_akaikeweights, file = here("Model_results","arrival_model_comparison_nomean_akaikeweights.rds"))
-readRDS(file = here("Model_results","arrival_model_comparison_nomean_akaikeweights.rds"))
+saveRDS(arrival_model_comparison_nomean_akaikeweights, file = here("tables","arrival_model_comparison_nomean_akaikeweights.rds"))
+arrival_model_comparison_nomean_akaikeweights <- readRDS(file = here("Model_results","arrival_model_comparison_nomean_akaikeweights.rds"))
 
 ```
 
@@ -235,7 +236,9 @@ departure_seas_temp_importance <- sum(departure_model_comparison_nomean[grep("se
 departure_model_comparison_nomean_akaikeweights <- departure_model_comparison_nomean
 
 saveRDS(departure_model_comparison_nomean_akaikeweights, file = here("Model_results","departure_model_comparison_nomean_akaikeweights.rds"))
-readRDS(file = here("Model_results","departure_model_comparison_nomean_akaikeweights.rds"))
+saveRDS(departure_model_comparison_nomean_akaikeweights, file = here("tables","departure_model_comparison_nomean_akaikeweights.rds"))
+departure_model_comparison_nomean_akaikeweights <- readRDS(file = here("Model_results","departure_model_comparison_nomean_akaikeweights.rds"))
+
 ```
 
 Relative Variable Importance for Pairs of Transformation and Metric Predicting departures

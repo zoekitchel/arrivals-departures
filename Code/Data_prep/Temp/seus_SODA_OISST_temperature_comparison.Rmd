@@ -31,7 +31,7 @@ OISST.sst_adj <- lapply(OISST.sst, rotate)
 
 Extract specific GPS values for SE US sampled during during study period
 ```{r SE US temp values}
-load("trawl_coordinates_1996-2000.RData")
+load(here::here("Data","Spp_observations","trawl_coordinates_1996-2000.RData"))
 
 seus_points <- gpspointsonly_quarterdegreeround[region == "SCDNR_SEUS"]
 
@@ -101,7 +101,7 @@ ggplot(data = SEUS_temp, aes(x=year, y = sst_avg)) +
 Compare to SODA temp values
 
 ```{r soda versus OISST}
-load("spp_master_ztemp.Rdata")
+spp_master_ztemp <- readRDS(here::here("Data","Spp_master","spp_master_ztemp.rds"))
 
 ggplot(data = SEUS_temp, aes(x=year, y = sst_avg)) +
   geom_point(color = "red") +

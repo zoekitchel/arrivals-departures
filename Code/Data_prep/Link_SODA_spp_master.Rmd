@@ -41,5 +41,5 @@ spp_master[, reg := as.factor(reg)]
 #r combine species data with temp data
 spp_master_ztemp <- spp_master[hauls2.r, nomatch = 0, on = c("reg", "year")]
 head(spp_master_ztemp)
-saveRDS(spp_master_ztemp, here::here("Data","Spp_master","spp_master_ztemp.Rdata"))
+saveRDS(spp_master_ztemp, here::here("Data","Spp_master","spp_master_ztemp.rds"))
 ```
