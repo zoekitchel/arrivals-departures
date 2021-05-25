@@ -6,9 +6,18 @@ output: html_notebook
 ```{r setup}
 library(ggplot2)
 library(data.table)
+library(here)
 
-load("spp_master_ztemp_seus_buoys.Rdata")
+spp_master_ztemp_seus_buoy <- readRDS(here::here("Data","Spp_master","spp_master_ztemp_seus_buoy.rds"))
 ```
+
+Rename Regions
+```{r}
+levels(spp_master_ztemp_seus_buoy[,reg])
+
+spp_master_ztemp_seus_buoy[,reg:= factor(reg, labels = c("Aleutian Islands", "Eastern Bering Sea", "Gulf of Mexico", "Gulf of Alaska", "Northeast US", "Newfoundland", "Southeast US", "Scotian Shelf", "West Coast US"))]
+```
+
 
 ```{r temp in all regions over time}
 ggplot(data = spp_master_ztemp_seus_buoy, aes(x=year)) +
@@ -16,19 +25,23 @@ ggplot(data = spp_master_ztemp_seus_buoy, aes(x=year)) +
   geom_point(aes(y = seas_sbt_temp), col = "slategrey") +
   geom_point(aes(y = min_sbt_temp), col = "blue") +
   facet_wrap(~reg, scales = "free") +
-  labs(y = "Bottom Temperature (˚C)", x = "Year") +
-  theme_bw()
+  labs(y = expression("Bottom Temperature ("*~degree*C*")"), x = "Year") +
+  theme_bw() +
+  theme(plot.margin = margin(1,1,1,1, "cm"))
 
 ggsave(file = "temp_over_time_bottom_seusbuoy.jpg")
+ggsave(file = "temp_over_time_bottom_seusbuoy.eps")
 
 ggplot(data = spp_master_ztemp_seus_buoy, aes(x=year)) +
   geom_point(aes(y = max_sst_temp), col = "red") +
   geom_point(aes(y = seas_sst_temp), col = "slategrey") +
   geom_point(aes(y = min_sst_temp), col = "blue") +
   facet_wrap(~reg, scales = "free") +
-  labs(y = "Surface Temperature (˚C)", x = "Year") +
-  theme_bw()
+  labs(y = expression("Surface Temperature ("*~degree*C*")"), x = "Year") +
+  theme_bw() +
+  theme(plot.margin = margin(1,1,1,1, "cm"))
 
-ggsave(file = "temp_over_time_surface_seusbuoy›.jpg")
+ggsave(file = "temp_over_time_surface_seusbuoy.jpg")
+ggsave(file = "temp_over_time_surface_seusbuoy.eps")
 ```
 
