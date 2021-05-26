@@ -7,12 +7,12 @@ output: html_notebook
 library(data.table)
 library(ggplot2)
 library(here)
-load(here("Data","Spp_master", "spp_master_ztemp_seus_buoys.RData")) #load in processed presence/absence data
+spp_master_ztemp_seus_buoy <- readRDS(here::here("Data","Spp_master", "spp_master_ztemp_seus_buoy.rds")) #load in processed presence/absence data
 ```
 
 ```{r data setup}
 #rename region factors for plotting
-spp_master_ztemp_seus_buoy[, region := factor(reg, labels = c("Aleutian Islands", "Eastern Bering Sea", "Gulf of Mexico", "Gulf of Alaska", "Northeast US", "Newfoundland","Southeast US","Scotian Shelf" ,"West Coast Triennial"))]
+spp_master_ztemp_seus_buoy[, region := factor(reg, labels = c("Aleutian Islands", "Eastern Bering Sea", "Gulf of Mexico", "Gulf of Alaska", "Northeast US", "Newfoundland","Southeast US","Scotian Shelf" ,"West Coast US"))]
 
 #make spp a factor
 spp_master_ztemp_seus_buoy[, spp := factor(spp)]
@@ -32,6 +32,7 @@ ggplot(spp_master_ztemp_seus_buoy, aes(as.factor(year), as.factor(spp))) +
         axis.ticks = element_blank())
 
 
-ggsave("region_presabs.eps", width = 10, height = 8, units = "in", path=here("figures","Supplemental"))
+ggsave("S3_region_presabs.eps", width = 10, height = 8, units = "in", path=here::here("figures","Supplemental"))
+ggsave("S3_region_presabs.jpg", width = 10, height = 8, units = "in", path=here::here("figures","Supplemental"))
 
 ```
