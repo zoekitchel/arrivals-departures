@@ -188,7 +188,6 @@ predicted_sst_seus_monthly <- predicted_sst_seus_monthly[year_month_key, on = c(
 
 ```
  
- 
 ```{r lags and change}
   #surface
     #raw
@@ -362,18 +361,19 @@ seus_temp_final <- cbind(seus_temp_surface[,.(reg)], seus_temp_surface[,1:125], 
 seus_temp_final_unique <- unique(seus_temp_final)
 
 saveRDS(seus_temp_final_unique, here::here("Data","Temperature","SEUS_buoy", "seus_temp_final_frombuoys.rds"))
+seus_temp_final <- readRDS(here::here("Data","Temperature","SEUS_buoy", "seus_temp_final_frombuoys.rds"))
 
 #plot avg temp over time
 
-ggplot(data = seus_temp_final, aes(x = year)) +
-  geom_line(aes(y = mean_sst_temp), color = "black") +
-  #geom_line(aes(y = max_sst_temp), color = "red") +
-  #geom_line(aes(y = min_sst_temp), color = "blue") +
-  labs(x = "Year", y = "Temperature (˚C)") +
+temp_avgs_over_time <- ggplot(data = seus_temp_final, aes(x = year)) +
+  geom_line(aes(y = seas_sst_temp), color = "black") +
+  geom_line(aes(y = max_sst_temp), color = "red") +
+  geom_line(aes(y = min_sst_temp), color = "blue") +
+  labs(x = "Year", y = paste("Temperature (\u00b0C)")) +
   #lims(y = c(15,30)) +
   theme_classic()
 
-
+ggsave(here::here("figures","Supplemental","seus_buoy_temp.eps"), height = 3, width = 8, unit = "in")
 
 ```
  
@@ -517,6 +517,7 @@ ggsave(here::here("figures","Supplemental", "FigureS1a.eps"))
 ```
 Merge figures for supplementary Figure S1
 ```{r supplementary figure S1}
+library(cowplot)
 (sup1_1 <- plot_grid(buoypoints, dates_over_time
                     +
                    theme(legend.position = "none")
