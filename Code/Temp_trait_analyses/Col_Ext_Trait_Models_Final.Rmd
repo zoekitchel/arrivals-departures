@@ -480,43 +480,44 @@ mod_arrival_reverse_scaled_agematurity <- lm(age.maturity ~ age.maturity_scaled,
 
 mod_arrival_forward_scaled_agematurity <- lm(age.maturity_scaled ~ age.maturity, data = spp_master_ztemp_seus_buoy.traits_scaled)
 
-age_match <- data.table(ages_we_want = c(1, 10, 50, 80))
-age_match[,age.maturity_scaled := ages_we_want * mod_col_forward_scaled_agematurity$coefficients[2]+mod_col_forward_scaled_agematurity$coefficients[1]]
+age_match <- data.table(ages_we_want = c(0.5, 1, 3, 15,80))
+age_match[,age.maturity_scaled := ages_we_want * mod_arrival_forward_scaled_agematurity$coefficients[2]+mod_arrival_forward_scaled_agematurity$coefficients[1]]
 
 #best predictor for fish only: max_sst_temp_change_abs_lag1_scaled as x axis
-temp_col_newdata <- runif(500,min(spp_master_ztemp_seus_buoy.traits_scaled$max_sst_temp_change_abs_lag1_scaled), max(spp_master_ztemp_seus_buoy.traits_scaled$max_sst_temp_change_abs_lag1_scaled))
+temp_arrival_newdata <- runif(500,min(spp_master_ztemp_seus_buoy.traits_scaled$max_sst_temp_change_abs_lag1_scaled), max(spp_master_ztemp_seus_buoy.traits_scaled$max_sst_temp_change_abs_lag1_scaled))
 
 temp_agematurity_newdata <- age_match[,age.maturity_scaled]
 
 
 temp_agemax_newdata <- mean(spp_master_ztemp_seus_buoy.traits_scaled$age.max_scaled, na.rm = T)
 
-col_newdata_traits <- expand.grid("max_sst_temp_change_abs_lag1_scaled" = temp_col_newdata, "age.maturity_scaled" = temp_agematurity_newdata, "age.max_scaled" = temp_agemax_newdata)
+arrival_newdata_traits <- expand.grid("max_sst_temp_change_abs_lag1_scaled" = temp_arrival_newdata, "age.maturity_scaled" = temp_agematurity_newdata, "age.max_scaled" = temp_agemax_newdata)
 
 
-preds <- predict(mod_col_trait, newdata = col_newdata_traits, re.form = NA, type = "response")
-preds_predictors <- data.table(cbind(col_newdata_traits, preds))
+preds <- predict(mod_arrival_trait, newdata = arrival_newdata_traits, re.form = NA, type = "response")
+preds_predictors <- data.table(cbind(arrival_newdata_traits, preds))
 preds_predictors <- preds_predictors[age_match, on = "age.maturity_scaled"]
 
 #I want x axis to be meaningful
-mod_col_reverse_scaledtemp <- lm(max_sst_temp_change_abs_lag1 ~ max_sst_temp_change_abs_lag1_scaled, data = spp_master_ztemp_seus_buoy.traits_scaled)
+mod_arrival_reverse_scaledtemp <- lm(max_sst_temp_change_abs_lag1 ~ max_sst_temp_change_abs_lag1_scaled, data = spp_master_ztemp_seus_buoy.traits_scaled)
 
 
-preds_predictors[,max_sst_temp_change_abs_lag1 := mod_col_reverse_scaledtemp$coefficients[2]*max_sst_temp_change_abs_lag1_scaled + mod_col_reverse_scaledtemp$coefficients[1] ]
+preds_predictors[,max_sst_temp_change_abs_lag1 := mod_arrival_reverse_scaledtemp$coefficients[2]*max_sst_temp_change_abs_lag1_scaled + mod_arrival_reverse_scaledtemp$coefficients[1] ]
 
 #reverse order of ages to match
-preds_predictors$ages_we_want <- factor(preds_predictors$ages_we_want, levels=c("80", "50", "10", "1"))
+preds_predictors$ages_we_want <- factor(preds_predictors$ages_we_want, levels=c("80", "15", "3", "1","0.5"))
 
 
-ggplot(data = preds_predictors, aes(x = max_sst_temp_change_abs_lag1, y = preds, color = as.factor(ages_we_want))) +
-  geom_line(size = 1.5) +
-  labs(colour="Age at Maturity", x = "Absolute change in maximum surface temperature\nexperienced a year previously (˚C)", y = "Probability of Arrival",title = "Predicted Probabilities of Arrival") +
+arrival_preds <- ggplot(data = preds_predictors, aes(x = max_sst_temp_change_abs_lag1, y = preds, color = as.factor(ages_we_want))) +
+  geom_line(size = 1) +
+  labs(colour="Age at\n Maturity", x = "Absolute change in maximum surface\ntemperature lagged 1 year (˚C)", y = "Probability of Arrival") +
   scale_y_continuous(breaks=c(0, 0.5, 1)) +
   theme_classic() +
   scale_color_manual(values = pal) +
-  theme(text=element_text(size = 14))
+  theme(text=element_text(size = 10))
 
-ggsave(path = "plots/marginal_effects", file = "predicted_probs_col_maxage.jpg")
+ggsave(path = here::here("figures/Figure5"), file = "predicted_probs_arrival_maxage.jpg")
+ggsave(path = here::here("figures/Figure5"), file = "predicted_probs_arrival_maxage.eps")
 
 
 #best predictor for all organisms: seasonality as x axis
@@ -550,7 +551,7 @@ ggplot(data = preds_predictors_seas, aes(x = seas_sst_temp, y = preds_seas, colo
   scale_y_continuous(breaks=c(0, 0.5, 1)) +
   theme_classic() +
   scale_color_manual(values = pal) +
-  theme(text=element_text(size = 14))
+  theme(text=element_text(size = 10))
 
 ggsave(path = "plots/marginal_effects", file = "predicted_probs_col_maxage_seas.jpg")
 
@@ -563,53 +564,55 @@ Best model from analyses with temperature only: seas_sst_temp_lag3_scaled
 
 ```{r predicted values extirpation}
 #best model with fish only 
-mod_ext_trait <- glmer(now_ext ~ max_sst_temp_scaled * age.maturity_scaled + age.max_scaled + (1|reg) + (1|spp), family = "binomial", data = extinction.reduced, nAGQ = 0)
+mod_departure_trait <- glmer(now_ext ~ max_sst_temp_scaled * age.maturity_scaled + age.max_scaled + (1|reg) + (1|spp), family = "binomial", data = departure.reduced, nAGQ = 0)
 
 #using best predictor for all species in model instead
-mod_ext_trait_allspp <- glmer(now_ext ~ seas_sst_temp_lag3_scaled * age.maturity_scaled + age.max_scaled + (1|reg) + (1|spp), family = "binomial", data = extinction.reduced, nAGQ = 0)
+mod_departure_trait_allspp <- glmer(now_ext ~ seas_sst_temp_lag3_scaled * age.maturity_scaled + age.max_scaled + (1|reg) + (1|spp), family = "binomial", data = departure.reduced, nAGQ = 0)
 
 #reverse to agematurity unscaled
-mod_ext_reverse_scaled_agematurity <- lm(age.maturity ~ age.maturity_scaled, data = spp_master_ztemp_seus_buoy.traits_scaled) 
+mod_departure_reverse_scaled_agematurity <- lm(age.maturity ~ age.maturity_scaled, data = spp_master_ztemp_seus_buoy.traits_scaled) 
 
-mod_ext_forward_scaled_agematurity <- lm(age.maturity_scaled ~ age.maturity, data = spp_master_ztemp_seus_buoy.traits_scaled)
+mod_departure_forward_scaled_agematurity <- lm(age.maturity_scaled ~ age.maturity, data = spp_master_ztemp_seus_buoy.traits_scaled)
 
-age_match <- data.table(ages_we_want = c(1, 10, 50, 80))
-age_match[,age.maturity_scaled := ages_we_want * mod_ext_forward_scaled_agematurity$coefficients[2]+mod_ext_forward_scaled_agematurity$coefficients[1]]
+age_match <- data.table(ages_we_want = c(0.5, 1, 3, 15,80))
+age_match[,age.maturity_scaled := ages_we_want * mod_departure_forward_scaled_agematurity$coefficients[2]+mod_departure_forward_scaled_agematurity$coefficients[1]]
 
 #best predictor for fish only: max_sst_temp_change_abs_lag1_scaled as x axis
-temp_ext_newdata <- runif(500,min(spp_master_ztemp_seus_buoy.traits_scaled$max_sst_temp_scaled), max(spp_master_ztemp_seus_buoy.traits_scaled$max_sst_temp_scaled))
+temp_departure_newdata <- runif(500,min(spp_master_ztemp_seus_buoy.traits_scaled$max_sst_temp_scaled), max(spp_master_ztemp_seus_buoy.traits_scaled$max_sst_temp_scaled))
 
 temp_agematurity_newdata <- age_match[,age.maturity_scaled]
 
 
 temp_agemax_newdata <- mean(spp_master_ztemp_seus_buoy.traits_scaled$age.max_scaled, na.rm = T)
 
-ext_newdata_traits <- expand.grid("max_sst_temp_scaled" = temp_ext_newdata, "age.maturity_scaled" = temp_agematurity_newdata, "age.max_scaled" = temp_agemax_newdata)
+departure_newdata_traits <- expand.grid("max_sst_temp_scaled" = temp_departure_newdata, "age.maturity_scaled" = temp_agematurity_newdata, "age.max_scaled" = temp_agemax_newdata)
 
 
-preds <- predict(mod_ext_trait, newdata = ext_newdata_traits, re.form = NA, type = "response")
-preds_predictors <- data.table(cbind(ext_newdata_traits, preds))
+preds <- predict(mod_departure_trait, newdata = departure_newdata_traits, re.form = NA, type = "response")
+preds_predictors <- data.table(cbind(departure_newdata_traits, preds))
 preds_predictors <- preds_predictors[age_match, on = "age.maturity_scaled"]
 
 #I want x axis to be meaningful
-mod_ext_reverse_scaledtemp <- lm(max_sst_temp ~ max_sst_temp_scaled, data = spp_master_ztemp_seus_buoy.traits_scaled)
+mod_departure_reverse_scaledtemp <- lm(max_sst_temp ~ max_sst_temp_scaled, data = spp_master_ztemp_seus_buoy.traits_scaled)
 
 
-preds_predictors[,max_sst_temp := mod_ext_reverse_scaledtemp$coefficients[2]*max_sst_temp_scaled + mod_ext_reverse_scaledtemp$coefficients[1] ]
+preds_predictors[,max_sst_temp := mod_departure_reverse_scaledtemp$coefficients[2]*max_sst_temp_scaled + mod_departure_reverse_scaledtemp$coefficients[1] ]
 
 #reverse order of ages to match
-preds_predictors$ages_we_want <- factor(preds_predictors$ages_we_want, levels=c("80", "50", "10", "1"))
+preds_predictors$ages_we_want <- factor(preds_predictors$ages_we_want, levels=c("80", "15", "3", "1","0.5"))
 
 
-ggplot(data = preds_predictors, aes(x = max_sst_temp, y = preds, color = as.factor(ages_we_want))) +
-  geom_line(size = 1.5) +
-  labs(colour="Age at Maturity", x = "Maximum surface temperature (˚C)", y = "Probability of Departure",title = "Predicted Probabilities of Departure") +
+
+departure_preds <- ggplot(data = preds_predictors, aes(x = max_sst_temp, y = preds, color = as.factor(ages_we_want))) +
+  geom_line(size = 1) +
+  labs(colour="Age at Maturity", x = "Maximum\nsurface temperature (˚C)", y = "Probability of Departure") +
   scale_y_continuous(breaks=c(0, 0.5, 1)) +
   theme_classic() +
   scale_color_manual(values = pal) +
-  theme(text=element_text(size = 14))
+  theme(text=element_text(size = 10))
 
-ggsave(path = "plots/marginal_effects", file = "predicted_probs_ext_maxage.jpg")
+ggsave(path = here::here("figures/Figure5"), file = "predicted_probs_departure_maxage.jpg")
+ggsave(path = here::here("figures/Figure5"), file = "predicted_probs_departure_maxage.eps")
 
 #___________
 #best predictor for all organisms: seasonality as x axis, lagged 3 years
@@ -648,3 +651,19 @@ ggplot(data = preds_predictors_seas, aes(x = seas_sst_temp_lag3, y = preds_seas,
 ggsave(path = "plots/marginal_effects", file = "predicted_probs_ext_maxage_seas.jpg")
 
 ```
+
+Merge marginal effects plots
+```{r}
+library(cowplot)
+mar_effects <- plot_grid(arrival_preds + theme(legend.position  = "none"),departure_preds + theme(legend.position = "none"), labels = c("a.","b."))
+
+legend  <- get_legend(arrival_preds)
+
+
+plot_grid(mar_effects, legend, nrow = 1, ncol = 2, rel_widths = c(8,1))
+
+ggsave(path = here::here("figures/Figure5"), file = "Figure5_margeffect.jpg")
+ggsave(path = here::here("figures/Figure5"), file = "Figure5_margeffect.eps")
+
+```
+
