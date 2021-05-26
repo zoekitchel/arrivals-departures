@@ -39,8 +39,19 @@ cor(spp_master_ztemp_seus_buoy.traits_scaled[,.(age.max_scaled, age.maturity_sca
 pairs(spp_master_ztemp_seus_buoy.traits_scaled[,.(age.max_scaled, age.maturity_scaled, tl_scaled, length.max_scaled)])
 
 ```
+What's the distribution of trait values?
+```{r unique trait values}
+spp_master_ztemp_seus_buoy.traits_scaled.unique <- unique(spp_master_ztemp_seus_buoy.traits_scaled[,.(spp, reg, age.maturity, age.max, tl, length.max)])
 
-Prep for dredge
+ggplot(spp_master_ztemp_seus_buoy.traits_scaled.unique, aes(x = age.maturity))  +
+  geom_histogram() +
+  theme_classic()
+
+summary(spp_master_ztemp_seus_buoy.traits_scaled.unique$age.maturity)
+```
+
+
+Prep for model runs
 ```{r prep for model runs}
 
 #temp scaled vars only
@@ -50,7 +61,7 @@ tempvars <- grep(".*temp.*scaled", names(spp_master_ztemp_seus_buoy.traits_scale
 #other reference and trait columns we need
 othervars_arrivals <- c("reg", "year", "col", "spp", "age.max_scaled", "age.maturity_scaled", "tl_scaled", "length.max_scaled")
 
-colstosaveforarrivals <- c(othervars_col, tempvars)
+colstosaveforarrivals <- c(othervars_arrivals, tempvars)
 
 #Arrival table
 arrival.reduced <- spp_master_ztemp_seus_buoy.traits_scaled[,colstosaveforarrivals, with = F] #reduces to columns we need
@@ -450,24 +461,24 @@ library(wesanderson)
 pal <- wes_palette("GrandBudapest1", 5, type = "continuous")
 
 #best model with fish only 
-mod_col_trait <- glmer(col ~ max_sst_temp_change_abs_lag1_scaled * age.maturity_scaled + age.max_scaled + (1|reg) + (1|spp), family = "binomial", data = colonization.reduced, nAGQ = 0)
+mod_arrival_trait <- glmer(col ~ max_sst_temp_change_abs_lag1_scaled * age.maturity_scaled + age.max_scaled + (1|reg) + (1|spp), family = "binomial", data = arrival.reduced, nAGQ = 0)
 
 #using best predictor for all species in model instead
-mod_col_trait_allspp <- glmer(col ~ seas_sst_temp_scaled * age.maturity_scaled + age.max_scaled + (1|reg) + (1|spp), family = "binomial", data = colonization.reduced, nAGQ = 0)
+mod_arrival_trait_allspp <- glmer(col ~ seas_sst_temp_scaled * age.maturity_scaled + age.max_scaled + (1|reg) + (1|spp), family = "binomial", data = arrival.reduced, nAGQ = 0)
 
 
-#temp only col trait model seas_sst_temp_scaled
-mod_col_trait_notraits <- glmer(col ~ seas_sst_temp_scaled + (1|reg) + (1|spp), family = "binomial", data = colonization.reduced, nAGQ = 0)
-summary(mod_col_trait_notraits)
+#temp only arrival trait model seas_sst_temp_scaled
+mod_arrival_trait_notraits <- glmer(col ~ seas_sst_temp_scaled + (1|reg) + (1|spp), family = "binomial", data = arrival.reduced, nAGQ = 0)
+summary(mod_arrival_trait_notraits)
 
-#trait only col trait model
-mod_col_trait_notemp <- glmer(col ~ age.maturity_scaled + age.max_scaled + (1|reg) + (1|spp), family = "binomial", data = colonization.reduced, nAGQ = 0)
-summary(mod_col_trait_notemp)
+#trait only arrival trait model
+mod_arrival_trait_notemp <- glmer(col ~ age.maturity_scaled + age.max_scaled + (1|reg) + (1|spp), family = "binomial", data = arrival.reduced, nAGQ = 0)
+summary(mod_arrival_trait_notemp)
 
 #reverse to agematurity unscaled
-mod_col_reverse_scaled_agematurity <- lm(age.maturity ~ age.maturity_scaled, data = spp_master_ztemp_seus_buoy.traits_scaled) 
+mod_arrival_reverse_scaled_agematurity <- lm(age.maturity ~ age.maturity_scaled, data = spp_master_ztemp_seus_buoy.traits_scaled) 
 
-mod_col_forward_scaled_agematurity <- lm(age.maturity_scaled ~ age.maturity, data = spp_master_ztemp_seus_buoy.traits_scaled)
+mod_arrival_forward_scaled_agematurity <- lm(age.maturity_scaled ~ age.maturity, data = spp_master_ztemp_seus_buoy.traits_scaled)
 
 age_match <- data.table(ages_we_want = c(1, 10, 50, 80))
 age_match[,age.maturity_scaled := ages_we_want * mod_col_forward_scaled_agematurity$coefficients[2]+mod_col_forward_scaled_agematurity$coefficients[1]]
