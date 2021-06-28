@@ -18,6 +18,8 @@ library(ggplot2)
 library(plyr)
 
 spp_master_ztemp_seus_buoy.traits_scaled <- readRDS(here::here("Data","Spp_master","spp_master_ztemp_seus_buoy.traits_scaled.rds"))
+
+spp_master_ztemp_seus_buoy_scaled <- readRDS(here::here("Data","Spp_master","spp_master_ztemp_seus_buoy_scaled.rds"))
 ```
 
 I will be looking at:
@@ -86,9 +88,12 @@ Making all models for arrival
 #can't get dredge to run above, so trying here with fewer variables
 arrival.reduced[,year := as.factor(year)]
 
+#delete any observations without full trait data
+arrival.reduced.r <- arrival.reduced[complete.cases(arrival.reduced[ , .(age.max_scaled, age.maturity_scaled, length.max_scaled, tl_scaled)]),]
+
 #for now, going with two traits and one temp variable
 #going to make loop to make all models I need to look at with single variables
-all.temp.variables <- colnames(arrival.reduced[,9:256])
+all.temp.variables <- colnames(arrival.reduced.r[,9:256])
 all.temp.variables.0 <- c(0, all.temp.variables) #add 0 as option so models can just include traits
 all.temp.variables.0 <- all.temp.variables.0[!grepl("*mean*", all.temp.variables.0)]#get rid of MEAN temp variables
 all.trait.variables <- c(0, "tl_scaled", "age.max_scaled","age.maturity_scaled", "length.max_scaled",
@@ -115,7 +120,7 @@ for (i in 1:nrow(full_var_set)){
   
   formula <- as.formula(paste("col ~", temp, sign, trait, "+ (1|reg) + (1|spp)"))
   
-  mod <- glmer(formula, family = binomial, data = arrival.reduced, nAGQ = 0)
+  mod <- glmer(formula, family = binomial, data = arrival.reduced.r, nAGQ = 0)
   
   arrival_model_comparison_traits[i,temp_variable := full_var_set$Var1[i]]
   arrival_model_comparison_traits[i,sign := full_var_set$Var2[i]]
@@ -144,6 +149,10 @@ Making all models for departure
 #going to make loop to make all models I need to look at with single variables
 #don't want mean
 
+
+#delete any observations without full trait data
+departure.reduced.r <- departure.reduced[complete.cases(departure.reduced[ , .(age.max_scaled, age.maturity_scaled, length.max_scaled, tl_scaled)]),]
+
 departure_model_comparison_traits <- as.data.table(matrix(nrow = nrow(full_var_set))) 
 departure_model_comparison_traits[, temp_variable:=as.factor(V1)][, sign:=as.factor(V1)][, trait_variable:=as.factor(V1)][, AICc:=as.numeric(V1)][, converge:= as.logical(V1)]
 departure_model_comparison_traits[, V1 := NULL]
@@ -156,7 +165,7 @@ for (i in 1:nrow(full_var_set)){
   
   formula <- as.formula(paste("now_ext ~", temp, sign, trait, "+ (1|reg) + (1|spp)"))
   
-  mod <- glmer(formula, family = binomial, data = departure.reduced, nAGQ = 0)
+  mod <- glmer(formula, family = binomial, data = departure.reduced.r, nAGQ = 0)
   
   departure_model_comparison_traits[i,temp_variable := full_var_set$Var1[i]]
   departure_model_comparison_traits[i,sign := full_var_set$Var2[i]]
@@ -461,18 +470,18 @@ library(wesanderson)
 pal <- wes_palette("GrandBudapest1", 5, type = "continuous")
 
 #best model with fish only 
-mod_arrival_trait <- glmer(col ~ max_sst_temp_change_abs_lag1_scaled * age.maturity_scaled + age.max_scaled + (1|reg) + (1|spp), family = "binomial", data = arrival.reduced, nAGQ = 0)
+mod_arrival_trait <- glmer(col ~ max_sst_temp_change_abs_lag1_scaled * age.maturity_scaled + age.max_scaled + (1|reg) + (1|spp), family = "binomial", data = arrival.reduced.r, nAGQ = 0)
 
 #using best predictor for all species in model instead
-mod_arrival_trait_allspp <- glmer(col ~ seas_sst_temp_scaled * age.maturity_scaled + age.max_scaled + (1|reg) + (1|spp), family = "binomial", data = arrival.reduced, nAGQ = 0)
+mod_arrival_trait_allspp <- glmer(col ~ seas_sst_temp_scaled * age.maturity_scaled + age.max_scaled + (1|reg) + (1|spp), family = "binomial", data = arrival.reduced.r, nAGQ = 0)
 
 
 #temp only arrival trait model seas_sst_temp_scaled
-mod_arrival_trait_notraits <- glmer(col ~ seas_sst_temp_scaled + (1|reg) + (1|spp), family = "binomial", data = arrival.reduced, nAGQ = 0)
+mod_arrival_trait_notraits <- glmer(col ~ seas_sst_temp_scaled + (1|reg) + (1|spp), family = "binomial", data = arrival.reduced.r, nAGQ = 0)
 summary(mod_arrival_trait_notraits)
 
 #trait only arrival trait model
-mod_arrival_trait_notemp <- glmer(col ~ age.maturity_scaled + age.max_scaled + (1|reg) + (1|spp), family = "binomial", data = arrival.reduced, nAGQ = 0)
+mod_arrival_trait_notemp <- glmer(col ~ age.maturity_scaled + age.max_scaled + (1|reg) + (1|spp), family = "binomial", data = arrival.reduced.r, nAGQ = 0)
 summary(mod_arrival_trait_notemp)
 
 #reverse to agematurity unscaled
@@ -564,10 +573,10 @@ Best model from analyses with temperature only: seas_sst_temp_lag3_scaled
 
 ```{r predicted values extirpation}
 #best model with fish only 
-mod_departure_trait <- glmer(now_ext ~ max_sst_temp_scaled * age.maturity_scaled + age.max_scaled + (1|reg) + (1|spp), family = "binomial", data = departure.reduced, nAGQ = 0)
+mod_departure_trait <- glmer(now_ext ~ max_sst_temp_scaled * age.maturity_scaled + age.max_scaled + (1|reg) + (1|spp), family = "binomial", data = departure.reduced.r, nAGQ = 0)
 
 #using best predictor for all species in model instead
-mod_departure_trait_allspp <- glmer(now_ext ~ seas_sst_temp_lag3_scaled * age.maturity_scaled + age.max_scaled + (1|reg) + (1|spp), family = "binomial", data = departure.reduced, nAGQ = 0)
+mod_departure_trait_allspp <- glmer(now_ext ~ seas_sst_temp_lag3_scaled * age.maturity_scaled + age.max_scaled + (1|reg) + (1|spp), family = "binomial", data = departure.reduced.r, nAGQ = 0)
 
 #reverse to agematurity unscaled
 mod_departure_reverse_scaled_agematurity <- lm(age.maturity ~ age.maturity_scaled, data = spp_master_ztemp_seus_buoy.traits_scaled) 
