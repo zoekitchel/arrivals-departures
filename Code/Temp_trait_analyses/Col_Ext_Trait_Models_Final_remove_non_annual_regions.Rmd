@@ -218,7 +218,7 @@ arrival_surface_importance <- sum(arrival_model_comparisons_traits.lag9max[grep(
   arrival_bottom_importance.n <- count(arrival_model_comparisons_traits.lag9max[grepl("sbt", temp_variable), ]) #3060
   arrival_surface_importance.n <- count(arrival_model_comparisons_traits.lag9max[grepl("sst", temp_variable), ]) #3060
 
-#lag/not lagged (grepl("lag", variable))
+#lag\not lagged (grepl("lag", variable))
 arrival_lag_importance <- sum(arrival_model_comparisons_traits.lag9max[grep("lag", temp_variable), ]$akaike_weight)
 arrival_nolag_importance <- sum(arrival_model_comparisons_traits.lag9max[!grep("lag", temp_variable), ]$akaike_weight)
   arrival_lag_importance.n <- count(arrival_model_comparisons_traits.lag9max[grepl("lag", temp_variable), ]) #5508 models include a lag
@@ -306,7 +306,7 @@ departure_bottom_importance <- sum(departure_model_comparisons_traits.lag9max[gr
 departure_surface_importance <- sum(departure_model_comparisons_traits.lag9max[grep("sst", temp_variable), ]$akaike_weight)
   departure_surface_importance.n <- count(departure_model_comparisons_traits.lag9max[grepl("sst", temp_variable), ]) #3060
   
-#lag/not lagged (grepl("lag", variable))
+#lag\not lagged (grepl("lag", variable))
 departure_lag_importance <- sum(departure_model_comparisons_traits.lag9max[grep("lag", temp_variable), ]$akaike_weight)
   departure_lag_importance.n <- count(departure_model_comparisons_traits.lag9max[grepl("lag", temp_variable),]) #5508
 departure_nolag_importance <- sum(departure_model_comparisons_traits.lag9max[!grep("lag", temp_variable), ]$akaike_weight)
@@ -596,7 +596,7 @@ preds_predictors$ages_we_want <- factor(preds_predictors$ages_we_want, levels=c(
 
 departure_preds <- ggplot(data = preds_predictors, aes(x = max_sst_temp, y = preds, color = as.factor(ages_we_want))) +
   geom_line(size = 1) +
-  labs(colour="Age at Maturity", x = "Maximum\nsurface temperature (˚C)", y = "Probability of Departure") +
+  labs(colour="Age at\nMaturity", x = "Maximum\nsurface temperature (˚C)", y = "Probability of Departure") +
   scale_y_continuous(breaks=c(0, 0.5, 1)) +
   theme_classic() +
   scale_color_manual(values = pal) +
@@ -633,7 +633,7 @@ preds_predictors_seas$ages_we_want <- factor(preds_predictors_seas$ages_we_want,
 
 ggplot(data = preds_predictors_seas, aes(x = seas_sst_temp_lag3, y = preds_seas, color = as.factor(ages_we_want))) +
   geom_line(size = 1.5) +
-  labs(colour="Age at Maturity", x = "Temperature Seasonality\nThree Years Previously (˚C)", y = "Probability of Departure",title = "Predicted Probabilities of Departure") +
+  labs(colour="Age at\nMaturity", x = "Temperature Seasonality\nThree Years Previously (˚C)", y = "Probability of Departure",title = "Predicted Probabilities of Departure") +
  # scale_y_continuous(breaks=c(0, 0.5, 1)) +
   theme_classic() +
   scale_color_manual(values = pal) +
@@ -645,15 +645,12 @@ ggplot(data = preds_predictors_seas, aes(x = seas_sst_temp_lag3, y = preds_seas,
 Merge marginal effects plots
 ```{r}
 library(cowplot)
-mar_effects <- plot_grid(arrival_preds + theme(legend.position  = "none"),departure_preds + theme(legend.position = "none"), labels = c("a.","b."))
-
-legend  <- get_legend(arrival_preds)
+mar_effects <- plot_grid(arrival_preds,departure_preds, labels = c("a.","b."))
 
 
-plot_grid(mar_effects, legend, nrow = 1, ncol = 2, rel_widths = c(8,1))
 
-ggsave(path = here::here("figures/Figure5"), file = "Figure5_margeffect_annual_obs.jpg")
-ggsave(path = here::here("figures/Figure5"), file = "Figure5_margeffect_annual_obs.eps")
+ggsave(width = 6, height = 2.5, path = here::here("figures/Figure5"), file = "Figure5_margeffect_annual_obs.jpg")
+ggsave(width = 6, height = 2.5, path = here::here("figures/Figure5"), file = "Figure5_margeffect_annual_obs.eps")
 
 ```
 
