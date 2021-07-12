@@ -29,38 +29,152 @@ I will be looking at:
 *age at maturity
 *maximum body size
 
+Ensure that each region only has a single trait value. 
+```{r length unique spp reg combos}
+nrow(unique(spp_master_ztemp_seus_buoy.traits_scaled[,.(spp, reg)]))
+nrow(unique(spp_master_ztemp_seus_buoy.traits_scaled[,.(spp, reg, age.maturity_ocean, age.max_ocean, tl_ocean, length.max_ocean)]))
+```
+
+
 ```{r missing values}
-summary(spp_master_ztemp_seus_buoy.traits_scaled$age.max) #702 missing
-summary(spp_master_ztemp_seus_buoy.traits_scaled$age.maturity) #551 missing
-summary(spp_master_ztemp_seus_buoy.traits_scaled$tl) #none missing
-summary(spp_master_ztemp_seus_buoy.traits_scaled$length.max) #none missing
+summary(spp_master_ztemp_seus_buoy.traits_scaled$age.max_ocean) #702 missing
+summary(spp_master_ztemp_seus_buoy.traits_scaled$age.maturity_ocean) #551 missing
+summary(spp_master_ztemp_seus_buoy.traits_scaled$tl_ocean) #none missing
+summary(spp_master_ztemp_seus_buoy.traits_scaled$length.max_ocean) #none missing
 summary(spp_master_ztemp_seus_buoy.traits_scaled$length.infinity) #443 missing, this is highly correlated (0.82) with length max, so we'll just use length.max
 
-cor(spp_master_ztemp_seus_buoy.traits_scaled[,.(age.max_scaled, age.maturity_scaled, tl_scaled, length.max_scaled)], use = "complete.obs")
+cor(spp_master_ztemp_seus_buoy.traits_scaled[,.(age.max_ocean_scaled, age.maturity_ocean_scaled, tl_ocean_scaled, length.max_ocean_scaled)], use = "complete.obs")
 
 pairs(spp_master_ztemp_seus_buoy.traits_scaled[,.(age.max_scaled, age.maturity_scaled, tl_scaled, length.max_scaled)])
 
 ```
 
 What's the distribution of trait values?
-```{r unique trait values}
-spp_master_ztemp_seus_buoy.traits_scaled.unique <- unique(spp_master_ztemp_seus_buoy.traits_scaled[,.(spp, reg, age.maturity, age.max, tl, length.max)])
+```{r trait value distribution age maturity}
+spp_master_ztemp_seus_buoy.traits_scaled.unique <- unique(spp_master_ztemp_seus_buoy.traits_scaled[,.(spp, reg, age.maturity_ocean, age.max_ocean, tl_ocean, length.max_ocean)])
 
-ggplot(spp_master_ztemp_seus_buoy.traits_scaled.unique, aes(x = age.maturity))  +
+ggplot(spp_master_ztemp_seus_buoy.traits_scaled.unique, aes(x = age.maturity_ocean))  +
   geom_histogram() +
   theme_classic()
 
-summary(spp_master_ztemp_seus_buoy.traits_scaled.unique$age.maturity)
+summary(spp_master_ztemp_seus_buoy.traits_scaled.unique$age.maturity_ocean)
 
-#what about when we leave out ai, goa, and wctri
+#what about when we leave out sleeper shark
 
-ggplot(spp_master_ztemp_seus_buoy.traits_scaled.unique[(spp != "Somniosus pacificus")], aes(x = age.maturity))  +
+ggplot(spp_master_ztemp_seus_buoy.traits_scaled.unique[(spp != "Somniosus pacificus")], aes(x = age.maturity_ocean))  +
   geom_histogram() +
   theme_classic()
 
-summary(spp_master_ztemp_seus_buoy.traits_scaled.unique[(spp != "Somniosus pacificus")]$age.maturity)
+summary(spp_master_ztemp_seus_buoy.traits_scaled.unique[(spp != "Somniosus pacificus")]$age.maturity_ocean)
+
+#marking outliers
+is_outlier <- function(x, na.rm=F) {
+  return(x < quantile(x, 0.25, na.rm = na.rm) - 1.5 * IQR(x, na.rm = na.rm) | x > quantile(x, 0.75,na.rm = na.rm) + 1.5 * IQR(x, na.rm = na.rm))
+}
+
+spp_master_ztemp_seus_buoy.traits_scaled.unique[,age_mat_outlier := is_outlier(age.maturity_ocean, na.rm = T)]
+
+spp_master_ztemp_seus_buoy.traits_scaled.unique[,outlier_age_mat := ifelse(age_mat_outlier == T, spp, NA)]
+library(ggrepel)
+#box plot would be helpful to see outliers
+ggplot(spp_master_ztemp_seus_buoy.traits_scaled.unique, aes(x = reg, y = age.maturity_ocean))  +
+  geom_boxplot() +
+  geom_text_repel(aes(label=outlier_age_mat), size = 1.5, nudge_y = 5) +
+  theme_classic()
+
+ggsave(path = here::here("figures","Outliers"), filename = "age_maturity_outliers.jpg")
 ```
 
+```{r trait value distribution age max}
+
+ggplot(spp_master_ztemp_seus_buoy.traits_scaled.unique, aes(x = age.max_ocean))  +
+  geom_histogram() +
+  theme_classic()
+
+summary(spp_master_ztemp_seus_buoy.traits_scaled.unique$age.max_ocean)
+
+#what about when we leave out sleeper shark
+
+ggplot(spp_master_ztemp_seus_buoy.traits_scaled.unique[(spp != "Somniosus pacificus")], aes(x = age.max_ocean))  +
+  geom_histogram() +
+  theme_classic()
+
+summary(spp_master_ztemp_seus_buoy.traits_scaled.unique[(spp != "Somniosus pacificus")]$age.max_ocean)
+
+#marking outliers
+
+spp_master_ztemp_seus_buoy.traits_scaled.unique[,age_max_outlier := is_outlier(age.max_ocean, na.rm = T)]
+
+spp_master_ztemp_seus_buoy.traits_scaled.unique[,outlier_age_max := ifelse(age_max_outlier == T, spp, NA)]
+library(ggrepel)
+#box plot would be helpful to see outliers
+ggplot(spp_master_ztemp_seus_buoy.traits_scaled.unique, aes(x = reg, y = age.max_ocean))  +
+  geom_boxplot() +
+  geom_text_repel(aes(label=outlier_age_max), size = 1.5, nudge_y = 5) +
+  theme_classic()
+
+ggsave(path = here::here("figures","Outliers"), filename = "max_age_outliers.jpg")
+```
+```{r trait value distribution trophic level}
+
+ggplot(spp_master_ztemp_seus_buoy.traits_scaled.unique, aes(x = tl_ocean))  +
+  geom_histogram() +
+  theme_classic()
+
+summary(spp_master_ztemp_seus_buoy.traits_scaled.unique$tl_ocean)
+
+#what about when we leave out sleeper shark
+
+ggplot(spp_master_ztemp_seus_buoy.traits_scaled.unique[(spp != "Somniosus pacificus")], aes(x = tl_ocean))  +
+  geom_histogram() +
+  theme_classic()
+
+summary(spp_master_ztemp_seus_buoy.traits_scaled.unique[(spp != "Somniosus pacificus")]$tl_ocean)
+
+#marking outliers
+
+spp_master_ztemp_seus_buoy.traits_scaled.unique[,tl_outlier := is_outlier(tl_ocean, na.rm = T)]
+
+spp_master_ztemp_seus_buoy.traits_scaled.unique[,outlier_tl := ifelse(tl_outlier == T, spp, NA)]
+library(ggrepel)
+#box plot would be helpful to see outliers
+ggplot(spp_master_ztemp_seus_buoy.traits_scaled.unique, aes(x = reg, y = tl_ocean))  +
+  geom_boxplot() +
+  geom_text_repel(aes(label=outlier_tl), size = 1.5) +
+  theme_classic()
+
+ggsave(path = here::here("figures","Outliers"), filename = "tl_outliers.jpg")
+```
+```{r trait value distribution max length}
+
+ggplot(spp_master_ztemp_seus_buoy.traits_scaled.unique, aes(x = length.max_ocean))  +
+  geom_histogram() +
+  theme_classic()
+
+summary(spp_master_ztemp_seus_buoy.traits_scaled.unique$length.max_ocean)
+
+#what about when we leave out sleeper shark
+
+ggplot(spp_master_ztemp_seus_buoy.traits_scaled.unique[(spp != "Somniosus pacificus")], aes(x = length.max_ocean))  +
+  geom_histogram() +
+  theme_classic()
+
+summary(spp_master_ztemp_seus_buoy.traits_scaled.unique[(spp != "Somniosus pacificus")]$length.max_ocean)
+
+#marking outliers
+
+spp_master_ztemp_seus_buoy.traits_scaled.unique[,length.max_outlier := is_outlier(length.max_ocean, na.rm = T)]
+
+spp_master_ztemp_seus_buoy.traits_scaled.unique[,outlier_length.max := ifelse(length.max_outlier == T, spp, NA)]
+library(ggrepel)
+#box plot would be helpful to see outliers
+ggplot(spp_master_ztemp_seus_buoy.traits_scaled.unique, aes(x = reg, y = length.max_ocean))  +
+  geom_boxplot() +
+  geom_text_repel(aes(label=outlier_length.max), size = 1.5, nudge_y = 5) +
+  theme_classic()
+
+ggsave(path = here::here("figures","Outliers"), filename = "length_max_outliers.jpg")
+```
 
 Prep for model runs
 ```{r prep for model runs}
