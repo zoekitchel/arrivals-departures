@@ -12,42 +12,62 @@ library(data.table)
 traits <- read.csv(here::here("Data","Traits","TraitCollectionFishNAtlanticNEPacificContShelf.csv"))
 traits <- data.table(traits)
 
-#restrict to LME 1:9 (not 4, Gulf of CA) and 65 according to https://www.st.nmfs.noaa.gov/ecosystems/lme/
-traits_NA <- traits[LME %in% c(65,1,5,2,7,9,6,8,3)]
+```
+
+Subset to NA, and avg value by ocean
+```{r pulling data we need}
+#restrict to FAO 76, 77, 31, 21
+traits_NA <- traits[FAO %in% c(67, 77, 31, 21)]
+
+#ocean_LME_key
+LME_ocean_key <- data.table("FAO" = c(67, 77, 31, 21), "ocean" = factor(c("pac","pac","atl","atl")))
+
+#link by ocean
+traits_NA_ocean <- traits_NA[LME_ocean_key, on = "FAO"]
 
 #remove duplicates
-traits.u <- unique(traits_NA[,.(LME, taxon,tl, age.maturity, length.max, age.max)])
+traits.u <- unique(traits_NA_ocean[,.(ocean, taxon,tl, age.maturity, length.max, age.max)])
+
+#avg value per FAO
+traits.u[,tl_ocean := mean(tl, na.rm = T), .(taxon, ocean)][,age.maturity_ocean := mean(age.maturity, na.rm = T), .(taxon, ocean)][,age.max_ocean := mean(age.max, na.rm = T), .(taxon, ocean)][,length.max_ocean := mean(length.max, na.rm = T), .(taxon, ocean)]
+
+#remove duplicates again
+traits.u <- unique(traits.u[,.(ocean, taxon,tl_ocean, age.maturity_ocean, length.max_ocean, age.max_ocean)])
+
 
 ```
 Interested in looking at max age, trophic level, and age of maturity
 ```{r trait patterns}
-ggplot(aes(x=age.max), data = traits.u) +
+ggplot(aes(x=age.max_ocean), data = traits.u) +
   geom_histogram()
 
-ggplot(aes(x=age.maturity), data = traits.u) +
+ggplot(aes(x=age.maturity_ocean), data = traits.u) +
   geom_histogram()
 
-ggplot(aes(x=tl), data = traits.u) +
+ggplot(aes(x=tl_ocean), data = traits.u) +
   geom_histogram()
 
-cor(na.omit(traits.u[,.(age.max, age.maturity, length.max, tl)]))
+ggplot(aes(x=length.max_ocean), data = traits.u) +
+  geom_histogram()
+
+cor(na.omit(traits.u[,.(age.max_ocean, age.maturity_ocean, length.max_ocean, tl_ocean)]))
 ``` 
 
 Let's link species
 
 First, let's see if there are any name errors?
 ```{r linking species}
-load(here::here("Data","Spp_master","spp_master_ztemp_seus_buoys.Rdata")) #load in observation data for arrivals and departures
+spp_master_ztemp_seus_buoy <- readRDS(here::here("Data","Spp_master","spp_master_ztemp_seus_buoy.rds")) #load in observation data for arrivals and departures
 
-#assigning regions to LMEs
-reg <- levels(spp_master_ztemp_seus_buoy$reg)
-LME <- c(65,1,5,2,7,9,6,8,3)
+#add ocean to this datatable
+ocean_reg_key <- data.table(reg = unique(spp_master_ztemp_seus_buoy$reg), ocean = factor(c("pac","pac","atl","pac","atl","atl","atl","pac","atl")))
 
-reg_LME_key <- data.table(reg = as.factor(reg), LME = LME)
+#merge
+spp_master_ztemp_seus_buoy <- spp_master_ztemp_seus_buoy[ocean_reg_key, on = "reg"]
 
-spp_master_ztemp_seus_buoy <- spp_master_ztemp_seus_buoy[reg_LME_key, on = "reg"]
-
+#list of spp from spp master ztemp
 spp_master_spp <- data.frame(spp = unique(spp_master_ztemp_seus_buoy$spp), origin = "spp_master") #list of spp from spp_master df
+
 traits_spp <- data.frame(spp = unique(traits.u$taxon), origin = "traits") #list of spp from traits df
 spp_all <- rbind(spp_master_spp, traits_spp) #row bind together
 spp_all$spp <- as.character(spp_all$spp) #make sure all are characters
@@ -177,8 +197,16 @@ Okay, now we can go forward. Let's link traits to spp_master with temp data
 
 ```{r link traits to haul data}
 traits.u[, spp := taxon][, taxon := NULL]
-spp_master_ztemp_seus_buoy.traits <- spp_master_ztemp_seus_buoy[traits.u, nomatch = 0, on = c("spp","LME")]
+spp_master_ztemp_seus_buoy.traits <- spp_master_ztemp_seus_buoy[traits.u, nomatch = 0, on = c("spp","ocean")]
 ```
+
+Check that each ocean only has one value
+```{r}
+nrow(unique(spp_master_ztemp_seus_buoy.traits[,.(spp, age.maturity_ocean, age.max_ocean, length.max_ocean, tl_ocean, ocean)]))
+
+nrow(unique(spp_master_ztemp_seus_buoy.traits[,.(spp, ocean)]))
+```
+--> Match = Success
 
 Now to save updated data.table with traits for species we have traits for
 ```{r save}
