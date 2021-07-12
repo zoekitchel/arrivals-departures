@@ -14,7 +14,7 @@ Scaling temperature and trait values
 ```{r scaling temperature and traits}
 
 #extract just temperature variables to scale
-temptraitvars <- grep(pattern = "*_s.t_*|tl|age.maturity|length.max|age.max",colnames(spp_master_ztemp_seus_buoy.traits), value = T)
+temptraitvars <- grep(pattern = "*_s.t_*|tl_ocean|age.maturity_ocean|length.max_ocean|age.max_ocean",colnames(spp_master_ztemp_seus_buoy.traits), value = T)
 spp_master_ztemp_seus_buoy.traits_varsonly <- spp_master_ztemp_seus_buoy.traits[,..temptraitvars][,level.tl:= NULL] #picked up level.tl column from query above, delete here
 
 #scale all variables, make new columns
