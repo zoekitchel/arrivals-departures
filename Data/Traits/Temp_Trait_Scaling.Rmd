@@ -10,24 +10,51 @@ library(here)
 spp_master_ztemp_seus_buoy.traits <- readRDS(here::here("Data","Spp_master", "spp_master_ztemp_seus_buoy.traits.rds"))
 ```
 
+What do the distributions of predictor variables look like
+```{r}
+hist(spp_master_ztemp_seus_buoy.traits$age.maturity_ocean, breaks = 30)
+hist(spp_master_ztemp_seus_buoy.traits$age.max_ocean, breaks = 30)
+hist(spp_master_ztemp_seus_buoy.traits$tl_ocean, breaks = 30)
+hist(spp_master_ztemp_seus_buoy.traits$length.max_ocean, breaks = 30)
+
+#and if we take log?
+hist(log(spp_master_ztemp_seus_buoy.traits$age.maturity_ocean), breaks = 30)
+hist(log(spp_master_ztemp_seus_buoy.traits$age.max_ocean), breaks = 30)
+hist(log(spp_master_ztemp_seus_buoy.traits$tl_ocean), breaks = 30)
+hist(log(spp_master_ztemp_seus_buoy.traits$length.max_ocean), breaks = 30)
+```
+We will take log of length max, age maturity, and age max. 
+
 Scaling temperature and trait values
 ```{r scaling temperature and traits}
 
 #extract just temperature variables to scale
-temptraitvars <- grep(pattern = "*_s.t_*|tl_ocean|age.maturity_ocean|length.max_ocean|age.max_ocean",colnames(spp_master_ztemp_seus_buoy.traits), value = T)
-spp_master_ztemp_seus_buoy.traits_varsonly <- spp_master_ztemp_seus_buoy.traits[,..temptraitvars][,level.tl:= NULL] #picked up level.tl column from query above, delete here
+#temptraitvars <- grep(pattern = "*_s.t_*|tl_ocean|age.maturity_ocean|length.max_ocean|age.max_ocean",colnames(spp_master_ztemp_seus_buoy.traits), value = T) #instead I'm taking logs
+
+tempvars_toscale <- grep(pattern = "*_s.t_*",colnames(spp_master_ztemp_seus_buoy.traits), value = T)
+traitvars_tolog <- grep(pattern = "age.maturity_ocean|length.max_ocean|age.max_ocean",colnames(spp_master_ztemp_seus_buoy.traits), value = T)
+
+spp_master_ztemp_seus_buoy.traits_tempvarsonly <- spp_master_ztemp_seus_buoy.traits[,..tempvars_toscale]
+spp_master_ztemp_seus_buoy.traits_traitvarsonly <- spp_master_ztemp_seus_buoy.traits[,..traitvars_tolog]
 
 #scale all variables, make new columns
-spp_master_ztemp_seus_buoy.traits_varsonly[, paste0(colnames(spp_master_ztemp_seus_buoy.traits_varsonly), "_scaled") := lapply(.SD, function(x) as.vector(scale(x))), .SDcols = colnames(spp_master_ztemp_seus_buoy.traits_varsonly)]
+spp_master_ztemp_seus_buoy.traits_tempvarsonly[, paste0(colnames(spp_master_ztemp_seus_buoy.traits_tempvarsonly), "_scaled") := lapply(.SD, function(x) as.vector(scale(x))), .SDcols = colnames(spp_master_ztemp_seus_buoy.traits_tempvarsonly)]
+
+#log variables make new columns
+spp_master_ztemp_seus_buoy.traits_traitvarsonly[, paste0(colnames(spp_master_ztemp_seus_buoy.traits_traitvarsonly), "_logged") := lapply(.SD, function(x) as.vector(log(x))), .SDcols = colnames(spp_master_ztemp_seus_buoy.traits_traitvarsonly)]
 
 
 #names of scaled columns
-scaled_cols <- grep("*_scaled", names(spp_master_ztemp_seus_buoy.traits_varsonly), value = T)
+scaled_cols <- grep("*_scaled", names(spp_master_ztemp_seus_buoy.traits_tempvarsonly), value = T)
+
+#logged_cols
+logged_cols <- grep("*_logged", names(spp_master_ztemp_seus_buoy.traits_traitvarsonly), value = T)
+
 
 #merge new columns back with spp_master_ztemp_seus_buoy
-spp_master_ztemp_seus_buoy.traits_scaled <- cbind(spp_master_ztemp_seus_buoy.traits, spp_master_ztemp_seus_buoy.traits_varsonly[,scaled_cols, with = FALSE])
+spp_master_ztemp_seus_buoy.traits_scaled <- cbind(spp_master_ztemp_seus_buoy.traits, spp_master_ztemp_seus_buoy.traits_tempvarsonly[,scaled_cols, with = FALSE], spp_master_ztemp_seus_buoy.traits_traitvarsonly[,logged_cols, with = FALSE])
 
-saveRDS(spp_master_ztemp_seus_buoy.traits_scaled, file = here::here("Data","Spp_master", "spp_master_ztemp_seus_buoy.traits_scaled.rds"))
+saveRDS(spp_master_ztemp_seus_buoy.traits_scaled, file = here::here("Data","Spp_master", "spp_master_ztemp_seus_buoy.traits_scaled_logged.rds"))
 ```
 
 
