@@ -52,9 +52,9 @@ logged_cols <- grep("*_logged", names(spp_master_ztemp_seus_buoy.traits_traitvar
 
 
 #merge new columns back with spp_master_ztemp_seus_buoy
-spp_master_ztemp_seus_buoy.traits_scaled <- cbind(spp_master_ztemp_seus_buoy.traits, spp_master_ztemp_seus_buoy.traits_tempvarsonly[,scaled_cols, with = FALSE], spp_master_ztemp_seus_buoy.traits_traitvarsonly[,logged_cols, with = FALSE])
+spp_master_ztemp_seus_buoy.traits_scaled_logged <- cbind(spp_master_ztemp_seus_buoy.traits, spp_master_ztemp_seus_buoy.traits_tempvarsonly[,scaled_cols, with = FALSE], spp_master_ztemp_seus_buoy.traits_traitvarsonly[,logged_cols, with = FALSE])
 
-saveRDS(spp_master_ztemp_seus_buoy.traits_scaled, file = here::here("Data","Spp_master", "spp_master_ztemp_seus_buoy.traits_scaled_logged.rds"))
+saveRDS(spp_master_ztemp_seus_buoy.traits_scaled_logged, file = here::here("Data","Spp_master", "spp_master_ztemp_seus_buoy.traits_scaled_logged.rds"))
 ```
 
 
