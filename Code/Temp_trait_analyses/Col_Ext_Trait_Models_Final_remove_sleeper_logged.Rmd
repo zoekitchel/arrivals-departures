@@ -10,6 +10,8 @@ Changes
 * scaling temperature values
 * setting nACQ to 0, see why [here](https://stats.stackexchange.com/questions/77313/why-cant-i-match-glmer-family-binomial-output-with-manual-implementation-of-g). 
 
+Updates from July 13, 2021: We are scaling and centering all temp variables, logging all longevity predictors, and doing nothing with trophic level
+
 ```{r setup}
 library(MuMIn)
 library(lme4)
@@ -17,7 +19,7 @@ library(data.table)
 library(ggplot2)
 library(plyr)
 
-spp_master_ztemp_seus_buoy.traits_scaled <- readRDS(here::here("Data","Spp_master","spp_master_ztemp_seus_buoy.traits_scaled.rds"))
+spp_master_ztemp_seus_buoy.traits_scaled_logged <- readRDS(here::here("Data","Spp_master","spp_master_ztemp_seus_buoy.traits_scaled_logged.rds"))
 
 spp_master_ztemp_seus_buoy_scaled <- readRDS(here::here("Data","Spp_master","spp_master_ztemp_seus_buoy_scaled.rds"))
 ```
@@ -31,157 +33,163 @@ I will be looking at:
 
 Ensure that each region only has a single trait value. 
 ```{r length unique spp reg combos}
-nrow(unique(spp_master_ztemp_seus_buoy.traits_scaled[,.(spp, reg)]))
-nrow(unique(spp_master_ztemp_seus_buoy.traits_scaled[,.(spp, reg, age.maturity_ocean, age.max_ocean, tl_ocean, length.max_ocean)]))
+nrow(unique(spp_master_ztemp_seus_buoy.traits_scaled_logged[,.(spp, reg)]))
+nrow(unique(spp_master_ztemp_seus_buoy.traits_scaled_logged[,.(spp, reg, age.maturity_ocean_logged, age.max_ocean_logged, tl_ocean, length.max_ocean_logged)]))
 ```
 
 Looking at correlations among variables
 ```{r missing values}
-summary(spp_master_ztemp_seus_buoy.traits_scaled$age.max_ocean) #702 missing
-summary(spp_master_ztemp_seus_buoy.traits_scaled$age.maturity_ocean) #551 missing
-summary(spp_master_ztemp_seus_buoy.traits_scaled$tl_ocean) #none missing
-summary(spp_master_ztemp_seus_buoy.traits_scaled$length.max_ocean) #none missing
-summary(spp_master_ztemp_seus_buoy.traits_scaled$length.infinity) #443 missing, this is highly correlated (0.82) with length max, so we'll just use length.max
+summary(spp_master_ztemp_seus_buoy.traits_scaled_logged$age.max_ocean_logged) #702 missing
+summary(spp_master_ztemp_seus_buoy.traits_scaled_logged$age.maturity_ocean_logged) #551 missing
+summary(spp_master_ztemp_seus_buoy.traits_scaled_logged$tl_ocean) #none missing
+summary(spp_master_ztemp_seus_buoy.traits_scaled_logged$length.max_ocean_logged) #none missing
+summary(spp_master_ztemp_seus_buoy.traits_scaled_logged$length.infinity) #443 missing, this is highly correlated (0.82) with length max, so we'll just use length.max
 
-cor(spp_master_ztemp_seus_buoy.traits_scaled[,.(age.max_ocean, age.maturity_ocean, tl_ocean, length.max_ocean)], use = "complete.obs")
+cor(spp_master_ztemp_seus_buoy.traits_scaled_logged[,.(age.max_ocean_logged, age.maturity_ocean_logged, tl_ocean, length.max_ocean_logged)], use = "complete.obs")
 
-pairs(spp_master_ztemp_seus_buoy.traits_scaled[,.(age.max_ocean, age.maturity_ocean, tl_ocean, length.max_ocean)])
+pairs(spp_master_ztemp_seus_buoy.traits_scaled_logged[,.(age.max_ocean_logged, age.maturity_ocean_logged, tl_ocean, length.max_ocean_logged)])
 
 ```
 
 What's the distribution of trait values?
 ```{r trait value distribution age maturity}
-spp_master_ztemp_seus_buoy.traits_scaled.unique <- unique(spp_master_ztemp_seus_buoy.traits_scaled[,.(spp, reg, age.maturity_ocean, age.max_ocean, tl_ocean, length.max_ocean)])
+spp_master_ztemp_seus_buoy.traits_scaled_logged.unique <- unique(spp_master_ztemp_seus_buoy.traits_scaled_logged[,.(spp, reg, age.maturity_ocean_logged, age.max_ocean_logged, tl_ocean, length.max_ocean_logged, age.maturity_ocean, age.max_ocean, length.max_ocean)])
 
-ggplot(spp_master_ztemp_seus_buoy.traits_scaled.unique, aes(x = age.maturity_ocean))  +
+ggplot(spp_master_ztemp_seus_buoy.traits_scaled_logged.unique, aes(x = age.maturity_ocean_logged))  +
   geom_histogram() +
   theme_classic()
 
 #sleeper shark values?
 #(mean sleeper - overall mean)/SD of overall distribution
 
-(spp_master_ztemp_seus_buoy.traits_scaled.unique[spp == "Somniosus pacificus",]$age.maturity_ocean-mean(spp_master_ztemp_seus_buoy.traits_scaled.unique$age.maturity_ocean, na.rm = T))/sd(spp_master_ztemp_seus_buoy.traits_scaled.unique$age.maturity_ocean, na.rm = T) #17.38 SD from mean
+(spp_master_ztemp_seus_buoy.traits_scaled_logged.unique[spp == "Somniosus pacificus",]$age.maturity_ocean-mean(spp_master_ztemp_seus_buoy.traits_scaled_logged.unique$age.maturity_ocean, na.rm = T))/sd(spp_master_ztemp_seus_buoy.traits_scaled_logged.unique$age.maturity_ocean, na.rm = T) #17.38 SD from mean
 
-(spp_master_ztemp_seus_buoy.traits_scaled.unique[spp == "Somniosus pacificus",]$age.max_ocean-mean(spp_master_ztemp_seus_buoy.traits_scaled.unique$age.max_ocean, na.rm = T))/sd(spp_master_ztemp_seus_buoy.traits_scaled.unique$age.max_ocean, na.rm = T) #8.88 SD from mean
+(spp_master_ztemp_seus_buoy.traits_scaled_logged.unique[spp == "Somniosus pacificus",]$age.max_ocean-mean(spp_master_ztemp_seus_buoy.traits_scaled_logged.unique$age.max_ocean, na.rm = T))/sd(spp_master_ztemp_seus_buoy.traits_scaled_logged.unique$age.max_ocean, na.rm = T) #8.88 SD from mean
 
-(spp_master_ztemp_seus_buoy.traits_scaled.unique[spp == "Somniosus pacificus",]$length.max_ocean-mean(spp_master_ztemp_seus_buoy.traits_scaled.unique$length.max_ocean, na.rm = T))/sd(spp_master_ztemp_seus_buoy.traits_scaled.unique$length.max_ocean, na.rm = T) #11.14 SD from mean
+(spp_master_ztemp_seus_buoy.traits_scaled_logged.unique[spp == "Somniosus pacificus",]$length.max_ocean-mean(spp_master_ztemp_seus_buoy.traits_scaled_logged.unique$length.max_ocean, na.rm = T))/sd(spp_master_ztemp_seus_buoy.traits_scaled_logged.unique$length.max_ocean, na.rm = T) #11.14 SD from mean
+
+
+sd(spp_master_ztemp_seus_buoy.traits_scaled_logged.unique$age.maturity_ocean, na.rm = T)
+sd(spp_master_ztemp_seus_buoy.traits_scaled_logged.unique$age.max_ocean, na.rm = T)
+sd(spp_master_ztemp_seus_buoy.traits_scaled_logged.unique$length.max_ocean, na.rm = T)
+
+spp_master_ztemp_seus_buoy.traits_scaled_logged.unique[spp == "Somniosus pacificus",]$age.maturity_ocean
+spp_master_ztemp_seus_buoy.traits_scaled_logged.unique[spp == "Somniosus pacificus",]$age.max_ocean, na.rm = T)
+spp_master_ztemp_seus_buoy.traits_scaled_logged.unique[spp == "Somniosus pacificus",]$length.max_ocean, na.rm = T)
 
 
 #what about when we leave out sleeper shark
 
-ggplot(spp_master_ztemp_seus_buoy.traits_scaled.unique[(spp != "Somniosus pacificus")], aes(x = age.maturity_ocean))  +
+ggplot(spp_master_ztemp_seus_buoy.traits_scaled_logged.unique[(spp != "Somniosus pacificus")], aes(x = age.maturity_ocean_logged))  +
   geom_histogram() +
   theme_classic()
 
-summary(spp_master_ztemp_seus_buoy.traits_scaled.unique[(spp != "Somniosus pacificus")]$age.maturity_ocean)
+summary(spp_master_ztemp_seus_buoy.traits_scaled_logged.unique[(spp != "Somniosus pacificus")]$age.maturity_ocean_logged)
 
 #marking outliers
 is_outlier <- function(x, na.rm=F) {
   return(x < quantile(x, 0.25, na.rm = na.rm) - 1.5 * IQR(x, na.rm = na.rm) | x > quantile(x, 0.75,na.rm = na.rm) + 1.5 * IQR(x, na.rm = na.rm))
 }
 
-spp_master_ztemp_seus_buoy.traits_scaled.unique[,age_mat_outlier := is_outlier(age.maturity_ocean, na.rm = T)]
+spp_master_ztemp_seus_buoy.traits_scaled_logged.unique[,age_mat_outlier := is_outlier(age.maturity_ocean_logged, na.rm = T)]
 
-spp_master_ztemp_seus_buoy.traits_scaled.unique[,outlier_age_mat := ifelse(age_mat_outlier == T, spp, NA)]
+spp_master_ztemp_seus_buoy.traits_scaled_logged.unique[,outlier_age_mat := ifelse(age_mat_outlier == T, spp, NA)]
 library(ggrepel)
 #box plot would be helpful to see outliers
-ggplot(spp_master_ztemp_seus_buoy.traits_scaled.unique, aes(x = reg, y = age.maturity_ocean))  +
+ggplot(spp_master_ztemp_seus_buoy.traits_scaled_logged.unique, aes(x = reg, y = age.maturity_ocean_logged))  +
   geom_boxplot() +
   geom_text_repel(aes(label=outlier_age_mat), size = 1.5) +
   theme_classic()
 
 ggsave(path = here::here("figures","Outliers"), filename = "age_maturity_outliers.jpg")
 ```
-
 Age max values
 ```{r trait value distribution age max}
 
-ggplot(spp_master_ztemp_seus_buoy.traits_scaled.unique, aes(x = age.max_ocean))  +
+ggplot(spp_master_ztemp_seus_buoy.traits_scaled_logged.unique, aes(x = age.max_ocean_logged))  +
   geom_histogram() +
   theme_classic()
 
-summary(spp_master_ztemp_seus_buoy.traits_scaled.unique$age.max_ocean)
+summary(spp_master_ztemp_seus_buoy.traits_scaled_logged.unique$age.max_ocean_logged)
 
 #what about when we leave out sleeper shark
 
-ggplot(spp_master_ztemp_seus_buoy.traits_scaled.unique[(spp != "Somniosus pacificus")], aes(x = age.max_ocean))  +
+ggplot(spp_master_ztemp_seus_buoy.traits_scaled_logged.unique[(spp != "Somniosus pacificus")], aes(x = age.max_ocean_logged))  +
   geom_histogram() +
   theme_classic()
 
-summary(spp_master_ztemp_seus_buoy.traits_scaled.unique[(spp != "Somniosus pacificus")]$age.max_ocean)
+summary(spp_master_ztemp_seus_buoy.traits_scaled_logged.unique[(spp != "Somniosus pacificus")]$age.max_ocean_logged)
 
 #marking outliers
 
-spp_master_ztemp_seus_buoy.traits_scaled.unique[,age_max_outlier := is_outlier(age.max_ocean, na.rm = T)]
+spp_master_ztemp_seus_buoy.traits_scaled_logged.unique[,age_max_outlier := is_outlier(age.max_ocean_logged, na.rm = T)]
 
-spp_master_ztemp_seus_buoy.traits_scaled.unique[,outlier_age_max := ifelse(age_max_outlier == T, spp, NA)]
+spp_master_ztemp_seus_buoy.traits_scaled_logged.unique[,outlier_age_max := ifelse(age_max_outlier == T, spp, NA)]
 library(ggrepel)
 #box plot would be helpful to see outliers
-ggplot(spp_master_ztemp_seus_buoy.traits_scaled.unique, aes(x = reg, y = age.max_ocean))  +
+ggplot(spp_master_ztemp_seus_buoy.traits_scaled_logged.unique, aes(x = reg, y = age.max_ocean_logged))  +
   geom_boxplot() +
   geom_text_repel(aes(label=outlier_age_max), size = 1.5) +
   theme_classic()
 
 ggsave(path = here::here("figures","Outliers"), filename = "max_age_outliers.jpg")
 ```
-
 Trophic Level values
 ```{r trait value distribution trophic level}
 
-ggplot(spp_master_ztemp_seus_buoy.traits_scaled.unique, aes(x = tl_ocean))  +
+ggplot(spp_master_ztemp_seus_buoy.traits_scaled_logged.unique, aes(x = tl_ocean))  +
   geom_histogram() +
   theme_classic()
 
-summary(spp_master_ztemp_seus_buoy.traits_scaled.unique$tl_ocean)
+summary(spp_master_ztemp_seus_buoy.traits_scaled_logged.unique$tl_ocean)
 
 #what about when we leave out sleeper shark
 
-ggplot(spp_master_ztemp_seus_buoy.traits_scaled.unique[(spp != "Somniosus pacificus")], aes(x = tl_ocean))  +
+ggplot(spp_master_ztemp_seus_buoy.traits_scaled_logged.unique[(spp != "Somniosus pacificus")], aes(x = tl_ocean))  +
   geom_histogram() +
   theme_classic()
 
-summary(spp_master_ztemp_seus_buoy.traits_scaled.unique[(spp != "Somniosus pacificus")]$tl_ocean)
+summary(spp_master_ztemp_seus_buoy.traits_scaled_logged.unique[(spp != "Somniosus pacificus")]$tl_ocean)
 
 #marking outliers
 
-spp_master_ztemp_seus_buoy.traits_scaled.unique[,tl_outlier := is_outlier(tl_ocean, na.rm = T)]
+spp_master_ztemp_seus_buoy.traits_scaled_logged.unique[,tl_outlier := is_outlier(tl_ocean, na.rm = T)]
 
-spp_master_ztemp_seus_buoy.traits_scaled.unique[,outlier_tl := ifelse(tl_outlier == T, spp, NA)]
+spp_master_ztemp_seus_buoy.traits_scaled_logged.unique[,outlier_tl := ifelse(tl_outlier == T, spp, NA)]
 library(ggrepel)
 #box plot would be helpful to see outliers
-ggplot(spp_master_ztemp_seus_buoy.traits_scaled.unique, aes(x = reg, y = tl_ocean))  +
+ggplot(spp_master_ztemp_seus_buoy.traits_scaled_logged.unique, aes(x = reg, y = tl_ocean))  +
   geom_boxplot() +
   geom_text_repel(aes(label=outlier_tl), size = 1.5) +
   theme_classic()
 
 ggsave(path = here::here("figures","Outliers"), filename = "tl_outliers.jpg")
 ```
-
 Maximum length values
 ```{r trait value distribution max length}
 
-ggplot(spp_master_ztemp_seus_buoy.traits_scaled.unique, aes(x = length.max_ocean))  +
+ggplot(spp_master_ztemp_seus_buoy.traits_scaled_logged.unique, aes(x = length.max_ocean_logged))  +
   geom_histogram() +
   theme_classic()
 
-summary(spp_master_ztemp_seus_buoy.traits_scaled.unique$length.max_ocean)
+summary(spp_master_ztemp_seus_buoy.traits_scaled_logged.unique$length.max_ocean_logged)
 
 #what about when we leave out sleeper shark
 
-ggplot(spp_master_ztemp_seus_buoy.traits_scaled.unique[(spp != "Somniosus pacificus")], aes(x = length.max_ocean))  +
+ggplot(spp_master_ztemp_seus_buoy.traits_scaled_logged.unique[(spp != "Somniosus pacificus")], aes(x = length.max_ocean_logged))  +
   geom_histogram() +
   theme_classic()
 
-summary(spp_master_ztemp_seus_buoy.traits_scaled.unique[(spp != "Somniosus pacificus")]$length.max_ocean)
+summary(spp_master_ztemp_seus_buoy.traits_scaled_logged.unique[(spp != "Somniosus pacificus")]$length.max_ocean_logged)
 
 #marking outliers
 
-spp_master_ztemp_seus_buoy.traits_scaled.unique[,length.max_outlier := is_outlier(length.max_ocean, na.rm = T)]
+spp_master_ztemp_seus_buoy.traits_scaled_logged.unique[,length.max_outlier := is_outlier(length.max_ocean_logged, na.rm = T)]
 
-spp_master_ztemp_seus_buoy.traits_scaled.unique[,outlier_length.max := ifelse(length.max_outlier == T, spp, NA)]
+spp_master_ztemp_seus_buoy.traits_scaled_logged.unique[,outlier_length.max := ifelse(length.max_outlier == T, spp, NA)]
 library(ggrepel)
 #box plot would be helpful to see outliers
-ggplot(spp_master_ztemp_seus_buoy.traits_scaled.unique, aes(x = reg, y = length.max_ocean))  +
+ggplot(spp_master_ztemp_seus_buoy.traits_scaled_logged.unique, aes(x = reg, y = length.max_ocean_logged))  +
   geom_boxplot() +
   geom_text_repel(aes(label=outlier_length.max), size = 1.5) +
   theme_classic()
@@ -194,24 +202,24 @@ Prep for model runs
 
 #temp scaled vars only
 #names of scaled columns
-tempvars <- grep(".*temp.*scaled", names(spp_master_ztemp_seus_buoy.traits_scaled), value = T)
+tempvars <- grep(".*temp.*scaled", names(spp_master_ztemp_seus_buoy.traits_scaled_logged), value = T)
 
 #other reference and trait columns we need
-othervars_arrivals <- c("reg", "year", "col", "spp", "age.max_ocean_scaled", "age.maturity_ocean_scaled", "tl_ocean_scaled", "length.max_ocean_scaled")
+othervars_arrivals <- c("reg", "year", "col", "spp", "age.max_ocean_logged", "age.maturity_ocean_logged", "tl_ocean", "length.max_ocean_logged")
 
 colstosaveforarrivals <- c(othervars_arrivals, tempvars)
 
 #Arrival table
-arrival.reduced_nosleeper <- spp_master_ztemp_seus_buoy.traits_scaled[,colstosaveforarrivals, with = F][(spp != "Somniosus pacificus")] #reduces to columns we need, excludes sleeper shark (outlier)
+arrival.reduced_nosleeper <- spp_master_ztemp_seus_buoy.traits_scaled_logged[,colstosaveforarrivals, with = F][(spp != "Somniosus pacificus")] #reduces to columns we need, excludes sleeper shark (outlier)
 
 #Departure table
 
-othervars_departure <- c("reg", "year", "now_ext", "spp", "age.max_ocean_scaled", "age.maturity_ocean_scaled", "tl_ocean_scaled", "length.max_ocean_scaled")
+othervars_departure <- c("reg", "year", "now_ext", "spp", "age.max_ocean_logged", "age.maturity_ocean_logged", "tl_ocean", "length.max_ocean_logged")
 colstosavefordeparture <- c(othervars_departure, tempvars)
 
-departure.reduced_nosleeper <- spp_master_ztemp_seus_buoy.traits_scaled[,colstosavefordeparture, with = F][(spp != "Somniosus pacificus")] #reduces to columns we need, excludes sleeper shark (outlier)
+departure.reduced_nosleeper <- spp_master_ztemp_seus_buoy.traits_scaled_logged[,colstosavefordeparture, with = F][(spp != "Somniosus pacificus")] #reduces to columns we need, excludes sleeper shark (outlier)
 
-spp_master_ztemp_seus_buoy.traits_scaled.nosleeper <- spp_master_ztemp_seus_buoy.traits_scaled[(spp != "Somniosus pacificus")]
+spp_master_ztemp_seus_buoy.traits_scaled_logged.nosleeper <- spp_master_ztemp_seus_buoy.traits_scaled_logged[(spp != "Somniosus pacificus")]
 
 ```
 
@@ -222,20 +230,20 @@ Making all models for arrival
 arrival.reduced_nosleeper[,year := as.factor(year)]
 
 #delete any observations without full trait data
-arrival.reduced_nosleeper.r <- arrival.reduced_nosleeper[complete.cases(arrival.reduced_nosleeper[ , .(age.max_ocean_scaled, age.maturity_ocean_scaled, length.max_ocean_scaled, tl_ocean_scaled)]),]
+arrival.reduced_nosleeper.r <- arrival.reduced_nosleeper[complete.cases(arrival.reduced_nosleeper[ , .(age.max_ocean_logged, age.maturity_ocean_logged, length.max_ocean_logged, tl_ocean)]),]
 
 #for now, going with two traits and one temp variable
 #going to make loop to make all models I need to look at with single variables
 all.temp.variables <- colnames(arrival.reduced_nosleeper.r[,9:256])
 all.temp.variables.0 <- c(0, all.temp.variables) #add 0 as option so models can just include traits
 all.temp.variables.0 <- all.temp.variables.0[!grepl("*mean*", all.temp.variables.0)]#get rid of MEAN temp variables
-all.trait.variables <- c(0, "tl_ocean_scaled", "age.max_ocean_scaled","age.maturity_ocean_scaled", "length.max_ocean_scaled",
-                         "tl_ocean_scaled + age.max_ocean_scaled", "age.max_ocean_scaled + tl_ocean_scaled",
-                         "tl_ocean_scaled + age.maturity_ocean_scaled", "age.maturity_ocean_scaled + tl_ocean_scaled",
-                         "tl_ocean_scaled + length.max_ocean_scaled", "length.max_ocean_scaled + tl_ocean_scaled",
-                         "age.max_ocean_scaled + age.maturity_ocean_scaled", "age.maturity_ocean_scaled + age.max_ocean_scaled",
-                         "age.max_ocean_scaled + length.max_ocean_scaled", "length.max_ocean_scaled + age.max_ocean_scaled",
-                         "age.maturity_ocean_scaled + length.max_ocean_scaled", "length.max_ocean_scaled + age.maturity_ocean_scaled")
+all.trait.variables <- c(0, "tl_ocean", "age.max_ocean_logged","age.maturity_ocean_logged", "length.max_ocean_logged",
+                         "tl_ocean + age.max_ocean_logged", "age.max_ocean_logged + tl_ocean",
+                         "tl_ocean + age.maturity_ocean_logged", "age.maturity_ocean_logged + tl_ocean",
+                         "tl_ocean + length.max_ocean_logged", "length.max_ocean_logged + tl_ocean",
+                         "age.max_ocean_logged + age.maturity_ocean_logged", "age.maturity_ocean_logged + age.max_ocean_logged",
+                         "age.max_ocean_logged + length.max_ocean_logged", "length.max_ocean_logged + age.max_ocean_logged",
+                         "age.maturity_ocean_logged + length.max_ocean_logged", "length.max_ocean_logged + age.maturity_ocean_logged")
 
 sign <- c("+", "*")
 
@@ -245,46 +253,38 @@ full_var_set <- as.data.table(expand.grid(all.temp.variables.0, sign, all.trait.
 
 full_var_set.r <- full_var_set[!which((Var1 == "0" & Var2 =="*")|(Var3 == "0" & Var2 == "*")),] #this excludes repeats with *
 
-#repeated rows with traits
-repeats <- c("age.maturity_ocean_scaled + age.max_ocean_scaled","tl_ocean_scaled + age.maturity_ocean_scaled", "length.max_ocean_scaled + age.maturity_ocean_scaled", "age.maturity_ocean_scaled + length.max_ocean_scaled", "tl_ocean_scaled + length.max_ocean_scaled", "tl_ocean_scaled + age.max_ocean_scaled")
+arrival_model_comparison_traits <- as.data.table(matrix(nrow = nrow(full_var_set.r))) 
+arrival_model_comparison_traits[, temp_variable:=as.factor(V1)][, sign:=as.factor(V1)][, trait_variable:=as.factor(V1)][, AICc:=as.numeric(V1)][, converge:= as.logical(V1)]
+arrival_model_comparison_traits[, V1 := NULL]
 
-#delete rows with + and same combination of 2nd and 3rd traits
-full_var_set.r2 <- full_var_set.r[!which(Var2 == "+"& Var3 %in% repeats)]
-
-
-#build datatable
-arrival_model_comparison_traits_nosleeper <- as.data.table(matrix(nrow = nrow(full_var_set.r2))) 
-arrival_model_comparison_traits_nosleeper[, temp_variable:=as.factor(V1)][, sign:=as.factor(V1)][, trait_variable:=as.factor(V1)][, AICc:=as.numeric(V1)][, converge:= as.logical(V1)]
-arrival_model_comparison_traits_nosleeper[, V1 := NULL]
-
-for (i in 1:nrow(full_var_set.r2)){
+for (i in 1:nrow(full_var_set.r)){
  
-  temp <- full_var_set.r2$Var1[i]
-  sign <- full_var_set.r2$Var2[i]
-  trait <- full_var_set.r2$Var3[i]
+  temp <- full_var_set.r$Var1[i]
+  sign <- full_var_set.r$Var2[i]
+  trait <- full_var_set.r$Var3[i]
   
   formula <- as.formula(paste("col ~", temp, sign, trait, "+ (1|reg) + (1|spp)"))
   
   mod <- glmer(formula, family = binomial, data = arrival.reduced_nosleeper.r, nAGQ = 0)
   
-  arrival_model_comparison_traits_nosleeper[i,temp_variable := full_var_set.r2$Var1[i]]
-  arrival_model_comparison_traits_nosleeper[i,sign := full_var_set.r2$Var2[i]]
-  arrival_model_comparison_traits_nosleeper[i,trait_variable := full_var_set.r2$Var3[i]]
-  arrival_model_comparison_traits_nosleeper[i,AICc := AICc(mod)]
+  arrival_model_comparison_traits[i,temp_variable := full_var_set.r$Var1[i]]
+  arrival_model_comparison_traits[i,sign := full_var_set.r$Var2[i]]
+  arrival_model_comparison_traits[i,trait_variable := full_var_set.r$Var3[i]]
+  arrival_model_comparison_traits[i,AICc := AICc(mod)]
   
   warning <- mod@optinfo$conv$lme4$messages[2]
   converges <- ifelse(is.null(warning) == TRUE, T, F)
   
-  arrival_model_comparison_traits_nosleeper[i, converge := converges]
+  arrival_model_comparison_traits[i, converge := converges]
   
-  print(paste(i, nrow(arrival_model_comparison_traits_nosleeper), sep = "/"))
+  print(paste(i, nrow(arrival_model_comparison_traits), sep = "/"))
     
 }
 
 
-saveRDS(arrival_model_comparison_traits_nosleeper, here::here("Model_results","Traits","arrival_model_comparison_traits_nosleeper.rds"))
+saveRDS(arrival_model_comparison_traits, here::here("Model_results","Traits","arrival_model_comparison_traits_nosleeper_logged.rds"))
 
-#arrival_model_comparison_traits_nosleeper <- readRDS(here::here("Model_results","Traits","arrival_model_comparison_traits_nosleeper.rds"))
+arrival_model_comparison_traits <- readRDS(here::here("Model_results","Traits","arrival_model_comparison_traits_nosleeper_logged.rds"))
 
 ```
 
@@ -295,43 +295,41 @@ Making all models for departure
 #going to make loop to make all models I need to look at with single variables
 #don't want mean
 
-#to assist with convergence: year as factor
-departure.reduced_nosleeper[,year := as.factor(year)]
 
 #delete any observations without full trait data
-departure.reduced_nosleeper.r <- departure.reduced_nosleeper[complete.cases(departure.reduced_nosleeper[ , .(age.max_ocean_scaled, age.maturity_ocean_scaled, length.max_ocean_scaled, tl_ocean_scaled)]),]
+departure.reduced_nosleeper.r <- departure.reduced_nosleeper[complete.cases(departure.reduced_nosleeper[ , .(age.max_ocean_logged, age.maturity_ocean_logged, length.max_ocean_logged, tl_ocean)]),]
 
-departure_model_comparison_traits_nosleeper <- as.data.table(matrix(nrow = nrow(full_var_set.r2))) 
-departure_model_comparison_traits_nosleeper[, temp_variable:=as.factor(V1)][, sign:=as.factor(V1)][, trait_variable:=as.factor(V1)][, AICc:=as.numeric(V1)][, converge:= as.logical(V1)]
-departure_model_comparison_traits_nosleeper[, V1 := NULL]
+departure_model_comparison_traits <- as.data.table(matrix(nrow = nrow(full_var_set.r))) 
+departure_model_comparison_traits[, temp_variable:=as.factor(V1)][, sign:=as.factor(V1)][, trait_variable:=as.factor(V1)][, AICc:=as.numeric(V1)][, converge:= as.logical(V1)]
+departure_model_comparison_traits[, V1 := NULL]
 
-for (i in 1:nrow(full_var_set.r2)){
+for (i in 1:nrow(full_var_set.r)){
  
-  temp <- full_var_set.r2$Var1[i]
-  sign <- full_var_set.r2$Var2[i]
-  trait <- full_var_set.r2$Var3[i]
+  temp <- full_var_set.r$Var1[i]
+  sign <- full_var_set.r$Var2[i]
+  trait <- full_var_set.r$Var3[i]
   
   formula <- as.formula(paste("now_ext ~", temp, sign, trait, "+ (1|reg) + (1|spp)"))
   
   mod <- glmer(formula, family = binomial, data = departure.reduced_nosleeper.r, nAGQ = 0)
   
-  departure_model_comparison_traits_nosleeper[i,temp_variable := full_var_set.r2$Var1[i]]
-  departure_model_comparison_traits_nosleeper[i,sign := full_var_set.r2$Var2[i]]
-  departure_model_comparison_traits_nosleeper[i,trait_variable := full_var_set.r2$Var3[i]]
-  departure_model_comparison_traits_nosleeper[i,AICc := AICc(mod)]
+  departure_model_comparison_traits[i,temp_variable := full_var_set.r$Var1[i]]
+  departure_model_comparison_traits[i,sign := full_var_set.r$Var2[i]]
+  departure_model_comparison_traits[i,trait_variable := full_var_set.r$Var3[i]]
+  departure_model_comparison_traits[i,AICc := AICc(mod)]
   
   warning <- mod@optinfo$conv$lme4$messages[2]
   converges <- ifelse(is.null(warning) == TRUE, T, F)
   
-  departure_model_comparison_traits_nosleeper[i, converge := converges]
+  departure_model_comparison_traits[i, converge := converges]
   
-  print(paste(i, nrow(departure_model_comparison_traits_nosleeper), sep = "/"))
+  print(paste(i, nrow(departure_model_comparison_traits), sep = "/"))
     
 }
 
-saveRDS(departure_model_comparison_traits_nosleeper, here::here("Model_results","Traits","departure_model_comparison_traits_nosleeper.rds"))
+saveRDS(departure_model_comparison_traits, here::here("Model_results","Traits","departure_model_comparison_traits_nosleeper_logged.rds"))
 
-departure_model_comparison_traits_nosleeper <- readRDS(here::here("Model_results","Traits","departure_model_comparison_traits_nosleeper.rds"))
+departure_model_comparison_traits <- readRDS(here::here("Model_results","Traits","departure_model_comparison_traits_nosleeper_logged.rds"))
 
 ```
 
@@ -341,7 +339,7 @@ RVI for Temperature Trait Arrival Models
 
 ```{r RVI arrival traits}
 #only raw temp has lag of 10 years, which means variable importance comparisons are unbalanced so I will get rid of these rows
-arrival_model_comparisons_traits.nosleeper <- arrival_model_comparison_traits_nosleeper[!grepl("lag10", temp_variable), ]
+arrival_model_comparisons_traits.nosleeper <- arrival_model_comparison_traits[!grepl("lag10", temp_variable), ]
 
 #add ∆AIC to tables
 min_arrival_AICc_trait <- min(arrival_model_comparisons_traits.nosleeper[, AICc])
@@ -423,59 +421,17 @@ value <- c(arrival_bottom_importance, arrival_surface_importance, arrival_nolag_
 RVI_arrival_traits <- data.table(arrival_departure, type, variable, value)
 ```
 
-Parameters for best arrival models (AIC<2)
-
-```{r arrival model best parameter comparison}
-
-colmod1 <- glmer(col ~ max_sst_temp_change_abs_lag1_scaled*age.max_ocean_scaled + (1|reg) + (1|spp), family = "binomial", data = arrival.reduced_nosleeper.r, nAGQ = 0)
-
-colmod2 <- glmer(col ~ max_sst_temp_change_abs_lag1_scaled*age.max_ocean_scaled+tl_ocean_scaled + (1|reg) + (1|spp), family = "binomial", data = arrival.reduced_nosleeper.r, nAGQ = 0)
-
-colmod3 <- glmer(col ~ 
-max_sst_temp_change_abs_lag1_scaled*age.max_ocean_scaled+length.max_ocean_scaled + (1|reg) + (1|spp), family = "binomial", data = arrival.reduced_nosleeper.r, nAGQ = 0)
-
-colmod4 <- glmer(col ~ max_sst_temp_change_abs_lag1_scaled*age.max_ocean_scaled+age.maturity_ocean_scaled + (1|reg) + (1|spp), family = "binomial", data = arrival.reduced_nosleeper.r, nAGQ = 0)
-
-#no temp
-colmod_notemp <- glmer(col ~ age.max_ocean_scaled + (1|reg) + (1|spp), family = "binomial", data = arrival.reduced_nosleeper.r, nAGQ = 0)
-#no trait
-colmod_notrait <- glmer(col ~ max_sst_temp_change_abs_lag1_scaled + (1|reg) + (1|spp), family = "binomial", data = arrival.reduced_nosleeper.r, nAGQ = 0)
-
-#null
-
-colmod_null <- glmer(col ~ (1|reg) + (1|spp), family = "binomial", data = arrival.reduced_nosleeper.r, nAGQ = 0)
-
-summary(colmod1)[10]
-summary(colmod2)[10]
-summary(colmod3)[10]
-summary(colmod4)[10]
-summary(colmod_notemp)[10]
-summary(colmod_notrait)[10]
-summary(colmod_null)[10]
-
-AICc(colmod1)
-AICc(colmod2)-AICc(colmod1)
-AICc(colmod3)-AICc(colmod1)
-AICc(colmod4)-AICc(colmod1)
-AICc(colmod_notemp)-AICc(colmod1)
-AICc(colmod_notrait)-AICc(colmod1)
-AICc(colmod_null)-AICc(colmod1)
-
-```
-
 
 Departure
 
 ```{r RVI departure traits}
 #only raw temp has lag of 10 years, which means variable importance comparisons are unbalanced so I will get rid of these rows
-departure_model_comparisons_traits.nosleeper <- departure_model_comparison_traits_nosleeper[!grepl("lag10", temp_variable), ]
+departure_model_comparisons_traits.nosleeper <- departure_model_comparison_traits[!grepl("lag10", temp_variable), ]
 
 
 #add ∆AIC to tables
 min_departure_AICc_trait <- min(departure_model_comparisons_traits.nosleeper[, AICc])
 departure_model_comparisons_traits.nosleeper[,"deltaAICc" := (AICc - min_departure_AICc_trait)]
-
-#get rid of duplicates when sign is +, and 
 
 #add relative likelihood exp( -0.5 * ∆AIC score for that model)
 departure_model_comparisons_traits.nosleeper[,"rel_likelihood" := exp((-0.5 * deltaAICc))]
@@ -545,53 +501,6 @@ variable <- c("bottom", "surface", "no_lag", "lagged", "absolute_value_change", 
 value <- c(departure_bottom_importance, departure_surface_importance, departure_nolag_importance, departure_lag_importance, departure_abs_importance, departure_change_importance, departure_raw_importance, departure_min_temp_importance, departure_max_temp_importance, departure_seas_temp_importance, departure_age.max_importance, departure_age.maturity_importance, departure_tl_importance, departure_length.max_importance, departure_interaction_temp_trait_importance)
 
 RVI_departure_traits <- data.table(arrival_departure, type, variable, value)
-```
-
-Parameters for best departure models (AIC<2)
-
-```{r departure model best parameter comparison}
-
-now_extmod1 <- glmer(now_ext ~ max_sst_temp_lag6_scaled*length.max_ocean_scaled + age.max_ocean_scaled + (1|reg) + (1|spp), family = "binomial", data = departure.reduced_nosleeper.r, nAGQ = 0)
-
-now_extmod2 <- glmer(now_ext ~ max_sst_temp_lag2_scaled*length.max_ocean_scaled + age.max_ocean_scaled + (1|reg) + (1|spp), family = "binomial", data = departure.reduced_nosleeper.r, nAGQ = 0)
-
-now_extmod3 <- glmer(now_ext ~ max_sst_temp_scaled*length.max_ocean_scaled + age.max_ocean_scaled + (1|reg) + (1|spp), family = "binomial", data = departure.reduced_nosleeper.r, nAGQ = 0)
-
-now_extmod4 <- glmer(now_ext ~ max_sst_temp_lag5_scaled*length.max_ocean_scaled + age.max_ocean_scaled + (1|reg) + (1|spp), family = "binomial", data = departure.reduced_nosleeper.r, nAGQ = 0)
-
-now_extmod5 <- glmer(now_ext ~ max_sst_temp_lag6_scaled*length.max_ocean_scaled + age.maturity_ocean_scaled+ (1|reg) + (1|spp), family = "binomial", data = departure.reduced_nosleeper.r, nAGQ = 0)
-
-now_extmod6 <- glmer(now_ext ~ max_sst_temp_lag1_scaled*length.max_ocean_scaled + age.max_ocean_scaled + (1|reg) + (1|spp), family = "binomial", data = departure.reduced_nosleeper.r, nAGQ = 0)
-
-#no temp
-now_extmod_notemp <- glmer(now_ext ~ age.max_ocean_scaled + (1|reg) + (1|spp), family = "binomial", data = departure.reduced_nosleeper.r, nAGQ = 0)
-#no trait
-now_extmod_notrait <- glmer(now_ext ~ max_sst_temp_scaled + (1|reg) + (1|spp), family = "binomial", data = departure.reduced_nosleeper.r, nAGQ = 0)
-
-#null
-
-now_extmod_null <- glmer(now_ext ~ (1|reg) + (1|spp), family = "binomial", data = departure.reduced_nosleeper.r, nAGQ = 0)
-
-summary(now_extmod1)[10]
-summary(now_extmod2)[10]
-summary(now_extmod3)[10]
-summary(now_extmod4)[10]
-summary(now_extmod5)[10]
-summary(now_extmod6)[10]
-summary(now_extmod_notemp)[10]
-summary(now_extmod_notrait)[10]
-summary(now_extmod_null)[10]
-
-AICc(now_extmod1)
-AICc(now_extmod2)-AICc(now_extmod1)
-AICc(now_extmod3)-AICc(now_extmod1)
-AICc(now_extmod4)-AICc(now_extmod1)
-AICc(now_extmod5)-AICc(now_extmod1)
-AICc(now_extmod6)-AICc(now_extmod1)
-AICc(now_extmod_notemp)-AICc(now_extmod1)
-AICc(now_extmod_notrait)-AICc(now_extmod1)
-AICc(now_extmod_null)-AICc(now_extmod1)
-
 ```
 
 Merge RVI tables for colonization and extinction with traits, and then graph
@@ -698,55 +607,71 @@ dev.off()
 What do interactions look like?
 
 ##arrival with Traits
-Best model: max_sst_temp_change_abs_lag1_scaled * age.max_ocean_scaled
+Best model: min_sbt_temp_change_abs_lag5_scaled * length.max_ocean_logged + age.max_ocean_logged
 
-All fish no traits: max_sst_temp_change_abs_lag1_scaled (same)
+All fish no traits: max_sst_temp_change_abs_lag1_scaled (this is quite different)
 
 
 ```{r predicted values arrival}
 library(ggfortify)
 library(wesanderson)
-pal <- wes_palette("GrandBudapest1", 5, type = "continuous")
+pal <- wes_palette("GrandBudapest1", 6, type = "continuous")
 
 #best model with fish only 
-mod_arrival_trait <- glmer(col ~ max_sst_temp_change_abs_lag1_scaled * age.max_ocean_scaled + (1|reg) + (1|spp), family = "binomial", data = arrival.reduced_nosleeper.r, nAGQ = 0)
+mod_arrival_trait <- glmer(col ~ min_sbt_temp_change_abs_lag5_scaled * length.max_ocean_logged + age.max_ocean_logged+ (1|reg) + (1|spp), family = "binomial", data = arrival.reduced_nosleeper.r, nAGQ = 0)
 
-#reverse to age max unscaled
-mod_arrival_reverse_scaled_agemax <- lm(age.max_ocean ~ age.max_ocean_scaled, data = spp_master_ztemp_seus_buoy.traits_scaled.nosleeper) 
-  
-mod_arrival_forward_scaled_agematurity <- lm(age.max_ocean_scaled ~ age.max_ocean, data = spp_master_ztemp_seus_buoy.traits_scaled.nosleeper)
+#temp only arrival trait model seas_sst_temp_scaled
+mod_arrival_trait_notraits <- glmer(col ~ min_sbt_temp_change_abs_lag5_scaled + (1|reg) + (1|spp), family = "binomial", data = arrival.reduced_nosleeper.r, nAGQ = 0)
+summary(mod_arrival_trait_notraits)
 
-#histogram of max age
-hist(unique(spp_master_ztemp_seus_buoy.traits_scaled.nosleeper[,.(spp,age.max_ocean)]$age.max_ocean))
+#trait only arrival trait model
+mod_arrival_trait_notemp <- glmer(col ~ length.max_ocean_logged + age.max_ocean_logged + (1|reg) + (1|spp), family = "binomial", data = arrival.reduced_nosleeper.r, nAGQ = 0)
+summary(mod_arrival_trait_notemp)
 
-  #age max age match (save for departures)
-age_max_match <- data.table(ages_we_want = c(1, 30, 80,100,150))
-age_max_match[,age.max_ocean_scaled := mod_arrival_forward_scaled_agematurity$coefficients[1] + mod_arrival_forward_scaled_agematurity$coefficients[2]*ages_we_want]
+#skip because we're justing using log
+      #        #reverse to age maturity unscaled
+      #        mod_arrival_reverse_scaled_agematurity <- lm(age.maturity_ocean ~ age.maturity_ocean_logged, data =       #spp_master_ztemp_seus_buoy.traits_scaled_logged.nosleeper) 
+      #        
+      #        mod_arrival_forward_scaled_agematurity <- lm(age.maturity_scaled ~ age.maturity, data =       #spp_master_ztemp_seus_buoy.traits_scaled_logged.nosleeper)
+      #        
+      #
+        ##age maturity age match (save for departures)
+        #length_max_match <- data.table(ages_we_want = c(0.5, 1, 3, 15,25))
+        #age_match[,age.maturity_ocean_logged := exp(ages_we_want)]
         
+#histogram of lengths
+hist(unique(spp_master_ztemp_seus_buoy.traits_scaled_logged.nosleeper[,.(spp,length.max_ocean)]$length.max_ocean))
+
+length_match <- data.table(lengths_we_want = c(5,50,100,300, 400,500))
+length_match[,length.max_ocean_logged := log(lengths_we_want)]
 
 #best predictor for fish only: max_sst_temp_change_abs_lag1_scaled as x axis
-temp_arrival_newdata <- runif(500,min(spp_master_ztemp_seus_buoy.traits_scaled.nosleeper$max_sst_temp_change_abs_lag1_scaled), max(spp_master_ztemp_seus_buoy.traits_scaled.nosleeper$max_sst_temp_change_abs_lag1_scaled))
+temp_arrival_newdata <- runif(500,min(spp_master_ztemp_seus_buoy.traits_scaled_logged.nosleeper$min_sbt_temp_change_abs_lag5_scaled), max(spp_master_ztemp_seus_buoy.traits_scaled_logged.nosleeper$min_sbt_temp_change_abs_lag5_scaled))
 
-temp_age_newdata <- age_max_match[,age.max_ocean_scaled] #length
+temp_length_newdata <- length_match[,length.max_ocean_logged] #length
 
-#make all possible temp trait combos
-arrival_newdata_traits <- expand.grid("max_sst_temp_change_abs_lag1_scaled" = temp_arrival_newdata, "age.max_ocean_scaled" = temp_age_newdata)
+#also extract mean values for when best model does not include specified trait
+temp_agemax_newdata_mean <- mean(spp_master_ztemp_seus_buoy.traits_scaled_logged.nosleeper$age.max_ocean_logged, na.rm = T)
+
+
+arrival_newdata_traits <- expand.grid("min_sbt_temp_change_abs_lag5_scaled" = temp_arrival_newdata, "length.max_ocean_logged" = temp_length_newdata, "age.max_ocean_logged" = temp_agemax_newdata_mean)
 
 
 preds <- predict(mod_arrival_trait, newdata = arrival_newdata_traits, re.form = NA, type = "response")
-preds_predictors_col <- data.table(cbind(arrival_newdata_traits, preds))
-preds_predictors_col <- preds_predictors_col[age_max_match, on = "age.max_ocean_scaled"]
+preds_predictors <- data.table(cbind(arrival_newdata_traits, preds))
+preds_predictors <- preds_predictors[length_match, on = "length.max_ocean_logged"]
 
 #I want x axis to be meaningful
-mod_arrival_reverse_scaledtemp <- lm(max_sst_temp_change_abs_lag1 ~ max_sst_temp_change_abs_lag1_scaled, data = spp_master_ztemp_seus_buoy.traits_scaled.nosleeper)
+mod_arrival_reverse_scaledtemp <- lm(min_sbt_temp_change_abs_lag5 ~ min_sbt_temp_change_abs_lag5_scaled, data = spp_master_ztemp_seus_buoy.traits_scaled_logged.nosleeper)
 
 
-preds_predictors_col[,max_sst_temp_change_abs_lag1 := mod_arrival_reverse_scaledtemp$coefficients[2]*max_sst_temp_change_abs_lag1_scaled + mod_arrival_reverse_scaledtemp$coefficients[1] ]
+preds_predictors[,min_sbt_temp_change_abs_lag5 := mod_arrival_reverse_scaledtemp$coefficients[2]*min_sbt_temp_change_abs_lag5_scaled + mod_arrival_reverse_scaledtemp$coefficients[1] ]
 
 
-(arrival_preds <- ggplot(data = preds_predictors_col, aes(x = max_sst_temp_change_abs_lag1, y = preds, color = as.factor(ages_we_want))) +
+(arrival_preds <- ggplot(data = preds_predictors, aes(x = min_sbt_temp_change_abs_lag5, y = preds, color = as.factor(lengths_we_want))) +
   geom_line(size = 1) +
-  labs(colour="Maximum\nAge", x = "Absolute change in maximum surface\ntemperature lagged 1 year (\u00B0C)", y = "Probability of Arrival") +
+  labs(colour="Maximum\nLength", x = "Absolute change in minimum bottom\ntemperature lagged 5 years (˚C)", y = "Probability of Arrival") +
+  scale_y_continuous(breaks=c(0, 0.5, 1)) +
   theme_classic() +
   scale_color_manual(values = pal) +
   theme(text=element_text(size = 10)))
@@ -758,52 +683,56 @@ ggsave(arrival_preds, path = here::here("figures/Figure5"), file = "predicted_pr
 ```
 
 ##departure with Traits
-Best model: 		max_sst_temp_lag6_scaled * length.max_ocean_scaled + age.max_ocean_scaled
+Best model: 	max_sst_temp_scaled * length.max_ocean_logged + age.maturity_ocean_logged
 
 Best model from analyses with temperature only: max_sst_temp_scaled
 
 ```{r predicted values departure}
 #best model with fish only 
-mod_departure_trait <- glmer(now_ext ~ max_sst_temp_lag6_scaled * length.max_ocean_scaled + age.max_ocean_scaled + (1|reg) + (1|spp), family = "binomial", data = departure.reduced_nosleeper.r, nAGQ = 0)
+mod_departure_trait <- glmer(now_ext ~ max_sst_temp_scaled * length.max_ocean_logged + age.maturity_ocean_logged + (1|reg) + (1|spp), family = "binomial", data = departure.reduced_nosleeper.r, nAGQ = 0)
 
-#reverse to length max unscaled
-     mod_departure_reverse_scaled_lengthmax <- lm(length.max_ocean ~ length.max_ocean_scaled, data = spp_master_ztemp_seus_buoy.traits_scaled.nosleeper) 
+#using best predictor for all species in model instead
+mod_departure_trait_allspp <- glmer(now_ext ~ seas_sst_temp_lag3_scaled * length.max_ocean_logged + age.maturity_ocean_logged + (1|reg) + (1|spp), family = "binomial", data = departure.reduced_nosleeper.r, nAGQ = 0)
+
+#delete, using log instead
+      #reverse to length max unscaled
+   #   mod_departure_reverse_scaled_lengthmax <- lm(length.max ~ length.max_ocean_logged, data = spp_master_ztemp_seus_buoy.traits_scaled_logged.nosleeper) 
       
-     mod_departure_forward_scaled_lengthmax <- lm(length.max_ocean_scaled ~ length.max_ocean, data = spp_master_ztemp_seus_buoy.traits_scaled.nosleeper)
+   #   mod_departure_forward_scaled_lengthmax <- lm(length.max_ocean_logged ~ length.max, data = spp_master_ztemp_seus_buoy.traits_scaled_logged.nosleeper)
 
 #histogram of lengths
-hist(unique(spp_master_ztemp_seus_buoy.traits_scaled.nosleeper[,.(spp,length.max_ocean)]$length.max_ocean))
+hist(unique(spp_master_ztemp_seus_buoy.traits_scaled_logged.nosleeper[,.(spp,length.max_ocean)]$length.max_ocean))
 
-length_match <- data.table(lengths_we_want = c(5,50,100,300,500))
-length_match[,length.max_ocean_scaled := lengths_we_want * coef(mod_departure_forward_scaled_lengthmax)[2] + coef(mod_departure_forward_scaled_lengthmax)[1]]
+length_match <- data.table(lengths_we_want = c(5,50,100,300, 400,500))
+length_match[,length.max_ocean_logged := log(lengths_we_want)]
+
+#best predictor for fish only: max_sst_temp_scaled as x axis
+temp_departure_newdata <- runif(500,min(spp_master_ztemp_seus_buoy.traits_scaled_logged.nosleeper$max_sst_temp_scaled), max(spp_master_ztemp_seus_buoy.traits_scaled_logged.nosleeper$max_sst_temp_scaled))
+
+temp_lengthmax_newdata <- length_match[,length.max_ocean_logged]
 
 
-temp_departure_newdata <- runif(500,min(spp_master_ztemp_seus_buoy.traits_scaled.nosleeper$max_sst_temp_lag6_scaled), max(spp_master_ztemp_seus_buoy.traits_scaled.nosleeper$max_sst_temp_lag6_scaled))
+temp_agematurity_newdata <- mean(spp_master_ztemp_seus_buoy.traits_scaled_logged.nosleeper$age.maturity_ocean_logged, na.rm = T)
 
-temp_lengthmax_newdata <- length_match[,length.max_ocean_scaled]
-
-
-temp_agemax_newdata <- mean(departure.reduced_nosleeper.r$age.max_ocean_scaled, na.rm = T)
-
-departure_newdata_traits <- expand.grid("max_sst_temp_lag6_scaled" = temp_departure_newdata, "length.max_ocean_scaled" = temp_lengthmax_newdata, "age.max_ocean_scaled" = temp_agemax_newdata)
+departure_newdata_traits <- expand.grid("max_sst_temp_scaled" = temp_departure_newdata, "length.max_ocean_logged" = temp_lengthmax_newdata, "age.maturity_ocean_logged" = temp_agematurity_newdata)
 
 
 preds <- predict(mod_departure_trait, newdata = departure_newdata_traits, re.form = NA, type = "response")
-preds_predictors_ext <- data.table(cbind(departure_newdata_traits, preds))
-preds_predictors_ext <- preds_predictors_ext[length_match, on = "length.max_ocean_scaled"]
+preds_predictors <- data.table(cbind(departure_newdata_traits, preds))
+preds_predictors <- preds_predictors[length_match, on = "length.max_ocean_logged"]
 
 #I want x axis to be meaningful
-mod_departure_reverse_scaledtemp <- lm(max_sst_temp_lag6 ~ max_sst_temp_lag6_scaled, data = spp_master_ztemp_seus_buoy.traits_scaled.nosleeper)
+mod_departure_reverse_scaledtemp <- lm(max_sst_temp ~ max_sst_temp_scaled, data = spp_master_ztemp_seus_buoy.traits_scaled_logged.nosleeper)
 
 
-preds_predictors_ext[,max_sst_temp_lag6 := mod_departure_reverse_scaledtemp$coefficients[2]*max_sst_temp_lag6_scaled + mod_departure_reverse_scaledtemp$coefficients[1] ]
+preds_predictors[,max_sst_temp := mod_departure_reverse_scaledtemp$coefficients[2]*max_sst_temp_scaled + mod_departure_reverse_scaledtemp$coefficients[1] ]
 
 
 
-(departure_preds <- ggplot(data = preds_predictors_ext, aes(x = max_sst_temp_lag6, y = preds, color = as.factor(lengths_we_want))) +
+(departure_preds <- ggplot(data = preds_predictors, aes(x = max_sst_temp, y = preds, color = as.factor(lengths_we_want))) +
   geom_line(size = 1) +
-  labs(colour="Maximum\nLength", x = "Maximum surface temperature\n lagged 6 years (\u00B0C)", y = "Probability of Departure") +
-#  scale_y_continuous(breaks=c(0, 0.5, 1)) +
+  labs(colour="Maximum\nLength", x = "Maximum\nsurface temperature (˚C)", y = "Probability of Departure") +
+  scale_y_continuous(breaks=c(0, 0.5, 1)) +
   theme_classic() +
   scale_color_manual(values = pal) +
   theme(text=element_text(size = 10)))
@@ -811,13 +740,47 @@ preds_predictors_ext[,max_sst_temp_lag6 := mod_departure_reverse_scaledtemp$coef
 ggsave(path = here::here("figures/Figure5"), file = "predicted_probs_departure_maxlength_nosleeper.jpg")
 ggsave(path = here::here("figures/Figure5"), file = "predicted_probs_departure_maxlength_nosleeper.eps")
 
+#___________
+#best predictor for all organisms: seasonality as x axis, lagged 3 years
+temp_departure_newdata_seas <- runif(500,min(spp_master_ztemp_seus_buoy.traits_scaled_logged.nosleeper$seas_sst_temp_lag3_scaled), max(spp_master_ztemp_seus_buoy.traits_scaled_logged.nosleeper$seas_sst_temp_lag3_scaled))
+
+temp_agematurity_newdata_seas <- age_match[,age.maturity_ocean_logged]
+
+
+temp_agemax_newdata_seas <- mean(spp_master_ztemp_seus_buoy.traits_scaled_logged.nosleeper$age.max_scaled, na.rm = T)
+
+departure_newdata_traits_seas <- expand.grid("seas_sst_temp_lag3_scaled" = temp_departure_newdata_seas, "age.maturity_ocean_logged" = temp_agematurity_newdata_seas, "age.max_scaled" = temp_agemax_newdata_seas)
+
+
+preds_seas <- predict(mod_departure_trait_allspp, newdata = departure_newdata_traits_seas, re.form = NA, type = "response")
+preds_predictors_seas <- data.table(cbind(departure_newdata_traits_seas, preds_seas))
+preds_predictors_seas <- preds_predictors_seas[age_match, on = "age.maturity_ocean_logged"]
+
+#I want x axis to be meaningful
+mod_departure_reverse_scaledtemp_seas <- lm(seas_sst_temp_lag3 ~ seas_sst_temp_lag3_scaled, data = spp_master_ztemp_seus_buoy.traits_scaled_logged.nosleeper)
+
+
+preds_predictors_seas[,seas_sst_temp_lag3 := mod_departure_reverse_scaledtemp_seas$coefficients[2]*seas_sst_temp_lag3_scaled + mod_departure_reverse_scaledtemp_seas$coefficients[1] ]
+
+#reverse order of ages to match
+preds_predictors_seas$ages_we_want <- factor(preds_predictors_seas$ages_we_want, levels=c("25", "15", "3", "1","0.5"))
+
+
+ggplot(data = preds_predictors_seas, aes(x = seas_sst_temp_lag3, y = preds_seas, color = as.factor(ages_we_want))) +
+  geom_line(size = 1.5) +
+  labs(colour="Age at\nMaturity", x = "Temperature Seasonality\nThree Years Previously (˚C)", y = "Probability of Departure",title = "Predicted Probabilities of Departure") +
+ # scale_y_continuous(breaks=c(0, 0.5, 1)) +
+  theme_classic() +
+  scale_color_manual(values = pal) +
+  theme(text=element_text(size = 14))
+
 
 ```
 
 Merge marginal effects plots
 ```{r}
 library(cowplot)
-mar_effects <- plot_grid(arrival_preds,departure_preds, labels = c("a.","b."), label_size = 10)
+mar_effects <- plot_grid(arrival_preds,departure_preds, labels = c("a.","b."))
 
 
 
