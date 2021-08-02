@@ -1,0 +1,38 @@
+---
+title: "Figure 3 Code Annual Only"
+output: html_notebook
+---
+
+See Col_Ext_Models_Final for more context (~line 287)
+
+```{r setup}
+library(ggplot2)
+library(data.table)
+
+lags_RVI_scaled <- readRDS(here("Model_results","lags_RVI_scaled_annual_obs.rds"))
+
+```
+
+
+```{r plot}
+#melt wide to long
+lags_RVI_scaled.l <- melt(lags_RVI_scaled,
+                measure.vars = c("arrival_RVI", "departure_RVI"))
+
+levels(lags_RVI_scaled.l$variable) <- c("Arrival","Departure")
+
+#visualize lags through time
+ggplot(data = lags_RVI_scaled.l, aes(x = arrival_lag, y = value)) +
+  geom_line(aes(linetype = variable)) +
+  labs(x = "Lag (years)", y = "Relative Variable Importance") +
+  theme_classic() +
+  theme(text = element_text(size = 12), legend.title = element_blank(),
+    legend.position = c(0.75,0.75)) +
+  scale_x_continuous(breaks = c(0:9))
+
+ggsave(here("figures","Supplemental", "annual_sensitivity","Figure3_annualonly.eps"), height = 4, width = 6)
+ggsave(here("figures","Supplemental", "annual_sensitivity","Figure3_annualonly.jpg"), height = 4, width = 6)
+
+
+```
+
