@@ -63,8 +63,9 @@ ggsave(here("figures","figure4","Figure4b.eps" ))
 
 Arrange side by side
 ```{r arrange}
-figure4 <- plot_grid(RVI_arrival_plot, RVI_departure_plot, labels = c("a.", "b."))
+figure4 <- plot_grid(RVI_arrival_plot, RVI_departure_plot, labels = c("a.", "b."), label_size = 12)
 
-ggsave(here("figures","figure4","Figure4.eps"))
+ggsave(here("figures","figure4","Figure4.eps"), height = 4, width = 8)
+ggsave(here("figures","figure4","Figure4.jpg"), height = 4, width = 8)
 ```
 

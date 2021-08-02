@@ -1776,16 +1776,32 @@ RVI_departure_nolag &lt;- readRDS(here(&quot;Model_results&quot;, &quot;RVI_depa
 <p>Plot</p>
 <!-- rnb-text-end -->
 <!-- rnb-chunk-begin -->
-<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuZ2dzYXZlKGhlcmUoXCJmaWd1cmVzXCIsXCJmaWd1cmU0XCIsXCJGaWd1cmU0YS5lcHNcIiApKVxuXG5gYGAifQ== -->
-<pre class="r"><code>ggsave(here(&quot;figures&quot;,&quot;figure4&quot;,&quot;Figure4a.eps&quot; ))
-</code></pre>
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuI2Fycml2YWxzXG5SVklfYXJyaXZhbF9wbG90IDwtIGdncGxvdChkYXRhID0gUlZJX2Fycml2YWxfbm9sYWcsIGFlcyh4PXR5cGUsIHkgPSB2YWx1ZSwgZmlsbCA9IHZhcmlhYmxlKSkgK1xuICBnZW9tX2JhcihzdGF0PVwiaWRlbnRpdHlcIiwgY29sb3IgPSBOQSwgc2l6ZSA9IDAsIHdpZHRoID0gMC44KSArXG4gIHNjYWxlX3hfZGlzY3JldGUoYnJlYWtzID0gYyhcIkRlcHRoXCIsIFwiVHJhbnNmb3JtYXRpb25cIiwgXCJNZXRyaWNcIiksIGxhYmVscyA9IGMoXCJEZXB0aFwiLCBcIlRyYW5zZm9ybWF0aW9uXCIsIFwiTWV0cmljXCIpKSArXG4gIGxhYnMoeCA9IFwiVGVtcGVyYXR1cmUgVmFyaWFibGVzXCIsIHkgPSBcIlJlbGF0aXZlIFZhcmlhYmxlIEltcG9ydGFuY2VcIikgK1xuICB0aGVtZV9jbGFzc2ljKCkgK1xuICB0aGVtZSh0ZXh0ID0gZWxlbWVudF90ZXh0KHNpemUgPSAxMS41KSwgXG4gICAgICAgIGxlZ2VuZC5wb3NpdGlvbiA9IFwidG9wXCIsIFxuICAgICAgICBsZWdlbmQudGl0bGUgPSBlbGVtZW50X2JsYW5rKCksIFxuICAgICAgICBsZWdlbmQuc3BhY2luZy54ID0gdW5pdCgwLjIsICdjbScpLFxuICAgICAgICBsZWdlbmQuanVzdGlmaWNhdGlvbiA9IFwiY2VudGVyXCIsXG4gICAgICAgIGFzcGVjdC5yYXRpbyA9ICgxKSxcbiAgICAgICAgIywgbGVnZW5kLnBvc2l0aW9uID0gXCJub25lXCJcbiAgICAgICAgKSArXG4gIGd1aWRlcyhmaWxsPWd1aWRlX2xlZ2VuZChuY29sPTMpKSArXG4gIHNjYWxlX2ZpbGxfbWFudWFsKHZhbHVlcyA9IGNvbG9ycyxcbiAgICAgICAgICAgICAgICAgICAgZHJvcCA9IEYpXG5cbmdnc2F2ZShoZXJlKFwiZmlndXJlc1wiLFwiZmlndXJlNFwiLFwiRmlndXJlNGEuZXBzXCIgKSlcbmBgYCJ9 -->
+<pre class="r"><code>#arrivals
+RVI_arrival_plot &lt;- ggplot(data = RVI_arrival_nolag, aes(x=type, y = value, fill = variable)) +
+  geom_bar(stat=&quot;identity&quot;, color = NA, size = 0, width = 0.8) +
+  scale_x_discrete(breaks = c(&quot;Depth&quot;, &quot;Transformation&quot;, &quot;Metric&quot;), labels = c(&quot;Depth&quot;, &quot;Transformation&quot;, &quot;Metric&quot;)) +
+  labs(x = &quot;Temperature Variables&quot;, y = &quot;Relative Variable Importance&quot;) +
+  theme_classic() +
+  theme(text = element_text(size = 11.5), 
+        legend.position = &quot;top&quot;, 
+        legend.title = element_blank(), 
+        legend.spacing.x = unit(0.2, &#39;cm&#39;),
+        legend.justification = &quot;center&quot;,
+        aspect.ratio = (1),
+        #, legend.position = &quot;none&quot;
+        ) +
+  guides(fill=guide_legend(ncol=3)) +
+  scale_fill_manual(values = colors,
+                    drop = F)
+
+ggsave(here(&quot;figures&quot;,&quot;figure4&quot;,&quot;Figure4a.eps&quot; ))</code></pre>
 <!-- rnb-source-end -->
 <!-- rnb-output-begin eyJkYXRhIjoiU2F2aW5nIDcgeCA3IGluIGltYWdlXG4ifQ== -->
 <pre><code>Saving 7 x 7 in image</code></pre>
 <!-- rnb-output-end -->
-<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuZ2dzYXZlKGhlcmUoXCJmaWd1cmVzXCIsXCJmaWd1cmU0XCIsXCJGaWd1cmU0YS5lcHNcIiApKVxuI2RlcGFydHVyZVxuUlZJX2RlcGFydHVyZV9wbG90IDwtIGdncGxvdChkYXRhID0gUlZJX2RlcGFydHVyZV9ub2xhZywgYWVzKHg9dHlwZSwgeSA9IHZhbHVlLCBmaWxsID0gdmFyaWFibGUpKSArXG4gIGdlb21fYmFyKHN0YXQ9XCJpZGVudGl0eVwiLCBjb2xvciA9IE5BLCBzaXplID0gMCwgd2lkdGggPSAwLjgpICtcbiAgc2NhbGVfeF9kaXNjcmV0ZShicmVha3MgPSBjKFwiRGVwdGhcIiwgXCJUcmFuc2Zvcm1hdGlvblwiLCBcIk1ldHJpY1wiKSwgbGFiZWxzID0gYyhcIkRlcHRoXCIsIFwiVHJhbnNmb3JtYXRpb25cIiwgXCJNZXRyaWNcIikpICtcbiAgbGFicyh4ID0gXCJUZW1wZXJhdHVyZSBWYXJpYWJsZXNcIiwgeSA9IFwiUmVsYXRpdmUgVmFyaWFibGUgSW1wb3J0YW5jZVwiKSArXG4gIHRoZW1lX2NsYXNzaWMoKSArXG4gIHRoZW1lKHRleHQgPSBlbGVtZW50X3RleHQoc2l6ZSA9IDExLjUpLCBcbiAgICAgICAgbGVnZW5kLnBvc2l0aW9uID0gXCJ0b3BcIiwgXG4gICAgICAgIGxlZ2VuZC50aXRsZSA9IGVsZW1lbnRfYmxhbmsoKSwgXG4gICAgICAgIGxlZ2VuZC5zcGFjaW5nLnggPSB1bml0KDAuMiwgJ2NtJyksXG4gICAgICAgIGxlZ2VuZC5qdXN0aWZpY2F0aW9uID0gXCJjZW50ZXJcIixcbiAgICAgICAgYXNwZWN0LnJhdGlvID0gKDEpLFxuICAgICAgICAjLCBsZWdlbmQucG9zaXRpb24gPSBcIm5vbmVcIlxuICAgICAgICApICtcbiAgZ3VpZGVzKGZpbGw9Z3VpZGVfbGVnZW5kKG5jb2w9MykpICtcbiAgc2NhbGVfZmlsbF9tYW51YWwodmFsdWVzID0gY29sb3JzLFxuICAgICAgICAgICAgICAgICAgICBkcm9wID0gRilcbiNkZXBhcnR1cmVcblJWSV9kZXBhcnR1cmVfcGxvdCA8LSBnZ3Bsb3QoZGF0YSA9IFJWSV9kZXBhcnR1cmVfbm9sYWcsIGFlcyh4PXR5cGUsIHkgPSB2YWx1ZSwgZmlsbCA9IHZhcmlhYmxlKSkgK1xuICBnZW9tX2JhcihzdGF0PVwiaWRlbnRpdHlcIiwgY29sb3IgPSBOQSwgc2l6ZSA9IDAsIHdpZHRoID0gMC44KSArXG4gIHNjYWxlX3hfZGlzY3JldGUoYnJlYWtzID0gYyhcIkRlcHRoXCIsIFwiVHJhbnNmb3JtYXRpb25cIiwgXCJNZXRyaWNcIiksIGxhYmVscyA9IGMoXCJEZXB0aFwiLCBcIlRyYW5zZm9ybWF0aW9uXCIsIFwiTWV0cmljXCIpKSArXG4gIGxhYnMoeCA9IFwiVGVtcGVyYXR1cmUgVmFyaWFibGVzXCIsIHkgPSBcIlJlbGF0aXZlIFZhcmlhYmxlIEltcG9ydGFuY2VcIikgK1xuICB0aGVtZV9jbGFzc2ljKCkgK1xuICB0aGVtZSh0ZXh0ID0gZWxlbWVudF90ZXh0KHNpemUgPSAxMS41KSwgXG4gICAgICAgIGxlZ2VuZC5wb3NpdGlvbiA9IFwidG9wXCIsIFxuICAgICAgICBsZWdlbmQudGl0bGUgPSBlbGVtZW50X2JsYW5rKCksIFxuICAgICAgICBsZWdlbmQuc3BhY2luZy54ID0gdW5pdCgwLjIsICdjbScpLFxuICAgICAgICBsZWdlbmQuanVzdGlmaWNhdGlvbiA9IFwiY2VudGVyXCIsXG4gICAgICAgIGFzcGVjdC5yYXRpbyA9ICgxKSxcbiAgICAgICAgIywgbGVnZW5kLnBvc2l0aW9uID0gXCJub25lXCJcbiAgICAgICAgKSArXG4gIGd1aWRlcyhmaWxsPWd1aWRlX2xlZ2VuZChuY29sPTMpKSArXG4gIHNjYWxlX2ZpbGxfbWFudWFsKHZhbHVlcyA9IGNvbG9ycyxcbiAgICAgICAgICAgICAgICAgICAgZHJvcCA9IEYpXG5nZ3NhdmUoaGVyZShcImZpZ3VyZXNcIixcImZpZ3VyZTRcIixcIkZpZ3VyZTRiLmVwc1wiICkpXG5gYGAifQ== -->
-<pre class="r"><code>ggsave(here(&quot;figures&quot;,&quot;figure4&quot;,&quot;Figure4a.eps&quot; ))
-#departure
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuI2RlcGFydHVyZVxuUlZJX2RlcGFydHVyZV9wbG90IDwtIGdncGxvdChkYXRhID0gUlZJX2RlcGFydHVyZV9ub2xhZywgYWVzKHg9dHlwZSwgeSA9IHZhbHVlLCBmaWxsID0gdmFyaWFibGUpKSArXG4gIGdlb21fYmFyKHN0YXQ9XCJpZGVudGl0eVwiLCBjb2xvciA9IE5BLCBzaXplID0gMCwgd2lkdGggPSAwLjgpICtcbiAgc2NhbGVfeF9kaXNjcmV0ZShicmVha3MgPSBjKFwiRGVwdGhcIiwgXCJUcmFuc2Zvcm1hdGlvblwiLCBcIk1ldHJpY1wiKSwgbGFiZWxzID0gYyhcIkRlcHRoXCIsIFwiVHJhbnNmb3JtYXRpb25cIiwgXCJNZXRyaWNcIikpICtcbiAgbGFicyh4ID0gXCJUZW1wZXJhdHVyZSBWYXJpYWJsZXNcIiwgeSA9IFwiUmVsYXRpdmUgVmFyaWFibGUgSW1wb3J0YW5jZVwiKSArXG4gIHRoZW1lX2NsYXNzaWMoKSArXG4gIHRoZW1lKHRleHQgPSBlbGVtZW50X3RleHQoc2l6ZSA9IDExLjUpLCBcbiAgICAgICAgbGVnZW5kLnBvc2l0aW9uID0gXCJ0b3BcIiwgXG4gICAgICAgIGxlZ2VuZC50aXRsZSA9IGVsZW1lbnRfYmxhbmsoKSwgXG4gICAgICAgIGxlZ2VuZC5zcGFjaW5nLnggPSB1bml0KDAuMiwgJ2NtJyksXG4gICAgICAgIGxlZ2VuZC5qdXN0aWZpY2F0aW9uID0gXCJjZW50ZXJcIixcbiAgICAgICAgYXNwZWN0LnJhdGlvID0gKDEpLFxuICAgICAgICAjLCBsZWdlbmQucG9zaXRpb24gPSBcIm5vbmVcIlxuICAgICAgICApICtcbiAgZ3VpZGVzKGZpbGw9Z3VpZGVfbGVnZW5kKG5jb2w9MykpICtcbiAgc2NhbGVfZmlsbF9tYW51YWwodmFsdWVzID0gY29sb3JzLFxuICAgICAgICAgICAgICAgICAgICBkcm9wID0gRilcblxuZ2dzYXZlKGhlcmUoXCJmaWd1cmVzXCIsXCJmaWd1cmU0XCIsXCJGaWd1cmU0Yi5lcHNcIiApKVxuXG5cblxuYGBgIn0= -->
+<pre class="r"><code>#departure
 RVI_departure_plot &lt;- ggplot(data = RVI_departure_nolag, aes(x=type, y = value, fill = variable)) +
   geom_bar(stat=&quot;identity&quot;, color = NA, size = 0, width = 0.8) +
   scale_x_discrete(breaks = c(&quot;Depth&quot;, &quot;Transformation&quot;, &quot;Metric&quot;), labels = c(&quot;Depth&quot;, &quot;Transformation&quot;, &quot;Metric&quot;)) +
@@ -1802,34 +1818,17 @@ RVI_departure_plot &lt;- ggplot(data = RVI_departure_nolag, aes(x=type, y = valu
   guides(fill=guide_legend(ncol=3)) +
   scale_fill_manual(values = colors,
                     drop = F)
-#departure
-RVI_departure_plot &lt;- ggplot(data = RVI_departure_nolag, aes(x=type, y = value, fill = variable)) +
-  geom_bar(stat=&quot;identity&quot;, color = NA, size = 0, width = 0.8) +
-  scale_x_discrete(breaks = c(&quot;Depth&quot;, &quot;Transformation&quot;, &quot;Metric&quot;), labels = c(&quot;Depth&quot;, &quot;Transformation&quot;, &quot;Metric&quot;)) +
-  labs(x = &quot;Temperature Variables&quot;, y = &quot;Relative Variable Importance&quot;) +
-  theme_classic() +
-  theme(text = element_text(size = 11.5), 
-        legend.position = &quot;top&quot;, 
-        legend.title = element_blank(), 
-        legend.spacing.x = unit(0.2, &#39;cm&#39;),
-        legend.justification = &quot;center&quot;,
-        aspect.ratio = (1),
-        #, legend.position = &quot;none&quot;
-        ) +
-  guides(fill=guide_legend(ncol=3)) +
-  scale_fill_manual(values = colors,
-                    drop = F)
-ggsave(here(&quot;figures&quot;,&quot;figure4&quot;,&quot;Figure4b.eps&quot; ))</code></pre>
+
+ggsave(here(&quot;figures&quot;,&quot;figure4&quot;,&quot;Figure4b.eps&quot; ))
+</code></pre>
 <!-- rnb-source-end -->
 <!-- rnb-chunk-end -->
 <!-- rnb-text-begin -->
 <p>Arrange side by side</p>
 <!-- rnb-text-end -->
 <!-- rnb-chunk-begin -->
-<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuZmlndXJlNCA8LSBwbG90X2dyaWQoUlZJX2Fycml2YWxfcGxvdCwgUlZJX2RlcGFydHVyZV9wbG90LCBsYWJlbHMgPSBjKFwiYS5cIiwgXCJiLlwiKSlcblxuZ2dzYXZlKGhlcmUoXCJmaWd1cmVzXCIsXCJmaWd1cmU0XCIsXCJGaWd1cmU0LmVwc1wiKSlcblxuYGBgIn0= -->
-<pre class="r"><code>figure4 &lt;- plot_grid(RVI_arrival_plot, RVI_departure_plot, labels = c(&quot;a.&quot;, &quot;b.&quot;))
-
-ggsave(here(&quot;figures&quot;,&quot;figure4&quot;,&quot;Figure4.eps&quot;))
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuZ2dzYXZlKGhlcmUoXCJmaWd1cmVzXCIsXCJmaWd1cmU0XCIsXCJGaWd1cmU0LmpwZ1wiKSlcblxuYGBgIn0= -->
+<pre class="r"><code>ggsave(here(&quot;figures&quot;,&quot;figure4&quot;,&quot;Figure4.jpg&quot;))
 </code></pre>
 <!-- rnb-source-end -->
 <!-- rnb-output-begin eyJkYXRhIjoiU2F2aW5nIDcgeCA3IGluIGltYWdlXG4ifQ== -->
@@ -1839,7 +1838,7 @@ ggsave(here(&quot;figures&quot;,&quot;figure4&quot;,&quot;Figure4.eps&quot;))
 <!-- rnb-text-begin -->
 <!-- rnb-text-end -->
 
-<div id="rmd-source-code">LS0tCnRpdGxlOiAiRmlndXJlIDQgQ29kZSIKb3V0cHV0OiBodG1sX25vdGVib29rCi0tLQoKQ29kZSB0byBtYWtlIEZpZ3VyZSA0LiAKCmBgYHtyIHNldHVwfQpsaWJyYXJ5KGdncGxvdDIpCmxpYnJhcnkoZGF0YS50YWJsZSkKbGlicmFyeSh3ZXNhbmRlcnNvbikKbGlicmFyeShjb3dwbG90KQoKUlZJX2Fycml2YWxfbm9sYWcgPC0gcmVhZFJEUyhoZXJlKCJNb2RlbF9yZXN1bHRzIiwgIlJWSV9hcnJpdmFsX25vbGFnLnJkcyIpKQpSVklfZGVwYXJ0dXJlX25vbGFnIDwtIHJlYWRSRFMoaGVyZSgiTW9kZWxfcmVzdWx0cyIsICJSVklfZGVwYXJ0dXJlX25vbGFnLnJkcyIpKQpgYGAKClBsb3QKYGBge3IgcGxvdH0KI2Fycml2YWxzClJWSV9hcnJpdmFsX3Bsb3QgPC0gZ2dwbG90KGRhdGEgPSBSVklfYXJyaXZhbF9ub2xhZywgYWVzKHg9dHlwZSwgeSA9IHZhbHVlLCBmaWxsID0gdmFyaWFibGUpKSArCiAgZ2VvbV9iYXIoc3RhdD0iaWRlbnRpdHkiLCBjb2xvciA9IE5BLCBzaXplID0gMCwgd2lkdGggPSAwLjgpICsKICBzY2FsZV94X2Rpc2NyZXRlKGJyZWFrcyA9IGMoIkRlcHRoIiwgIlRyYW5zZm9ybWF0aW9uIiwgIk1ldHJpYyIpLCBsYWJlbHMgPSBjKCJEZXB0aCIsICJUcmFuc2Zvcm1hdGlvbiIsICJNZXRyaWMiKSkgKwogIGxhYnMoeCA9ICJUZW1wZXJhdHVyZSBWYXJpYWJsZXMiLCB5ID0gIlJlbGF0aXZlIFZhcmlhYmxlIEltcG9ydGFuY2UiKSArCiAgdGhlbWVfY2xhc3NpYygpICsKICB0aGVtZSh0ZXh0ID0gZWxlbWVudF90ZXh0KHNpemUgPSAxMS41KSwgCiAgICAgICAgbGVnZW5kLnBvc2l0aW9uID0gInRvcCIsIAogICAgICAgIGxlZ2VuZC50aXRsZSA9IGVsZW1lbnRfYmxhbmsoKSwgCiAgICAgICAgbGVnZW5kLnNwYWNpbmcueCA9IHVuaXQoMC4yLCAnY20nKSwKICAgICAgICBsZWdlbmQuanVzdGlmaWNhdGlvbiA9ICJjZW50ZXIiLAogICAgICAgIGFzcGVjdC5yYXRpbyA9ICgxKSwKICAgICAgICAjLCBsZWdlbmQucG9zaXRpb24gPSAibm9uZSIKICAgICAgICApICsKICBndWlkZXMoZmlsbD1ndWlkZV9sZWdlbmQobmNvbD0zKSkgKwogIHNjYWxlX2ZpbGxfbWFudWFsKHZhbHVlcyA9IGNvbG9ycywKICAgICAgICAgICAgICAgICAgICBkcm9wID0gRikKCmdnc2F2ZShoZXJlKCJmaWd1cmVzIiwiZmlndXJlNCIsIkZpZ3VyZTRhLmVwcyIgKSkKCiNkZXBhcnR1cmUKUlZJX2RlcGFydHVyZV9wbG90IDwtIGdncGxvdChkYXRhID0gUlZJX2RlcGFydHVyZV9ub2xhZywgYWVzKHg9dHlwZSwgeSA9IHZhbHVlLCBmaWxsID0gdmFyaWFibGUpKSArCiAgZ2VvbV9iYXIoc3RhdD0iaWRlbnRpdHkiLCBjb2xvciA9IE5BLCBzaXplID0gMCwgd2lkdGggPSAwLjgpICsKICBzY2FsZV94X2Rpc2NyZXRlKGJyZWFrcyA9IGMoIkRlcHRoIiwgIlRyYW5zZm9ybWF0aW9uIiwgIk1ldHJpYyIpLCBsYWJlbHMgPSBjKCJEZXB0aCIsICJUcmFuc2Zvcm1hdGlvbiIsICJNZXRyaWMiKSkgKwogIGxhYnMoeCA9ICJUZW1wZXJhdHVyZSBWYXJpYWJsZXMiLCB5ID0gIlJlbGF0aXZlIFZhcmlhYmxlIEltcG9ydGFuY2UiKSArCiAgdGhlbWVfY2xhc3NpYygpICsKICB0aGVtZSh0ZXh0ID0gZWxlbWVudF90ZXh0KHNpemUgPSAxMS41KSwgCiAgICAgICAgbGVnZW5kLnBvc2l0aW9uID0gInRvcCIsIAogICAgICAgIGxlZ2VuZC50aXRsZSA9IGVsZW1lbnRfYmxhbmsoKSwgCiAgICAgICAgbGVnZW5kLnNwYWNpbmcueCA9IHVuaXQoMC4yLCAnY20nKSwKICAgICAgICBsZWdlbmQuanVzdGlmaWNhdGlvbiA9ICJjZW50ZXIiLAogICAgICAgIGFzcGVjdC5yYXRpbyA9ICgxKSwKICAgICAgICAjLCBsZWdlbmQucG9zaXRpb24gPSAibm9uZSIKICAgICAgICApICsKICBndWlkZXMoZmlsbD1ndWlkZV9sZWdlbmQobmNvbD0zKSkgKwogIHNjYWxlX2ZpbGxfbWFudWFsKHZhbHVlcyA9IGNvbG9ycywKICAgICAgICAgICAgICAgICAgICBkcm9wID0gRikKCmdnc2F2ZShoZXJlKCJmaWd1cmVzIiwiZmlndXJlNCIsIkZpZ3VyZTRiLmVwcyIgKSkKCgoKYGBgCgpBcnJhbmdlIHNpZGUgYnkgc2lkZQpgYGB7ciBhcnJhbmdlfQpmaWd1cmU0IDwtIHBsb3RfZ3JpZChSVklfYXJyaXZhbF9wbG90LCBSVklfZGVwYXJ0dXJlX3Bsb3QsIGxhYmVscyA9IGMoImEuIiwgImIuIikpCgpnZ3NhdmUoaGVyZSgiZmlndXJlcyIsImZpZ3VyZTQiLCJGaWd1cmU0LmVwcyIpKQpgYGAKCg==</div>
+<div id="rmd-source-code">LS0tCnRpdGxlOiAiRmlndXJlIDQgQ29kZSIKb3V0cHV0OiBodG1sX25vdGVib29rCi0tLQoKQ29kZSB0byBtYWtlIEZpZ3VyZSA0LiAKCmBgYHtyIHNldHVwfQpsaWJyYXJ5KGdncGxvdDIpCmxpYnJhcnkoZGF0YS50YWJsZSkKbGlicmFyeSh3ZXNhbmRlcnNvbikKbGlicmFyeShjb3dwbG90KQoKUlZJX2Fycml2YWxfbm9sYWcgPC0gcmVhZFJEUyhoZXJlKCJNb2RlbF9yZXN1bHRzIiwgIlJWSV9hcnJpdmFsX25vbGFnLnJkcyIpKQpSVklfZGVwYXJ0dXJlX25vbGFnIDwtIHJlYWRSRFMoaGVyZSgiTW9kZWxfcmVzdWx0cyIsICJSVklfZGVwYXJ0dXJlX25vbGFnLnJkcyIpKQpgYGAKClBsb3QKYGBge3IgcGxvdH0KI2Fycml2YWxzClJWSV9hcnJpdmFsX3Bsb3QgPC0gZ2dwbG90KGRhdGEgPSBSVklfYXJyaXZhbF9ub2xhZywgYWVzKHg9dHlwZSwgeSA9IHZhbHVlLCBmaWxsID0gdmFyaWFibGUpKSArCiAgZ2VvbV9iYXIoc3RhdD0iaWRlbnRpdHkiLCBjb2xvciA9IE5BLCBzaXplID0gMCwgd2lkdGggPSAwLjgpICsKICBzY2FsZV94X2Rpc2NyZXRlKGJyZWFrcyA9IGMoIkRlcHRoIiwgIlRyYW5zZm9ybWF0aW9uIiwgIk1ldHJpYyIpLCBsYWJlbHMgPSBjKCJEZXB0aCIsICJUcmFuc2Zvcm1hdGlvbiIsICJNZXRyaWMiKSkgKwogIGxhYnMoeCA9ICJUZW1wZXJhdHVyZSBWYXJpYWJsZXMiLCB5ID0gIlJlbGF0aXZlIFZhcmlhYmxlIEltcG9ydGFuY2UiKSArCiAgdGhlbWVfY2xhc3NpYygpICsKICB0aGVtZSh0ZXh0ID0gZWxlbWVudF90ZXh0KHNpemUgPSAxMS41KSwgCiAgICAgICAgbGVnZW5kLnBvc2l0aW9uID0gInRvcCIsIAogICAgICAgIGxlZ2VuZC50aXRsZSA9IGVsZW1lbnRfYmxhbmsoKSwgCiAgICAgICAgbGVnZW5kLnNwYWNpbmcueCA9IHVuaXQoMC4yLCAnY20nKSwKICAgICAgICBsZWdlbmQuanVzdGlmaWNhdGlvbiA9ICJjZW50ZXIiLAogICAgICAgIGFzcGVjdC5yYXRpbyA9ICgxKSwKICAgICAgICAjLCBsZWdlbmQucG9zaXRpb24gPSAibm9uZSIKICAgICAgICApICsKICBndWlkZXMoZmlsbD1ndWlkZV9sZWdlbmQobmNvbD0zKSkgKwogIHNjYWxlX2ZpbGxfbWFudWFsKHZhbHVlcyA9IGNvbG9ycywKICAgICAgICAgICAgICAgICAgICBkcm9wID0gRikKCmdnc2F2ZShoZXJlKCJmaWd1cmVzIiwiZmlndXJlNCIsIkZpZ3VyZTRhLmVwcyIgKSkKCiNkZXBhcnR1cmUKUlZJX2RlcGFydHVyZV9wbG90IDwtIGdncGxvdChkYXRhID0gUlZJX2RlcGFydHVyZV9ub2xhZywgYWVzKHg9dHlwZSwgeSA9IHZhbHVlLCBmaWxsID0gdmFyaWFibGUpKSArCiAgZ2VvbV9iYXIoc3RhdD0iaWRlbnRpdHkiLCBjb2xvciA9IE5BLCBzaXplID0gMCwgd2lkdGggPSAwLjgpICsKICBzY2FsZV94X2Rpc2NyZXRlKGJyZWFrcyA9IGMoIkRlcHRoIiwgIlRyYW5zZm9ybWF0aW9uIiwgIk1ldHJpYyIpLCBsYWJlbHMgPSBjKCJEZXB0aCIsICJUcmFuc2Zvcm1hdGlvbiIsICJNZXRyaWMiKSkgKwogIGxhYnMoeCA9ICJUZW1wZXJhdHVyZSBWYXJpYWJsZXMiLCB5ID0gIlJlbGF0aXZlIFZhcmlhYmxlIEltcG9ydGFuY2UiKSArCiAgdGhlbWVfY2xhc3NpYygpICsKICB0aGVtZSh0ZXh0ID0gZWxlbWVudF90ZXh0KHNpemUgPSAxMS41KSwgCiAgICAgICAgbGVnZW5kLnBvc2l0aW9uID0gInRvcCIsIAogICAgICAgIGxlZ2VuZC50aXRsZSA9IGVsZW1lbnRfYmxhbmsoKSwgCiAgICAgICAgbGVnZW5kLnNwYWNpbmcueCA9IHVuaXQoMC4yLCAnY20nKSwKICAgICAgICBsZWdlbmQuanVzdGlmaWNhdGlvbiA9ICJjZW50ZXIiLAogICAgICAgIGFzcGVjdC5yYXRpbyA9ICgxKSwKICAgICAgICAjLCBsZWdlbmQucG9zaXRpb24gPSAibm9uZSIKICAgICAgICApICsKICBndWlkZXMoZmlsbD1ndWlkZV9sZWdlbmQobmNvbD0zKSkgKwogIHNjYWxlX2ZpbGxfbWFudWFsKHZhbHVlcyA9IGNvbG9ycywKICAgICAgICAgICAgICAgICAgICBkcm9wID0gRikKCmdnc2F2ZShoZXJlKCJmaWd1cmVzIiwiZmlndXJlNCIsIkZpZ3VyZTRiLmVwcyIgKSkKCgoKYGBgCgpBcnJhbmdlIHNpZGUgYnkgc2lkZQpgYGB7ciBhcnJhbmdlfQpmaWd1cmU0IDwtIHBsb3RfZ3JpZChSVklfYXJyaXZhbF9wbG90LCBSVklfZGVwYXJ0dXJlX3Bsb3QsIGxhYmVscyA9IGMoImEuIiwgImIuIiksIGxhYmVsX3NpemUgPSAxMikKCmdnc2F2ZShoZXJlKCJmaWd1cmVzIiwiZmlndXJlNCIsIkZpZ3VyZTQuZXBzIiksIGhlaWdodCA9IDQsIHdpZHRoID0gOCkKZ2dzYXZlKGhlcmUoImZpZ3VyZXMiLCJmaWd1cmU0IiwiRmlndXJlNC5qcGciKSwgaGVpZ2h0ID0gNCwgd2lkdGggPSA4KQpgYGAKCg==</div>
 
 
 

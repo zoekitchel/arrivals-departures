@@ -98,8 +98,8 @@ intercept_arrival_mod_scaled <- glmer(col ~ (1|spp) + (1|reg), family = binomial
 intercept_departure_mod_scaled <- glmer(now_ext ~ (1|reg) + (1|spp), family = binomial, data = spp_master_ztemp_seus_buoy_scaled, nAGQ = 0)
 
 #best model better than null? yes
-AICc(intercept_arrival_mod_scaled)-min(arrival_model_comparison$AICc)
-AICc(intercept_departure_mod_scaled)-min(departure_model_comparison$AICc)
+AICc(intercept_arrival_mod_scaled)-min(arrival_model_comparison_nomean_akaikeweights$AICc)
+AICc(intercept_departure_mod_scaled)-min(departure_model_comparison_nomean_akaikeweights$AICc)
 
 
 ```
@@ -439,7 +439,6 @@ RVI_table
 RVI_arrival_plot
 RVI_departure_plot
 ```
-
 Next step is to add the coefficients on to the bar chart. To do this, I will need to sum (aikake weight of model including variable x coefficient). I think this will be easy enough Using arrival_model_comparison_nomean data frame. I will add new column to data frame of aikaike weight x coefficient
 
 ```{r avg coefficients for arrival models}
@@ -759,4 +758,3 @@ RVI_ext_plot_fishonly
 
 
 ```
-
