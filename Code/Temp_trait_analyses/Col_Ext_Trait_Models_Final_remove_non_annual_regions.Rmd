@@ -135,7 +135,15 @@ for (i in 1:nrow(full_var_set.r2)){
   sign <- full_var_set.r2$Var2[i]
   trait <- full_var_set.r2$Var3[i]
   
-  formula <- as.formula(paste("col ~", temp, sign, trait, "+ (1|reg) + (1|spp)"))
+  raw_form <- ifelse(temp == 0 & trait != 0,
+      paste("col ~", trait, "+ (1|reg) + (1|spp)"),
+          ifelse(temp != 0 & trait == 0,
+           paste("col ~", temp, "+ (1|reg) + (1|spp)"),
+              ifelse(temp == 0 & trait == 0,
+              paste("col ~", "(1|reg) + (1|spp)"),
+                paste("col ~",temp,sign,trait, "+ (1|reg) + (1|spp)"))))
+
+  formula <- as.formula(raw_form)
   
   mod <- glmer(formula, family = binomial, data = arrival.reduced_annual_obs, nAGQ = 0)
   
@@ -182,7 +190,15 @@ for (i in 1:nrow(full_var_set.r2)){
   sign <- full_var_set.r2$Var2[i]
   trait <- full_var_set.r2$Var3[i]
   
-  formula <- as.formula(paste("now_ext ~", temp, sign, trait, "+ (1|reg) + (1|spp)"))
+  raw_form <- ifelse(temp == 0 & trait != 0,
+      paste("now_ext ~", trait, "+ (1|reg) + (1|spp)"),
+          ifelse(temp != 0 & trait == 0,
+           paste("now_ext ~", temp, "+ (1|reg) + (1|spp)"),
+              ifelse(temp == 0 & trait == 0,
+              paste("now_ext ~", "(1|reg) + (1|spp)"),
+                paste("now_ext ~",temp,sign,trait, "+ (1|reg) + (1|spp)"))))
+
+  formula <- as.formula(raw_form)
   
   mod <- glmer(formula, family = binomial, data = departure.reduced_annual_obs.r, nAGQ = 0)
   
@@ -475,6 +491,52 @@ postscript("RVI_lags_trait_plot_annual_obs.eps")
 RVI_lags_traits
 dev.off()
 ```
+
+Comparisons of coefficients of top models
+
+Top arrival models
+```{r top arrival models}
+mod1_arrival <- glmer(col ~ max_sst_temp_change_abs_lag1_scaled * age.max_ocean_scaled + (1|reg) + (1|spp), family = "binomial", data = arrival.reduced_annual_obs, nAGQ = 0)
+mod2_arrival <- glmer(col ~ max_sst_temp_change_abs_lag1_scaled * age.max_ocean_scaled + length.max_ocean_scaled + (1|reg) + (1|spp), family = "binomial", data = arrival.reduced_annual_obs, nAGQ = 0)
+mod3_arrival <- glmer(col ~ max_sst_temp_change_abs_lag1_scaled * age.max_ocean_scaled + tl_ocean_scaled + (1|reg) + (1|spp), family = "binomial", data = arrival.reduced_annual_obs, nAGQ = 0)
+mod4_arrival <- glmer(col ~ max_sst_temp_change_abs_lag1_scaled * age.max_ocean_scaled + age.maturity_ocean_scaled + (1|reg) + (1|spp), family = "binomial", data = arrival.reduced_annual_obs, nAGQ = 0)
+mod_traitonly_arrival <- glmer(col ~ age.max_ocean_scaled + (1|reg) + (1|spp), family = "binomial", data = arrival.reduced_annual_obs, nAGQ = 0)
+mod_temponly_arrival <- glmer(col ~ max_sst_temp_change_abs_lag1_scaled + (1|reg) + (1|spp), family = "binomial", data = arrival.reduced_annual_obs, nAGQ = 0)
+mod_null_arrival <- glmer(col ~ (1|reg) + (1|spp), family = "binomial", data = arrival.reduced_annual_obs, nAGQ = 0)
+
+
+summary(mod1_arrival)[[10]]
+summary(mod2_arrival)[[10]]
+summary(mod3_arrival)[[10]]
+summary(mod4_arrival)[[10]]
+
+summary(mod_traitonly_arrival)[[10]]
+summary(mod_temponly_arrival)[[10]]
+summary(mod_null_arrival)[[10]]
+
+AICc(mod1_arrival)-AICc(mod1_arrival)
+AICc(mod2_arrival)-AICc(mod1_arrival)
+AICc(mod3_arrival)-AICc(mod1_arrival)
+AICc(mod4_arrival)-AICc(mod1_arrival)
+
+AICc(mod_traitonly_arrival)-AICc(mod1_arrival) #from table, 3569.182, 37.56
+AICc(mod_temponly_arrival)-AICc(mod1_arrival)
+AICc(mod_null_arrival)-AICc(mod1_arrival)
+
+mod <- glmer(col ~ 0 + age.max_ocean_scaled + (1|reg) + (1|spp), family = "binomial", data = arrival.reduced_annual_obs, nAGQ = 0)
+
+mod <- glmer(col ~ age.max_ocean_scaled + (1|reg) + (1|spp), family = "binomial", data = arrival.reduced_annual_obs, nAGQ = 0)
+
+	
+mod <- glmer(col~ 0 + length.max_ocean_scaled + age.max_ocean_scaled + (1|reg) + (1|spp), family = "binomial", data = arrival.reduced_annual_obs, nAGQ = 0)
+
+mod2 <- glmer(col~ length.max_ocean_scaled + age.max_ocean_scaled + (1|reg) + (1|spp), family = "binomial", data = arrival.reduced_annual_obs, nAGQ = 0)
+
+
+AICc(mod, mod2)
+
+```
+
 
 What do interactions look like?
 
