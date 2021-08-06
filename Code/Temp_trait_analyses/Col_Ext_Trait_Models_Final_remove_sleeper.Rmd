@@ -825,4 +825,3 @@ ggsave(width = 6, height = 2.5, path = here::here("figures/Figure5"), file = "Fi
 ggsave(width = 6, height = 2.5, path = here::here("figures/Figure5"), file = "Figure5_margeffect_nosleeper.eps")
 
 ```
-
