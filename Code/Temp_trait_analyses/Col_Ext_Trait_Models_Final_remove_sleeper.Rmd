@@ -263,7 +263,15 @@ for (i in 1:nrow(full_var_set.r2)){
   sign <- full_var_set.r2$Var2[i]
   trait <- full_var_set.r2$Var3[i]
   
-  formula <- as.formula(paste("col ~", temp, sign, trait, "+ (1|reg) + (1|spp)"))
+  raw_form <- ifelse(temp == 0 & trait != 0,
+      paste("col ~", trait, "+ (1|reg) + (1|spp)"),
+          ifelse(temp != 0 & trait == 0,
+           paste("col ~", temp, "+ (1|reg) + (1|spp)"),
+              ifelse(temp == 0 & trait == 0,
+              paste("col ~", "(1|reg) + (1|spp)"),
+                paste("col ~",temp,sign,trait, "+ (1|reg) + (1|spp)"))))
+
+  formula <- as.formula(raw_form)
   
   mod <- glmer(formula, family = binomial, data = arrival.reduced_nosleeper.r, nAGQ = 0)
   
@@ -311,7 +319,15 @@ for (i in 1:nrow(full_var_set.r2)){
   sign <- full_var_set.r2$Var2[i]
   trait <- full_var_set.r2$Var3[i]
   
-  formula <- as.formula(paste("now_ext ~", temp, sign, trait, "+ (1|reg) + (1|spp)"))
+  raw_form <- ifelse(temp == 0 & trait != 0,
+      paste("now_ext ~", trait, "+ (1|reg) + (1|spp)"),
+          ifelse(temp != 0 & trait == 0,
+           paste("now_ext ~", temp, "+ (1|reg) + (1|spp)"),
+              ifelse(temp == 0 & trait == 0,
+              paste("now_ext ~", "(1|reg) + (1|spp)"),
+                paste("now_ext ~",temp,sign,trait, "+ (1|reg) + (1|spp)"))))
+
+  formula <- as.formula(raw_form)
   
   mod <- glmer(formula, family = binomial, data = departure.reduced_nosleeper.r, nAGQ = 0)
   
@@ -566,7 +582,7 @@ now_extmod6 <- glmer(now_ext ~ max_sst_temp_lag1_scaled*length.max_ocean_scaled 
 #no temp
 now_extmod_notemp <- glmer(now_ext ~ age.max_ocean_scaled + (1|reg) + (1|spp), family = "binomial", data = departure.reduced_nosleeper.r, nAGQ = 0)
 #no trait
-now_extmod_notrait <- glmer(now_ext ~ max_sst_temp_scaled + (1|reg) + (1|spp), family = "binomial", data = departure.reduced_nosleeper.r, nAGQ = 0)
+now_extmod_notrait <- glmer(now_ext ~ min_sst_temp_change_lag2_scaled + (1|reg) + (1|spp), family = "binomial", data = departure.reduced_nosleeper.r, nAGQ = 0)
 
 #null
 

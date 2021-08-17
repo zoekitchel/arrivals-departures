@@ -19,6 +19,11 @@ spp_master_ztemp_seus_buoy.traits_scaled <- readRDS(here::here("Data", "Spp_mast
 
 Temp variables we need
 ```{r narrow down to temp variables that we need}
+
+#get rid of sleeper shark
+spp_master_ztemp_seus_buoy.traits_scaled <- spp_master_ztemp_seus_buoy.traits_scaled[spp != "Somniosus pacificus",]
+
+
 #columns to keep for collinearity matrix
 variable_names_reduced <- colnames(spp_master_ztemp_seus_buoy_scaled)[grepl("s.t", colnames(spp_master_ztemp_seus_buoy_scaled),)]
 
@@ -39,12 +44,12 @@ temperature_withlags <- spp_master_ztemp_seus_buoy_scaled[,..variable_names_all]
 Trait variables we need
 ```{r narrow down to trait variables that we need}
 #columns to keep for collinearity matrix
-trait_vars <- c("tl", "age.maturity", "length.max", "age.max")
+trait_vars <- c("tl_ocean", "age.maturity_ocean", "length.max_ocean", "age.max_ocean")
 
 #now, using this list reduce dt
 traits <- spp_master_ztemp_seus_buoy.traits_scaled[,..trait_vars]
 
-colnames(traits) <- c("trophic_level", "age_maturity", "length_max", "age_max")
+colnames(traits) <- c("trophic_level_ocean", "age_maturity_ocean", "length_max_ocean", "age_max_ocean")
 
 
 ```
@@ -86,7 +91,7 @@ Put two correlation plots together
 ```{r merge plots}
 (prow <- plot_grid(corr_subset_plot + theme(legend.position = "none"),
                   corr_subset_traits_plot + theme(legend.position = "right"),
-                  rel_widths = c(1.6, 1), nrow = 1, align = 'hv',
+                  rel_widths = c(1.2, 1), nrow = 1, align = 'hv',
                   labels = c("a.", "b."), label_x = 0, label_y = 1, vjust = 1))
 
 #save full figure
