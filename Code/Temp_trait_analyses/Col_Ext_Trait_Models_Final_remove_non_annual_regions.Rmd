@@ -164,6 +164,8 @@ for (i in 1:nrow(full_var_set.r2)){
 
 saveRDS(arrival_model_comparison_traits_annual_only, here::here("Model_results","Traits","arrival_model_comparison_traits_annual_obs.rds"))
 
+arrival_model_comparison_traits_annual_only <- readRDS(here::here("Model_results","Traits","arrival_model_comparison_traits_annual_obs.rds"))
+
 
 ```
 
@@ -218,6 +220,9 @@ for (i in 1:nrow(full_var_set.r2)){
 
 
 saveRDS(departure_model_comparison_traits_annual_obs, here::here("Model_results","Traits","departure_model_comparison_traits_annual_obs.rds"))
+
+
+departure_model_comparison_traits_annual_only <- readRDS(here::here("Model_results","Traits","departure_model_comparison_traits_annual_obs.rds"))
 
 ```
 
@@ -572,7 +577,7 @@ Best model: max_sst_temp_change_abs_lag1_scaled * age.max_ocean_scaled
 ```{r predicted values arrival}
 library(ggfortify)
 library(wesanderson)
-pal <- wes_palette("GrandBudapest1", 5, type = "continuous")
+pal <- c("#F9BC77","#AD6D51","#7E7976","#62B3BE","#174A4A")
 
 #best model with fish only 
 mod_arrival_trait <- glmer(col ~ max_sst_temp_change_abs_lag1_scaled * age.max_ocean_scaled + (1|reg) + (1|spp), family = "binomial", data = arrival.reduced_annual_obs, nAGQ = 0)
@@ -619,7 +624,7 @@ preds_predictors[,max_sst_temp_change_abs_lag1 := mod_arrival_reverse_scaledtemp
 
 
 arrival_preds <- ggplot(data = preds_predictors, aes(x = max_sst_temp_change_abs_lag1, y = preds, color = as.factor(ages_we_want))) +
-  geom_line(size = 1) +
+  geom_line(size = 0.7) +
   labs(colour="Maximum\n Age", x = "Absolute change in maximum surface\ntemperature lagged 1 year (\u00B0C)", y = "Probability of Arrival") +
   theme_classic() +
   scale_color_manual(values = pal) +
@@ -673,7 +678,7 @@ preds_predictors[,max_sst_temp_lag1 := mod_departure_reverse_scaledtemp$coeffici
 
 
 departure_preds <- ggplot(data = preds_predictors, aes(x = max_sst_temp_lag1_scaled, y = preds, color = as.factor(ages_we_want))) +
-  geom_line(size = 1) +
+  geom_line(size = 0.7) +
   labs(colour="Maximum\n Age", x = "Maximum surface temperature\nlagged 1 year (\u00B0C)", y = "Probability of Departure") +
   theme_classic() +
   scale_color_manual(values = pal) +

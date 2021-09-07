@@ -292,7 +292,7 @@ for (i in 1:nrow(full_var_set.r2)){
 
 saveRDS(arrival_model_comparison_traits_nosleeper, here::here("Model_results","Traits","arrival_model_comparison_traits_nosleeper.rds"))
 
-#arrival_model_comparison_traits_nosleeper <- readRDS(here::here("Model_results","Traits","arrival_model_comparison_traits_nosleeper.rds"))
+arrival_model_comparison_traits_nosleeper <- readRDS(here::here("Model_results","Traits","arrival_model_comparison_traits_nosleeper.rds"))
 
 ```
 
@@ -722,7 +722,7 @@ All fish no traits: max_sst_temp_change_abs_lag1_scaled (same)
 ```{r predicted values arrival}
 library(ggfortify)
 library(wesanderson)
-pal <- wes_palette("GrandBudapest1", 5, type = "continuous")
+pal <- c("#F9BC77","#AD6D51","#7E7976","#62B3BE","#174A4A")
 
 #best model with fish only 
 mod_arrival_trait <- glmer(col ~ max_sst_temp_change_abs_lag1_scaled * age.max_ocean_scaled + (1|reg) + (1|spp), family = "binomial", data = arrival.reduced_nosleeper.r, nAGQ = 0)
@@ -761,7 +761,7 @@ preds_predictors_col[,max_sst_temp_change_abs_lag1 := mod_arrival_reverse_scaled
 
 
 (arrival_preds <- ggplot(data = preds_predictors_col, aes(x = max_sst_temp_change_abs_lag1, y = preds, color = as.factor(ages_we_want))) +
-  geom_line(size = 1) +
+  geom_line(size = 0.7) +
   labs(colour="Maximum\nAge", x = "Absolute change in maximum surface\ntemperature lagged 1 year (\u00B0C)", y = "Probability of Arrival") +
   theme_classic() +
   scale_color_manual(values = pal) +
@@ -817,7 +817,7 @@ preds_predictors_ext[,max_sst_temp_lag6 := mod_departure_reverse_scaledtemp$coef
 
 
 (departure_preds <- ggplot(data = preds_predictors_ext, aes(x = max_sst_temp_lag6, y = preds, color = as.factor(lengths_we_want))) +
-  geom_line(size = 1) +
+  geom_line(size = 0.7) +
   labs(colour="Maximum\nLength", x = "Maximum surface temperature\n lagged 6 years (\u00B0C)", y = "Probability of Departure") +
 #  scale_y_continuous(breaks=c(0, 0.5, 1)) +
   theme_classic() +
