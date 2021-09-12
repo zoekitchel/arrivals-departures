@@ -20,28 +20,45 @@ spp_master_ztemp_seus_buoy[,reg:= factor(reg, labels = c("Aleutian Islands", "Ea
 
 
 ```{r temp in all regions over time}
-ggplot(data = spp_master_ztemp_seus_buoy, aes(x=year)) +
-  geom_point(aes(y = max_sbt_temp), col = "red") +
-  geom_point(aes(y = seas_sbt_temp), col = "slategrey") +
-  geom_point(aes(y = min_sbt_temp), col = "blue") +
-  facet_wrap(~reg, scales = "free") +
-  labs(y = expression("Bottom Temperature ("*~degree*C*")"), x = "Year") +
-  theme_bw() +
-  theme(plot.margin = margin(1,1,1,1, "cm"))
+#prep values for plotting in ggplot
+spp_master_ztemp_seus_buoy_surface <- unique(spp_master_ztemp_seus_buoy[,.(reg,year, max_sbt_temp, seas_sbt_temp, min_sbt_temp)])
+spp_master_ztemp_seus_buoy_surface.r <- melt(spp_master_ztemp_seus_buoy_surface, id.vars = 1:2, measure.vars = 3:5)
 
-ggsave(file = "temp_over_time_bottom_seusbuoy.jpg")
-ggsave(file = "temp_over_time_bottom_seusbuoy.eps")
+spp_master_ztemp_seus_buoy_bottom <- unique(spp_master_ztemp_seus_buoy[,.(reg,year, max_sst_temp, seas_sst_temp, min_sst_temp)])
+spp_master_ztemp_seus_buoy_bottom.r <- melt(spp_master_ztemp_seus_buoy_bottom, id.vars = 1:2, measure.vars = 3:5)
 
-ggplot(data = spp_master_ztemp_seus_buoy, aes(x=year)) +
-  geom_point(aes(y = max_sst_temp), col = "red") +
-  geom_point(aes(y = seas_sst_temp), col = "slategrey") +
-  geom_point(aes(y = min_sst_temp), col = "blue") +
+regional_surface_temp <- ggplot(data = spp_master_ztemp_seus_buoy_surface.r, aes(x=year, y = value, color = variable)) +
+  geom_point() +
   facet_wrap(~reg, scales = "free") +
-  labs(y = expression("Surface Temperature ("*~degree*C*")"), x = "Year") +
-  theme_bw() +
-  theme(plot.margin = margin(1,1,1,1, "cm"))
+  scale_color_manual(name =  "Temperature Metric", values = c("red","slategrey","blue"), labels = c("Maximum Temperature", "Temperature Seasonality", "Minimum Temperature")) +
+  labs(y =  paste0("Surface Temperature (", "\u00B0C)"), x = "Year") +
+  theme_bw()
 
 ggsave(file = "temp_over_time_surface_seusbuoy.jpg")
 ggsave(file = "temp_over_time_surface_seusbuoy.eps")
+
+regional_bottom_temp <- ggplot(data = spp_master_ztemp_seus_buoy_bottom.r, aes(x=year, y = value, color = variable)) +
+  geom_point() +
+  facet_wrap(~reg, scales = "free") +
+  scale_color_manual(name =  "Temperature Metric", values = c("red","slategrey","blue"), labels = c("Maximum Temperature", "Temperature Seasonality", "Minimum Temperature")) +
+  labs(y = paste0("Bottom Temperature (", "\u00B0C)"), x = "Year") +
+  theme_bw()
+
+ggsave(file = "temp_over_time_bottom_seusbuoy.jpg")
+ggsave(file = "temp_over_time_bottom_seusbuoy.eps")
+```
+
+Arrange plots
+```{r}
+library(cowplot)
+
+#legend
+legend <- get_legend(regional_surface_temp)
+
+step1 <- plot_grid(regional_surface_temp + theme(legend.position = "none"), regional_bottom_temp + theme(legend.position = "none"), ncol = 1, nrow = 2)
+
+final_temp_region_plot <- plot_grid(step1, legend, nrow = 1, ncol = 2, rel_widths = c(4,1))
+
+ggsave(final_temp_region_plot, height = 8, width = 9.7, units = "in", path = "~/Documents/grad school/Rutgers/Repositories/Col_Ext/figures/Supplemental", filename = "S4_regional_temp_over_time.eps")
 ```
 

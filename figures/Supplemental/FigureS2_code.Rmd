@@ -70,11 +70,16 @@ ggcorrplot(corr_full, type = "lower", outline.col = "white", tl.cex = 1, tl.srt 
 
 Correlation matrix small (no lags)
 ```{r  no lags}
+
+#fix labels
+colnames(temperature_nolags)<-c("Maximum Surface Temperature", "Minimum Surface Temperature", "Surface Temperature Seasonality","Change in Maximum Surface Temperature","Change in Minimum Surface Temperature","Change in Surface Temperature Seasonality", "Absolute Change in Maximum Surface Temperature","Absolute Change in Minimum Surface Temperature", "Absolute Change in Surface Temperature Seasonality", "Maximum Bottom Temperature", "Minimum Bottom Temperature", "Bottom Temperature Seasonality","Change in Maximum Bottom Temperature","Change in Minimum Bottom Temperature","Change in Bottom Temperature Seasonality", "Absolute Change in Maximum Bottom Temperature","Absolute Change in Minimum Bottom Temperature", "Absolute Change in Bottom Temperature Seasonality")
+
 corr_subset <- round(cor(temperature_nolags), 2)
+
 
 ggcorrplot(corr_subset, outline.color = "white", tl.cex = 1, tl.srt = 90, lab_size = 30)
 
-corr_subset_plot <- ggcorrplot(corr_subset,outline.col = "white", tl.cex = 7, lab =  T, lab_size = 1.5) + theme(legend.position = "bottom")
+corr_subset_plot <- ggcorrplot(corr_subset,outline.col = "white", tl.cex = 5, lab =  T, lab_size = 0.8) + theme(legend.position = "bottom")
 ggsave(here::here("figures","Supplemental", "SupFigure2a.eps"))
 
 ```
@@ -82,6 +87,9 @@ ggsave(here::here("figures","Supplemental", "SupFigure2a.eps"))
 Correlation matrix for traits
 ```{r  trait corr}
 corr_subset_traits <- round(cor(traits, use = "complete.obs"), 2)
+
+colnames(corr_subset_traits) <- c("Trophic Level", "Age at Maturity", "Maximum Length", "Maximum Age")
+rownames(corr_subset_traits) <- c("Trophic Level", "Age at Maturity", "Maximum Length", "Maximum Age")
 
 corr_subset_traits_plot <- ggcorrplot(corr_subset_traits, outline.color = "white", lab = T,tl.cex = 10, lab_size = 1.8)
 ggsave(here::here("figures","Supplemental", "SupFigure2b.eps"), dpi = 1000)

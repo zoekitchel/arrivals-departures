@@ -91,7 +91,7 @@ dates_over_time <- ggplot(data = data_over_time.u, aes(x = YYYY, y = Location, f
   geom_tile() +
   scale_fill_manual(breaks = c("0", "1"), values = c("white", "black"), labels = c("No", "Yes")) +
   theme_classic() +
-  labs(x="Year", y = "Buoy ID and Location", fill = "Data Availability")
+  labs(x="Year", y = "Buoy ID and Location", fill = "Data\nAvailability")
   
 
 ```
@@ -364,11 +364,12 @@ saveRDS(seus_temp_final_unique, here::here("Data","Temperature","SEUS_buoy", "se
 seus_temp_final <- readRDS(here::here("Data","Temperature","SEUS_buoy", "seus_temp_final_frombuoys.rds"))
 
 #plot avg temp over time
+seus_temp_final.r <- unique(seus_temp_final[,.(reg,year,max_sst_temp, seas_sst_temp, min_sst_temp)])
+seus_temp_final.r.long <- melt(seus_temp_final.r, id.vars = 1:2, measure.vars = 3:5)
 
-temp_avgs_over_time <- ggplot(data = seus_temp_final, aes(x = year)) +
-  geom_line(aes(y = seas_sst_temp), color = "black") +
-  geom_line(aes(y = max_sst_temp), color = "red") +
-  geom_line(aes(y = min_sst_temp), color = "blue") +
+temp_avgs_over_time <- ggplot(data = seus_temp_final.r.long, aes(x = year, y = value, color = variable)) +
+  geom_line() +
+  scale_color_manual(name = "Temperature\nMetric", values = c("red","darkgrey","blue"), labels = c("Maximum\nTemperature\n","Temperature\nSeasonality\n","Minimum\nTemperature\n")) +
   labs(x = "Year", y = paste("Temperature (\u00b0C)")) +
   #lims(y = c(15,30)) +
   theme_classic()
@@ -525,10 +526,12 @@ library(cowplot)
 
 legend <- get_legend(dates_over_time)
 
-(FigureS2 <- plot_grid(sup1_1, legend, nrow = 2, rel_heights = c(5,1)))
+(FigureS2_upper <- plot_grid(sup1_1, legend, ncol = 2, rel_widths = c(9,1)))
+
+(FigureS2_final <- plot_grid(FigureS2_upper,temp_avgs_over_time, nrow = 2,ncol = 1, labels = c("","c."), rel_heights = c(5,3.5),vjust = 0))
   
 
-ggsave(here::here("figures","Supplemental", "FigureS1.eps"), height = 4, width = 8)
+ggsave(here::here("figures","Supplemental", "FigureS1_final.eps"), height = 6, width = 8)
 
 
 ```
