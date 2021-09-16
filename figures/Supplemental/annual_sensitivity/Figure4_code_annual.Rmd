@@ -17,6 +17,10 @@ RVI_departure_nolag <- readRDS(here("Model_results", "RVI_departure_nolag_annual
 
 Plot
 ```{r plot}
+#plotting
+pal <- wes_palette("GrandBudapest1", 8, type = "continuous")
+colors <- c(pal[1], pal[2], "#FFFFFF", pal[3], pal[4], pal[5],"#FFFFFF", pal[6], pal[7], pal[8])
+
 #arrivals
 RVI_arrival_plot <- ggplot(data = RVI_arrival_nolag, aes(x=type, y = value, fill = variable)) +
   geom_bar(stat="identity", color = NA, size = 0, width = 0.8) +
@@ -24,18 +28,18 @@ RVI_arrival_plot <- ggplot(data = RVI_arrival_nolag, aes(x=type, y = value, fill
   labs(x = "Temperature Variables", y = "Relative Variable Importance") +
   theme_classic() +
   theme(text = element_text(size = 11.5), 
-        legend.position = "top", 
+        legend.position = "right", 
         legend.title = element_blank(), 
         legend.spacing.x = unit(0.2, 'cm'),
         legend.justification = "center",
         aspect.ratio = (1),
         #, legend.position = "none"
         ) +
-  guides(fill=guide_legend(ncol=3)) +
+  guides(fill=guide_legend(ncol=1)) +
   scale_fill_manual(values = colors,
                     drop = F)
 
-ggsave(here("figures","Supplemental","annual_sensitivity","Figure4_annual_a.eps" ))
+ggsave(here("figures","Supplemental","annual_sensitivity","Figure4a_annual.eps" ))
 
 #departure
 RVI_departure_plot <- ggplot(data = RVI_departure_nolag, aes(x=type, y = value, fill = variable)) +
@@ -44,18 +48,18 @@ RVI_departure_plot <- ggplot(data = RVI_departure_nolag, aes(x=type, y = value, 
   labs(x = "Temperature Variables", y = "Relative Variable Importance") +
   theme_classic() +
   theme(text = element_text(size = 11.5), 
-        legend.position = "top", 
+        legend.position = "right", 
         legend.title = element_blank(), 
         legend.spacing.x = unit(0.2, 'cm'),
         legend.justification = "center",
         aspect.ratio = (1),
         #, legend.position = "none"
         ) +
-  guides(fill=guide_legend(ncol=3)) +
+  guides(fill=guide_legend(ncol=1)) +
   scale_fill_manual(values = colors,
                     drop = F)
 
-ggsave(here("figures","Supplemental","annual_sensitivity","Figure4_annual_b.eps" ))
+ggsave(here("figures","Supplemental","annual_sensitivity","Figure4b_annual.eps" ))
 
 
 
@@ -63,9 +67,24 @@ ggsave(here("figures","Supplemental","annual_sensitivity","Figure4_annual_b.eps"
 
 Arrange side by side
 ```{r arrange}
-figure4 <- plot_grid(RVI_arrival_plot, RVI_departure_plot, labels = c("a.", "b."), label_size = 12)
+figure4 <- plot_grid(RVI_arrival_plot + theme(legend.position = "none"), RVI_departure_plot + theme(legend.position = "none") + ylab(NULL), labels = c("b.", "c."), label_size = 12, align = "hv", axis = "bottom")
+
+#pull legend
+legend <- get_legend(RVI_arrival_plot)
+
+#add legend
+figure4_wlegend <- plot_grid(figure4, legend, nrow = 1, rel_widths = c(8,1))
 
 ggsave(here("figures","Supplemental","annual_sensitivity","Figure4_annual.eps"), height = 4, width = 8)
 ggsave(here("figures","Supplemental","annual_sensitivity","Figure4_annual.jpg"), height = 4, width = 8)
+```
+
+Add in old figure 3
+```{r adding in figure 3}
+load(file = here::here("figures","Supplemental","annual_sensitivity","lags_over_time_annual_regs.RData"))
+
+figure3_new_annual <- plot_grid(lags_over_time_annual_regs, figure4_wlegend, ncol = 1, nrow = 2, labels = c("a.","",""), vjust = 1)
+
+ggsave(figure3_new_annual, path = here("figures","Supplemental","annual_sensitivity"), filename = "figure3_new_annual.eps", height = 6, width = 7.5, units = "in")
 ```
 
