@@ -377,27 +377,27 @@ Another way to visualize is stacked bar plot.
 
 ```{r RVI stacked plot}
 #put levels into correct order for viewing, and add dummy level for legend
-RVI_arrival[, variable := factor(variable, levels = c("Bottom", "Surface","  ", "Raw", "Change", "|Change|", "no_lag", "lagged", "Min", "Max", "Seas"))]
+RVI_arrival[, variable := factor(variable, levels = c("Bottom", "Surface","  ", "Raw", "Change", "|Change|","", "no_lag", "lagged", "Min", "Max", "Seas"))]
 RVI_arrival[, type := factor(type, levels = c("Depth", "Transformation", "Metric", "lag"))]
 
 RVI_arrival_nolag <- RVI_arrival[type != "lag",]
-RVI_arrival_nolag[, type := factor(type, levels = c("Depth", "Transformation", "Metric"))][, variable := factor(variable, levels = c("Bottom", "Surface","  ", "Raw", "Change", "|Change|", "Min", "Max", "Seas"))]
+RVI_arrival_nolag[, type := factor(type, levels = c("Depth", "Transformation", "Metric"))][, variable := factor(variable, levels = c("Bottom", "Surface","  ", "Raw", "Change", "|Change|","", "Min", "Max", "Seas"))]
 
 saveRDS(RVI_arrival_nolag, here("Model_results", "RVI_arrival_nolag.rds"))
 
 #and again for departure
-RVI_departure[, variable := factor(variable, levels = c("Bottom", "Surface","  ", "Raw", "Change", "|Change|", "no_lag", "lagged", "Min", "Max", "Seas"))]
+RVI_departure[, variable := factor(variable, levels = c("Bottom", "Surface","  ", "Raw", "Change", "|Change|","", "no_lag", "lagged", "Min", "Max", "Seas"))]
 RVI_departure[, type := factor(type, levels = c("Depth", "Transformation", "Metric", "lag"))]
 
 RVI_departure_nolag <- RVI_departure[type != "lag",]
-RVI_departure_nolag[, type := factor(type, levels = c("Depth", "Transformation", "Metric"))][, variable := factor(variable, levels = c("Bottom", "Surface","  ", "Raw", "Change", "|Change|", "Min", "Max", "Seas"))]
+RVI_departure_nolag[, type := factor(type, levels = c("Depth", "Transformation", "Metric"))][, variable := factor(variable, levels = c("Bottom", "Surface","  ", "Raw", "Change", "|Change|","", "Min", "Max", "Seas"))]
 
 saveRDS(RVI_departure_nolag, here("Model_results", "RVI_departure_nolag.rds"))
 
 
 #plotting
 pal <- wes_palette("GrandBudapest1", 8, type = "continuous")
-colors <- c(pal[1], pal[2], "#FFFFFF", pal[3], pal[4], pal[5], pal[6], pal[7], pal[8])
+colors <- c(pal[1], pal[2], "#FFFFFF", pal[3], pal[4], pal[5],"#FFFFFF", pal[6], pal[7], pal[8])
 
 #arrivals
 RVI_arrival_plot <- ggplot(data = RVI_arrival_nolag, aes(x=type, y = value, fill = variable)) +
@@ -406,14 +406,14 @@ RVI_arrival_plot <- ggplot(data = RVI_arrival_nolag, aes(x=type, y = value, fill
   labs(x = "Temperature Variables", y = "Relative Variable Importance") +
   theme_classic() +
   theme(text = element_text(size = 11.5), 
-        legend.position = "top", 
+        legend.position = "right", 
         legend.title = element_blank(), 
         legend.spacing.x = unit(0.2, 'cm'),
         legend.justification = "center",
         aspect.ratio = (1),
         #, legend.position = "none"
         ) +
-  guides(fill=guide_legend(ncol=3)) +
+  guides(fill=guide_legend(ncol=1)) +
   scale_fill_manual(values = colors,
                     drop = F)
 
@@ -424,14 +424,14 @@ RVI_departure_plot <- ggplot(data = RVI_departure_nolag, aes(x=type, y = value, 
   labs(x = "Temperature Variables", y = "Relative Variable Importance") +
   theme_classic() +
   theme(text = element_text(size = 11.5), 
-        legend.position = "top", 
+        legend.position = "right", 
         legend.title = element_blank(), 
         legend.spacing.x = unit(0.2, 'cm'),
         legend.justification = "center",
         aspect.ratio = (1),
         #, legend.position = "none"
         ) +
-  guides(fill=guide_legend(ncol=3)) +
+  guides(fill=guide_legend(ncol=1)) +
   scale_fill_manual(values = colors,
                     drop = F)
 
