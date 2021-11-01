@@ -17,6 +17,10 @@ RVI_departure_nolag <- readRDS(here("Model_results", "RVI_departure_nolag.rds"))
 
 Plot
 ```{r plot}
+#plotting
+pal <- wes_palette("GrandBudapest1", 8, type = "continuous")
+colors <- c(pal[1], pal[2], "#FFFFFF", pal[3], pal[4], pal[5],"#FFFFFF", pal[6], pal[7], pal[8])
+
 #arrivals
 RVI_arrival_plot <- ggplot(data = RVI_arrival_nolag, aes(x=type, y = value, fill = variable)) +
   geom_bar(stat="identity", color = NA, size = 0, width = 0.8) +
@@ -77,9 +81,9 @@ ggsave(here("figures","Figure3-3_4_merge","figure4","Figure4.jpg"), height = 4, 
 
 Add in old figure 3
 ```{r adding in figure 3}
-load(here("figures","Figure3-3_4_merge","figure3","lags_over_time.RData"))
+load(file = here("figures","Figure3-3_4_merge","lag_through_time.RData"))
 
-figure3_new <- plot_grid(lags_over_time, figure4_wlegend, ncol = 1, nrow = 2, labels = c("a.","",""))
+figure3_new <- plot_grid(lag_through_time, figure4_wlegend, ncol = 1, nrow = 2, labels = c("a.","",""))
 
 ggsave(figure3_new, path = here("figures","Figure3-3_4_merge"), filename = "figure3_new.eps", height = 6, width = 7.5, units = "in")
 ```
