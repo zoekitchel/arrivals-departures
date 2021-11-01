@@ -30,26 +30,26 @@ I will be looking at:
 *maximum body size
 
 ```{r missing values}
-summary(spp_master_ztemp_seus_buoy.traits_scaled$age.max) #702 missing
-summary(spp_master_ztemp_seus_buoy.traits_scaled$age.maturity) #551 missing
-summary(spp_master_ztemp_seus_buoy.traits_scaled$tl) #none missing
-summary(spp_master_ztemp_seus_buoy.traits_scaled$length.max) #none missing
-summary(spp_master_ztemp_seus_buoy.traits_scaled$length.infinity) #443 missing, this is highly correlated (0.82) with length max, so we'll just use length.max
+summary(spp_master_ztemp_seus_buoy.traits_scaled$age.max_ocean) #702 missing
+summary(spp_master_ztemp_seus_buoy.traits_scaled$age.maturity_ocean) #551 missing
+summary(spp_master_ztemp_seus_buoy.traits_scaled$tl_ocean) #none missing
+summary(spp_master_ztemp_seus_buoy.traits_scaled$length.max_ocean) #none missing
+summary(spp_master_ztemp_seus_buoy.traits_scaled$length.infinity_ocean) #443 missing, this is highly correlated (0.82) with length max, so we'll just use length.max
 
-cor(spp_master_ztemp_seus_buoy.traits_scaled[,.(age.max_scaled, age.maturity_scaled, tl_scaled, length.max_scaled)], use = "complete.obs")
+cor(spp_master_ztemp_seus_buoy.traits_scaled[,.(age.max_ocean_scaled, age.maturity_ocean_scaled, tl_ocean_scaled, length.max_ocean_scaled)], use = "complete.obs")
 
-pairs(spp_master_ztemp_seus_buoy.traits_scaled[,.(age.max_scaled, age.maturity_scaled, tl_scaled, length.max_scaled)])
+pairs(spp_master_ztemp_seus_buoy.traits_scaled[,.(age.max_ocean_scaled, age.maturity_ocean_scaled, tl_ocean_scaled, length.max_ocean_scaled)])
 
 ```
 What's the distribution of trait values?
 ```{r unique trait values}
-spp_master_ztemp_seus_buoy.traits_scaled.unique <- unique(spp_master_ztemp_seus_buoy.traits_scaled[,.(spp, reg, age.maturity, age.max, tl, length.max)])
+spp_master_ztemp_seus_buoy.traits_scaled.unique <- unique(spp_master_ztemp_seus_buoy.traits_scaled[,.(spp, reg, age.maturity_ocean, age.max_ocean, tl_ocean, length.max_ocean)])
 
-ggplot(spp_master_ztemp_seus_buoy.traits_scaled.unique, aes(x = age.maturity))  +
+ggplot(spp_master_ztemp_seus_buoy.traits_scaled.unique, aes(x = age.maturity_ocean))  +
   geom_histogram() +
   theme_classic()
 
-summary(spp_master_ztemp_seus_buoy.traits_scaled.unique$age.maturity)
+summary(spp_master_ztemp_seus_buoy.traits_scaled.unique$age.maturity_ocean)
 ```
 
 
@@ -61,7 +61,7 @@ Prep for model runs
 tempvars <- grep(".*temp.*scaled", names(spp_master_ztemp_seus_buoy.traits_scaled), value = T)
 
 #other reference and trait columns we need
-othervars_arrivals <- c("reg", "year", "col", "spp", "age.max_scaled", "age.maturity_scaled", "tl_scaled", "length.max_scaled")
+othervars_arrivals <- c("reg", "year", "col", "spp", "age.max_ocean_scaled", "age.maturity_ocean_scaled", "tl_ocean_scaled", "length.max_ocean_scaled")
 
 colstosaveforarrivals <- c(othervars_arrivals, tempvars)
 
@@ -70,7 +70,7 @@ arrival.reduced <- spp_master_ztemp_seus_buoy.traits_scaled[,colstosaveforarriva
 
 #Departure table
 
-othervars_departure <- c("reg", "year", "now_ext", "spp", "age.max_scaled", "age.maturity_scaled", "tl_scaled", "length.max_scaled")
+othervars_departure <- c("reg", "year", "now_ext", "spp", "age.max_ocean_scaled", "age.maturity_ocean_scaled", "tl_ocean_scaled", "length.max_ocean_scaled")
 colstosavefordeparture <- c(othervars_departure, tempvars)
 
 departure.reduced <- spp_master_ztemp_seus_buoy.traits_scaled[,colstosavefordeparture, with = F] #reduces to columns we need
@@ -78,8 +78,6 @@ departure.reduced <- spp_master_ztemp_seus_buoy.traits_scaled[,colstosavefordepa
 
 
 ```
-
-#run later tonight
 
 Making all models for arrival
 ```{r all models arrival}
@@ -89,20 +87,20 @@ Making all models for arrival
 arrival.reduced[,year := as.factor(year)]
 
 #delete any observations without full trait data
-arrival.reduced.r <- arrival.reduced[complete.cases(arrival.reduced[ , .(age.max_scaled, age.maturity_scaled, length.max_scaled, tl_scaled)]),]
+arrival.reduced.r <- arrival.reduced[complete.cases(arrival.reduced[ , .(age.max_ocean_scaled, age.maturity_ocean_scaled, length.max_ocean_scaled, tl_ocean_scaled)]),]
 
 #for now, going with two traits and one temp variable
 #going to make loop to make all models I need to look at with single variables
 all.temp.variables <- colnames(arrival.reduced.r[,9:256])
 all.temp.variables.0 <- c(0, all.temp.variables) #add 0 as option so models can just include traits
 all.temp.variables.0 <- all.temp.variables.0[!grepl("*mean*", all.temp.variables.0)]#get rid of MEAN temp variables
-all.trait.variables <- c(0, "tl_scaled", "age.max_scaled","age.maturity_scaled", "length.max_scaled",
-                         "tl_scaled + age.max_scaled", "age.max_scaled + tl_scaled",
-                         "tl_scaled + age.maturity_scaled", "age.maturity_scaled + tl_scaled",
-                         "tl_scaled + length.max_scaled", "length.max_scaled + tl_scaled",
-                         "age.max_scaled + age.maturity_scaled", "age.maturity_scaled + age.max_scaled",
-                         "age.max_scaled + length.max_scaled", "length.max_scaled + age.max_scaled",
-                         "age.maturity_scaled + length.max_scaled", "length.max_scaled + age.maturity_scaled")
+all.trait.variables <- c(0, "tl_ocean_scaled", "age.max_ocean_scaled","age.maturity_ocean_scaled", "length.max_ocean_scaled",
+                         "tl_ocean_scaled + age.max_ocean_scaled", "age.max_ocean_scaled + tl_ocean_scaled",
+                         "tl_ocean_scaled + age.maturity_ocean_scaled", "age.maturity_ocean_scaled + tl_ocean_scaled",
+                         "tl_ocean_scaled + length.max_ocean_scaled", "length.max_ocean_scaled + tl_ocean_scaled",
+                         "age.max_ocean_scaled + age.maturity_ocean_scaled", "age.maturity_ocean_scaled + age.max_ocean_scaled",
+                         "age.max_ocean_scaled + length.max_ocean_scaled", "length.max_ocean_scaled + age.max_ocean_scaled",
+                         "age.maturity_ocean_scaled + length.max_ocean_scaled", "length.max_ocean_scaled + age.maturity_ocean_scaled")
 
 sign <- c("+", "*")
 
@@ -139,6 +137,8 @@ for (i in 1:nrow(full_var_set)){
 
 saveRDS(arrival_model_comparison_traits, here::here("Model_results","Traits","arrival_model_comparison_traits.rds"))
 
+arrival_model_comparison_traits <- readRDS(here::here("Model_results","Traits","arrival_model_comparison_traits.rds"))
+
 
 ```
 
@@ -151,7 +151,7 @@ Making all models for departure
 
 
 #delete any observations without full trait data
-departure.reduced.r <- departure.reduced[complete.cases(departure.reduced[ , .(age.max_scaled, age.maturity_scaled, length.max_scaled, tl_scaled)]),]
+departure.reduced.r <- departure.reduced[complete.cases(departure.reduced[ , .(age.max_ocean_scaled, age.maturity_ocean_scaled, length.max_ocean_scaled, tl_ocean_scaled)]),]
 
 departure_model_comparison_traits <- as.data.table(matrix(nrow = nrow(full_var_set))) 
 departure_model_comparison_traits[, temp_variable:=as.factor(V1)][, sign:=as.factor(V1)][, trait_variable:=as.factor(V1)][, AICc:=as.numeric(V1)][, converge:= as.logical(V1)]
@@ -182,6 +182,8 @@ for (i in 1:nrow(full_var_set)){
 }
 
 saveRDS(departure_model_comparison_traits, here::here("Model_results","Traits","departure_model_comparison_traits.rds"))
+
+departure_model_comparison_traits <- readRDS(here::here("Model_results","Traits","departure_model_comparison_traits.rds"))
 
 ```
 
@@ -260,8 +262,7 @@ arrival_interaction_temp_trait_importance <- sum(arrival_model_comparisons_trait
 
 
 #save this table
-saveRDS(arrival_model_comparisons_traits.lag9max, here:here("Model_results","Traits","arrival_models_traits_with_likelihoods.rds"))
-saveRDS(arrival_model_comparisons_traits.lag9max, here:here("tables","arrival_models_traits_with_likelihoods.rds"))
+saveRDS(arrival_model_comparisons_traits.lag9max, here::here("Model_results","Traits","arrival_model_comparisons_traits.lag9max.rds"))
 ```
 
 ```{r put RVIs for arrival into data table}
@@ -342,8 +343,8 @@ departure_interaction_temp_trait_importance <- sum(departure_model_comparisons_t
 
 
 #save this table
-saveRDS(departure_model_comparisons_traits.lag9max, here:here("Model_results","Traits","departure_models_traits_with_likelihoods.rds"))
-saveRDS(departure_model_comparisons_traits.lag9max, here:here("tables","departure_models_traits_with_likelihoods.rds"))
+#save this table
+saveRDS(departure_model_comparisons_traits.lag9max, here::here("Model_results","Traits","departure_model_comparisons_traits.lag9max.rds"))
 ```
 
 ```{r put RVIs for extinction into data table}
@@ -357,7 +358,7 @@ RVI_departure_traits <- data.table(arrival_departure, type, variable, value)
 
 Merge RVI tables for colonization and extinction with traits, and then graph
 ```{r merge RVI trait tables and plot}
-RVI_trait_table <- as.data.table(rbind(RVI_col_traits, RVI_ext_traits)) #bind RVI for colonizations and extinctions
+RVI_trait_table <- as.data.table(rbind(RVI_arrival_traits, RVI_departure_traits)) #bind RVI for colonizations and extinctions
 
 RVI_trait_table.r <- RVI_trait_table[!grep("surface", variable)][!grep("lagged", variable)]
 
@@ -366,7 +367,7 @@ RVI_trait_table.r[, variable := factor(variable, levels = c("bottom", "no_lag", 
 
 save(RVI_trait_table, file = "RVI_trait_table.Rdata")
 
-ggplot(data = RVI_trait_table.r, aes(x=variable, y = value, fill = col_ext)) +
+ggplot(data = RVI_trait_table.r, aes(x=variable, y = value, fill = arrival_departure)) +
   geom_bar(stat = "identity", position = "dodge") +
   scale_x_discrete(breaks = c("bottom", "no_lag", "raw", "change", "absolute_value_change", "Min", "Max", "Seas", "age.max", "age.maturity", "tl", "length.max", "tempxtrait"), labels = c("Bottom\nTemp", "No\nLag", "Raw\nTemp", "Change in \nTemp", "| Change in\n Temp |", "Min\nTemp", "Max\nTemp", "Seas", "Age\nMax", "Age\nMaturity", "Trophic\nLevel", "Max\nLength" , "Temp*\nTrait")) +
   labs(x = "Temperature and Trait Variables", y = "Relative Variable Importance")  +
@@ -385,14 +386,14 @@ RVI_trait_table[
 #make types factors as well
 
 #colonization
-RVI_col_trait_plot <- ggplot(data = RVI_trait_table[col_ext == "col" & (type == "Trait" | type == "Interaction")], aes(x=variable, y = value)) +
+RVI_col_trait_plot <- ggplot(data = RVI_trait_table[arrival_departure == "arrival" & (type == "Trait" | type == "Interaction")], aes(x=variable, y = value)) +
   geom_bar(stat= "identity") +
   scale_x_discrete(breaks = c("age.max", "age.maturity", "tl", "length.max", "tempxtrait"), labels = c("Maximum\nAge", "Age of\nMaturity", "Trophic\nLevel","Max\nLength", "Temp Trait\nInteraction")) +
   labs(x = "Trait Variables", y = "Relative Variable Importance") +
   theme_classic() +
   theme(text = element_text(size = 20))
 #extinction
-RVI_ext_trait_plot <- ggplot(data = RVI_trait_table[col_ext == "ext" & (type == "Trait" | type == "Interaction")], aes(x=variable, y = value)) +
+RVI_ext_trait_plot <- ggplot(data = RVI_trait_table[arrival_departure == "departure" & (type == "Trait" | type == "Interaction")], aes(x=variable, y = value)) +
   geom_bar(stat= "identity") +
   scale_x_discrete(breaks = c("age.max", "age.maturity", "tl","length.max",  "tempxtrait"), labels = c("Maximum\nAge", "Age of\nMaturity", "Trophic\nLevel","Max\nLength", "Temp Trait\nInteraction")) +
   labs(x = "Trait Variables", y = "Relative Variable Importance") +
@@ -408,28 +409,28 @@ Let's see how the RVI importance varies by looking at specific lag values for th
 ```{r make a plot here for variability across lag values for trait models}
 #first, table for lags
 lags_v_RVI_trait <- data.table(col_lag = c(0:9), col_RVI = 0, ext_RVI = 0)
-#colonization
-lags_v_RVI_trait[1,2] <- 1-sum(colonization_model_comparisons_traits.lag9max[grep("lag", temp_variable), ]$akaike_weight)
-lags_v_RVI_trait[2,2] <- sum(colonization_model_comparisons_traits.lag9max[grep("lag1", temp_variable), ]$akaike_weight)
-lags_v_RVI_trait[3,2] <- sum(colonization_model_comparisons_traits.lag9max[grep("lag2", temp_variable), ]$akaike_weight)
-lags_v_RVI_trait[4,2] <- sum(colonization_model_comparisons_traits.lag9max[grep("lag3", temp_variable), ]$akaike_weight)
-lags_v_RVI_trait[5,2] <- sum(colonization_model_comparisons_traits.lag9max[grep("lag4", temp_variable), ]$akaike_weight)
-lags_v_RVI_trait[6,2] <- sum(colonization_model_comparisons_traits.lag9max[grep("lag5", temp_variable), ]$akaike_weight)
-lags_v_RVI_trait[7,2] <- sum(colonization_model_comparisons_traits.lag9max[grep("lag6", temp_variable), ]$akaike_weight)
-lags_v_RVI_trait[8,2] <- sum(colonization_model_comparisons_traits.lag9max[grep("lag7", temp_variable), ]$akaike_weight)
-lags_v_RVI_trait[9,2] <- sum(colonization_model_comparisons_traits.lag9max[grep("lag8", temp_variable), ]$akaike_weight)
-lags_v_RVI_trait[10,2] <- sum(colonization_model_comparisons_traits.lag9max[grep("lag9", temp_variable), ]$akaike_weight)
-#extinction
-lags_v_RVI_trait[1,3] <- 1-sum(extinction_model_comparisons_traits.lag9max[grep("lag", temp_variable), ]$akaike_weight)
-lags_v_RVI_trait[2,3] <- sum(extinction_model_comparisons_traits.lag9max[grep("lag1", temp_variable), ]$akaike_weight)
-lags_v_RVI_trait[3,3] <- sum(extinction_model_comparisons_traits.lag9max[grep("lag2", temp_variable), ]$akaike_weight)
-lags_v_RVI_trait[4,3] <- sum(extinction_model_comparisons_traits.lag9max[grep("lag3", temp_variable), ]$akaike_weight)
-lags_v_RVI_trait[5,3] <- sum(extinction_model_comparisons_traits.lag9max[grep("lag4", temp_variable), ]$akaike_weight)
-lags_v_RVI_trait[6,3] <- sum(extinction_model_comparisons_traits.lag9max[grep("lag5", temp_variable), ]$akaike_weight)
-lags_v_RVI_trait[7,3] <- sum(extinction_model_comparisons_traits.lag9max[grep("lag6", temp_variable), ]$akaike_weight)
-lags_v_RVI_trait[8,3] <- sum(extinction_model_comparisons_traits.lag9max[grep("lag7", temp_variable), ]$akaike_weight)
-lags_v_RVI_trait[9,3] <- sum(extinction_model_comparisons_traits.lag9max[grep("lag8", temp_variable), ]$akaike_weight)
-lags_v_RVI_trait[10,3] <- sum(extinction_model_comparisons_traits.lag9max[grep("lag9", temp_variable), ]$akaike_weight)
+#arrival
+lags_v_RVI_trait[1,2] <- 1-sum(arrival_model_comparisons_traits.lag9max[grep("lag", temp_variable), ]$akaike_weight)
+lags_v_RVI_trait[2,2] <- sum(arrival_model_comparisons_traits.lag9max[grep("lag1", temp_variable), ]$akaike_weight)
+lags_v_RVI_trait[3,2] <- sum(arrival_model_comparisons_traits.lag9max[grep("lag2", temp_variable), ]$akaike_weight)
+lags_v_RVI_trait[4,2] <- sum(arrival_model_comparisons_traits.lag9max[grep("lag3", temp_variable), ]$akaike_weight)
+lags_v_RVI_trait[5,2] <- sum(arrival_model_comparisons_traits.lag9max[grep("lag4", temp_variable), ]$akaike_weight)
+lags_v_RVI_trait[6,2] <- sum(arrival_model_comparisons_traits.lag9max[grep("lag5", temp_variable), ]$akaike_weight)
+lags_v_RVI_trait[7,2] <- sum(arrival_model_comparisons_traits.lag9max[grep("lag6", temp_variable), ]$akaike_weight)
+lags_v_RVI_trait[8,2] <- sum(arrival_model_comparisons_traits.lag9max[grep("lag7", temp_variable), ]$akaike_weight)
+lags_v_RVI_trait[9,2] <- sum(arrival_model_comparisons_traits.lag9max[grep("lag8", temp_variable), ]$akaike_weight)
+lags_v_RVI_trait[10,2] <- sum(arrival_model_comparisons_traits.lag9max[grep("lag9", temp_variable), ]$akaike_weight)
+#departure
+lags_v_RVI_trait[1,3] <- 1-sum(departure_model_comparisons_traits.lag9max[grep("lag", temp_variable), ]$akaike_weight)
+lags_v_RVI_trait[2,3] <- sum(departure_model_comparisons_traits.lag9max[grep("lag1", temp_variable), ]$akaike_weight)
+lags_v_RVI_trait[3,3] <- sum(departure_model_comparisons_traits.lag9max[grep("lag2", temp_variable), ]$akaike_weight)
+lags_v_RVI_trait[4,3] <- sum(departure_model_comparisons_traits.lag9max[grep("lag3", temp_variable), ]$akaike_weight)
+lags_v_RVI_trait[5,3] <- sum(departure_model_comparisons_traits.lag9max[grep("lag4", temp_variable), ]$akaike_weight)
+lags_v_RVI_trait[6,3] <- sum(departure_model_comparisons_traits.lag9max[grep("lag5", temp_variable), ]$akaike_weight)
+lags_v_RVI_trait[7,3] <- sum(departure_model_comparisons_traits.lag9max[grep("lag6", temp_variable), ]$akaike_weight)
+lags_v_RVI_trait[8,3] <- sum(departure_model_comparisons_traits.lag9max[grep("lag7", temp_variable), ]$akaike_weight)
+lags_v_RVI_trait[9,3] <- sum(departure_model_comparisons_traits.lag9max[grep("lag8", temp_variable), ]$akaike_weight)
+lags_v_RVI_trait[10,3] <- sum(departure_model_comparisons_traits.lag9max[grep("lag9", temp_variable), ]$akaike_weight)
 
 RVI_lags_traits <- ggplot(data = lags_v_RVI_trait, aes(x = col_lag)) +
   geom_line(aes(y = col_RVI)) +
@@ -461,8 +462,8 @@ dev.off()
 What do interactions look like?
 
 ##Colonization with Traits
-Best model: max_sst_temp_change_abs_lag1_scaled * age.maturity_scaled + age.max_scaled
-Best model with all species: seas_sst_temp_scaled * age.maturity_scaled + age.max_scaled
+Best model: max_sst_temp_change_abs_lag1_scaled * age.maturity_ocean_scaled + age.max_ocean_scaled
+Best model with all species: seas_sst_temp_scaled * age.maturity_ocean_scaled + age.max_ocean_scaled
 
 ```{r predicted values colonization}
 library(ggfortify)
@@ -470,10 +471,10 @@ library(wesanderson)
 pal <- wes_palette("GrandBudapest1", 5, type = "continuous")
 
 #best model with fish only 
-mod_arrival_trait <- glmer(col ~ max_sst_temp_change_abs_lag1_scaled * age.maturity_scaled + age.max_scaled + (1|reg) + (1|spp), family = "binomial", data = arrival.reduced.r, nAGQ = 0)
+mod_arrival_trait <- glmer(col ~ max_sst_temp_change_abs_lag1_scaled * age.maturity_ocean_scaled + age.max_ocean_scaled + (1|reg) + (1|spp), family = "binomial", data = arrival.reduced.r, nAGQ = 0)
 
 #using best predictor for all species in model instead
-mod_arrival_trait_allspp <- glmer(col ~ seas_sst_temp_scaled * age.maturity_scaled + age.max_scaled + (1|reg) + (1|spp), family = "binomial", data = arrival.reduced.r, nAGQ = 0)
+mod_arrival_trait_allspp <- glmer(col ~ seas_sst_temp_scaled * age.maturity_ocean_scaled + age.max_ocean_scaled + (1|reg) + (1|spp), family = "binomial", data = arrival.reduced.r, nAGQ = 0)
 
 
 #temp only arrival trait model seas_sst_temp_scaled
@@ -481,31 +482,31 @@ mod_arrival_trait_notraits <- glmer(col ~ seas_sst_temp_scaled + (1|reg) + (1|sp
 summary(mod_arrival_trait_notraits)
 
 #trait only arrival trait model
-mod_arrival_trait_notemp <- glmer(col ~ age.maturity_scaled + age.max_scaled + (1|reg) + (1|spp), family = "binomial", data = arrival.reduced.r, nAGQ = 0)
+mod_arrival_trait_notemp <- glmer(col ~ age.maturity_ocean_scaled + age.max_ocean_scaled + (1|reg) + (1|spp), family = "binomial", data = arrival.reduced.r, nAGQ = 0)
 summary(mod_arrival_trait_notemp)
 
 #reverse to agematurity unscaled
-mod_arrival_reverse_scaled_agematurity <- lm(age.maturity ~ age.maturity_scaled, data = spp_master_ztemp_seus_buoy.traits_scaled) 
+mod_arrival_reverse_scaled_agematurity <- lm(age.maturity_ocean ~ age.maturity_ocean_scaled, data = spp_master_ztemp_seus_buoy.traits_scaled) 
 
-mod_arrival_forward_scaled_agematurity <- lm(age.maturity_scaled ~ age.maturity, data = spp_master_ztemp_seus_buoy.traits_scaled)
+mod_arrival_forward_scaled_agematurity <- lm(age.maturity_ocean_scaled ~ age.maturity_ocean, data = spp_master_ztemp_seus_buoy.traits_scaled)
 
 age_match <- data.table(ages_we_want = c(0.5, 1, 3, 15,80))
-age_match[,age.maturity_scaled := ages_we_want * mod_arrival_forward_scaled_agematurity$coefficients[2]+mod_arrival_forward_scaled_agematurity$coefficients[1]]
+age_match[,age.maturity_ocean_scaled := ages_we_want * mod_arrival_forward_scaled_agematurity$coefficients[2]+mod_arrival_forward_scaled_agematurity$coefficients[1]]
 
 #best predictor for fish only: max_sst_temp_change_abs_lag1_scaled as x axis
 temp_arrival_newdata <- runif(500,min(spp_master_ztemp_seus_buoy.traits_scaled$max_sst_temp_change_abs_lag1_scaled), max(spp_master_ztemp_seus_buoy.traits_scaled$max_sst_temp_change_abs_lag1_scaled))
 
-temp_agematurity_newdata <- age_match[,age.maturity_scaled]
+temp_agematurity_newdata <- age_match[,age.maturity_ocean_scaled]
 
 
-temp_agemax_newdata <- mean(spp_master_ztemp_seus_buoy.traits_scaled$age.max_scaled, na.rm = T)
+temp_agemax_newdata <- mean(spp_master_ztemp_seus_buoy.traits_scaled$age.max_ocean_scaled, na.rm = T)
 
-arrival_newdata_traits <- expand.grid("max_sst_temp_change_abs_lag1_scaled" = temp_arrival_newdata, "age.maturity_scaled" = temp_agematurity_newdata, "age.max_scaled" = temp_agemax_newdata)
+arrival_newdata_traits <- expand.grid("max_sst_temp_change_abs_lag1_scaled" = temp_arrival_newdata, "age.maturity_ocean_scaled" = temp_agematurity_newdata, "age.max_ocean_scaled" = temp_agemax_newdata)
 
 
 preds <- predict(mod_arrival_trait, newdata = arrival_newdata_traits, re.form = NA, type = "response")
 preds_predictors <- data.table(cbind(arrival_newdata_traits, preds))
-preds_predictors <- preds_predictors[age_match, on = "age.maturity_scaled"]
+preds_predictors <- preds_predictors[age_match, on = "age.maturity_ocean_scaled"]
 
 #I want x axis to be meaningful
 mod_arrival_reverse_scaledtemp <- lm(max_sst_temp_change_abs_lag1 ~ max_sst_temp_change_abs_lag1_scaled, data = spp_master_ztemp_seus_buoy.traits_scaled)
@@ -519,7 +520,7 @@ preds_predictors$ages_we_want <- factor(preds_predictors$ages_we_want, levels=c(
 
 arrival_preds <- ggplot(data = preds_predictors, aes(x = max_sst_temp_change_abs_lag1, y = preds, color = as.factor(ages_we_want))) +
   geom_line(size = 1) +
-  labs(colour="Age at\n Maturity", x = "Absolute change in maximum surface\ntemperature lagged 1 year (˚C)", y = "Probability of Arrival") +
+  labs(colour="Age at\n Maturity", x = "Absolute change in maximum surface\ntemperature lagged 1 year (˚C)", y = "Probability of Gain") +
   scale_y_continuous(breaks=c(0, 0.5, 1)) +
   theme_classic() +
   scale_color_manual(values = pal) +
@@ -532,17 +533,17 @@ ggsave(path = here::here("figures/Figure5"), file = "predicted_probs_arrival_max
 #best predictor for all organisms: seasonality as x axis
 temp_col_newdata_seas <- runif(500,min(spp_master_ztemp_seus_buoy.traits_scaled$seas_sst_temp_scaled), max(spp_master_ztemp_seus_buoy.traits_scaled$seas_sst_temp_scaled))
 
-temp_agematurity_newdata_seas <- age_match[,age.maturity_scaled]
+temp_agematurity_newdata_seas <- age_match[,age.maturity_ocean_scaled]
 
 
-temp_agemax_newdata_seas <- mean(spp_master_ztemp_seus_buoy.traits_scaled$age.max_scaled, na.rm = T)
+temp_agemax_newdata_seas <- mean(spp_master_ztemp_seus_buoy.traits_scaled$age.max_ocean_scaled, na.rm = T)
 
-col_newdata_traits_seas <- expand.grid("seas_sst_temp_scaled" = temp_col_newdata_seas, "age.maturity_scaled" = temp_agematurity_newdata_seas, "age.max_scaled" = temp_agemax_newdata_seas)
+col_newdata_traits_seas <- expand.grid("seas_sst_temp_scaled" = temp_col_newdata_seas, "age.maturity_ocean_scaled" = temp_agematurity_newdata_seas, "age.max_ocean_scaled" = temp_agemax_newdata_seas)
 
 
-preds_seas <- predict(mod_col_trait_allspp, newdata = col_newdata_traits_seas, re.form = NA, type = "response")
+preds_seas <- predict(mod_arrival_trait_allspp, newdata = col_newdata_traits_seas, re.form = NA, type = "response")
 preds_predictors_seas <- data.table(cbind(col_newdata_traits_seas, preds_seas))
-preds_predictors_seas <- preds_predictors_seas[age_match, on = "age.maturity_scaled"]
+preds_predictors_seas <- preds_predictors_seas[age_match, on = "age.maturity_ocean_scaled"]
 
 #I want x axis to be meaningful
 mod_col_reverse_scaledtemp_seas <- lm(seas_sst_temp ~ seas_sst_temp_scaled, data = spp_master_ztemp_seus_buoy.traits_scaled)
@@ -568,38 +569,38 @@ ggsave(path = "plots/marginal_effects", file = "predicted_probs_col_maxage_seas.
 ```
 
 ##Extinction with Traits
-Best model: max_sst_temp_scaled * age.maturity_scaled + age.max_scaled
+Best model: max_sst_temp_scaled * age.maturity_ocean_scaled + age.max_ocean_scaled
 Best model from analyses with temperature only: seas_sst_temp_lag3_scaled
 
 ```{r predicted values extirpation}
 #best model with fish only 
-mod_departure_trait <- glmer(now_ext ~ max_sst_temp_scaled * age.maturity_scaled + age.max_scaled + (1|reg) + (1|spp), family = "binomial", data = departure.reduced.r, nAGQ = 0)
+mod_departure_trait <- glmer(now_ext ~ max_sst_temp_scaled * age.maturity_ocean_scaled + age.max_ocean_scaled + (1|reg) + (1|spp), family = "binomial", data = departure.reduced.r, nAGQ = 0)
 
 #using best predictor for all species in model instead
-mod_departure_trait_allspp <- glmer(now_ext ~ seas_sst_temp_lag3_scaled * age.maturity_scaled + age.max_scaled + (1|reg) + (1|spp), family = "binomial", data = departure.reduced.r, nAGQ = 0)
+mod_departure_trait_allspp <- glmer(now_ext ~ seas_sst_temp_lag3_scaled * age.maturity_ocean_scaled + age.max_ocean_scaled + (1|reg) + (1|spp), family = "binomial", data = departure.reduced.r, nAGQ = 0)
 
 #reverse to agematurity unscaled
-mod_departure_reverse_scaled_agematurity <- lm(age.maturity ~ age.maturity_scaled, data = spp_master_ztemp_seus_buoy.traits_scaled) 
+mod_departure_reverse_scaled_agematurity <- lm(age.maturity_ocean ~ age.maturity_ocean_scaled, data = spp_master_ztemp_seus_buoy.traits_scaled) 
 
-mod_departure_forward_scaled_agematurity <- lm(age.maturity_scaled ~ age.maturity, data = spp_master_ztemp_seus_buoy.traits_scaled)
+mod_departure_forward_scaled_agematurity <- lm(age.maturity_ocean_scaled ~ age.maturity_ocean, data = spp_master_ztemp_seus_buoy.traits_scaled)
 
 age_match <- data.table(ages_we_want = c(0.5, 1, 3, 15,80))
-age_match[,age.maturity_scaled := ages_we_want * mod_departure_forward_scaled_agematurity$coefficients[2]+mod_departure_forward_scaled_agematurity$coefficients[1]]
+age_match[,age.maturity_ocean_scaled := ages_we_want * mod_departure_forward_scaled_agematurity$coefficients[2]+mod_departure_forward_scaled_agematurity$coefficients[1]]
 
 #best predictor for fish only: max_sst_temp_change_abs_lag1_scaled as x axis
 temp_departure_newdata <- runif(500,min(spp_master_ztemp_seus_buoy.traits_scaled$max_sst_temp_scaled), max(spp_master_ztemp_seus_buoy.traits_scaled$max_sst_temp_scaled))
 
-temp_agematurity_newdata <- age_match[,age.maturity_scaled]
+temp_agematurity_newdata <- age_match[,age.maturity_ocean_scaled]
 
 
-temp_agemax_newdata <- mean(spp_master_ztemp_seus_buoy.traits_scaled$age.max_scaled, na.rm = T)
+temp_agemax_newdata <- mean(spp_master_ztemp_seus_buoy.traits_scaled$age.max_ocean_scaled, na.rm = T)
 
-departure_newdata_traits <- expand.grid("max_sst_temp_scaled" = temp_departure_newdata, "age.maturity_scaled" = temp_agematurity_newdata, "age.max_scaled" = temp_agemax_newdata)
+departure_newdata_traits <- expand.grid("max_sst_temp_scaled" = temp_departure_newdata, "age.maturity_ocean_scaled" = temp_agematurity_newdata, "age.max_ocean_scaled" = temp_agemax_newdata)
 
 
 preds <- predict(mod_departure_trait, newdata = departure_newdata_traits, re.form = NA, type = "response")
 preds_predictors <- data.table(cbind(departure_newdata_traits, preds))
-preds_predictors <- preds_predictors[age_match, on = "age.maturity_scaled"]
+preds_predictors <- preds_predictors[age_match, on = "age.maturity_ocean_scaled"]
 
 #I want x axis to be meaningful
 mod_departure_reverse_scaledtemp <- lm(max_sst_temp ~ max_sst_temp_scaled, data = spp_master_ztemp_seus_buoy.traits_scaled)
@@ -614,7 +615,7 @@ preds_predictors$ages_we_want <- factor(preds_predictors$ages_we_want, levels=c(
 
 departure_preds <- ggplot(data = preds_predictors, aes(x = max_sst_temp, y = preds, color = as.factor(ages_we_want))) +
   geom_line(size = 1) +
-  labs(colour="Age at Maturity", x = "Maximum\nsurface temperature (˚C)", y = "Probability of Departure") +
+  labs(colour="Age at Maturity", x = "Maximum\nsurface temperature (˚C)", y = "Probability of Loss") +
   scale_y_continuous(breaks=c(0, 0.5, 1)) +
   theme_classic() +
   scale_color_manual(values = pal) +
@@ -627,17 +628,17 @@ ggsave(path = here::here("figures/Figure5"), file = "predicted_probs_departure_m
 #best predictor for all organisms: seasonality as x axis, lagged 3 years
 temp_ext_newdata_seas <- runif(500,min(spp_master_ztemp_seus_buoy.traits_scaled$seas_sst_temp_lag3_scaled), max(spp_master_ztemp_seus_buoy.traits_scaled$seas_sst_temp_lag3_scaled))
 
-temp_agematurity_newdata_seas <- age_match[,age.maturity_scaled]
+temp_agematurity_newdata_seas <- age_match[,age.maturity_ocean_scaled]
 
 
-temp_agemax_newdata_seas <- mean(spp_master_ztemp_seus_buoy.traits_scaled$age.max_scaled, na.rm = T)
+temp_agemax_newdata_seas <- mean(spp_master_ztemp_seus_buoy.traits_scaled$age.max_ocean_scaled, na.rm = T)
 
-ext_newdata_traits_seas <- expand.grid("seas_sst_temp_lag3_scaled" = temp_ext_newdata_seas, "age.maturity_scaled" = temp_agematurity_newdata_seas, "age.max_scaled" = temp_agemax_newdata_seas)
+ext_newdata_traits_seas <- expand.grid("seas_sst_temp_lag3_scaled" = temp_ext_newdata_seas, "age.maturity_ocean_scaled" = temp_agematurity_newdata_seas, "age.max_ocean_scaled" = temp_agemax_newdata_seas)
 
 
-preds_seas <- predict(mod_ext_trait_allspp, newdata = ext_newdata_traits_seas, re.form = NA, type = "response")
+preds_seas <- predict(mod_departure_trait_allspp, newdata = ext_newdata_traits_seas, re.form = NA, type = "response")
 preds_predictors_seas <- data.table(cbind(ext_newdata_traits_seas, preds_seas))
-preds_predictors_seas <- preds_predictors_seas[age_match, on = "age.maturity_scaled"]
+preds_predictors_seas <- preds_predictors_seas[age_match, on = "age.maturity_ocean_scaled"]
 
 #I want x axis to be meaningful
 mod_ext_reverse_scaledtemp_seas <- lm(seas_sst_temp_lag3 ~ seas_sst_temp_lag3_scaled, data = spp_master_ztemp_seus_buoy.traits_scaled)

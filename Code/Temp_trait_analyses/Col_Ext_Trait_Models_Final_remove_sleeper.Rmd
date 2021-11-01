@@ -213,6 +213,9 @@ departure.reduced_nosleeper <- spp_master_ztemp_seus_buoy.traits_scaled[,colstos
 
 spp_master_ztemp_seus_buoy.traits_scaled.nosleeper <- spp_master_ztemp_seus_buoy.traits_scaled[(spp != "Somniosus pacificus")]
 
+#save for plotting later
+saveRDS(spp_master_ztemp_seus_buoy.traits_scaled.nosleeper, here::here("figures","Figure5","spp_master_ztemp_seus_buoy.traits_scaled.nosleeper.rds"))
+
 ```
 
 
@@ -223,6 +226,9 @@ arrival.reduced_nosleeper[,year := as.factor(year)]
 
 #delete any observations without full trait data
 arrival.reduced_nosleeper.r <- arrival.reduced_nosleeper[complete.cases(arrival.reduced_nosleeper[ , .(age.max_ocean_scaled, age.maturity_ocean_scaled, length.max_ocean_scaled, tl_ocean_scaled)]),]
+
+#save for plotting in separate script
+saveRDS(arrival.reduced_nosleeper.r, file = here::here("figures","Figure5","arrival.reduced_nosleeper.r.rds"))
 
 #for now, going with two traits and one temp variable
 #going to make loop to make all models I need to look at with single variables
@@ -308,6 +314,9 @@ departure.reduced_nosleeper[,year := as.factor(year)]
 
 #delete any observations without full trait data
 departure.reduced_nosleeper.r <- departure.reduced_nosleeper[complete.cases(departure.reduced_nosleeper[ , .(age.max_ocean_scaled, age.maturity_ocean_scaled, length.max_ocean_scaled, tl_ocean_scaled)]),]
+
+#save for plotting in separate script
+saveRDS(departure.reduced_nosleeper.r, file = here::here("figures","Figure5","departure.reduced_nosleeper.r.rds"))
 
 departure_model_comparison_traits_nosleeper <- as.data.table(matrix(nrow = nrow(full_var_set.r2))) 
 departure_model_comparison_traits_nosleeper[, temp_variable:=as.factor(V1)][, sign:=as.factor(V1)][, trait_variable:=as.factor(V1)][, AICc:=as.numeric(V1)][, converge:= as.logical(V1)]
