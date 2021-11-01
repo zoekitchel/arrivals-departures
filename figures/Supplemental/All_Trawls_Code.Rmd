@@ -1,0 +1,43 @@
+---
+title: "Trawls by Year"
+output: html_notebook
+---
+
+```{r setup}
+library(data.table)
+library(here)
+library(ggplot2)
+
+load(here::here("Data","InputTrawls", "trawl2.RData"))
+```
+
+```{r prep}
+trawl2 <- trawl2[region != "NWFSC_WCAnn" & region != "DFO_SoGulf"]
+
+trawl2[,region := factor(region, labels = c("Aleutian Islands", "Eastern Bering Sea", "Gulf of Alaska", "West Coast US", "Newfoundland", "Scotian Shelf", "Northeast US","Southeast US" ,"Gulf of Mexico"))]
+
+trawl2.pivot <- data.table(table(trawl2$region, trawl2$year))
+
+
+#quick stats
+min(trawl2.pivot[N != 0]$N)
+
+View(trawl2.pivot)
+
+#total?
+sum(trawl2.pivot$N)
+```
+
+```{r bubble plot}
+# Most basic bubble plot
+bubble_year_region_trawls <- ggplot(trawl2.pivot, aes(x=as.numeric(V2), y=factor(V1, levels = rev(levels(factor(V1)))))) +
+    geom_point(aes(size = ifelse(N == 0, NA, N))) +
+#  geom_text(aes(label=N),nudge_x = -0.05, color =  "white", size = 0.5)  +
+  labs(size = "Number of Tows", y = "Region", x = "Year") +
+  theme_classic() +
+  theme(legend.position = "top")
+
+ggsave(bubble_year_region_trawls, height = 3, width = 8, unit = "in", filename = "bubble_plot_year_region_trawl.eps", path = here::here("figures","Supplemental"))
+ggsave(bubble_year_region_trawls, height = 3, width = 8, unit = "in", filename = "bubble_plot_year_region_trawl.jpg", path = here::here("figures","Supplemental"))
+```
+
