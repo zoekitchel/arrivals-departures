@@ -140,12 +140,18 @@ ggsave(departure_preds, path = here::here("figures","Supplemental","annual_sensi
 Merge marginal effects plots
 ```{r}
 library(cowplot)
-mar_effects <- plot_grid(arrival_preds,departure_preds, labels = c("a.","b."), label_size = 10)
+mar_effects <- plot_grid(arrival_preds+theme(legend.position = "none"),departure_preds+theme(legend.position = "none"), labels = c("a.","b."), label_size = 10)
+
+#pull legend
+legend_interactions <- get_legend(arrival_preds)
+
+#add legend back in
+mar_effects_wlegend <- plot_grid(mar_effects, legend_interactions, rel_widths = c(5,1))
 
 
 
-ggsave(width = 6, height = 2.5, path = here::here("figures","Supplemental","annual_sensitivity"), file = "Figure5_margeeffect_annual_obs.jpg")
-ggsave(width = 6, height = 2.5, path = here::here("figures","Supplemental","annual_sensitivity"), file = "Figure5_margeeffect_annual_obs.eps")
+ggsave(mar_effects_wlegend, width = 6, height = 2.5, path = here::here("figures","Supplemental","annual_sensitivity"), file = "Figure5_margeeffect_annual_obs.jpg")
+ggsave(mar_effects_wlegend, width = 6, height = 2.5, path = here::here("figures","Supplemental","annual_sensitivity"), file = "Figure5_margeeffect_annual_obs.eps")
 
 ```
 
