@@ -1,0 +1,151 @@
+---
+title: "Figure 4 (old Figure 5) for supplement (annual sensitivity)"
+output: html_notebook
+---
+
+```{r setup}
+library(data.table)
+library(ggplot2)
+library(MuMIn)
+library(lme4)
+
+arrival.reduced_annual_obs.r <- readRDS(file = here::here("figures","Supplemental","annual_sensitivity","arrival.reduced_annual_obs.r.rds"))
+
+departure.reduced_annual_obs.r <- readRDS(file = here::here("figures","Supplemental","annual_sensitivity","departure.reduced_annual_obs.r.rds"))
+
+spp_master_ztemp_seus_buoy.traits_scaled.6regions <- readRDS(here::here("figures","Supplemental","annual_sensitivity","spp_master_ztemp_seus_buoy.traits_scaled.6regions.rds"))
+```
+
+What do interactions look like?
+
+##arrival with Traits
+Best model: max_sst_temp_change_abs_lag1_scaled * age.max_ocean_scaled
+
+
+```{r predicted values arrival}
+library(ggfortify)
+library(wesanderson)
+pal <- c("#F9BC77","#AD6D51","#7E7976","#62B3BE","#174A4A")
+
+#best model with fish only 
+mod_arrival_trait <- glmer(col ~ max_sst_temp_change_abs_lag1_scaled * age.max_ocean_scaled + (1|reg) + (1|spp), family = "binomial", data = arrival.reduced_annual_obs.r, nAGQ = 0)
+
+#temp only arrival trait model seas_sst_temp_scaled
+mod_arrival_trait_notraits <- glmer(col ~ max_sst_temp_change_abs_lag1_scaled + (1|reg) + (1|spp), family = "binomial", data = arrival.reduced_annual_obs.r, nAGQ = 0)
+summary(mod_arrival_trait_notraits)
+
+#trait only arrival trait model
+mod_arrival_trait_notemp <- glmer(col ~ age.max_ocean_scaled + (1|reg) + (1|spp), family = "binomial", data = arrival.reduced_annual_obs.r, nAGQ = 0)
+summary(mod_arrival_trait_notemp)
+
+#reverse to get age max unscaled
+mod_arrival_reverse_scaled_agemax <- lm(age.max_ocean ~ age.max_ocean_scaled, data = spp_master_ztemp_seus_buoy.traits_scaled.6regions)
+
+mod_arrival_forward_scaled_agemax <- lm(age.max_ocean_scaled ~ age.max_ocean, data = spp_master_ztemp_seus_buoy.traits_scaled.6regions)
+
+
+#age max age match
+age_max_match <- data.table(ages_we_want = c(1, 30, 80, 100,150))
+age_max_match[,age.max_ocean_scaled := ages_we_want * mod_arrival_forward_scaled_agemax$coefficients[2]+mod_arrival_forward_scaled_agemax$coefficients[1]]
+
+#best predictor for fish only: max_sst_temp_change_abs_lag1_scaled as x axis
+temp_arrival_newdata <- runif(500,min(spp_master_ztemp_seus_buoy.traits_scaled.6regions$max_sst_temp_change_abs_lag1_scaled), max(spp_master_ztemp_seus_buoy.traits_scaled.6regions$max_sst_temp_change_abs_lag1_scaled))
+
+temp_agemax_newdata <- age_max_match[,age.max_ocean_scaled] #age.max
+
+
+arrival_newdata_traits <- expand.grid("max_sst_temp_change_abs_lag1_scaled" = temp_arrival_newdata, "age.max_ocean_scaled" = temp_agemax_newdata)
+
+
+preds <- predict(mod_arrival_trait, newdata = arrival_newdata_traits, re.form = NA, type = "response")
+preds_predictors <- data.table(cbind(arrival_newdata_traits, preds))
+preds_predictors <- preds_predictors[age_max_match, on = "age.max_ocean_scaled"]
+
+#I want x axis to be meaningful
+mod_arrival_reverse_scaledtemp <- lm(max_sst_temp_change_abs_lag1 ~ max_sst_temp_change_abs_lag1_scaled, data = spp_master_ztemp_seus_buoy.traits_scaled.6regions)
+
+
+preds_predictors[,max_sst_temp_change_abs_lag1 := mod_arrival_reverse_scaledtemp$coefficients[2]*max_sst_temp_change_abs_lag1_scaled + mod_arrival_reverse_scaledtemp$coefficients[1] ]
+
+#reverse order of ages to match
+#preds_predictors$ages_we_want <- factor(preds_predictors$ages_we_want, levels=c("75", "50", "30", "10","1"))
+
+
+arrival_preds <- ggplot(data = preds_predictors, aes(x = max_sst_temp_change_abs_lag1, y = preds, color = as.factor(ages_we_want))) +
+  geom_line(size = 0.7) +
+  labs(colour="Maximum\n Age", x = "Absolute change in maximum surface\ntemperature lagged 1 year (\u00B0C)", y = "Probability of Gain") +
+  theme_classic() +
+  scale_color_manual(values = pal) +
+  theme(text=element_text(size = 10))
+
+ggsave(arrival_preds, path = here::here("figures","Supplemental","annual_sensitivity"), file = "predicted_probs_arrival_maxage_annual_obs.jpg")
+ggsave(arrival_preds, path = here::here("figures","Supplemental","annual_sensitivity"), file = "predicted_probs_arrival_maxage_annual_obs.eps")
+
+```
+
+##departure with Traits
+Best model: max_sst_temp_lag1_scaled * age.max_ocean_scaled
+
+
+```{r predicted values departure}
+#best model with fish only 
+mod_departure_trait <- glmer(now_ext ~ max_sst_temp_lag1_scaled * age.max_ocean_scaled + (1|reg) + (1|spp), family = "binomial", data = departure.reduced_annual_obs.r, nAGQ = 0)
+
+#reverse to agemax unscaled
+mod_departure_reverse_scaled_agemax <- lm(age.max_ocean ~ age.max_ocean_scaled, data = spp_master_ztemp_seus_buoy.traits_scaled.6regions) 
+
+mod_departure_forward_scaled_agemax <- lm(age.max_ocean_scaled ~ age.max_ocean, data = spp_master_ztemp_seus_buoy.traits_scaled.6regions)
+
+#age max age match
+age_max_match <- data.table(ages_we_want = c(1, 30, 80, 100,150))
+age_max_match[,age.max_ocean_scaled := ages_we_want * mod_departure_forward_scaled_agemax$coefficients[2]+mod_departure_forward_scaled_agemax$coefficients[1]]
+
+#max_sst_temp_lag1_scaled as x axis
+temp_departure_newdata <- runif(500,min(spp_master_ztemp_seus_buoy.traits_scaled.6regions$max_sst_temp_lag1_scaled), max(spp_master_ztemp_seus_buoy.traits_scaled.6regions$max_sst_temp_lag1_scaled))
+
+temp_agemax_newdata <- age_max_match[,age.max_ocean_scaled]
+
+
+departure_newdata_traits <- expand.grid("max_sst_temp_lag1_scaled" = temp_departure_newdata, "age.max_ocean_scaled" = temp_agemax_newdata)
+
+
+preds <- predict(mod_departure_trait, newdata = departure_newdata_traits, re.form = NA, type = "response")
+preds_predictors <- data.table(cbind(departure_newdata_traits, preds))
+preds_predictors <- preds_predictors[age_max_match, on = "age.max_ocean_scaled"]
+
+#I want x axis to be meaningful
+mod_departure_reverse_scaledtemp <- lm(max_sst_temp_lag1 ~ max_sst_temp_lag1_scaled, data = spp_master_ztemp_seus_buoy.traits_scaled.6regions)
+
+
+preds_predictors[,max_sst_temp_lag1 := mod_departure_reverse_scaledtemp$coefficients[2]*max_sst_temp_lag1_scaled + mod_departure_reverse_scaledtemp$coefficients[1] ]
+
+#reverse order of ages to match
+#preds_predictors$ages_we_want <- factor(preds_predictors$ages_we_want, levels=c("25", "15", "3", "1","0.5"))
+
+
+
+departure_preds <- ggplot(data = preds_predictors, aes(x = max_sst_temp_lag1_scaled, y = preds, color = as.factor(ages_we_want))) +
+  geom_line(size = 0.7) +
+  labs(colour="Maximum\n Age", x = "Maximum surface temperature\nlagged 1 year (\u00B0C)", y = "Probability of Loss") +
+  theme_classic() +
+  scale_color_manual(values = pal) +
+  theme(text=element_text(size = 10))
+
+ggsave(departure_preds, path = here::here("figures","Supplemental","annual_sensitivity"), file = "predicted_probs_departure_maxage_annual_obs.jpg")
+ggsave(departure_preds, path = here::here("figures","Supplemental","annual_sensitivity"), file = "predicted_probs_departure_maxage_annual_obs.eps")
+
+
+```
+
+Merge marginal effects plots
+```{r}
+library(cowplot)
+mar_effects <- plot_grid(arrival_preds,departure_preds, labels = c("a.","b."), label_size = 10)
+
+
+
+ggsave(width = 6, height = 2.5, path = here::here("figures","Supplemental","annual_sensitivity"), file = "Figure5_margeeffect_annual_obs.jpg")
+ggsave(width = 6, height = 2.5, path = here::here("figures","Supplemental","annual_sensitivity"), file = "Figure5_margeeffect_annual_obs.eps")
+
+```
+

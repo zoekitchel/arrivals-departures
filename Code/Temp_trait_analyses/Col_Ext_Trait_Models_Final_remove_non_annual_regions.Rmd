@@ -85,6 +85,9 @@ departure.reduced_annual_obs <- spp_master_ztemp_seus_buoy.traits_scaled[,colsto
 
 spp_master_ztemp_seus_buoy.traits_scaled.6regions <- spp_master_ztemp_seus_buoy.traits_scaled[!(reg %in% c("ai","goa","wctri"))]
 
+#save for specific figure code
+saveRDS(spp_master_ztemp_seus_buoy.traits_scaled.6regions, here::here("figures","Supplemental","annual_sensitivity","spp_master_ztemp_seus_buoy.traits_scaled.6regions.rds"))
+
 ```
 
 
@@ -94,11 +97,14 @@ Making all models for arrival
 arrival.reduced_annual_obs[,year := as.factor(year)]
 
 #delete any observations without full trait data
-arrival.reduced_annual_obs <- arrival.reduced_annual_obs[complete.cases(arrival.reduced_annual_obs[ , .(age.max_ocean_scaled, age.maturity_ocean_scaled, length.max_ocean_scaled, tl_ocean_scaled)]),]
+arrival.reduced_annual_obs.r <- arrival.reduced_annual_obs[complete.cases(arrival.reduced_annual_obs[ , .(age.max_ocean_scaled, age.maturity_ocean_scaled, length.max_ocean_scaled, tl_ocean_scaled)]),]
+
+#save for specific figure code
+saveRDS(arrival.reduced_annual_obs.r,file = here::here("figures","Supplemental","annual_sensitivity","arrival.reduced_annual_obs.r.rds"))
 
 #for now, going with two traits and one temp variable
 #going to make loop to make all models I need to look at with single variables
-all.temp.variables <- colnames(arrival.reduced_annual_obs[,9:256])
+all.temp.variables <- colnames(arrival.reduced_annual_obs.r[,9:256])
 all.temp.variables.0 <- c(0, all.temp.variables) #add 0 as option so models can just include traits
 all.temp.variables.0 <- all.temp.variables.0[!grepl("*mean*", all.temp.variables.0)]#get rid of MEAN temp variables
 all.trait.variables <- c(0, "tl_ocean_scaled", "age.max_ocean_scaled","age.maturity_ocean_scaled", "length.max_ocean_scaled",
@@ -145,7 +151,7 @@ for (i in 1:nrow(full_var_set.r2)){
 
   formula <- as.formula(raw_form)
   
-  mod <- glmer(formula, family = binomial, data = arrival.reduced_annual_obs, nAGQ = 0)
+  mod <- glmer(formula, family = binomial, data = arrival.reduced_annual_obs.r, nAGQ = 0)
   
   arrival_model_comparison_traits_annual_only[i,temp_variable := full_var_set.r2$Var1[i]]
   arrival_model_comparison_traits_annual_only[i,sign := full_var_set.r2$Var2[i]]
@@ -181,6 +187,10 @@ departure.reduced_annual_obs[,year := as.factor(year)]
 
 #delete any observations without full trait data
 departure.reduced_annual_obs.r <- departure.reduced_annual_obs[complete.cases(departure.reduced_annual_obs[ , .(age.max_ocean_scaled, age.maturity_ocean_scaled, length.max_ocean_scaled, tl_ocean_scaled)]),]
+
+#save for specific figure code
+saveRDS(departure.reduced_annual_obs.r, file = here::here("figures","Supplemental","annual_sensitivity","departure.reduced_annual_obs.r.rds"))
+
 
 departure_model_comparison_traits_annual_obs <- as.data.table(matrix(nrow = nrow(full_var_set.r2))) 
 departure_model_comparison_traits_annual_obs[, temp_variable:=as.factor(V1)][, sign:=as.factor(V1)][, trait_variable:=as.factor(V1)][, AICc:=as.numeric(V1)][, converge:= as.logical(V1)]
@@ -580,14 +590,14 @@ library(wesanderson)
 pal <- c("#F9BC77","#AD6D51","#7E7976","#62B3BE","#174A4A")
 
 #best model with fish only 
-mod_arrival_trait <- glmer(col ~ max_sst_temp_change_abs_lag1_scaled * age.max_ocean_scaled + (1|reg) + (1|spp), family = "binomial", data = arrival.reduced_annual_obs, nAGQ = 0)
+mod_arrival_trait <- glmer(col ~ max_sst_temp_change_abs_lag1_scaled * age.max_ocean_scaled + (1|reg) + (1|spp), family = "binomial", data = arrival.reduced_annual_obs.r, nAGQ = 0)
 
 #temp only arrival trait model seas_sst_temp_scaled
-mod_arrival_trait_notraits <- glmer(col ~ max_sst_temp_change_abs_lag1_scaled + (1|reg) + (1|spp), family = "binomial", data = arrival.reduced_annual_obs, nAGQ = 0)
+mod_arrival_trait_notraits <- glmer(col ~ max_sst_temp_change_abs_lag1_scaled + (1|reg) + (1|spp), family = "binomial", data = arrival.reduced_annual_obs.r, nAGQ = 0)
 summary(mod_arrival_trait_notraits)
 
 #trait only arrival trait model
-mod_arrival_trait_notemp <- glmer(col ~ age.max_ocean_scaled + (1|reg) + (1|spp), family = "binomial", data = arrival.reduced_annual_obs, nAGQ = 0)
+mod_arrival_trait_notemp <- glmer(col ~ age.max_ocean_scaled + (1|reg) + (1|spp), family = "binomial", data = arrival.reduced_annual_obs.r, nAGQ = 0)
 summary(mod_arrival_trait_notemp)
 
 #reverse to get age max unscaled
@@ -642,7 +652,7 @@ Best model: max_sst_temp_lag1_scaled * age.max_ocean_scaled
 
 ```{r predicted values departure}
 #best model with fish only 
-mod_departure_trait <- glmer(now_ext ~ max_sst_temp_lag1_scaled * age.max_ocean_scaled + (1|reg) + (1|spp), family = "binomial", data = departure.reduced_annual_obs, nAGQ = 0)
+mod_departure_trait <- glmer(now_ext ~ max_sst_temp_lag1_scaled * age.max_ocean_scaled + (1|reg) + (1|spp), family = "binomial", data = departure.reduced_annual_obs.r, nAGQ = 0)
 
 #reverse to agemax unscaled
 mod_departure_reverse_scaled_agemax <- lm(age.max_ocean ~ age.max_ocean_scaled, data = spp_master_ztemp_seus_buoy.traits_scaled.6regions) 
