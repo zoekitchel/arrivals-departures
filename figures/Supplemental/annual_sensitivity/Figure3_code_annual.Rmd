@@ -9,7 +9,7 @@ See Col_Ext_Models_Final for more context (~line 287)
 library(ggplot2)
 library(data.table)
 
-lags_RVI_scaled <- readRDS(here("Model_results","lags_RVI_scaled_annual_obs.rds"))
+lags_RVI_scaled <- readRDS(here::here("Model_results","lags_RVI_scaled_annual_obs.rds"))
 
 ```
 
@@ -19,10 +19,10 @@ lags_RVI_scaled <- readRDS(here("Model_results","lags_RVI_scaled_annual_obs.rds"
 lags_RVI_scaled.l <- melt(lags_RVI_scaled,
                 measure.vars = c("arrival_RVI", "departure_RVI"))
 
-levels(lags_RVI_scaled.l$variable) <- c("Arrival","Departure")
+levels(lags_RVI_scaled.l$variable) <- c("Gain","Loss")
 
 #visualize lags through time
-ggplot(data = lags_RVI_scaled.l, aes(x = arrival_lag, y = value)) +
+lags_over_time_annual_reg <- ggplot(data = lags_RVI_scaled.l, aes(x = arrival_lag, y = value)) +
   geom_line(aes(linetype = variable)) +
   labs(x = "Lag (years)", y = "Relative Variable Importance") +
   theme_classic() +
@@ -30,8 +30,10 @@ ggplot(data = lags_RVI_scaled.l, aes(x = arrival_lag, y = value)) +
     legend.position = c(0.75,0.75)) +
   scale_x_continuous(breaks = c(0:9))
 
-ggsave(here("figures","Supplemental", "annual_sensitivity","Figure3_annualonly.eps"), height = 4, width = 6)
-ggsave(here("figures","Supplemental", "annual_sensitivity","Figure3_annualonly.jpg"), height = 4, width = 6)
+save(lags_over_time_annual_reg, file = here::here("figures","Supplemental","annual_sensitivity","lags_over_time_annual_regs.RData"))
+
+ggsave(here::here("figures","Supplemental", "annual_sensitivity","Figure3_annualonly.eps"), height = 4, width = 6)
+ggsave(here::here("figures","Supplemental", "annual_sensitivity","Figure3_annualonly.jpg"), height = 4, width = 6)
 
 
 ```

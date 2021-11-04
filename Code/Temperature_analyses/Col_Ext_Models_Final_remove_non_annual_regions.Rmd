@@ -19,7 +19,7 @@ library(ggplot2)
 library(here)
 library(wesanderson) # to color plots
 
-spp_master_ztemp_seus_buoy_scaled <- readRDS(here("Data","Spp_master", "spp_master_ztemp_seus_buoy_scaled.rds"))
+spp_master_ztemp_seus_buoy_scaled <- readRDS("~/Documents/grad school/Rutgers/Repositories/Col_Ext/Data/Spp_master/spp_master_ztemp_seus_buoy_scaled.rds")
 ```
 
 Delete all observations of regions that do not sample every year
@@ -58,8 +58,9 @@ for (i in 1:length(variables_scaled)){
 
 #by setting nACQ to 0, all models converged
 
-saveRDS(object = arrival_model_comparison_annual_obs, file = here("Model_results","arrival_model_comparison_annual_obs.rds"))
-arrival_model_comparison_annual_obs <- readRDS(here("Model_results","arrival_model_comparison_annual_obs.rds"))
+saveRDS(object = arrival_model_comparison_annual_obs, file = here::here("Model_results","arrival_model_comparison_annual_obs.rds"))
+
+arrival_model_comparison_annual_obs <- readRDS(here::here("Model_results","arrival_model_comparison_annual_obs.rds"))
 
 ```
 
@@ -83,8 +84,8 @@ for (i in 1:length(variables_scaled)){
 
 #by setting nACQ to 0, all models converged
 
-saveRDS(object = departure_model_comparison_annual_obs, file = here("Model_results","departure_model_comparison_annual_obs.rds"))
-departure_model_comparison_annual_obs <- readRDS(here("Model_results","departure_model_comparison_annual_obs.rds"))
+saveRDS(object = departure_model_comparison_annual_obs, file = here::here("Model_results","departure_model_comparison_annual_obs.rds"))
+departure_model_comparison_annual_obs <- readRDS(here::here("Model_results","departure_model_comparison_annual_obs.rds"))
 
 ```
 
@@ -153,9 +154,9 @@ arrival_seas_temp_importance <- sum(arrival_model_comparison_annual_obs_nomean[g
 
 arrival_model_comparison_annual_obs_nomean_akaikeweights <- arrival_model_comparison_annual_obs_nomean
 
-saveRDS(arrival_model_comparison_annual_obs_nomean_akaikeweights, file = here("Model_results","arrival_model_comparison_annual_obs_nomean_akaikeweights_annual_obs.rds"))
-saveRDS(arrival_model_comparison_annual_obs_nomean_akaikeweights, file = here("tables","arrival_model_comparison_annual_obs_nomean_akaikeweights_annual_obs.rds"))
-arrival_model_comparison_annual_obs_nomean_akaikeweights <- readRDS(file = here("Model_results","arrival_model_comparison_annual_obs_nomean_akaikeweights_annual_obs.rds"))
+saveRDS(arrival_model_comparison_annual_obs_nomean_akaikeweights, file = here::here("Model_results","arrival_model_comparison_annual_obs_nomean_akaikeweights_annual_obs.rds"))
+saveRDS(arrival_model_comparison_annual_obs_nomean_akaikeweights, file = here::here("tables","arrival_model_comparison_annual_obs_nomean_akaikeweights_annual_obs.rds"))
+arrival_model_comparison_annual_obs_nomean_akaikeweights <- readRDS(file = here::here("Model_results","arrival_model_comparison_annual_obs_nomean_akaikeweights_annual_obs.rds"))
 
 ```
 
@@ -244,9 +245,9 @@ departure_seas_temp_importance <- sum(departure_model_comparison_annual_obs_nome
 
 departure_model_comparison_annual_obs_nomean_akaikeweights <- departure_model_comparison_annual_obs_nomean
 
-saveRDS(departure_model_comparison_annual_obs_nomean_akaikeweights, file = here("Model_results","departure_model_comparison_annual_obs_nomean_akaikeweights_annual_obs.rds"))
-saveRDS(departure_model_comparison_annual_obs_nomean_akaikeweights, file = here("tables","departure_model_comparison_annual_obs_nomean_akaikeweights_annual_obs.rds"))
-departure_model_comparison_annual_obs_nomean_akaikeweights <- readRDS(file = here("Model_results","departure_model_comparison_annual_obs_nomean_akaikeweights_annual_obs.rds"))
+saveRDS(departure_model_comparison_annual_obs_nomean_akaikeweights, file = here::here("Model_results","departure_model_comparison_annual_obs_nomean_akaikeweights_annual_obs.rds"))
+saveRDS(departure_model_comparison_annual_obs_nomean_akaikeweights, file = here::here("tables","departure_model_comparison_annual_obs_nomean_akaikeweights_annual_obs.rds"))
+departure_model_comparison_annual_obs_nomean_akaikeweights <- readRDS(file = here::here("Model_results","departure_model_comparison_annual_obs_nomean_akaikeweights_annual_obs.rds"))
 
 ```
 
@@ -326,8 +327,10 @@ lags_RVI_scaled[8,3] <- sum(departure_model_comparison_annual_obs_nomean[grep("l
 lags_RVI_scaled[9,3] <- sum(departure_model_comparison_annual_obs_nomean[grep("lag8", variable), ]$akaike_weight)
 lags_RVI_scaled[10,3] <- sum(departure_model_comparison_annual_obs_nomean[grep("lag9", variable), ]$akaike_weight)
 
-saveRDS(lags_RVI_scaled, here("Model_results","lags_RVI_scaled_annual_obs.rds"))
-lags_RVI_scaled <- readRDS(here("Model_results","lags_RVI_scaled_annual_obs.rds"))
+saveRDS(lags_RVI_scaled, here::here("Model_results","lags_RVI_scaled_annual_obs.rds"))
+lags_RVI_scaled <- readRDS(here::here("Model_results","lags_RVI_scaled_annual_obs.rds"))
+
+
 
 #visualize lags through time
 lags_over_time_annual_regs <- ggplot(data = lags_RVI_scaled, aes(x = arrival_lag)) +
@@ -374,7 +377,7 @@ RVI_table.r <- RVI_table[!grep("Surface", variable)][!grep("lagged", variable)]
 #change order of factor levels
 RVI_table.r[, variable := factor(variable, levels = c("Bottom", "no_lag", "Raw", "Change", "|Change|", "Min", "Max", "Seas"))]
 
-saveRDS(RVI_table, file = here("Model_results", "RVI_table_annual_obs.rds"))
+saveRDS(RVI_table, file = here::here("Model_results", "RVI_table_annual_obs.rds"))
 
 ggplot(data = RVI_table.r, aes(x=variable, y = value, fill = arrival_departure)) +
   geom_bar(stat = "identity", position = "dodge") +
@@ -395,7 +398,7 @@ RVI_arrival[, type := factor(type, levels = c("Depth", "Transformation", "Metric
 RVI_arrival_nolag <- RVI_arrival[type != "lag",]
 RVI_arrival_nolag[, type := factor(type, levels = c("Depth", "Transformation", "Metric"))][, variable := factor(variable, levels = c("Bottom", "Surface","  ", "Raw", "Change", "|Change|","", "Min", "Max", "Seas"))]
 
-saveRDS(RVI_arrival_nolag, here("Model_results", "RVI_arrival_nolag_annual_obs.rds"))
+saveRDS(RVI_arrival_nolag, here::here("Model_results", "RVI_arrival_nolag_annual_obs.rds"))
 
 #and again for departure
 RVI_departure[, variable := factor(variable, levels = c("Bottom", "Surface","  ", "Raw", "Change", "|Change|","", "no_lag", "lagged", "Min", "Max", "Seas"))]
@@ -404,7 +407,7 @@ RVI_departure[, type := factor(type, levels = c("Depth", "Transformation", "Metr
 RVI_departure_nolag <- RVI_departure[type != "lag",]
 RVI_departure_nolag[, type := factor(type, levels = c("Depth", "Transformation", "Metric"))][, variable := factor(variable, levels = c("Bottom", "Surface","  ", "Raw", "Change", "|Change|","", "Min", "Max", "Seas"))]
 
-saveRDS(RVI_departure_nolag, here("Model_results", "RVI_departure_nolag_annual_obs.rds"))
+saveRDS(RVI_departure_nolag, here::here("Model_results", "RVI_departure_nolag_annual_obs.rds"))
 
 
 #plotting

@@ -11,8 +11,8 @@ library(data.table)
 library(wesanderson)
 library(cowplot)
 
-RVI_arrival_nolag <- readRDS(here("Model_results", "RVI_arrival_nolag_annual_obs.rds"))
-RVI_departure_nolag <- readRDS(here("Model_results", "RVI_departure_nolag_annual_obs.rds"))
+RVI_arrival_nolag <- readRDS(here::here("Model_results", "RVI_arrival_nolag_annual_obs.rds"))
+RVI_departure_nolag <- readRDS(here::here("Model_results", "RVI_departure_nolag_annual_obs.rds"))
 ```
 
 Plot
@@ -39,7 +39,7 @@ RVI_arrival_plot <- ggplot(data = RVI_arrival_nolag, aes(x=type, y = value, fill
   scale_fill_manual(values = colors,
                     drop = F)
 
-ggsave(here("figures","Supplemental","annual_sensitivity","Figure4a_annual.eps" ))
+ggsave(here::here("figures","Supplemental","annual_sensitivity","Figure4a_annual.eps" ))
 
 #departure
 RVI_departure_plot <- ggplot(data = RVI_departure_nolag, aes(x=type, y = value, fill = variable)) +
@@ -59,7 +59,7 @@ RVI_departure_plot <- ggplot(data = RVI_departure_nolag, aes(x=type, y = value, 
   scale_fill_manual(values = colors,
                     drop = F)
 
-ggsave(here("figures","Supplemental","annual_sensitivity","Figure4b_annual.eps" ))
+ggsave(here::here("figures","Supplemental","annual_sensitivity","Figure4b_annual.eps" ))
 
 
 
@@ -75,16 +75,16 @@ legend <- get_legend(RVI_arrival_plot)
 #add legend
 figure4_wlegend <- plot_grid(figure4, legend, nrow = 1, rel_widths = c(8,1))
 
-ggsave(here("figures","Supplemental","annual_sensitivity","Figure4_annual.eps"), height = 4, width = 8)
-ggsave(here("figures","Supplemental","annual_sensitivity","Figure4_annual.jpg"), height = 4, width = 8)
+ggsave(here::here("figures","Supplemental","annual_sensitivity","Figure4_annual.eps"), height = 4, width = 8)
+ggsave(here::here("figures","Supplemental","annual_sensitivity","Figure4_annual.jpg"), height = 4, width = 8)
 ```
 
 Add in old figure 3
 ```{r adding in figure 3}
 load(file = here::here("figures","Supplemental","annual_sensitivity","lags_over_time_annual_regs.RData"))
 
-figure3_new_annual <- plot_grid(lags_over_time_annual_regs, figure4_wlegend, ncol = 1, nrow = 2, labels = c("a.","",""), vjust = 1)
+figure3_new_annual <- plot_grid(lags_over_time_annual_reg, figure4_wlegend, ncol = 1, nrow = 2, labels = c("a.","",""), vjust = 1)
 
-ggsave(figure3_new_annual, path = here("figures","Supplemental","annual_sensitivity"), filename = "figure3_new_annual.eps", height = 6, width = 7.5, units = "in")
+ggsave(figure3_new_annual, path = here::here("figures","Supplemental","annual_sensitivity"), filename = "figure3_new_annual.eps", height = 6, width = 7.5, units = "in")
 ```
 
