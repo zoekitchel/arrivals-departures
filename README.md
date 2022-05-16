@@ -1,11 +1,6 @@
-# colonization-extinction
+# gains-losses
 
-"Regional species 
-
-
-
-
-s outpace losses across North American continental shelf regions"
+"Regional species gains outpace losses across North American continental shelf regions"
 
 Zoë J. Kitchel<sup>1</sup>* (zoe.kitchel@rutgers.edu)
 Malin L. Pinsky<sup>2</sup> (malin.pinsky@rutgers.edu)
