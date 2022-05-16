@@ -1,6 +1,6 @@
 # colonization-extinction
 
-"Regional marine departures lag behind arrivals across North American shelf regions"
+"Regional species gains outpace losses across North American continental shelf regions"
 
 Zoë J. Kitchel<sup>1</sup>* (zoe.kitchel@rutgers.edu)
 Malin L. Pinsky<sup>2</sup> (malin.pinsky@rutgers.edu)
@@ -14,7 +14,7 @@ Affiliations:
 *Corresponding author address: Department of Ecology, Evolution, & Natural Resources, 14 College Farm Road, Rutgers University, New Brunswick, New Jersey, USA, 08901
 
 
-This repository provides code to replicate analyses in the above publication. Raw species observation data from US and Canada trawl surveys can be accessed from [Ocean Adapt](https://oceanadapt.rutgers.edu/). Temperature data are from the [Simple Ocean Data Assimilation 2.2.4 and 3.3.1](https://www.soda.umd.edu/).
+This repository provides code to replicate analyses in the above publication. Raw species observation data from US and Canada trawl surveys can be accessed from [Ocean Adapt](https://oceanadapt.rutgers.edu/). Temperature data are from the [Simple Ocean Data Assimilation 2.2.4 and 3.3.1](https://www.soda.umd.edu/). Some files (listed in .gitignore file) are too big for github, but you can find them on Box: https://rutgers.box.com/s/ez9zxt26nori9w7nx12lwzqly31o8fdn.
 
 These analyes explore whether temperature and species traits can be used to predict arrivals into new regions, and departures from previously inhabited regions for a diverse array of finfish and invertebrates in North American shelf regions. Additionally, these analyses consider whether arrivals and departures are responding similarly to temperature and trait values, and at the same time. 
 
