@@ -1,0 +1,97 @@
+---
+title: "Add Spp Taxonomy Info"
+output: html_notebook
+---
+
+```{r setup}
+library(tidyverse)
+library(worrms)
+library(taxize)
+library(here)
+```
+
+Load Data, Reduce to Species
+```{r}
+spp_master_ztemp_seus_buoy_scaled <- readRDS(here("Data","Spp_master", "spp_master_ztemp_seus_buoy_scaled.rds"))
+
+#list of species
+spp <- unique(spp_master_ztemp_seus_buoy_scaled[,spp])
+```
+
+Cleaning Code from Juliano
+```{r}
+#Juliano's code from FishBase
+  # Get WoRM's id for sourcing
+  wrm <- taxize::gnr_datasources() %>% 
+    dplyr::filter(title == "World Register of Marine Species") %>% 
+    dplyr::pull(id)
+  
+   # If scientific names are provided, check misspelling
+    fix_taxon <- taxize::gnr_resolve(spp,
+                                     data_source_ids = wrm,
+                                     best_match_only = TRUE,
+                                     canonical = TRUE,
+                                     ask = FALSE) %>% 
+      dplyr::select(
+        query = user_supplied_name,
+        taxa = matched_name2)
+    
+    # Missing in fix_taxon
+    missing_misspelling <- tibble(
+      query = spp) %>% 
+      dplyr::filter(!query %in% fix_taxon$query)
+    
+    # Get Alphaid of taxon (Takes some time)
+    
+    alphaid <- tibble::tibble(
+      fix_taxon,
+      worms_id = cbind(worms::wormsbynames(fix_taxon$taxa,
+                                           verbose = FALSE)
+                       )
+    )
+    
+    # Missing in AphiaIDs
+    missing_alphaid <- alphaid %>% 
+      dplyr::filter(is.na(worms_id)) %>% 
+      dplyr::select(query)
+    
+    # Get correct names and full classification
+    worms_db <-  worms::wormsbyid(as.numeric(alphaid$worms_id$AphiaID),
+                                  verbose = F) %>% 
+      dplyr::select(
+        taxa = valid_name, # selects valid name in case is synonym
+        worms_id = valid_AphiaID, # selects valid id in case is synonym
+        kingdom,phylum,class,order,family,genus,isMarine,rank
+      ) %>%
+      # Include originally supplied taxa
+      dplyr::mutate(
+        query = fix_taxon$query
+      )
+    
+    
+    # Get Missing information
+    missing_data <- dplyr::bind_rows(missing_alphaid,missing_misspelling)
+    
+#Add manually
+    	
+#Cheiraster dawsoni
+#Arctozenus risso kroyeri
+
+
+newrow1 <- c("Cheiraster (Luidiaster) dawsoni",380798,"Animalia","Echinodermata","Asteroidea", "Notomyotida","Benthopectinidae","Cheiraster",1,"Species","Cheiraster"," dawsoni")
+
+newrow2 <- c("Arctozenus risso kroyeri",126352,"Animalia","Chordata","Teleostei", "Aulopiformes", "Paralepididae", "Arctozenus", 1, "Species", "Arctozenus risso kroyeri")
+
+
+#delete row with NAs
+worms_db.r <- worms_db %>%
+   filter(!is.na(worms_id))
+
+spp_key <- rbind(worms_db.r, newrow1, newrow2)
+
+setnames(spp_key, "query", "spp")
+
+write_csv(spp_key, file = here::here("Data","Spp_master","spp_key.csv"))
+
+```
+
