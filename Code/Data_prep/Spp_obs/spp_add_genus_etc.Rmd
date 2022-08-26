@@ -74,13 +74,16 @@ Cleaning Code from Juliano
     
 #Add manually
     	
-#Cheiraster dawsoni
-#Arctozenus risso kroyeri
+#Cheiraster dawsoni (keep)
+#Arctozenus risso kroyeri (keep)
+#Gymothorax igromargiatus (species of Moray eel, shouldn't live in GMEX)
+#Pericoptus punctatus    (sand scarab beetle that is endemic to New Zealand, exclude)
+#Raioides louisiaesis   (cannot find record of this species anywhere, exclude)
 
+newrow1 <- c("Cheiraster (Luidiaster) dawsoni",380798,"Animalia","Echinodermata","Asteroidea", "Notomyotida","Benthopectinidae","Cheiraster",1,"Species","Cheiraster dawsoni")
 
-newrow1 <- c("Cheiraster (Luidiaster) dawsoni",380798,"Animalia","Echinodermata","Asteroidea", "Notomyotida","Benthopectinidae","Cheiraster",1,"Species","Cheiraster"," dawsoni")
-
-newrow2 <- c("Arctozenus risso kroyeri",126352,"Animalia","Chordata","Teleostei", "Aulopiformes", "Paralepididae", "Arctozenus", 1, "Species", "Arctozenus risso kroyeri")
+newrow2 <- c("Arctozenus risso kroyeri",126352,"Animalia","Chordata","Teleostei",
+"Aulopiformes", "Paralepididae", "Arctozenus", 1, "Species", "Arctozenus risso kroyeri")
 
 
 #delete row with NAs

@@ -1,0 +1,160 @@
+---
+title: "Figure 4: New with Revision, temp versus likelihood of gains vs. losses"
+output: html_notebook
+---
+
+This is an [R Markdown](http://rmarkdown.rstudio.com) Notebook. When you execute code within the notebook, the results appear beneath the code. 
+
+Try executing this chunk by clicking the *Run* button within the chunk or by placing your cursor inside it and pressing *Cmd+Shift+Enter*. 
+
+```{r}
+library(ggplot2)
+library(data.table)
+library(lme4)
+library(here)
+library(cowplot)
+library(DHARMa) #check model assumptions
+library(glmmTMB)
+```
+
+Pull in spp master data
+
+```{r}
+spp_master_ztemp_seus_buoy_scaled <- readRDS(here("Data","Spp_master", "spp_master_ztemp_seus_buoy_scaled.rds")) #spp master, gain loss
+spp_key <- fread(here::here("Data","Spp_master","spp_key.csv")) #key to link phylogenic info
+
+spp_master_ztemp_seus_buoy_scaled <- spp_master_ztemp_seus_buoy_scaled[spp_key, on = "spp"] #this drops three species for GMEX that should not be there (see spp_add_genus_etc.Rmd code)
+
+```
+
+
+Best Temp Only Model Gains
+
+"You haven't mentioned glmmTMB in your pro/con description, though you mention it in the title, so I'll add some pros for this package. The advantage of glmmTMB is that you can easily model complex / nested / cross classified random effects structures and you have different correlation options (like AR1 etc.).Furthermore, you have various diagnostic options for glmmTMB as well, to quote from another thread: You could use the "performance" package to calculate indices like r2() or icc() [1]. You can also check your model for overdispersion or zero-inflation with the "performance" package (check_overdispersion() or check_zeroinflation()). Furthermore, it can create diagnostic plots (which requires the "see" package for plotting capabilities [2]). Another, imho important, package in this context is "DHARMa" for residual diagnostic plots [3]."
+
+```{r}
+
+
+#let's take a look at best performing model
+mod_sppregrandom <- glmmTMB(col ~ seas_sst_temp_scaled  + (1|reg) + (1|phylum) + (1|class) + (1|order) + (1|family) + (1|genus) + (1|spp), family = binomial, data = spp_master_ztemp_seus_buoy_scaled)
+                            
+                            #, nAGQ = 0) (Deleted because trying glmmTMB instead of glmer as the function to run the model)
+```
+
+Assumptions
+```{r}
+
+#confint(mod_sppregrandom)
+#exp(confint(fit)) will give you either Wald or profile likelihood (depending on pkgs loaded) confidence intervals on the parameters of the model, not the fitted values of the model.
+
+#merBoot_gain <- bootMer(mod_sppregrandom, predict, nsim = 100, re.form = NA)
+
+#predict(se.fit=TRUE, re.form=NA, allow.new.levels=TRUE, type = 'response')
+```
+
+
+Plot Gains versus Seasonality
+```{r}
+#best predictor for fish and inverts: seas_sst_temp_scaled as x axis
+temp_gains_newdata <- data.table(seas_sst_temp_scaled =  runif(500,min(spp_master_ztemp_seus_buoy_scaled$seas_sst_temp_scaled, na.rm = T), max(spp_master_ztemp_seus_buoy_scaled$seas_sst_temp_scaled, na.rm = T)))
+
+#all combinations of all variables
+
+#species
+#genus
+#family
+#order
+#class
+#phyla
+#reg
+
+#all realistic taxonomy and region combos
+taxonomy_unique <- unique(spp_master_ztemp_seus_buoy_scaled[,.(reg, spp, genus, family, class, order, phylum, kingdom)])
+
+
+
+#cross combine with all possible temps from temp_gains_newdata
+taxonomy_temp_unique <- setkey(taxonomy_unique[,c(k=1,.SD)],k)[temp_gains_newdata[,c(k=1,.SD)],allow.cartesian=TRUE][,k:=NULL]
+
+preds <- predict(mod_sppregrandom,newdata = taxonomy_temp_unique, se.fit=TRUE,re.form  = NA, allow.new.levels=TRUE, type = 'response')
+
+preds_predictors_gain <- data.table(cbind(taxonomy_temp_unique, fit = preds$fit, se = preds$se.fit))
+
+#I want x axis to be meaningful
+mod_gain_reverse_scaledtemp <- lm(seas_sst_temp ~ seas_sst_temp_scaled, data = spp_master_ztemp_seus_buoy_scaled)
+
+
+preds_predictors_gain[,seas_sst_temp := mod_gain_reverse_scaledtemp$coefficients[2]*seas_sst_temp_scaled + mod_gain_reverse_scaledtemp$coefficients[1] ]
+
+#unique for plotting
+preds_predictors_gain.u <- unique(preds_predictors_gain[,.(seas_sst_temp, fit, se)])
+
+#1.96 * standard error is 95% confidence interval 
+(gain_preds_temp_only <- ggplot() +
+  geom_ribbon(data =  preds_predictors_gain.u, aes(x = seas_sst_temp, ymin = fit-1.96*se, ymax = fit+1.96*se), fill = "lightgrey") +
+  geom_point(data = spp_master_ztemp_seus_buoy_scaled, aes(x = seas_sst_temp, y = col), size = 2, shape = "|") +
+  geom_line(data = preds_predictors_gain.u, aes(x = seas_sst_temp, y = fit)) +
+  labs(x = "Seasonality of Sea Surface Temperature (\u00B0C)", y = "Probability of Gain") +
+  theme_classic() +
+  theme(text=element_text(size = 10)))
+
+ggsave(gain_preds_temp_only, path = here::here("figures/Figure4"), file = "Figure4_gains_CI.jpg")
+ggsave(gain_preds_temp_only, path = here::here("figures/Figure4"), file = "Figure4_gains_CI.eps")
+```
+
+
+Best Temp Only Model Losses
+
+```{r}
+#let's take a look at best performing model
+mod_sppregrandom_losses <- glmmTMB(now_ext ~ seas_sst_temp_lag3_scaled + (1|reg) + (1|phylum) + (1|class) + (1|order) + (1|family) + (1|genus) + (1|spp), family = binomial, data = spp_master_ztemp_seus_buoy_scaled)
+```
+
+Plot Losses versus Seasonality 
+* seas_sst_temp_lag3_scaled
+```{r}
+#best predictor for fish and inverts: seas_sst_temp_lag3_scaled as x axis
+temp_losses_newdata <- data.table(seas_sst_temp_lag3_scaled = runif(500,min(spp_master_ztemp_seus_buoy_scaled$seas_sst_temp_lag3_scaled, na.rm =  T), max(spp_master_ztemp_seus_buoy_scaled$seas_sst_temp_lag3_scaled, na.rm =  T)))
+
+#cross combine with all possible temps from temp_gains_newdata
+taxonomy_temp_unique_loss <- setkey(taxonomy_unique[,c(k=1,.SD)],k)[temp_losses_newdata[,c(k=1,.SD)],allow.cartesian=TRUE][,k:=NULL]
+
+#run here
+preds_losses <- predict(mod_sppregrandom_losses, newdata = taxonomy_temp_unique_loss, se.fit=TRUE,re.form  = NA, allow.new.levels=TRUE, type = 'response')
+
+
+preds_predictors_loss <- data.table(cbind(taxonomy_temp_unique_loss, fit = preds_losses$fit, se = preds_losses$se.fit))
+
+saveRDS(preds_predictors_loss, here::here("Data","preds_predictors_loss.rds"))
+
+#I want x axis to be meaningful
+mod_loss_reverse_scaledtemp <- lm(seas_sst_temp_lag3 ~ seas_sst_temp_lag3_scaled, data = spp_master_ztemp_seus_buoy_scaled)
+
+
+preds_predictors_loss[,seas_sst_temp_lag3 := mod_loss_reverse_scaledtemp$coefficients[2]*seas_sst_temp_lag3_scaled + mod_loss_reverse_scaledtemp$coefficients[1] ]
+
+
+#unique for plotting
+preds_predictors_loss.u <- unique(preds_predictors_loss[,.(seas_sst_temp_lag3, fit, se)])
+
+#1.96 * standard error is 95% confidence interval 
+(loss_preds_temp_only <- ggplot() +
+  geom_ribbon(data =  preds_predictors_loss.u, aes(x = seas_sst_temp_lag3, ymin = fit-1.96*se, ymax = fit+1.96*se), fill = "lightgrey") +
+  geom_point(data = spp_master_ztemp_seus_buoy_scaled, aes(x = seas_sst_temp_lag3, y = now_ext), size = 2, shape = "|") +
+  geom_line(data = preds_predictors_loss.u, aes(x = seas_sst_temp_lag3, y = fit)) +
+  labs(x = "Seasonality of Sea Surface Temperature (\u00B0C)\nLagged Three Years", y = "Probability of Loss") +
+  theme_classic() +
+  theme(text=element_text(size = 10)))
+
+ggsave(loss_preds_temp_only, path = here::here("figures/Figure4"), file = "Figure4_losses_CI.jpg")
+ggsave(loss_preds_temp_only, path = here::here("figures/Figure4"), file = "Figure4_losses_CI.eps")
+```
+
+Merge these two together
+```{r}
+gains_losses_preds_CI <- plot_grid(gain_preds_temp_only, loss_preds_temp_only, ncol = 2, align = "hv", labels = c("a","b"))
+
+ggsave(gains_losses_preds_CI, path = here::here("figures/Figure4"), file = "Figure4_gain_loss_merge.jpg", height = 4, width = 7, units = "in")
+ggsave(gains_losses_preds_CI, path = here::here("figures/Figure4"), file = "Figure4_gain_loss_merge.eps", height = 4, width = 7, units = "in")
+```
+
