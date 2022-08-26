@@ -1,0 +1,78 @@
+---
+title: "Temp Through Time Gains Losses"
+output: html_notebook
+---
+
+This is an [R Markdown](http://rmarkdown.rstudio.com) Notebook. When you execute code within the notebook, the results appear beneath the code. 
+
+Try executing this chunk by clicking the *Run* button within the chunk or by placing your cursor inside it and pressing *Ctrl+Shift+Enter*. 
+
+```{r}
+library(data.table)
+library(nlme)
+
+spp_master_ztemp_seus_buoy_scaled <- readRDS("~/SODA_temp_prep/spp_master_ztemp_seus_buoy_scaled.rds")
+```
+
+Unique year temp values
+```{r}
+spp_master_ztemp_seus_buoy_scaled.u <- unique(spp_master_ztemp_seus_buoy_scaled[,.(year, reg, min_sbt_temp, max_sbt_temp, seas_sbt_temp, min_sst_temp, max_sst_temp, seas_sst_temp)])
+
+regions <- unique(spp_master_ztemp_seus_buoy_scaled.u[,reg])
+```
+
+Make GLS for each region and temp var to see which are significant, include in supplement and main text
+```{r}
+temp_change_time.full <- data.table(region = factor(NA), temp_var = as.character(NA), coef = as.numeric(NA), p = as.numeric(NA))
+
+for (i in 1:length(regions)) {
+  #empty dt to add to
+  temp_change_time <- data.table(matrix(ncol = 4, nrow = 6))
+  colnames(temp_change_time) <- c("region", "temp_var", "coef", "p")
+  temp_change_time[,region := as.factor(region)][,temp_var := as.character(temp_var)][,coef := as.numeric(coef)][,p := as.numeric(p)]
+  
+  
+  #subset full data table to single region
+  subset <- spp_master_ztemp_seus_buoy_scaled.u[reg == regions[i],]
+  
+  #assign region column 
+  temp_change_time[,region := regions[i]]
+  
+  #bottom
+  max_sbt_mod <- gls(max_sbt_temp ~ year, data = subset)
+    temp_change_time[1,"temp_var"] <- "max_sbt_temp"
+    temp_change_time[1,"coef"] <- summary(max_sbt_mod)$tTable[2]
+    temp_change_time[1,"p"] <- summary(max_sbt_mod)$tTable[8]
+  min_sbt_mod <- gls(min_sbt_temp ~ year, data = subset)
+    temp_change_time[2,"temp_var"] <- "min_sbt_temp"
+    temp_change_time[2,"coef"] <- summary(min_sbt_mod)$tTable[2]
+    temp_change_time[2,"p"] <- summary(min_sbt_mod)$tTable[8]
+  seas_sbt_mod <- gls(seas_sbt_temp ~ year, data = subset)
+    temp_change_time[3,"temp_var"] <- "seas_sbt_temp"
+    temp_change_time[3,"coef"] <- summary(seas_sbt_mod)$tTable[2]
+    temp_change_time[3,"p"] <- summary(seas_sbt_mod)$tTable[8]
+    
+  #surface
+  max_sst_mod <- gls(max_sst_temp ~ year, data = subset)
+     temp_change_time[4,"temp_var"] <- "max_sst_temp"
+         temp_change_time[4,"coef"] <- summary(max_sst_mod)$tTable[2]
+    temp_change_time[4,"p"] <- summary(max_sst_mod)$tTable[8]
+  min_sst_mod <- gls(min_sst_temp ~ year, data = subset)
+    temp_change_time[5,"temp_var"] <- "min_sst_temp"
+        temp_change_time[5,"coef"] <- summary(min_sst_mod)$tTable[2]
+    temp_change_time[5,"p"] <- summary(min_sst_mod)$tTable[8]
+  seas_sst_mod <- gls(seas_sst_temp ~ year, data = subset)
+    temp_change_time[6,"temp_var"] <- "seas_sst_temp"
+    temp_change_time[6,"coef"] <- summary(seas_sst_mod)$tTable[2]
+    temp_change_time[6,"p"] <- summary(seas_sst_mod)$tTable[8]
+  
+  temp_change_time.full <- rbind(temp_change_time.full, temp_change_time)
+  
+}
+
+
+temp_change_time.full[,p_round := round(p,3)]
+
+View(temp_change_time.full)
+```
+
