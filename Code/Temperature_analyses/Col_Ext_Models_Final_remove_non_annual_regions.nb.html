@@ -229,15 +229,24 @@ library(glmmTMB)
 
 spp_master_ztemp_seus_buoy_scaled &lt;- readRDS(&quot;~/Documents/grad school/Rutgers/Repositories/Col_Ext/Data/Spp_master/spp_master_ztemp_seus_buoy_scaled.rds&quot;)</code></pre>
 <!-- rnb-source-end -->
+<!-- rnb-output-begin eyJkYXRhIjoiV2FybmluZyBpbiBnemZpbGUoZmlsZSwgXCJyYlwiKSA6XG4gIGNhbm5vdCBvcGVuIGNvbXByZXNzZWQgZmlsZSAnL1VzZXJzL3pvZWtpdGNoZWwvRG9jdW1lbnRzL2dyYWQgc2Nob29sL1J1dGdlcnMvUmVwb3NpdG9yaWVzL0NvbF9FeHQvRGF0YS9TcHBfbWFzdGVyL3NwcF9tYXN0ZXJfenRlbXBfc2V1c19idW95X3NjYWxlZC5yZHMnLCBwcm9iYWJsZSByZWFzb24gJ05vIHN1Y2ggZmlsZSBvciBkaXJlY3RvcnknXG5FcnJvciBpbiBnemZpbGUoZmlsZSwgXCJyYlwiKSA6IGNhbm5vdCBvcGVuIHRoZSBjb25uZWN0aW9uXG4ifQ== -->
+<pre><code>Warning in gzfile(file, &quot;rb&quot;) :
+  cannot open compressed file &#39;/Users/zoekitchel/Documents/grad school/Rutgers/Repositories/Col_Ext/Data/Spp_master/spp_master_ztemp_seus_buoy_scaled.rds&#39;, probable reason &#39;No such file or directory&#39;
+Error in gzfile(file, &quot;rb&quot;) : cannot open the connection</code></pre>
+<!-- rnb-output-end -->
 <!-- rnb-chunk-end -->
 <!-- rnb-text-begin -->
 <p>Delete all observations of regions that do not sample every year</p>
 <!-- rnb-text-end -->
 <!-- rnb-chunk-begin -->
-<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxubGV2ZWxzKHNwcF9tYXN0ZXJfenRlbXBfc2V1c19idW95X3NjYWxlZCRyZWcpXG5cbnNwcF9tYXN0ZXJfenRlbXBfc2V1c19idW95X3NjYWxlZF9hbm51YWxfb2JzIDwtIHNwcF9tYXN0ZXJfenRlbXBfc2V1c19idW95X3NjYWxlZFshKHJlZyAlaW4lIGMoXCJhaVwiLFwiZ29hXCIsXCJ3Y3RyaVwiKSksXVxuXG5gYGAifQ== -->
-<pre class="r"><code>levels(spp_master_ztemp_seus_buoy_scaled$reg)
-
-spp_master_ztemp_seus_buoy_scaled_annual_obs &lt;- spp_master_ztemp_seus_buoy_scaled[!(reg %in% c(&quot;ai&quot;,&quot;goa&quot;,&quot;wctri&quot;)),]
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxubGV2ZWxzKHNwcF9tYXN0ZXJfenRlbXBfc2V1c19idW95X3NjYWxlZCRyZWcpXG5gYGAifQ== -->
+<pre class="r"><code>levels(spp_master_ztemp_seus_buoy_scaled$reg)</code></pre>
+<!-- rnb-source-end -->
+<!-- rnb-output-begin eyJkYXRhIjoiWzFdIFwiYWlcIiAgICBcImVic1wiICAgXCJnbWV4XCIgIFwiZ29hXCIgICBcIm5ldXNcIiAgXCJuZXdmXCIgIFwic2FcIiAgICBcInNoZWxmXCIgXCJ3Y3RyaVwiXG4ifQ== -->
+<pre><code>[1] &quot;ai&quot;    &quot;ebs&quot;   &quot;gmex&quot;  &quot;goa&quot;   &quot;neus&quot;  &quot;newf&quot;  &quot;sa&quot;    &quot;shelf&quot; &quot;wctri&quot;</code></pre>
+<!-- rnb-output-end -->
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuc3BwX21hc3Rlcl96dGVtcF9zZXVzX2J1b3lfc2NhbGVkX2FubnVhbF9vYnMgPC0gc3BwX21hc3Rlcl96dGVtcF9zZXVzX2J1b3lfc2NhbGVkWyEocmVnICVpbiUgYyhcImFpXCIsXCJnb2FcIixcIndjdHJpXCIpKSxdXG5cbmBgYCJ9 -->
+<pre class="r"><code>spp_master_ztemp_seus_buoy_scaled_annual_obs &lt;- spp_master_ztemp_seus_buoy_scaled[!(reg %in% c(&quot;ai&quot;,&quot;goa&quot;,&quot;wctri&quot;)),]
 </code></pre>
 <!-- rnb-source-end -->
 <!-- rnb-chunk-end -->
@@ -245,12 +254,12 @@ spp_master_ztemp_seus_buoy_scaled_annual_obs &lt;- spp_master_ztemp_seus_buoy_sc
 <p>Link up with spp key to add phylum, order, family, etc.</p>
 <!-- rnb-text-end -->
 <!-- rnb-chunk-begin -->
-<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuc3BwX2tleSA8LSBmcmVhZChoZXJlOjpoZXJlKFwiRGF0YVwiLFwiU3BwX21hc3RlclwiLFwic3BwX2tleS5jc3ZcIikpXG5cbnNwcF9tYXN0ZXJfenRlbXBfc2V1c19idW95X3NjYWxlZF9hbm51YWxfb2JzIDwtIHNwcF9tYXN0ZXJfenRlbXBfc2V1c19idW95X3NjYWxlZF9hbm51YWxfb2JzW3NwcF9rZXksIG9uID0gXCJzcHBcIl1cblxuKDF8cmVnKSArICgxfHBoeWx1bSkgKyAoMXxjbGFzcykgKyAoMXxvcmRlcikgKyAoMXxmYW1pbHkpICsgKDF8Z2VudXMpICsgKDF8c3BwKVxuICAgIFxuYGBgIn0= -->
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuc3BwX2tleSA8LSBmcmVhZChoZXJlOjpoZXJlKFwiRGF0YVwiLFwiU3BwX21hc3RlclwiLFwic3BwX2tleS5jc3ZcIikpXG5cbnNwcF9tYXN0ZXJfenRlbXBfc2V1c19idW95X3NjYWxlZF9hbm51YWxfb2JzIDwtIHNwcF9tYXN0ZXJfenRlbXBfc2V1c19idW95X3NjYWxlZF9hbm51YWxfb2JzW3NwcF9rZXksIG9uID0gXCJzcHBcIl1cblxuIygxfHJlZykgKyAoMXxwaHlsdW0pICsgKDF8Y2xhc3MpICsgKDF8b3JkZXIpICsgKDF8ZmFtaWx5KSArICgxfGdlbnVzKSArICgxfHNwcClcbiAgICBcbmBgYCJ9 -->
 <pre class="r"><code>spp_key &lt;- fread(here::here(&quot;Data&quot;,&quot;Spp_master&quot;,&quot;spp_key.csv&quot;))
 
 spp_master_ztemp_seus_buoy_scaled_annual_obs &lt;- spp_master_ztemp_seus_buoy_scaled_annual_obs[spp_key, on = &quot;spp&quot;]
 
-(1|reg) + (1|phylum) + (1|class) + (1|order) + (1|family) + (1|genus) + (1|spp)
+#(1|reg) + (1|phylum) + (1|class) + (1|order) + (1|family) + (1|genus) + (1|spp)
     </code></pre>
 <!-- rnb-source-end -->
 <!-- rnb-chunk-end -->
@@ -259,32 +268,953 @@ spp_master_ztemp_seus_buoy_scaled_annual_obs &lt;- spp_master_ztemp_seus_buoy_sc
 <p>##Here, I scaled all temperature values across all regions, and included species as a random effect. In order to do this, I had to change the algorithm slightly–nAGQ = 0.</p>
 <!-- rnb-text-end -->
 <!-- rnb-chunk-begin -->
-<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuI25hbWVzIG9mIHNjYWxlZCBjb2x1bW5zXG52YXJpYWJsZXNfc2NhbGVkIDwtIGdyZXAoXCIqX3NjYWxlZFwiLCBuYW1lcyhzcHBfbWFzdGVyX3p0ZW1wX3NldXNfYnVveV9zY2FsZWRfYW5udWFsX29icyksIHZhbHVlID0gVClcblxuI2dvaW5nIHRvIG1ha2UgbG9vcCB0byBtYWtlIGFsbCBtb2RlbHMgSSBuZWVkIHRvIGxvb2sgYXQgd2l0aCBhIHNpbmdsZSB0ZW1wZXJhdHVyZSB2YXJpYWJsZVxuXG5hcnJpdmFsX21vZGVsX2NvbXBhcmlzb25fYW5udWFsX29icyA8LSBhcy5kYXRhLnRhYmxlKG1hdHJpeChucm93ID0gbGVuZ3RoKHZhcmlhYmxlc19zY2FsZWQpKSlcbmFycml2YWxfbW9kZWxfY29tcGFyaXNvbl9hbm51YWxfb2JzWywgdmFyaWFibGU6PWFzLmZhY3RvcihWMSldWywgY29lZjo9YXMubnVtZXJpYyhWMSldWywgcF92YWx1ZTo9YXMubnVtZXJpYyhWMSldWywgQUlDYzo9YXMubnVtZXJpYyhWMSldXG5hcnJpdmFsX21vZGVsX2NvbXBhcmlzb25fYW5udWFsX29ic1ssIFYxIDo9IE5VTExdXG5cbmZvciAoaSBpbiAxOmxlbmd0aCh2YXJpYWJsZXNfc2NhbGVkKSl7XG4gIG1vZCA8LSBnbG1tVE1CKGNvbCB+IGdldCh2YXJpYWJsZXNfc2NhbGVkW2ldKSArICgxfHJlZykgKyAoMXxwaHlsdW0pICsgKDF8Y2xhc3MpICsgKDF8b3JkZXIpICsgKDF8ZmFtaWx5KSArICgxfGdlbnVzKSArICgxfHNwcCksIGZhbWlseSA9IGJpbm9taWFsLCBkYXRhID0gc3BwX21hc3Rlcl96dGVtcF9zZXVzX2J1b3lfc2NhbGVkX2FubnVhbF9vYnMpXG4gIGFycml2YWxfbW9kZWxfY29tcGFyaXNvbl9hbm51YWxfb2JzW2ksdmFyaWFibGUgOj0gdmFyaWFibGVzX3NjYWxlZFtpXV1cbiAgYXJyaXZhbF9tb2RlbF9jb21wYXJpc29uX2FubnVhbF9vYnNbaSxjb2VmIDo9IGNvZWYoc3VtbWFyeShtb2QpKVssXCJFc3RpbWF0ZVwiXVsyXV1cbiAgYXJyaXZhbF9tb2RlbF9jb21wYXJpc29uX2FubnVhbF9vYnNbaSxwX3ZhbHVlIDo9IGNvZWYoc3VtbWFyeShtb2QpKVssXCJQcig+fHp8KVwiXVsyXV1cbiAgYXJyaXZhbF9tb2RlbF9jb21wYXJpc29uX2FubnVhbF9vYnNbaSxBSUNjIDo9IEFJQ2MobW9kKV1cbiAgXG4gIHByaW50KHBhc3RlKGksIGxlbmd0aCh2YXJpYWJsZXNfc2NhbGVkKSwgc2VwID0gXCIvXCIpKVxuICAgIFxufVxuXG4jYnkgc2V0dGluZyBuQUNRIHRvIDAsIGFsbCBtb2RlbHMgY29udmVyZ2VkXG5cbnNhdmVSRFMob2JqZWN0ID0gYXJyaXZhbF9tb2RlbF9jb21wYXJpc29uX2FubnVhbF9vYnMsIGZpbGUgPSBoZXJlOjpoZXJlKFwiTW9kZWxfcmVzdWx0c1wiLFwiYXJyaXZhbF9tb2RlbF9jb21wYXJpc29uX2FubnVhbF9vYnMucmRzXCIpKVxuXG5hcnJpdmFsX21vZGVsX2NvbXBhcmlzb25fYW5udWFsX29icyA8LSByZWFkUkRTKGhlcmU6OmhlcmUoXCJNb2RlbF9yZXN1bHRzXCIsXCJhcnJpdmFsX21vZGVsX2NvbXBhcmlzb25fYW5udWFsX29icy5yZHNcIikpXG5cbmBgYCJ9 -->
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuI25hbWVzIG9mIHNjYWxlZCBjb2x1bW5zXG52YXJpYWJsZXNfc2NhbGVkIDwtIGdyZXAoXCIqX3NjYWxlZFwiLCBuYW1lcyhzcHBfbWFzdGVyX3p0ZW1wX3NldXNfYnVveV9zY2FsZWRfYW5udWFsX29icyksIHZhbHVlID0gVClcblxuI2dvaW5nIHRvIG1ha2UgbG9vcCB0byBtYWtlIGFsbCBtb2RlbHMgSSBuZWVkIHRvIGxvb2sgYXQgd2l0aCBhIHNpbmdsZSB0ZW1wZXJhdHVyZSB2YXJpYWJsZVxuXG5hcnJpdmFsX21vZGVsX2NvbXBhcmlzb25fYW5udWFsX29ic190YXhvbm9teSA8LSBhcy5kYXRhLnRhYmxlKG1hdHJpeChucm93ID0gbGVuZ3RoKHZhcmlhYmxlc19zY2FsZWQpKSlcbmFycml2YWxfbW9kZWxfY29tcGFyaXNvbl9hbm51YWxfb2JzX3RheG9ub215WywgdmFyaWFibGU6PWFzLmZhY3RvcihWMSldWywgY29lZjo9YXMubnVtZXJpYyhWMSldWywgcF92YWx1ZTo9YXMubnVtZXJpYyhWMSldWywgQUlDYzo9YXMubnVtZXJpYyhWMSldXG5hcnJpdmFsX21vZGVsX2NvbXBhcmlzb25fYW5udWFsX29ic190YXhvbm9teVssIFYxIDo9IE5VTExdXG5cbmZvciAoaSBpbiAxOmxlbmd0aCh2YXJpYWJsZXNfc2NhbGVkKSl7XG4gIG1vZCA8LSBnbG1tVE1CKGNvbCB+IGdldCh2YXJpYWJsZXNfc2NhbGVkW2ldKSArICgxfHJlZykgKyAoMXxwaHlsdW0pICsgKDF8Y2xhc3MpICsgKDF8b3JkZXIpICsgKDF8ZmFtaWx5KSArICgxfGdlbnVzKSArICgxfHNwcCksIGZhbWlseSA9IGJpbm9taWFsLCBkYXRhID0gc3BwX21hc3Rlcl96dGVtcF9zZXVzX2J1b3lfc2NhbGVkX2FubnVhbF9vYnMpXG4gIGFycml2YWxfbW9kZWxfY29tcGFyaXNvbl9hbm51YWxfb2JzX3RheG9ub215W2ksdmFyaWFibGUgOj0gdmFyaWFibGVzX3NjYWxlZFtpXV1cbiAgYXJyaXZhbF9tb2RlbF9jb21wYXJpc29uX2FubnVhbF9vYnNfdGF4b25vbXlbaSxjb2VmIDo9IGNvZWYoc3VtbWFyeShtb2QpKSRjb25kWyxcIkVzdGltYXRlXCJdW1syXV1dXG4gIGFycml2YWxfbW9kZWxfY29tcGFyaXNvbl9hbm51YWxfb2JzX3RheG9ub215W2kscF92YWx1ZSA6PSBjb2VmKHN1bW1hcnkobW9kKSkkY29uZFssXCJQcig+fHp8KVwiXVtbMl1dXVxuICBhcnJpdmFsX21vZGVsX2NvbXBhcmlzb25fYW5udWFsX29ic190YXhvbm9teVtpLEFJQ2MgOj0gQUlDYyhtb2QpXVxuICBcbiAgcHJpbnQocGFzdGUoaSwgbGVuZ3RoKHZhcmlhYmxlc19zY2FsZWQpLCBzZXAgPSBcIi9cIikpXG4gICAgXG59XG5gYGAifQ== -->
 <pre class="r"><code>#names of scaled columns
 variables_scaled &lt;- grep(&quot;*_scaled&quot;, names(spp_master_ztemp_seus_buoy_scaled_annual_obs), value = T)
 
 #going to make loop to make all models I need to look at with a single temperature variable
 
-arrival_model_comparison_annual_obs &lt;- as.data.table(matrix(nrow = length(variables_scaled)))
-arrival_model_comparison_annual_obs[, variable:=as.factor(V1)][, coef:=as.numeric(V1)][, p_value:=as.numeric(V1)][, AICc:=as.numeric(V1)]
-arrival_model_comparison_annual_obs[, V1 := NULL]
+arrival_model_comparison_annual_obs_taxonomy &lt;- as.data.table(matrix(nrow = length(variables_scaled)))
+arrival_model_comparison_annual_obs_taxonomy[, variable:=as.factor(V1)][, coef:=as.numeric(V1)][, p_value:=as.numeric(V1)][, AICc:=as.numeric(V1)]
+arrival_model_comparison_annual_obs_taxonomy[, V1 := NULL]
 
 for (i in 1:length(variables_scaled)){
   mod &lt;- glmmTMB(col ~ get(variables_scaled[i]) + (1|reg) + (1|phylum) + (1|class) + (1|order) + (1|family) + (1|genus) + (1|spp), family = binomial, data = spp_master_ztemp_seus_buoy_scaled_annual_obs)
-  arrival_model_comparison_annual_obs[i,variable := variables_scaled[i]]
-  arrival_model_comparison_annual_obs[i,coef := coef(summary(mod))[,&quot;Estimate&quot;][2]]
-  arrival_model_comparison_annual_obs[i,p_value := coef(summary(mod))[,&quot;Pr(&gt;|z|)&quot;][2]]
-  arrival_model_comparison_annual_obs[i,AICc := AICc(mod)]
+  arrival_model_comparison_annual_obs_taxonomy[i,variable := variables_scaled[i]]
+  arrival_model_comparison_annual_obs_taxonomy[i,coef := coef(summary(mod))$cond[,&quot;Estimate&quot;][[2]]]
+  arrival_model_comparison_annual_obs_taxonomy[i,p_value := coef(summary(mod))$cond[,&quot;Pr(&gt;|z|)&quot;][[2]]]
+  arrival_model_comparison_annual_obs_taxonomy[i,AICc := AICc(mod)]
   
   print(paste(i, length(variables_scaled), sep = &quot;/&quot;))
     
-}
+}</code></pre>
+<!-- rnb-source-end -->
+<!-- rnb-output-begin eyJkYXRhIjoiWzFdIFwiMS8yNDhcIlxuWzFdIFwiMi8yNDhcIlxuWzFdIFwiMy8yNDhcIlxuWzFdIFwiNC8yNDhcIlxuWzFdIFwiNS8yNDhcIlxuWzFdIFwiNi8yNDhcIlxuWzFdIFwiNy8yNDhcIlxuWzFdIFwiOC8yNDhcIlxuWzFdIFwiOS8yNDhcIlxuWzFdIFwiMTAvMjQ4XCJcblsxXSBcIjExLzI0OFwiXG5bMV0gXCIxMi8yNDhcIlxuWzFdIFwiMTMvMjQ4XCJcblsxXSBcIjE0LzI0OFwiXG5bMV0gXCIxNS8yNDhcIlxuWzFdIFwiMTYvMjQ4XCJcblsxXSBcIjE3LzI0OFwiXG5bMV0gXCIxOC8yNDhcIlxuWzFdIFwiMTkvMjQ4XCJcblsxXSBcIjIwLzI0OFwiXG5bMV0gXCIyMS8yNDhcIlxuWzFdIFwiMjIvMjQ4XCJcblsxXSBcIjIzLzI0OFwiXG5bMV0gXCIyNC8yNDhcIlxuWzFdIFwiMjUvMjQ4XCJcblsxXSBcIjI2LzI0OFwiXG5bMV0gXCIyNy8yNDhcIlxuWzFdIFwiMjgvMjQ4XCJcblsxXSBcIjI5LzI0OFwiXG5bMV0gXCIzMC8yNDhcIlxuWzFdIFwiMzEvMjQ4XCJcblsxXSBcIjMyLzI0OFwiXG5bMV0gXCIzMy8yNDhcIlxuWzFdIFwiMzQvMjQ4XCJcblsxXSBcIjM1LzI0OFwiXG5bMV0gXCIzNi8yNDhcIlxuIn0= -->
+<pre><code>[1] &quot;1/248&quot;
+[1] &quot;2/248&quot;
+[1] &quot;3/248&quot;
+[1] &quot;4/248&quot;
+[1] &quot;5/248&quot;
+[1] &quot;6/248&quot;
+[1] &quot;7/248&quot;
+[1] &quot;8/248&quot;
+[1] &quot;9/248&quot;
+[1] &quot;10/248&quot;
+[1] &quot;11/248&quot;
+[1] &quot;12/248&quot;
+[1] &quot;13/248&quot;
+[1] &quot;14/248&quot;
+[1] &quot;15/248&quot;
+[1] &quot;16/248&quot;
+[1] &quot;17/248&quot;
+[1] &quot;18/248&quot;
+[1] &quot;19/248&quot;
+[1] &quot;20/248&quot;
+[1] &quot;21/248&quot;
+[1] &quot;22/248&quot;
+[1] &quot;23/248&quot;
+[1] &quot;24/248&quot;
+[1] &quot;25/248&quot;
+[1] &quot;26/248&quot;
+[1] &quot;27/248&quot;
+[1] &quot;28/248&quot;
+[1] &quot;29/248&quot;
+[1] &quot;30/248&quot;
+[1] &quot;31/248&quot;
+[1] &quot;32/248&quot;
+[1] &quot;33/248&quot;
+[1] &quot;34/248&quot;
+[1] &quot;35/248&quot;
+[1] &quot;36/248&quot;</code></pre>
+<!-- rnb-output-end -->
+<!-- rnb-output-begin eyJkYXRhIjoiV2FybmluZyBpbiBmaXRUTUIoVE1CU3RydWMpIDpcbiAgTW9kZWwgY29udmVyZ2VuY2UgcHJvYmxlbTsgbm9uLXBvc2l0aXZlLWRlZmluaXRlIEhlc3NpYW4gbWF0cml4LiBTZWUgdmlnbmV0dGUoJ3Ryb3VibGVzaG9vdGluZycpXG4ifQ== -->
+<pre><code>Warning in fitTMB(TMBStruc) :
+  Model convergence problem; non-positive-definite Hessian matrix. See vignette(&#39;troubleshooting&#39;)</code></pre>
+<!-- rnb-output-end -->
+<!-- rnb-output-begin eyJkYXRhIjoiWzFdIFwiMzcvMjQ4XCJcblsxXSBcIjM4LzI0OFwiXG5bMV0gXCIzOS8yNDhcIlxuIn0= -->
+<pre><code>[1] &quot;37/248&quot;
+[1] &quot;38/248&quot;
+[1] &quot;39/248&quot;</code></pre>
+<!-- rnb-output-end -->
+<!-- rnb-output-begin eyJkYXRhIjoiV2FybmluZyBpbiBmaXRUTUIoVE1CU3RydWMpIDpcbiAgTW9kZWwgY29udmVyZ2VuY2UgcHJvYmxlbTsgbm9uLXBvc2l0aXZlLWRlZmluaXRlIEhlc3NpYW4gbWF0cml4LiBTZWUgdmlnbmV0dGUoJ3Ryb3VibGVzaG9vdGluZycpXG4ifQ== -->
+<pre><code>Warning in fitTMB(TMBStruc) :
+  Model convergence problem; non-positive-definite Hessian matrix. See vignette(&#39;troubleshooting&#39;)</code></pre>
+<!-- rnb-output-end -->
+<!-- rnb-output-begin eyJkYXRhIjoiWzFdIFwiNDAvMjQ4XCJcblsxXSBcIjQxLzI0OFwiXG5bMV0gXCI0Mi8yNDhcIlxuWzFdIFwiNDMvMjQ4XCJcblsxXSBcIjQ0LzI0OFwiXG4ifQ== -->
+<pre><code>[1] &quot;40/248&quot;
+[1] &quot;41/248&quot;
+[1] &quot;42/248&quot;
+[1] &quot;43/248&quot;
+[1] &quot;44/248&quot;</code></pre>
+<!-- rnb-output-end -->
+<!-- rnb-output-begin eyJkYXRhIjoiV2FybmluZyBpbiBmaXRUTUIoVE1CU3RydWMpIDpcbiAgTW9kZWwgY29udmVyZ2VuY2UgcHJvYmxlbTsgbm9uLXBvc2l0aXZlLWRlZmluaXRlIEhlc3NpYW4gbWF0cml4LiBTZWUgdmlnbmV0dGUoJ3Ryb3VibGVzaG9vdGluZycpXG4ifQ== -->
+<pre><code>Warning in fitTMB(TMBStruc) :
+  Model convergence problem; non-positive-definite Hessian matrix. See vignette(&#39;troubleshooting&#39;)</code></pre>
+<!-- rnb-output-end -->
+<!-- rnb-output-begin eyJkYXRhIjoiWzFdIFwiNDUvMjQ4XCJcbiJ9 -->
+<pre><code>[1] &quot;45/248&quot;</code></pre>
+<!-- rnb-output-end -->
+<!-- rnb-output-begin eyJkYXRhIjoiV2FybmluZyBpbiBmaXRUTUIoVE1CU3RydWMpIDpcbiAgTW9kZWwgY29udmVyZ2VuY2UgcHJvYmxlbTsgbm9uLXBvc2l0aXZlLWRlZmluaXRlIEhlc3NpYW4gbWF0cml4LiBTZWUgdmlnbmV0dGUoJ3Ryb3VibGVzaG9vdGluZycpXG4ifQ== -->
+<pre><code>Warning in fitTMB(TMBStruc) :
+  Model convergence problem; non-positive-definite Hessian matrix. See vignette(&#39;troubleshooting&#39;)</code></pre>
+<!-- rnb-output-end -->
+<!-- rnb-output-begin eyJkYXRhIjoiWzFdIFwiNDYvMjQ4XCJcbiJ9 -->
+<pre><code>[1] &quot;46/248&quot;</code></pre>
+<!-- rnb-output-end -->
+<!-- rnb-output-begin eyJkYXRhIjoiV2FybmluZyBpbiBmaXRUTUIoVE1CU3RydWMpIDpcbiAgTW9kZWwgY29udmVyZ2VuY2UgcHJvYmxlbTsgbm9uLXBvc2l0aXZlLWRlZmluaXRlIEhlc3NpYW4gbWF0cml4LiBTZWUgdmlnbmV0dGUoJ3Ryb3VibGVzaG9vdGluZycpXG4ifQ== -->
+<pre><code>Warning in fitTMB(TMBStruc) :
+  Model convergence problem; non-positive-definite Hessian matrix. See vignette(&#39;troubleshooting&#39;)</code></pre>
+<!-- rnb-output-end -->
+<!-- rnb-output-begin eyJkYXRhIjoiWzFdIFwiNDcvMjQ4XCJcbiJ9 -->
+<pre><code>[1] &quot;47/248&quot;</code></pre>
+<!-- rnb-output-end -->
+<!-- rnb-output-begin eyJkYXRhIjoiV2FybmluZyBpbiBmaXRUTUIoVE1CU3RydWMpIDpcbiAgTW9kZWwgY29udmVyZ2VuY2UgcHJvYmxlbTsgbm9uLXBvc2l0aXZlLWRlZmluaXRlIEhlc3NpYW4gbWF0cml4LiBTZWUgdmlnbmV0dGUoJ3Ryb3VibGVzaG9vdGluZycpXG4ifQ== -->
+<pre><code>Warning in fitTMB(TMBStruc) :
+  Model convergence problem; non-positive-definite Hessian matrix. See vignette(&#39;troubleshooting&#39;)</code></pre>
+<!-- rnb-output-end -->
+<!-- rnb-output-begin eyJkYXRhIjoiWzFdIFwiNDgvMjQ4XCJcblsxXSBcIjQ5LzI0OFwiXG4ifQ== -->
+<pre><code>[1] &quot;48/248&quot;
+[1] &quot;49/248&quot;</code></pre>
+<!-- rnb-output-end -->
+<!-- rnb-output-begin eyJkYXRhIjoiV2FybmluZyBpbiBmaXRUTUIoVE1CU3RydWMpIDpcbiAgTW9kZWwgY29udmVyZ2VuY2UgcHJvYmxlbTsgbm9uLXBvc2l0aXZlLWRlZmluaXRlIEhlc3NpYW4gbWF0cml4LiBTZWUgdmlnbmV0dGUoJ3Ryb3VibGVzaG9vdGluZycpXG4ifQ== -->
+<pre><code>Warning in fitTMB(TMBStruc) :
+  Model convergence problem; non-positive-definite Hessian matrix. See vignette(&#39;troubleshooting&#39;)</code></pre>
+<!-- rnb-output-end -->
+<!-- rnb-output-begin eyJkYXRhIjoiWzFdIFwiNTAvMjQ4XCJcbiJ9 -->
+<pre><code>[1] &quot;50/248&quot;</code></pre>
+<!-- rnb-output-end -->
+<!-- rnb-output-begin eyJkYXRhIjoiV2FybmluZyBpbiBmaXRUTUIoVE1CU3RydWMpIDpcbiAgTW9kZWwgY29udmVyZ2VuY2UgcHJvYmxlbTsgbm9uLXBvc2l0aXZlLWRlZmluaXRlIEhlc3NpYW4gbWF0cml4LiBTZWUgdmlnbmV0dGUoJ3Ryb3VibGVzaG9vdGluZycpXG4ifQ== -->
+<pre><code>Warning in fitTMB(TMBStruc) :
+  Model convergence problem; non-positive-definite Hessian matrix. See vignette(&#39;troubleshooting&#39;)</code></pre>
+<!-- rnb-output-end -->
+<!-- rnb-output-begin eyJkYXRhIjoiWzFdIFwiNTEvMjQ4XCJcbiJ9 -->
+<pre><code>[1] &quot;51/248&quot;</code></pre>
+<!-- rnb-output-end -->
+<!-- rnb-output-begin eyJkYXRhIjoiV2FybmluZyBpbiBmaXRUTUIoVE1CU3RydWMpIDpcbiAgTW9kZWwgY29udmVyZ2VuY2UgcHJvYmxlbTsgbm9uLXBvc2l0aXZlLWRlZmluaXRlIEhlc3NpYW4gbWF0cml4LiBTZWUgdmlnbmV0dGUoJ3Ryb3VibGVzaG9vdGluZycpXG4ifQ== -->
+<pre><code>Warning in fitTMB(TMBStruc) :
+  Model convergence problem; non-positive-definite Hessian matrix. See vignette(&#39;troubleshooting&#39;)</code></pre>
+<!-- rnb-output-end -->
+<!-- rnb-output-begin eyJkYXRhIjoiWzFdIFwiNTIvMjQ4XCJcbiJ9 -->
+<pre><code>[1] &quot;52/248&quot;</code></pre>
+<!-- rnb-output-end -->
+<!-- rnb-output-begin eyJkYXRhIjoiV2FybmluZyBpbiBmaXRUTUIoVE1CU3RydWMpIDpcbiAgTW9kZWwgY29udmVyZ2VuY2UgcHJvYmxlbTsgbm9uLXBvc2l0aXZlLWRlZmluaXRlIEhlc3NpYW4gbWF0cml4LiBTZWUgdmlnbmV0dGUoJ3Ryb3VibGVzaG9vdGluZycpXG4ifQ== -->
+<pre><code>Warning in fitTMB(TMBStruc) :
+  Model convergence problem; non-positive-definite Hessian matrix. See vignette(&#39;troubleshooting&#39;)</code></pre>
+<!-- rnb-output-end -->
+<!-- rnb-output-begin eyJkYXRhIjoiWzFdIFwiNTMvMjQ4XCJcbiJ9 -->
+<pre><code>[1] &quot;53/248&quot;</code></pre>
+<!-- rnb-output-end -->
+<!-- rnb-output-begin eyJkYXRhIjoiV2FybmluZyBpbiBmaXRUTUIoVE1CU3RydWMpIDpcbiAgTW9kZWwgY29udmVyZ2VuY2UgcHJvYmxlbTsgbm9uLXBvc2l0aXZlLWRlZmluaXRlIEhlc3NpYW4gbWF0cml4LiBTZWUgdmlnbmV0dGUoJ3Ryb3VibGVzaG9vdGluZycpXG4ifQ== -->
+<pre><code>Warning in fitTMB(TMBStruc) :
+  Model convergence problem; non-positive-definite Hessian matrix. See vignette(&#39;troubleshooting&#39;)</code></pre>
+<!-- rnb-output-end -->
+<!-- rnb-output-begin eyJkYXRhIjoiWzFdIFwiNTQvMjQ4XCJcbiJ9 -->
+<pre><code>[1] &quot;54/248&quot;</code></pre>
+<!-- rnb-output-end -->
+<!-- rnb-output-begin eyJkYXRhIjoiV2FybmluZyBpbiBmaXRUTUIoVE1CU3RydWMpIDpcbiAgTW9kZWwgY29udmVyZ2VuY2UgcHJvYmxlbTsgbm9uLXBvc2l0aXZlLWRlZmluaXRlIEhlc3NpYW4gbWF0cml4LiBTZWUgdmlnbmV0dGUoJ3Ryb3VibGVzaG9vdGluZycpXG4ifQ== -->
+<pre><code>Warning in fitTMB(TMBStruc) :
+  Model convergence problem; non-positive-definite Hessian matrix. See vignette(&#39;troubleshooting&#39;)</code></pre>
+<!-- rnb-output-end -->
+<!-- rnb-output-begin eyJkYXRhIjoiWzFdIFwiNTUvMjQ4XCJcbiJ9 -->
+<pre><code>[1] &quot;55/248&quot;</code></pre>
+<!-- rnb-output-end -->
+<!-- rnb-output-begin eyJkYXRhIjoiV2FybmluZyBpbiBmaXRUTUIoVE1CU3RydWMpIDpcbiAgTW9kZWwgY29udmVyZ2VuY2UgcHJvYmxlbTsgbm9uLXBvc2l0aXZlLWRlZmluaXRlIEhlc3NpYW4gbWF0cml4LiBTZWUgdmlnbmV0dGUoJ3Ryb3VibGVzaG9vdGluZycpXG4ifQ== -->
+<pre><code>Warning in fitTMB(TMBStruc) :
+  Model convergence problem; non-positive-definite Hessian matrix. See vignette(&#39;troubleshooting&#39;)</code></pre>
+<!-- rnb-output-end -->
+<!-- rnb-output-begin eyJkYXRhIjoiWzFdIFwiNTYvMjQ4XCJcbiJ9 -->
+<pre><code>[1] &quot;56/248&quot;</code></pre>
+<!-- rnb-output-end -->
+<!-- rnb-output-begin eyJkYXRhIjoiV2FybmluZyBpbiBmaXRUTUIoVE1CU3RydWMpIDpcbiAgTW9kZWwgY29udmVyZ2VuY2UgcHJvYmxlbTsgbm9uLXBvc2l0aXZlLWRlZmluaXRlIEhlc3NpYW4gbWF0cml4LiBTZWUgdmlnbmV0dGUoJ3Ryb3VibGVzaG9vdGluZycpXG4ifQ== -->
+<pre><code>Warning in fitTMB(TMBStruc) :
+  Model convergence problem; non-positive-definite Hessian matrix. See vignette(&#39;troubleshooting&#39;)</code></pre>
+<!-- rnb-output-end -->
+<!-- rnb-output-begin eyJkYXRhIjoiWzFdIFwiNTcvMjQ4XCJcbiJ9 -->
+<pre><code>[1] &quot;57/248&quot;</code></pre>
+<!-- rnb-output-end -->
+<!-- rnb-output-begin eyJkYXRhIjoiV2FybmluZyBpbiBmaXRUTUIoVE1CU3RydWMpIDpcbiAgTW9kZWwgY29udmVyZ2VuY2UgcHJvYmxlbTsgbm9uLXBvc2l0aXZlLWRlZmluaXRlIEhlc3NpYW4gbWF0cml4LiBTZWUgdmlnbmV0dGUoJ3Ryb3VibGVzaG9vdGluZycpXG4ifQ== -->
+<pre><code>Warning in fitTMB(TMBStruc) :
+  Model convergence problem; non-positive-definite Hessian matrix. See vignette(&#39;troubleshooting&#39;)</code></pre>
+<!-- rnb-output-end -->
+<!-- rnb-output-begin eyJkYXRhIjoiWzFdIFwiNTgvMjQ4XCJcbiJ9 -->
+<pre><code>[1] &quot;58/248&quot;</code></pre>
+<!-- rnb-output-end -->
+<!-- rnb-output-begin eyJkYXRhIjoiV2FybmluZyBpbiBmaXRUTUIoVE1CU3RydWMpIDpcbiAgTW9kZWwgY29udmVyZ2VuY2UgcHJvYmxlbTsgbm9uLXBvc2l0aXZlLWRlZmluaXRlIEhlc3NpYW4gbWF0cml4LiBTZWUgdmlnbmV0dGUoJ3Ryb3VibGVzaG9vdGluZycpXG4ifQ== -->
+<pre><code>Warning in fitTMB(TMBStruc) :
+  Model convergence problem; non-positive-definite Hessian matrix. See vignette(&#39;troubleshooting&#39;)</code></pre>
+<!-- rnb-output-end -->
+<!-- rnb-output-begin eyJkYXRhIjoiWzFdIFwiNTkvMjQ4XCJcbiJ9 -->
+<pre><code>[1] &quot;59/248&quot;</code></pre>
+<!-- rnb-output-end -->
+<!-- rnb-output-begin eyJkYXRhIjoiV2FybmluZyBpbiBmaXRUTUIoVE1CU3RydWMpIDpcbiAgTW9kZWwgY29udmVyZ2VuY2UgcHJvYmxlbTsgbm9uLXBvc2l0aXZlLWRlZmluaXRlIEhlc3NpYW4gbWF0cml4LiBTZWUgdmlnbmV0dGUoJ3Ryb3VibGVzaG9vdGluZycpXG4ifQ== -->
+<pre><code>Warning in fitTMB(TMBStruc) :
+  Model convergence problem; non-positive-definite Hessian matrix. See vignette(&#39;troubleshooting&#39;)</code></pre>
+<!-- rnb-output-end -->
+<!-- rnb-output-begin eyJkYXRhIjoiWzFdIFwiNjAvMjQ4XCJcbiJ9 -->
+<pre><code>[1] &quot;60/248&quot;</code></pre>
+<!-- rnb-output-end -->
+<!-- rnb-output-begin eyJkYXRhIjoiV2FybmluZyBpbiBmaXRUTUIoVE1CU3RydWMpIDpcbiAgTW9kZWwgY29udmVyZ2VuY2UgcHJvYmxlbTsgbm9uLXBvc2l0aXZlLWRlZmluaXRlIEhlc3NpYW4gbWF0cml4LiBTZWUgdmlnbmV0dGUoJ3Ryb3VibGVzaG9vdGluZycpXG4ifQ== -->
+<pre><code>Warning in fitTMB(TMBStruc) :
+  Model convergence problem; non-positive-definite Hessian matrix. See vignette(&#39;troubleshooting&#39;)</code></pre>
+<!-- rnb-output-end -->
+<!-- rnb-output-begin eyJkYXRhIjoiWzFdIFwiNjEvMjQ4XCJcbiJ9 -->
+<pre><code>[1] &quot;61/248&quot;</code></pre>
+<!-- rnb-output-end -->
+<!-- rnb-output-begin eyJkYXRhIjoiV2FybmluZyBpbiBmaXRUTUIoVE1CU3RydWMpIDpcbiAgTW9kZWwgY29udmVyZ2VuY2UgcHJvYmxlbTsgbm9uLXBvc2l0aXZlLWRlZmluaXRlIEhlc3NpYW4gbWF0cml4LiBTZWUgdmlnbmV0dGUoJ3Ryb3VibGVzaG9vdGluZycpXG4ifQ== -->
+<pre><code>Warning in fitTMB(TMBStruc) :
+  Model convergence problem; non-positive-definite Hessian matrix. See vignette(&#39;troubleshooting&#39;)</code></pre>
+<!-- rnb-output-end -->
+<!-- rnb-output-begin eyJkYXRhIjoiWzFdIFwiNjIvMjQ4XCJcbiJ9 -->
+<pre><code>[1] &quot;62/248&quot;</code></pre>
+<!-- rnb-output-end -->
+<!-- rnb-output-begin eyJkYXRhIjoiV2FybmluZyBpbiBmaXRUTUIoVE1CU3RydWMpIDpcbiAgTW9kZWwgY29udmVyZ2VuY2UgcHJvYmxlbTsgbm9uLXBvc2l0aXZlLWRlZmluaXRlIEhlc3NpYW4gbWF0cml4LiBTZWUgdmlnbmV0dGUoJ3Ryb3VibGVzaG9vdGluZycpXG4ifQ== -->
+<pre><code>Warning in fitTMB(TMBStruc) :
+  Model convergence problem; non-positive-definite Hessian matrix. See vignette(&#39;troubleshooting&#39;)</code></pre>
+<!-- rnb-output-end -->
+<!-- rnb-output-begin eyJkYXRhIjoiWzFdIFwiNjMvMjQ4XCJcbiJ9 -->
+<pre><code>[1] &quot;63/248&quot;</code></pre>
+<!-- rnb-output-end -->
+<!-- rnb-output-begin eyJkYXRhIjoiV2FybmluZyBpbiBmaXRUTUIoVE1CU3RydWMpIDpcbiAgTW9kZWwgY29udmVyZ2VuY2UgcHJvYmxlbTsgbm9uLXBvc2l0aXZlLWRlZmluaXRlIEhlc3NpYW4gbWF0cml4LiBTZWUgdmlnbmV0dGUoJ3Ryb3VibGVzaG9vdGluZycpXG4ifQ== -->
+<pre><code>Warning in fitTMB(TMBStruc) :
+  Model convergence problem; non-positive-definite Hessian matrix. See vignette(&#39;troubleshooting&#39;)</code></pre>
+<!-- rnb-output-end -->
+<!-- rnb-output-begin eyJkYXRhIjoiWzFdIFwiNjQvMjQ4XCJcbiJ9 -->
+<pre><code>[1] &quot;64/248&quot;</code></pre>
+<!-- rnb-output-end -->
+<!-- rnb-output-begin eyJkYXRhIjoiV2FybmluZyBpbiBmaXRUTUIoVE1CU3RydWMpIDpcbiAgTW9kZWwgY29udmVyZ2VuY2UgcHJvYmxlbTsgbm9uLXBvc2l0aXZlLWRlZmluaXRlIEhlc3NpYW4gbWF0cml4LiBTZWUgdmlnbmV0dGUoJ3Ryb3VibGVzaG9vdGluZycpXG4ifQ== -->
+<pre><code>Warning in fitTMB(TMBStruc) :
+  Model convergence problem; non-positive-definite Hessian matrix. See vignette(&#39;troubleshooting&#39;)</code></pre>
+<!-- rnb-output-end -->
+<!-- rnb-output-begin eyJkYXRhIjoiWzFdIFwiNjUvMjQ4XCJcbiJ9 -->
+<pre><code>[1] &quot;65/248&quot;</code></pre>
+<!-- rnb-output-end -->
+<!-- rnb-output-begin eyJkYXRhIjoiV2FybmluZyBpbiBmaXRUTUIoVE1CU3RydWMpIDpcbiAgTW9kZWwgY29udmVyZ2VuY2UgcHJvYmxlbTsgbm9uLXBvc2l0aXZlLWRlZmluaXRlIEhlc3NpYW4gbWF0cml4LiBTZWUgdmlnbmV0dGUoJ3Ryb3VibGVzaG9vdGluZycpXG4ifQ== -->
+<pre><code>Warning in fitTMB(TMBStruc) :
+  Model convergence problem; non-positive-definite Hessian matrix. See vignette(&#39;troubleshooting&#39;)</code></pre>
+<!-- rnb-output-end -->
+<!-- rnb-output-begin eyJkYXRhIjoiWzFdIFwiNjYvMjQ4XCJcbiJ9 -->
+<pre><code>[1] &quot;66/248&quot;</code></pre>
+<!-- rnb-output-end -->
+<!-- rnb-output-begin eyJkYXRhIjoiV2FybmluZyBpbiBmaXRUTUIoVE1CU3RydWMpIDpcbiAgTW9kZWwgY29udmVyZ2VuY2UgcHJvYmxlbTsgbm9uLXBvc2l0aXZlLWRlZmluaXRlIEhlc3NpYW4gbWF0cml4LiBTZWUgdmlnbmV0dGUoJ3Ryb3VibGVzaG9vdGluZycpXG4ifQ== -->
+<pre><code>Warning in fitTMB(TMBStruc) :
+  Model convergence problem; non-positive-definite Hessian matrix. See vignette(&#39;troubleshooting&#39;)</code></pre>
+<!-- rnb-output-end -->
+<!-- rnb-output-begin eyJkYXRhIjoiWzFdIFwiNjcvMjQ4XCJcbiJ9 -->
+<pre><code>[1] &quot;67/248&quot;</code></pre>
+<!-- rnb-output-end -->
+<!-- rnb-output-begin eyJkYXRhIjoiV2FybmluZyBpbiBmaXRUTUIoVE1CU3RydWMpIDpcbiAgTW9kZWwgY29udmVyZ2VuY2UgcHJvYmxlbTsgbm9uLXBvc2l0aXZlLWRlZmluaXRlIEhlc3NpYW4gbWF0cml4LiBTZWUgdmlnbmV0dGUoJ3Ryb3VibGVzaG9vdGluZycpXG4ifQ== -->
+<pre><code>Warning in fitTMB(TMBStruc) :
+  Model convergence problem; non-positive-definite Hessian matrix. See vignette(&#39;troubleshooting&#39;)</code></pre>
+<!-- rnb-output-end -->
+<!-- rnb-output-begin eyJkYXRhIjoiWzFdIFwiNjgvMjQ4XCJcbiJ9 -->
+<pre><code>[1] &quot;68/248&quot;</code></pre>
+<!-- rnb-output-end -->
+<!-- rnb-output-begin eyJkYXRhIjoiV2FybmluZyBpbiBmaXRUTUIoVE1CU3RydWMpIDpcbiAgTW9kZWwgY29udmVyZ2VuY2UgcHJvYmxlbTsgbm9uLXBvc2l0aXZlLWRlZmluaXRlIEhlc3NpYW4gbWF0cml4LiBTZWUgdmlnbmV0dGUoJ3Ryb3VibGVzaG9vdGluZycpXG4ifQ== -->
+<pre><code>Warning in fitTMB(TMBStruc) :
+  Model convergence problem; non-positive-definite Hessian matrix. See vignette(&#39;troubleshooting&#39;)</code></pre>
+<!-- rnb-output-end -->
+<!-- rnb-output-begin eyJkYXRhIjoiWzFdIFwiNjkvMjQ4XCJcbiJ9 -->
+<pre><code>[1] &quot;69/248&quot;</code></pre>
+<!-- rnb-output-end -->
+<!-- rnb-output-begin eyJkYXRhIjoiV2FybmluZyBpbiBmaXRUTUIoVE1CU3RydWMpIDpcbiAgTW9kZWwgY29udmVyZ2VuY2UgcHJvYmxlbTsgbm9uLXBvc2l0aXZlLWRlZmluaXRlIEhlc3NpYW4gbWF0cml4LiBTZWUgdmlnbmV0dGUoJ3Ryb3VibGVzaG9vdGluZycpXG4ifQ== -->
+<pre><code>Warning in fitTMB(TMBStruc) :
+  Model convergence problem; non-positive-definite Hessian matrix. See vignette(&#39;troubleshooting&#39;)</code></pre>
+<!-- rnb-output-end -->
+<!-- rnb-output-begin eyJkYXRhIjoiWzFdIFwiNzAvMjQ4XCJcbiJ9 -->
+<pre><code>[1] &quot;70/248&quot;</code></pre>
+<!-- rnb-output-end -->
+<!-- rnb-output-begin eyJkYXRhIjoiV2FybmluZyBpbiBmaXRUTUIoVE1CU3RydWMpIDpcbiAgTW9kZWwgY29udmVyZ2VuY2UgcHJvYmxlbTsgbm9uLXBvc2l0aXZlLWRlZmluaXRlIEhlc3NpYW4gbWF0cml4LiBTZWUgdmlnbmV0dGUoJ3Ryb3VibGVzaG9vdGluZycpXG4ifQ== -->
+<pre><code>Warning in fitTMB(TMBStruc) :
+  Model convergence problem; non-positive-definite Hessian matrix. See vignette(&#39;troubleshooting&#39;)</code></pre>
+<!-- rnb-output-end -->
+<!-- rnb-output-begin eyJkYXRhIjoiWzFdIFwiNzEvMjQ4XCJcbiJ9 -->
+<pre><code>[1] &quot;71/248&quot;</code></pre>
+<!-- rnb-output-end -->
+<!-- rnb-output-begin eyJkYXRhIjoiV2FybmluZyBpbiBmaXRUTUIoVE1CU3RydWMpIDpcbiAgTW9kZWwgY29udmVyZ2VuY2UgcHJvYmxlbTsgbm9uLXBvc2l0aXZlLWRlZmluaXRlIEhlc3NpYW4gbWF0cml4LiBTZWUgdmlnbmV0dGUoJ3Ryb3VibGVzaG9vdGluZycpXG4ifQ== -->
+<pre><code>Warning in fitTMB(TMBStruc) :
+  Model convergence problem; non-positive-definite Hessian matrix. See vignette(&#39;troubleshooting&#39;)</code></pre>
+<!-- rnb-output-end -->
+<!-- rnb-output-begin eyJkYXRhIjoiWzFdIFwiNzIvMjQ4XCJcbiJ9 -->
+<pre><code>[1] &quot;72/248&quot;</code></pre>
+<!-- rnb-output-end -->
+<!-- rnb-output-begin eyJkYXRhIjoiV2FybmluZyBpbiBmaXRUTUIoVE1CU3RydWMpIDpcbiAgTW9kZWwgY29udmVyZ2VuY2UgcHJvYmxlbTsgbm9uLXBvc2l0aXZlLWRlZmluaXRlIEhlc3NpYW4gbWF0cml4LiBTZWUgdmlnbmV0dGUoJ3Ryb3VibGVzaG9vdGluZycpXG4ifQ== -->
+<pre><code>Warning in fitTMB(TMBStruc) :
+  Model convergence problem; non-positive-definite Hessian matrix. See vignette(&#39;troubleshooting&#39;)</code></pre>
+<!-- rnb-output-end -->
+<!-- rnb-output-begin eyJkYXRhIjoiWzFdIFwiNzMvMjQ4XCJcbiJ9 -->
+<pre><code>[1] &quot;73/248&quot;</code></pre>
+<!-- rnb-output-end -->
+<!-- rnb-output-begin eyJkYXRhIjoiV2FybmluZyBpbiBmaXRUTUIoVE1CU3RydWMpIDpcbiAgTW9kZWwgY29udmVyZ2VuY2UgcHJvYmxlbTsgbm9uLXBvc2l0aXZlLWRlZmluaXRlIEhlc3NpYW4gbWF0cml4LiBTZWUgdmlnbmV0dGUoJ3Ryb3VibGVzaG9vdGluZycpXG5XYXJuaW5nIGluIHNxcnQoZGlhZyh2Y292cykpIDogTmFOcyBwcm9kdWNlZFxuV2FybmluZyBpbiBzcXJ0KGRpYWcodmNvdnMpKSA6IE5hTnMgcHJvZHVjZWRcbiJ9 -->
+<pre><code>Warning in fitTMB(TMBStruc) :
+  Model convergence problem; non-positive-definite Hessian matrix. See vignette(&#39;troubleshooting&#39;)
+Warning in sqrt(diag(vcovs)) : NaNs produced
+Warning in sqrt(diag(vcovs)) : NaNs produced</code></pre>
+<!-- rnb-output-end -->
+<!-- rnb-output-begin eyJkYXRhIjoiWzFdIFwiNzQvMjQ4XCJcbiJ9 -->
+<pre><code>[1] &quot;74/248&quot;</code></pre>
+<!-- rnb-output-end -->
+<!-- rnb-output-begin eyJkYXRhIjoiV2FybmluZyBpbiBmaXRUTUIoVE1CU3RydWMpIDpcbiAgTW9kZWwgY29udmVyZ2VuY2UgcHJvYmxlbTsgbm9uLXBvc2l0aXZlLWRlZmluaXRlIEhlc3NpYW4gbWF0cml4LiBTZWUgdmlnbmV0dGUoJ3Ryb3VibGVzaG9vdGluZycpXG4ifQ== -->
+<pre><code>Warning in fitTMB(TMBStruc) :
+  Model convergence problem; non-positive-definite Hessian matrix. See vignette(&#39;troubleshooting&#39;)</code></pre>
+<!-- rnb-output-end -->
+<!-- rnb-output-begin eyJkYXRhIjoiWzFdIFwiNzUvMjQ4XCJcbiJ9 -->
+<pre><code>[1] &quot;75/248&quot;</code></pre>
+<!-- rnb-output-end -->
+<!-- rnb-output-begin eyJkYXRhIjoiV2FybmluZyBpbiBmaXRUTUIoVE1CU3RydWMpIDpcbiAgTW9kZWwgY29udmVyZ2VuY2UgcHJvYmxlbTsgbm9uLXBvc2l0aXZlLWRlZmluaXRlIEhlc3NpYW4gbWF0cml4LiBTZWUgdmlnbmV0dGUoJ3Ryb3VibGVzaG9vdGluZycpXG4ifQ== -->
+<pre><code>Warning in fitTMB(TMBStruc) :
+  Model convergence problem; non-positive-definite Hessian matrix. See vignette(&#39;troubleshooting&#39;)</code></pre>
+<!-- rnb-output-end -->
+<!-- rnb-output-begin eyJkYXRhIjoiWzFdIFwiNzYvMjQ4XCJcbiJ9 -->
+<pre><code>[1] &quot;76/248&quot;</code></pre>
+<!-- rnb-output-end -->
+<!-- rnb-output-begin eyJkYXRhIjoiV2FybmluZyBpbiBmaXRUTUIoVE1CU3RydWMpIDpcbiAgTW9kZWwgY29udmVyZ2VuY2UgcHJvYmxlbTsgbm9uLXBvc2l0aXZlLWRlZmluaXRlIEhlc3NpYW4gbWF0cml4LiBTZWUgdmlnbmV0dGUoJ3Ryb3VibGVzaG9vdGluZycpXG4ifQ== -->
+<pre><code>Warning in fitTMB(TMBStruc) :
+  Model convergence problem; non-positive-definite Hessian matrix. See vignette(&#39;troubleshooting&#39;)</code></pre>
+<!-- rnb-output-end -->
+<!-- rnb-output-begin eyJkYXRhIjoiWzFdIFwiNzcvMjQ4XCJcbiJ9 -->
+<pre><code>[1] &quot;77/248&quot;</code></pre>
+<!-- rnb-output-end -->
+<!-- rnb-output-begin eyJkYXRhIjoiV2FybmluZyBpbiBmaXRUTUIoVE1CU3RydWMpIDpcbiAgTW9kZWwgY29udmVyZ2VuY2UgcHJvYmxlbTsgbm9uLXBvc2l0aXZlLWRlZmluaXRlIEhlc3NpYW4gbWF0cml4LiBTZWUgdmlnbmV0dGUoJ3Ryb3VibGVzaG9vdGluZycpXG4ifQ== -->
+<pre><code>Warning in fitTMB(TMBStruc) :
+  Model convergence problem; non-positive-definite Hessian matrix. See vignette(&#39;troubleshooting&#39;)</code></pre>
+<!-- rnb-output-end -->
+<!-- rnb-output-begin eyJkYXRhIjoiWzFdIFwiNzgvMjQ4XCJcbiJ9 -->
+<pre><code>[1] &quot;78/248&quot;</code></pre>
+<!-- rnb-output-end -->
+<!-- rnb-output-begin eyJkYXRhIjoiV2FybmluZyBpbiBmaXRUTUIoVE1CU3RydWMpIDpcbiAgTW9kZWwgY29udmVyZ2VuY2UgcHJvYmxlbTsgbm9uLXBvc2l0aXZlLWRlZmluaXRlIEhlc3NpYW4gbWF0cml4LiBTZWUgdmlnbmV0dGUoJ3Ryb3VibGVzaG9vdGluZycpXG4ifQ== -->
+<pre><code>Warning in fitTMB(TMBStruc) :
+  Model convergence problem; non-positive-definite Hessian matrix. See vignette(&#39;troubleshooting&#39;)</code></pre>
+<!-- rnb-output-end -->
+<!-- rnb-output-begin eyJkYXRhIjoiWzFdIFwiNzkvMjQ4XCJcbiJ9 -->
+<pre><code>[1] &quot;79/248&quot;</code></pre>
+<!-- rnb-output-end -->
+<!-- rnb-output-begin eyJkYXRhIjoiV2FybmluZyBpbiBmaXRUTUIoVE1CU3RydWMpIDpcbiAgTW9kZWwgY29udmVyZ2VuY2UgcHJvYmxlbTsgbm9uLXBvc2l0aXZlLWRlZmluaXRlIEhlc3NpYW4gbWF0cml4LiBTZWUgdmlnbmV0dGUoJ3Ryb3VibGVzaG9vdGluZycpXG4ifQ== -->
+<pre><code>Warning in fitTMB(TMBStruc) :
+  Model convergence problem; non-positive-definite Hessian matrix. See vignette(&#39;troubleshooting&#39;)</code></pre>
+<!-- rnb-output-end -->
+<!-- rnb-output-begin eyJkYXRhIjoiWzFdIFwiODAvMjQ4XCJcbiJ9 -->
+<pre><code>[1] &quot;80/248&quot;</code></pre>
+<!-- rnb-output-end -->
+<!-- rnb-output-begin eyJkYXRhIjoiV2FybmluZyBpbiBmaXRUTUIoVE1CU3RydWMpIDpcbiAgTW9kZWwgY29udmVyZ2VuY2UgcHJvYmxlbTsgbm9uLXBvc2l0aXZlLWRlZmluaXRlIEhlc3NpYW4gbWF0cml4LiBTZWUgdmlnbmV0dGUoJ3Ryb3VibGVzaG9vdGluZycpXG4ifQ== -->
+<pre><code>Warning in fitTMB(TMBStruc) :
+  Model convergence problem; non-positive-definite Hessian matrix. See vignette(&#39;troubleshooting&#39;)</code></pre>
+<!-- rnb-output-end -->
+<!-- rnb-output-begin eyJkYXRhIjoiWzFdIFwiODEvMjQ4XCJcblsxXSBcIjgyLzI0OFwiXG4ifQ== -->
+<pre><code>[1] &quot;81/248&quot;
+[1] &quot;82/248&quot;</code></pre>
+<!-- rnb-output-end -->
+<!-- rnb-output-begin eyJkYXRhIjoiV2FybmluZyBpbiBmaXRUTUIoVE1CU3RydWMpIDpcbiAgTW9kZWwgY29udmVyZ2VuY2UgcHJvYmxlbTsgbm9uLXBvc2l0aXZlLWRlZmluaXRlIEhlc3NpYW4gbWF0cml4LiBTZWUgdmlnbmV0dGUoJ3Ryb3VibGVzaG9vdGluZycpXG4ifQ== -->
+<pre><code>Warning in fitTMB(TMBStruc) :
+  Model convergence problem; non-positive-definite Hessian matrix. See vignette(&#39;troubleshooting&#39;)</code></pre>
+<!-- rnb-output-end -->
+<!-- rnb-output-begin eyJkYXRhIjoiWzFdIFwiODMvMjQ4XCJcbiJ9 -->
+<pre><code>[1] &quot;83/248&quot;</code></pre>
+<!-- rnb-output-end -->
+<!-- rnb-output-begin eyJkYXRhIjoiV2FybmluZyBpbiBmaXRUTUIoVE1CU3RydWMpIDpcbiAgTW9kZWwgY29udmVyZ2VuY2UgcHJvYmxlbTsgbm9uLXBvc2l0aXZlLWRlZmluaXRlIEhlc3NpYW4gbWF0cml4LiBTZWUgdmlnbmV0dGUoJ3Ryb3VibGVzaG9vdGluZycpXG4ifQ== -->
+<pre><code>Warning in fitTMB(TMBStruc) :
+  Model convergence problem; non-positive-definite Hessian matrix. See vignette(&#39;troubleshooting&#39;)</code></pre>
+<!-- rnb-output-end -->
+<!-- rnb-output-begin eyJkYXRhIjoiWzFdIFwiODQvMjQ4XCJcbiJ9 -->
+<pre><code>[1] &quot;84/248&quot;</code></pre>
+<!-- rnb-output-end -->
+<!-- rnb-output-begin eyJkYXRhIjoiV2FybmluZyBpbiBmaXRUTUIoVE1CU3RydWMpIDpcbiAgTW9kZWwgY29udmVyZ2VuY2UgcHJvYmxlbTsgbm9uLXBvc2l0aXZlLWRlZmluaXRlIEhlc3NpYW4gbWF0cml4LiBTZWUgdmlnbmV0dGUoJ3Ryb3VibGVzaG9vdGluZycpXG4ifQ== -->
+<pre><code>Warning in fitTMB(TMBStruc) :
+  Model convergence problem; non-positive-definite Hessian matrix. See vignette(&#39;troubleshooting&#39;)</code></pre>
+<!-- rnb-output-end -->
+<!-- rnb-output-begin eyJkYXRhIjoiWzFdIFwiODUvMjQ4XCJcblsxXSBcIjg2LzI0OFwiXG5bMV0gXCI4Ny8yNDhcIlxuIn0= -->
+<pre><code>[1] &quot;85/248&quot;
+[1] &quot;86/248&quot;
+[1] &quot;87/248&quot;</code></pre>
+<!-- rnb-output-end -->
+<!-- rnb-output-begin eyJkYXRhIjoiV2FybmluZyBpbiBmaXRUTUIoVE1CU3RydWMpIDpcbiAgTW9kZWwgY29udmVyZ2VuY2UgcHJvYmxlbTsgbm9uLXBvc2l0aXZlLWRlZmluaXRlIEhlc3NpYW4gbWF0cml4LiBTZWUgdmlnbmV0dGUoJ3Ryb3VibGVzaG9vdGluZycpXG4ifQ== -->
+<pre><code>Warning in fitTMB(TMBStruc) :
+  Model convergence problem; non-positive-definite Hessian matrix. See vignette(&#39;troubleshooting&#39;)</code></pre>
+<!-- rnb-output-end -->
+<!-- rnb-output-begin eyJkYXRhIjoiWzFdIFwiODgvMjQ4XCJcblsxXSBcIjg5LzI0OFwiXG4ifQ== -->
+<pre><code>[1] &quot;88/248&quot;
+[1] &quot;89/248&quot;</code></pre>
+<!-- rnb-output-end -->
+<!-- rnb-output-begin eyJkYXRhIjoiV2FybmluZyBpbiBmaXRUTUIoVE1CU3RydWMpIDpcbiAgTW9kZWwgY29udmVyZ2VuY2UgcHJvYmxlbTsgbm9uLXBvc2l0aXZlLWRlZmluaXRlIEhlc3NpYW4gbWF0cml4LiBTZWUgdmlnbmV0dGUoJ3Ryb3VibGVzaG9vdGluZycpXG4ifQ== -->
+<pre><code>Warning in fitTMB(TMBStruc) :
+  Model convergence problem; non-positive-definite Hessian matrix. See vignette(&#39;troubleshooting&#39;)</code></pre>
+<!-- rnb-output-end -->
+<!-- rnb-output-begin eyJkYXRhIjoiWzFdIFwiOTAvMjQ4XCJcbiJ9 -->
+<pre><code>[1] &quot;90/248&quot;</code></pre>
+<!-- rnb-output-end -->
+<!-- rnb-output-begin eyJkYXRhIjoiV2FybmluZyBpbiBmaXRUTUIoVE1CU3RydWMpIDpcbiAgTW9kZWwgY29udmVyZ2VuY2UgcHJvYmxlbTsgbm9uLXBvc2l0aXZlLWRlZmluaXRlIEhlc3NpYW4gbWF0cml4LiBTZWUgdmlnbmV0dGUoJ3Ryb3VibGVzaG9vdGluZycpXG4ifQ== -->
+<pre><code>Warning in fitTMB(TMBStruc) :
+  Model convergence problem; non-positive-definite Hessian matrix. See vignette(&#39;troubleshooting&#39;)</code></pre>
+<!-- rnb-output-end -->
+<!-- rnb-output-begin eyJkYXRhIjoiWzFdIFwiOTEvMjQ4XCJcbiJ9 -->
+<pre><code>[1] &quot;91/248&quot;</code></pre>
+<!-- rnb-output-end -->
+<!-- rnb-output-begin eyJkYXRhIjoiV2FybmluZyBpbiBmaXRUTUIoVE1CU3RydWMpIDpcbiAgTW9kZWwgY29udmVyZ2VuY2UgcHJvYmxlbTsgbm9uLXBvc2l0aXZlLWRlZmluaXRlIEhlc3NpYW4gbWF0cml4LiBTZWUgdmlnbmV0dGUoJ3Ryb3VibGVzaG9vdGluZycpXG4ifQ== -->
+<pre><code>Warning in fitTMB(TMBStruc) :
+  Model convergence problem; non-positive-definite Hessian matrix. See vignette(&#39;troubleshooting&#39;)</code></pre>
+<!-- rnb-output-end -->
+<!-- rnb-output-begin eyJkYXRhIjoiWzFdIFwiOTIvMjQ4XCJcbiJ9 -->
+<pre><code>[1] &quot;92/248&quot;</code></pre>
+<!-- rnb-output-end -->
+<!-- rnb-output-begin eyJkYXRhIjoiV2FybmluZyBpbiBmaXRUTUIoVE1CU3RydWMpIDpcbiAgTW9kZWwgY29udmVyZ2VuY2UgcHJvYmxlbTsgbm9uLXBvc2l0aXZlLWRlZmluaXRlIEhlc3NpYW4gbWF0cml4LiBTZWUgdmlnbmV0dGUoJ3Ryb3VibGVzaG9vdGluZycpXG4ifQ== -->
+<pre><code>Warning in fitTMB(TMBStruc) :
+  Model convergence problem; non-positive-definite Hessian matrix. See vignette(&#39;troubleshooting&#39;)</code></pre>
+<!-- rnb-output-end -->
+<!-- rnb-output-begin eyJkYXRhIjoiWzFdIFwiOTMvMjQ4XCJcbiJ9 -->
+<pre><code>[1] &quot;93/248&quot;</code></pre>
+<!-- rnb-output-end -->
+<!-- rnb-output-begin eyJkYXRhIjoiV2FybmluZyBpbiBmaXRUTUIoVE1CU3RydWMpIDpcbiAgTW9kZWwgY29udmVyZ2VuY2UgcHJvYmxlbTsgbm9uLXBvc2l0aXZlLWRlZmluaXRlIEhlc3NpYW4gbWF0cml4LiBTZWUgdmlnbmV0dGUoJ3Ryb3VibGVzaG9vdGluZycpXG4ifQ== -->
+<pre><code>Warning in fitTMB(TMBStruc) :
+  Model convergence problem; non-positive-definite Hessian matrix. See vignette(&#39;troubleshooting&#39;)</code></pre>
+<!-- rnb-output-end -->
+<!-- rnb-output-begin eyJkYXRhIjoiWzFdIFwiOTQvMjQ4XCJcbiJ9 -->
+<pre><code>[1] &quot;94/248&quot;</code></pre>
+<!-- rnb-output-end -->
+<!-- rnb-output-begin eyJkYXRhIjoiV2FybmluZyBpbiBmaXRUTUIoVE1CU3RydWMpIDpcbiAgTW9kZWwgY29udmVyZ2VuY2UgcHJvYmxlbTsgbm9uLXBvc2l0aXZlLWRlZmluaXRlIEhlc3NpYW4gbWF0cml4LiBTZWUgdmlnbmV0dGUoJ3Ryb3VibGVzaG9vdGluZycpXG4ifQ== -->
+<pre><code>Warning in fitTMB(TMBStruc) :
+  Model convergence problem; non-positive-definite Hessian matrix. See vignette(&#39;troubleshooting&#39;)</code></pre>
+<!-- rnb-output-end -->
+<!-- rnb-output-begin eyJkYXRhIjoiWzFdIFwiOTUvMjQ4XCJcblsxXSBcIjk2LzI0OFwiXG4ifQ== -->
+<pre><code>[1] &quot;95/248&quot;
+[1] &quot;96/248&quot;</code></pre>
+<!-- rnb-output-end -->
+<!-- rnb-output-begin eyJkYXRhIjoiV2FybmluZyBpbiBmaXRUTUIoVE1CU3RydWMpIDpcbiAgTW9kZWwgY29udmVyZ2VuY2UgcHJvYmxlbTsgbm9uLXBvc2l0aXZlLWRlZmluaXRlIEhlc3NpYW4gbWF0cml4LiBTZWUgdmlnbmV0dGUoJ3Ryb3VibGVzaG9vdGluZycpXG4ifQ== -->
+<pre><code>Warning in fitTMB(TMBStruc) :
+  Model convergence problem; non-positive-definite Hessian matrix. See vignette(&#39;troubleshooting&#39;)</code></pre>
+<!-- rnb-output-end -->
+<!-- rnb-output-begin eyJkYXRhIjoiWzFdIFwiOTcvMjQ4XCJcbiJ9 -->
+<pre><code>[1] &quot;97/248&quot;</code></pre>
+<!-- rnb-output-end -->
+<!-- rnb-output-begin eyJkYXRhIjoiV2FybmluZyBpbiBmaXRUTUIoVE1CU3RydWMpIDpcbiAgTW9kZWwgY29udmVyZ2VuY2UgcHJvYmxlbTsgbm9uLXBvc2l0aXZlLWRlZmluaXRlIEhlc3NpYW4gbWF0cml4LiBTZWUgdmlnbmV0dGUoJ3Ryb3VibGVzaG9vdGluZycpXG4ifQ== -->
+<pre><code>Warning in fitTMB(TMBStruc) :
+  Model convergence problem; non-positive-definite Hessian matrix. See vignette(&#39;troubleshooting&#39;)</code></pre>
+<!-- rnb-output-end -->
+<!-- rnb-output-begin eyJkYXRhIjoiWzFdIFwiOTgvMjQ4XCJcbiJ9 -->
+<pre><code>[1] &quot;98/248&quot;</code></pre>
+<!-- rnb-output-end -->
+<!-- rnb-output-begin eyJkYXRhIjoiV2FybmluZyBpbiBmaXRUTUIoVE1CU3RydWMpIDpcbiAgTW9kZWwgY29udmVyZ2VuY2UgcHJvYmxlbTsgbm9uLXBvc2l0aXZlLWRlZmluaXRlIEhlc3NpYW4gbWF0cml4LiBTZWUgdmlnbmV0dGUoJ3Ryb3VibGVzaG9vdGluZycpXG4ifQ== -->
+<pre><code>Warning in fitTMB(TMBStruc) :
+  Model convergence problem; non-positive-definite Hessian matrix. See vignette(&#39;troubleshooting&#39;)</code></pre>
+<!-- rnb-output-end -->
+<!-- rnb-output-begin eyJkYXRhIjoiWzFdIFwiOTkvMjQ4XCJcbiJ9 -->
+<pre><code>[1] &quot;99/248&quot;</code></pre>
+<!-- rnb-output-end -->
+<!-- rnb-output-begin eyJkYXRhIjoiV2FybmluZyBpbiBmaXRUTUIoVE1CU3RydWMpIDpcbiAgTW9kZWwgY29udmVyZ2VuY2UgcHJvYmxlbTsgbm9uLXBvc2l0aXZlLWRlZmluaXRlIEhlc3NpYW4gbWF0cml4LiBTZWUgdmlnbmV0dGUoJ3Ryb3VibGVzaG9vdGluZycpXG4ifQ== -->
+<pre><code>Warning in fitTMB(TMBStruc) :
+  Model convergence problem; non-positive-definite Hessian matrix. See vignette(&#39;troubleshooting&#39;)</code></pre>
+<!-- rnb-output-end -->
+<!-- rnb-output-begin eyJkYXRhIjoiWzFdIFwiMTAwLzI0OFwiXG4ifQ== -->
+<pre><code>[1] &quot;100/248&quot;</code></pre>
+<!-- rnb-output-end -->
+<!-- rnb-output-begin eyJkYXRhIjoiV2FybmluZyBpbiBmaXRUTUIoVE1CU3RydWMpIDpcbiAgTW9kZWwgY29udmVyZ2VuY2UgcHJvYmxlbTsgbm9uLXBvc2l0aXZlLWRlZmluaXRlIEhlc3NpYW4gbWF0cml4LiBTZWUgdmlnbmV0dGUoJ3Ryb3VibGVzaG9vdGluZycpXG4ifQ== -->
+<pre><code>Warning in fitTMB(TMBStruc) :
+  Model convergence problem; non-positive-definite Hessian matrix. See vignette(&#39;troubleshooting&#39;)</code></pre>
+<!-- rnb-output-end -->
+<!-- rnb-output-begin eyJkYXRhIjoiWzFdIFwiMTAxLzI0OFwiXG4ifQ== -->
+<pre><code>[1] &quot;101/248&quot;</code></pre>
+<!-- rnb-output-end -->
+<!-- rnb-output-begin eyJkYXRhIjoiV2FybmluZyBpbiBmaXRUTUIoVE1CU3RydWMpIDpcbiAgTW9kZWwgY29udmVyZ2VuY2UgcHJvYmxlbTsgbm9uLXBvc2l0aXZlLWRlZmluaXRlIEhlc3NpYW4gbWF0cml4LiBTZWUgdmlnbmV0dGUoJ3Ryb3VibGVzaG9vdGluZycpXG4ifQ== -->
+<pre><code>Warning in fitTMB(TMBStruc) :
+  Model convergence problem; non-positive-definite Hessian matrix. See vignette(&#39;troubleshooting&#39;)</code></pre>
+<!-- rnb-output-end -->
+<!-- rnb-output-begin eyJkYXRhIjoiWzFdIFwiMTAyLzI0OFwiXG4ifQ== -->
+<pre><code>[1] &quot;102/248&quot;</code></pre>
+<!-- rnb-output-end -->
+<!-- rnb-output-begin eyJkYXRhIjoiV2FybmluZyBpbiBmaXRUTUIoVE1CU3RydWMpIDpcbiAgTW9kZWwgY29udmVyZ2VuY2UgcHJvYmxlbTsgbm9uLXBvc2l0aXZlLWRlZmluaXRlIEhlc3NpYW4gbWF0cml4LiBTZWUgdmlnbmV0dGUoJ3Ryb3VibGVzaG9vdGluZycpXG4ifQ== -->
+<pre><code>Warning in fitTMB(TMBStruc) :
+  Model convergence problem; non-positive-definite Hessian matrix. See vignette(&#39;troubleshooting&#39;)</code></pre>
+<!-- rnb-output-end -->
+<!-- rnb-output-begin eyJkYXRhIjoiWzFdIFwiMTAzLzI0OFwiXG4ifQ== -->
+<pre><code>[1] &quot;103/248&quot;</code></pre>
+<!-- rnb-output-end -->
+<!-- rnb-output-begin eyJkYXRhIjoiV2FybmluZyBpbiBmaXRUTUIoVE1CU3RydWMpIDpcbiAgTW9kZWwgY29udmVyZ2VuY2UgcHJvYmxlbTsgbm9uLXBvc2l0aXZlLWRlZmluaXRlIEhlc3NpYW4gbWF0cml4LiBTZWUgdmlnbmV0dGUoJ3Ryb3VibGVzaG9vdGluZycpXG4ifQ== -->
+<pre><code>Warning in fitTMB(TMBStruc) :
+  Model convergence problem; non-positive-definite Hessian matrix. See vignette(&#39;troubleshooting&#39;)</code></pre>
+<!-- rnb-output-end -->
+<!-- rnb-output-begin eyJkYXRhIjoiWzFdIFwiMTA0LzI0OFwiXG4ifQ== -->
+<pre><code>[1] &quot;104/248&quot;</code></pre>
+<!-- rnb-output-end -->
+<!-- rnb-output-begin eyJkYXRhIjoiV2FybmluZyBpbiBmaXRUTUIoVE1CU3RydWMpIDpcbiAgTW9kZWwgY29udmVyZ2VuY2UgcHJvYmxlbTsgbm9uLXBvc2l0aXZlLWRlZmluaXRlIEhlc3NpYW4gbWF0cml4LiBTZWUgdmlnbmV0dGUoJ3Ryb3VibGVzaG9vdGluZycpXG4ifQ== -->
+<pre><code>Warning in fitTMB(TMBStruc) :
+  Model convergence problem; non-positive-definite Hessian matrix. See vignette(&#39;troubleshooting&#39;)</code></pre>
+<!-- rnb-output-end -->
+<!-- rnb-output-begin eyJkYXRhIjoiWzFdIFwiMTA1LzI0OFwiXG5bMV0gXCIxMDYvMjQ4XCJcblsxXSBcIjEwNy8yNDhcIlxuIn0= -->
+<pre><code>[1] &quot;105/248&quot;
+[1] &quot;106/248&quot;
+[1] &quot;107/248&quot;</code></pre>
+<!-- rnb-output-end -->
+<!-- rnb-output-begin eyJkYXRhIjoiV2FybmluZyBpbiBmaXRUTUIoVE1CU3RydWMpIDpcbiAgTW9kZWwgY29udmVyZ2VuY2UgcHJvYmxlbTsgbm9uLXBvc2l0aXZlLWRlZmluaXRlIEhlc3NpYW4gbWF0cml4LiBTZWUgdmlnbmV0dGUoJ3Ryb3VibGVzaG9vdGluZycpXG4ifQ== -->
+<pre><code>Warning in fitTMB(TMBStruc) :
+  Model convergence problem; non-positive-definite Hessian matrix. See vignette(&#39;troubleshooting&#39;)</code></pre>
+<!-- rnb-output-end -->
+<!-- rnb-output-begin eyJkYXRhIjoiWzFdIFwiMTA4LzI0OFwiXG5bMV0gXCIxMDkvMjQ4XCJcblsxXSBcIjExMC8yNDhcIlxuWzFdIFwiMTExLzI0OFwiXG5bMV0gXCIxMTIvMjQ4XCJcblsxXSBcIjExMy8yNDhcIlxuWzFdIFwiMTE0LzI0OFwiXG4ifQ== -->
+<pre><code>[1] &quot;108/248&quot;
+[1] &quot;109/248&quot;
+[1] &quot;110/248&quot;
+[1] &quot;111/248&quot;
+[1] &quot;112/248&quot;
+[1] &quot;113/248&quot;
+[1] &quot;114/248&quot;</code></pre>
+<!-- rnb-output-end -->
+<!-- rnb-output-begin eyJkYXRhIjoiV2FybmluZyBpbiBmaXRUTUIoVE1CU3RydWMpIDpcbiAgTW9kZWwgY29udmVyZ2VuY2UgcHJvYmxlbTsgbm9uLXBvc2l0aXZlLWRlZmluaXRlIEhlc3NpYW4gbWF0cml4LiBTZWUgdmlnbmV0dGUoJ3Ryb3VibGVzaG9vdGluZycpXG4ifQ== -->
+<pre><code>Warning in fitTMB(TMBStruc) :
+  Model convergence problem; non-positive-definite Hessian matrix. See vignette(&#39;troubleshooting&#39;)</code></pre>
+<!-- rnb-output-end -->
+<!-- rnb-output-begin eyJkYXRhIjoiWzFdIFwiMTE1LzI0OFwiXG5bMV0gXCIxMTYvMjQ4XCJcblsxXSBcIjExNy8yNDhcIlxuIn0= -->
+<pre><code>[1] &quot;115/248&quot;
+[1] &quot;116/248&quot;
+[1] &quot;117/248&quot;</code></pre>
+<!-- rnb-output-end -->
+<!-- rnb-output-begin eyJkYXRhIjoiV2FybmluZyBpbiBmaXRUTUIoVE1CU3RydWMpIDpcbiAgTW9kZWwgY29udmVyZ2VuY2UgcHJvYmxlbTsgbm9uLXBvc2l0aXZlLWRlZmluaXRlIEhlc3NpYW4gbWF0cml4LiBTZWUgdmlnbmV0dGUoJ3Ryb3VibGVzaG9vdGluZycpXG4ifQ== -->
+<pre><code>Warning in fitTMB(TMBStruc) :
+  Model convergence problem; non-positive-definite Hessian matrix. See vignette(&#39;troubleshooting&#39;)</code></pre>
+<!-- rnb-output-end -->
+<!-- rnb-output-begin eyJkYXRhIjoiWzFdIFwiMTE4LzI0OFwiXG5bMV0gXCIxMTkvMjQ4XCJcblsxXSBcIjEyMC8yNDhcIlxuWzFdIFwiMTIxLzI0OFwiXG4ifQ== -->
+<pre><code>[1] &quot;118/248&quot;
+[1] &quot;119/248&quot;
+[1] &quot;120/248&quot;
+[1] &quot;121/248&quot;</code></pre>
+<!-- rnb-output-end -->
+<!-- rnb-output-begin eyJkYXRhIjoiV2FybmluZyBpbiBmaXRUTUIoVE1CU3RydWMpIDpcbiAgTW9kZWwgY29udmVyZ2VuY2UgcHJvYmxlbTsgbm9uLXBvc2l0aXZlLWRlZmluaXRlIEhlc3NpYW4gbWF0cml4LiBTZWUgdmlnbmV0dGUoJ3Ryb3VibGVzaG9vdGluZycpXG4ifQ== -->
+<pre><code>Warning in fitTMB(TMBStruc) :
+  Model convergence problem; non-positive-definite Hessian matrix. See vignette(&#39;troubleshooting&#39;)</code></pre>
+<!-- rnb-output-end -->
+<!-- rnb-output-begin eyJkYXRhIjoiWzFdIFwiMTIyLzI0OFwiXG5bMV0gXCIxMjMvMjQ4XCJcbiJ9 -->
+<pre><code>[1] &quot;122/248&quot;
+[1] &quot;123/248&quot;</code></pre>
+<!-- rnb-output-end -->
+<!-- rnb-output-begin eyJkYXRhIjoiV2FybmluZyBpbiBmaXRUTUIoVE1CU3RydWMpIDpcbiAgTW9kZWwgY29udmVyZ2VuY2UgcHJvYmxlbTsgbm9uLXBvc2l0aXZlLWRlZmluaXRlIEhlc3NpYW4gbWF0cml4LiBTZWUgdmlnbmV0dGUoJ3Ryb3VibGVzaG9vdGluZycpXG4ifQ== -->
+<pre><code>Warning in fitTMB(TMBStruc) :
+  Model convergence problem; non-positive-definite Hessian matrix. See vignette(&#39;troubleshooting&#39;)</code></pre>
+<!-- rnb-output-end -->
+<!-- rnb-output-begin eyJkYXRhIjoiWzFdIFwiMTI0LzI0OFwiXG5bMV0gXCIxMjUvMjQ4XCJcblsxXSBcIjEyNi8yNDhcIlxuWzFdIFwiMTI3LzI0OFwiXG5bMV0gXCIxMjgvMjQ4XCJcblsxXSBcIjEyOS8yNDhcIlxuWzFdIFwiMTMwLzI0OFwiXG5bMV0gXCIxMzEvMjQ4XCJcblsxXSBcIjEzMi8yNDhcIlxuWzFdIFwiMTMzLzI0OFwiXG5bMV0gXCIxMzQvMjQ4XCJcblsxXSBcIjEzNS8yNDhcIlxuWzFdIFwiMTM2LzI0OFwiXG5bMV0gXCIxMzcvMjQ4XCJcblsxXSBcIjEzOC8yNDhcIlxuWzFdIFwiMTM5LzI0OFwiXG5bMV0gXCIxNDAvMjQ4XCJcblsxXSBcIjE0MS8yNDhcIlxuWzFdIFwiMTQyLzI0OFwiXG5bMV0gXCIxNDMvMjQ4XCJcblsxXSBcIjE0NC8yNDhcIlxuWzFdIFwiMTQ1LzI0OFwiXG5bMV0gXCIxNDYvMjQ4XCJcblsxXSBcIjE0Ny8yNDhcIlxuWzFdIFwiMTQ4LzI0OFwiXG5bMV0gXCIxNDkvMjQ4XCJcblsxXSBcIjE1MC8yNDhcIlxuWzFdIFwiMTUxLzI0OFwiXG5bMV0gXCIxNTIvMjQ4XCJcblsxXSBcIjE1My8yNDhcIlxuWzFdIFwiMTU0LzI0OFwiXG5bMV0gXCIxNTUvMjQ4XCJcblsxXSBcIjE1Ni8yNDhcIlxuWzFdIFwiMTU3LzI0OFwiXG5bMV0gXCIxNTgvMjQ4XCJcblsxXSBcIjE1OS8yNDhcIlxuWzFdIFwiMTYwLzI0OFwiXG5bMV0gXCIxNjEvMjQ4XCJcblsxXSBcIjE2Mi8yNDhcIlxuWzFdIFwiMTYzLzI0OFwiXG5bMV0gXCIxNjQvMjQ4XCJcblsxXSBcIjE2NS8yNDhcIlxuWzFdIFwiMTY2LzI0OFwiXG5bMV0gXCIxNjcvMjQ4XCJcblsxXSBcIjE2OC8yNDhcIlxuIn0= -->
+<pre><code>[1] &quot;124/248&quot;
+[1] &quot;125/248&quot;
+[1] &quot;126/248&quot;
+[1] &quot;127/248&quot;
+[1] &quot;128/248&quot;
+[1] &quot;129/248&quot;
+[1] &quot;130/248&quot;
+[1] &quot;131/248&quot;
+[1] &quot;132/248&quot;
+[1] &quot;133/248&quot;
+[1] &quot;134/248&quot;
+[1] &quot;135/248&quot;
+[1] &quot;136/248&quot;
+[1] &quot;137/248&quot;
+[1] &quot;138/248&quot;
+[1] &quot;139/248&quot;
+[1] &quot;140/248&quot;
+[1] &quot;141/248&quot;
+[1] &quot;142/248&quot;
+[1] &quot;143/248&quot;
+[1] &quot;144/248&quot;
+[1] &quot;145/248&quot;
+[1] &quot;146/248&quot;
+[1] &quot;147/248&quot;
+[1] &quot;148/248&quot;
+[1] &quot;149/248&quot;
+[1] &quot;150/248&quot;
+[1] &quot;151/248&quot;
+[1] &quot;152/248&quot;
+[1] &quot;153/248&quot;
+[1] &quot;154/248&quot;
+[1] &quot;155/248&quot;
+[1] &quot;156/248&quot;
+[1] &quot;157/248&quot;
+[1] &quot;158/248&quot;
+[1] &quot;159/248&quot;
+[1] &quot;160/248&quot;
+[1] &quot;161/248&quot;
+[1] &quot;162/248&quot;
+[1] &quot;163/248&quot;
+[1] &quot;164/248&quot;
+[1] &quot;165/248&quot;
+[1] &quot;166/248&quot;
+[1] &quot;167/248&quot;
+[1] &quot;168/248&quot;</code></pre>
+<!-- rnb-output-end -->
+<!-- rnb-output-begin eyJkYXRhIjoiV2FybmluZyBpbiBmaXRUTUIoVE1CU3RydWMpIDpcbiAgTW9kZWwgY29udmVyZ2VuY2UgcHJvYmxlbTsgbm9uLXBvc2l0aXZlLWRlZmluaXRlIEhlc3NpYW4gbWF0cml4LiBTZWUgdmlnbmV0dGUoJ3Ryb3VibGVzaG9vdGluZycpXG4ifQ== -->
+<pre><code>Warning in fitTMB(TMBStruc) :
+  Model convergence problem; non-positive-definite Hessian matrix. See vignette(&#39;troubleshooting&#39;)</code></pre>
+<!-- rnb-output-end -->
+<!-- rnb-output-begin eyJkYXRhIjoiWzFdIFwiMTY5LzI0OFwiXG4ifQ== -->
+<pre><code>[1] &quot;169/248&quot;</code></pre>
+<!-- rnb-output-end -->
+<!-- rnb-output-begin eyJkYXRhIjoiV2FybmluZyBpbiBmaXRUTUIoVE1CU3RydWMpIDpcbiAgTW9kZWwgY29udmVyZ2VuY2UgcHJvYmxlbTsgbm9uLXBvc2l0aXZlLWRlZmluaXRlIEhlc3NpYW4gbWF0cml4LiBTZWUgdmlnbmV0dGUoJ3Ryb3VibGVzaG9vdGluZycpXG5XYXJuaW5nIGluIHNxcnQoZGlhZyh2Y292cykpIDogTmFOcyBwcm9kdWNlZFxuV2FybmluZyBpbiBzcXJ0KGRpYWcodmNvdnMpKSA6IE5hTnMgcHJvZHVjZWRcbiJ9 -->
+<pre><code>Warning in fitTMB(TMBStruc) :
+  Model convergence problem; non-positive-definite Hessian matrix. See vignette(&#39;troubleshooting&#39;)
+Warning in sqrt(diag(vcovs)) : NaNs produced
+Warning in sqrt(diag(vcovs)) : NaNs produced</code></pre>
+<!-- rnb-output-end -->
+<!-- rnb-output-begin eyJkYXRhIjoiWzFdIFwiMTcwLzI0OFwiXG5bMV0gXCIxNzEvMjQ4XCJcbiJ9 -->
+<pre><code>[1] &quot;170/248&quot;
+[1] &quot;171/248&quot;</code></pre>
+<!-- rnb-output-end -->
+<!-- rnb-output-begin eyJkYXRhIjoiV2FybmluZyBpbiBmaXRUTUIoVE1CU3RydWMpIDpcbiAgTW9kZWwgY29udmVyZ2VuY2UgcHJvYmxlbTsgbm9uLXBvc2l0aXZlLWRlZmluaXRlIEhlc3NpYW4gbWF0cml4LiBTZWUgdmlnbmV0dGUoJ3Ryb3VibGVzaG9vdGluZycpXG4ifQ== -->
+<pre><code>Warning in fitTMB(TMBStruc) :
+  Model convergence problem; non-positive-definite Hessian matrix. See vignette(&#39;troubleshooting&#39;)</code></pre>
+<!-- rnb-output-end -->
+<!-- rnb-output-begin eyJkYXRhIjoiWzFdIFwiMTcyLzI0OFwiXG4ifQ== -->
+<pre><code>[1] &quot;172/248&quot;</code></pre>
+<!-- rnb-output-end -->
+<!-- rnb-output-begin eyJkYXRhIjoiV2FybmluZyBpbiBmaXRUTUIoVE1CU3RydWMpIDpcbiAgTW9kZWwgY29udmVyZ2VuY2UgcHJvYmxlbTsgbm9uLXBvc2l0aXZlLWRlZmluaXRlIEhlc3NpYW4gbWF0cml4LiBTZWUgdmlnbmV0dGUoJ3Ryb3VibGVzaG9vdGluZycpXG4ifQ== -->
+<pre><code>Warning in fitTMB(TMBStruc) :
+  Model convergence problem; non-positive-definite Hessian matrix. See vignette(&#39;troubleshooting&#39;)</code></pre>
+<!-- rnb-output-end -->
+<!-- rnb-output-begin eyJkYXRhIjoiWzFdIFwiMTczLzI0OFwiXG4ifQ== -->
+<pre><code>[1] &quot;173/248&quot;</code></pre>
+<!-- rnb-output-end -->
+<!-- rnb-output-begin eyJkYXRhIjoiV2FybmluZyBpbiBmaXRUTUIoVE1CU3RydWMpIDpcbiAgTW9kZWwgY29udmVyZ2VuY2UgcHJvYmxlbTsgbm9uLXBvc2l0aXZlLWRlZmluaXRlIEhlc3NpYW4gbWF0cml4LiBTZWUgdmlnbmV0dGUoJ3Ryb3VibGVzaG9vdGluZycpXG4ifQ== -->
+<pre><code>Warning in fitTMB(TMBStruc) :
+  Model convergence problem; non-positive-definite Hessian matrix. See vignette(&#39;troubleshooting&#39;)</code></pre>
+<!-- rnb-output-end -->
+<!-- rnb-output-begin eyJkYXRhIjoiWzFdIFwiMTc0LzI0OFwiXG4ifQ== -->
+<pre><code>[1] &quot;174/248&quot;</code></pre>
+<!-- rnb-output-end -->
+<!-- rnb-output-begin eyJkYXRhIjoiV2FybmluZyBpbiBmaXRUTUIoVE1CU3RydWMpIDpcbiAgTW9kZWwgY29udmVyZ2VuY2UgcHJvYmxlbTsgbm9uLXBvc2l0aXZlLWRlZmluaXRlIEhlc3NpYW4gbWF0cml4LiBTZWUgdmlnbmV0dGUoJ3Ryb3VibGVzaG9vdGluZycpXG4ifQ== -->
+<pre><code>Warning in fitTMB(TMBStruc) :
+  Model convergence problem; non-positive-definite Hessian matrix. See vignette(&#39;troubleshooting&#39;)</code></pre>
+<!-- rnb-output-end -->
+<!-- rnb-output-begin eyJkYXRhIjoiWzFdIFwiMTc1LzI0OFwiXG4ifQ== -->
+<pre><code>[1] &quot;175/248&quot;</code></pre>
+<!-- rnb-output-end -->
+<!-- rnb-output-begin eyJkYXRhIjoiV2FybmluZyBpbiBmaXRUTUIoVE1CU3RydWMpIDpcbiAgTW9kZWwgY29udmVyZ2VuY2UgcHJvYmxlbTsgbm9uLXBvc2l0aXZlLWRlZmluaXRlIEhlc3NpYW4gbWF0cml4LiBTZWUgdmlnbmV0dGUoJ3Ryb3VibGVzaG9vdGluZycpXG4ifQ== -->
+<pre><code>Warning in fitTMB(TMBStruc) :
+  Model convergence problem; non-positive-definite Hessian matrix. See vignette(&#39;troubleshooting&#39;)</code></pre>
+<!-- rnb-output-end -->
+<!-- rnb-output-begin eyJkYXRhIjoiWzFdIFwiMTc2LzI0OFwiXG4ifQ== -->
+<pre><code>[1] &quot;176/248&quot;</code></pre>
+<!-- rnb-output-end -->
+<!-- rnb-output-begin eyJkYXRhIjoiV2FybmluZyBpbiBmaXRUTUIoVE1CU3RydWMpIDpcbiAgTW9kZWwgY29udmVyZ2VuY2UgcHJvYmxlbTsgbm9uLXBvc2l0aXZlLWRlZmluaXRlIEhlc3NpYW4gbWF0cml4LiBTZWUgdmlnbmV0dGUoJ3Ryb3VibGVzaG9vdGluZycpXG4ifQ== -->
+<pre><code>Warning in fitTMB(TMBStruc) :
+  Model convergence problem; non-positive-definite Hessian matrix. See vignette(&#39;troubleshooting&#39;)</code></pre>
+<!-- rnb-output-end -->
+<!-- rnb-output-begin eyJkYXRhIjoiWzFdIFwiMTc3LzI0OFwiXG4ifQ== -->
+<pre><code>[1] &quot;177/248&quot;</code></pre>
+<!-- rnb-output-end -->
+<!-- rnb-output-begin eyJkYXRhIjoiV2FybmluZyBpbiBmaXRUTUIoVE1CU3RydWMpIDpcbiAgTW9kZWwgY29udmVyZ2VuY2UgcHJvYmxlbTsgbm9uLXBvc2l0aXZlLWRlZmluaXRlIEhlc3NpYW4gbWF0cml4LiBTZWUgdmlnbmV0dGUoJ3Ryb3VibGVzaG9vdGluZycpXG4ifQ== -->
+<pre><code>Warning in fitTMB(TMBStruc) :
+  Model convergence problem; non-positive-definite Hessian matrix. See vignette(&#39;troubleshooting&#39;)</code></pre>
+<!-- rnb-output-end -->
+<!-- rnb-output-begin eyJkYXRhIjoiWzFdIFwiMTc4LzI0OFwiXG4ifQ== -->
+<pre><code>[1] &quot;178/248&quot;</code></pre>
+<!-- rnb-output-end -->
+<!-- rnb-output-begin eyJkYXRhIjoiV2FybmluZyBpbiBmaXRUTUIoVE1CU3RydWMpIDpcbiAgTW9kZWwgY29udmVyZ2VuY2UgcHJvYmxlbTsgbm9uLXBvc2l0aXZlLWRlZmluaXRlIEhlc3NpYW4gbWF0cml4LiBTZWUgdmlnbmV0dGUoJ3Ryb3VibGVzaG9vdGluZycpXG4ifQ== -->
+<pre><code>Warning in fitTMB(TMBStruc) :
+  Model convergence problem; non-positive-definite Hessian matrix. See vignette(&#39;troubleshooting&#39;)</code></pre>
+<!-- rnb-output-end -->
+<!-- rnb-output-begin eyJkYXRhIjoiWzFdIFwiMTc5LzI0OFwiXG4ifQ== -->
+<pre><code>[1] &quot;179/248&quot;</code></pre>
+<!-- rnb-output-end -->
+<!-- rnb-output-begin eyJkYXRhIjoiV2FybmluZyBpbiBmaXRUTUIoVE1CU3RydWMpIDpcbiAgTW9kZWwgY29udmVyZ2VuY2UgcHJvYmxlbTsgbm9uLXBvc2l0aXZlLWRlZmluaXRlIEhlc3NpYW4gbWF0cml4LiBTZWUgdmlnbmV0dGUoJ3Ryb3VibGVzaG9vdGluZycpXG4ifQ== -->
+<pre><code>Warning in fitTMB(TMBStruc) :
+  Model convergence problem; non-positive-definite Hessian matrix. See vignette(&#39;troubleshooting&#39;)</code></pre>
+<!-- rnb-output-end -->
+<!-- rnb-output-begin eyJkYXRhIjoiWzFdIFwiMTgwLzI0OFwiXG5bMV0gXCIxODEvMjQ4XCJcbiJ9 -->
+<pre><code>[1] &quot;180/248&quot;
+[1] &quot;181/248&quot;</code></pre>
+<!-- rnb-output-end -->
+<!-- rnb-output-begin eyJkYXRhIjoiV2FybmluZyBpbiBmaXRUTUIoVE1CU3RydWMpIDpcbiAgTW9kZWwgY29udmVyZ2VuY2UgcHJvYmxlbTsgbm9uLXBvc2l0aXZlLWRlZmluaXRlIEhlc3NpYW4gbWF0cml4LiBTZWUgdmlnbmV0dGUoJ3Ryb3VibGVzaG9vdGluZycpXG4ifQ== -->
+<pre><code>Warning in fitTMB(TMBStruc) :
+  Model convergence problem; non-positive-definite Hessian matrix. See vignette(&#39;troubleshooting&#39;)</code></pre>
+<!-- rnb-output-end -->
+<!-- rnb-output-begin eyJkYXRhIjoiWzFdIFwiMTgyLzI0OFwiXG4ifQ== -->
+<pre><code>[1] &quot;182/248&quot;</code></pre>
+<!-- rnb-output-end -->
+<!-- rnb-output-begin eyJkYXRhIjoiV2FybmluZyBpbiBmaXRUTUIoVE1CU3RydWMpIDpcbiAgTW9kZWwgY29udmVyZ2VuY2UgcHJvYmxlbTsgbm9uLXBvc2l0aXZlLWRlZmluaXRlIEhlc3NpYW4gbWF0cml4LiBTZWUgdmlnbmV0dGUoJ3Ryb3VibGVzaG9vdGluZycpXG4ifQ== -->
+<pre><code>Warning in fitTMB(TMBStruc) :
+  Model convergence problem; non-positive-definite Hessian matrix. See vignette(&#39;troubleshooting&#39;)</code></pre>
+<!-- rnb-output-end -->
+<!-- rnb-output-begin eyJkYXRhIjoiWzFdIFwiMTgzLzI0OFwiXG4ifQ== -->
+<pre><code>[1] &quot;183/248&quot;</code></pre>
+<!-- rnb-output-end -->
+<!-- rnb-output-begin eyJkYXRhIjoiV2FybmluZyBpbiBmaXRUTUIoVE1CU3RydWMpIDpcbiAgTW9kZWwgY29udmVyZ2VuY2UgcHJvYmxlbTsgbm9uLXBvc2l0aXZlLWRlZmluaXRlIEhlc3NpYW4gbWF0cml4LiBTZWUgdmlnbmV0dGUoJ3Ryb3VibGVzaG9vdGluZycpXG4ifQ== -->
+<pre><code>Warning in fitTMB(TMBStruc) :
+  Model convergence problem; non-positive-definite Hessian matrix. See vignette(&#39;troubleshooting&#39;)</code></pre>
+<!-- rnb-output-end -->
+<!-- rnb-output-begin eyJkYXRhIjoiWzFdIFwiMTg0LzI0OFwiXG4ifQ== -->
+<pre><code>[1] &quot;184/248&quot;</code></pre>
+<!-- rnb-output-end -->
+<!-- rnb-output-begin eyJkYXRhIjoiV2FybmluZyBpbiBmaXRUTUIoVE1CU3RydWMpIDpcbiAgTW9kZWwgY29udmVyZ2VuY2UgcHJvYmxlbTsgbm9uLXBvc2l0aXZlLWRlZmluaXRlIEhlc3NpYW4gbWF0cml4LiBTZWUgdmlnbmV0dGUoJ3Ryb3VibGVzaG9vdGluZycpXG4ifQ== -->
+<pre><code>Warning in fitTMB(TMBStruc) :
+  Model convergence problem; non-positive-definite Hessian matrix. See vignette(&#39;troubleshooting&#39;)</code></pre>
+<!-- rnb-output-end -->
+<!-- rnb-output-begin eyJkYXRhIjoiWzFdIFwiMTg1LzI0OFwiXG4ifQ== -->
+<pre><code>[1] &quot;185/248&quot;</code></pre>
+<!-- rnb-output-end -->
+<!-- rnb-output-begin eyJkYXRhIjoiV2FybmluZyBpbiBmaXRUTUIoVE1CU3RydWMpIDpcbiAgTW9kZWwgY29udmVyZ2VuY2UgcHJvYmxlbTsgbm9uLXBvc2l0aXZlLWRlZmluaXRlIEhlc3NpYW4gbWF0cml4LiBTZWUgdmlnbmV0dGUoJ3Ryb3VibGVzaG9vdGluZycpXG4ifQ== -->
+<pre><code>Warning in fitTMB(TMBStruc) :
+  Model convergence problem; non-positive-definite Hessian matrix. See vignette(&#39;troubleshooting&#39;)</code></pre>
+<!-- rnb-output-end -->
+<!-- rnb-output-begin eyJkYXRhIjoiWzFdIFwiMTg2LzI0OFwiXG4ifQ== -->
+<pre><code>[1] &quot;186/248&quot;</code></pre>
+<!-- rnb-output-end -->
+<!-- rnb-output-begin eyJkYXRhIjoiV2FybmluZyBpbiBmaXRUTUIoVE1CU3RydWMpIDpcbiAgTW9kZWwgY29udmVyZ2VuY2UgcHJvYmxlbTsgbm9uLXBvc2l0aXZlLWRlZmluaXRlIEhlc3NpYW4gbWF0cml4LiBTZWUgdmlnbmV0dGUoJ3Ryb3VibGVzaG9vdGluZycpXG4ifQ== -->
+<pre><code>Warning in fitTMB(TMBStruc) :
+  Model convergence problem; non-positive-definite Hessian matrix. See vignette(&#39;troubleshooting&#39;)</code></pre>
+<!-- rnb-output-end -->
+<!-- rnb-output-begin eyJkYXRhIjoiWzFdIFwiMTg3LzI0OFwiXG4ifQ== -->
+<pre><code>[1] &quot;187/248&quot;</code></pre>
+<!-- rnb-output-end -->
+<!-- rnb-output-begin eyJkYXRhIjoiV2FybmluZyBpbiBmaXRUTUIoVE1CU3RydWMpIDpcbiAgTW9kZWwgY29udmVyZ2VuY2UgcHJvYmxlbTsgbm9uLXBvc2l0aXZlLWRlZmluaXRlIEhlc3NpYW4gbWF0cml4LiBTZWUgdmlnbmV0dGUoJ3Ryb3VibGVzaG9vdGluZycpXG4ifQ== -->
+<pre><code>Warning in fitTMB(TMBStruc) :
+  Model convergence problem; non-positive-definite Hessian matrix. See vignette(&#39;troubleshooting&#39;)</code></pre>
+<!-- rnb-output-end -->
+<!-- rnb-output-begin eyJkYXRhIjoiWzFdIFwiMTg4LzI0OFwiXG4ifQ== -->
+<pre><code>[1] &quot;188/248&quot;</code></pre>
+<!-- rnb-output-end -->
+<!-- rnb-output-begin eyJkYXRhIjoiV2FybmluZyBpbiBmaXRUTUIoVE1CU3RydWMpIDpcbiAgTW9kZWwgY29udmVyZ2VuY2UgcHJvYmxlbTsgbm9uLXBvc2l0aXZlLWRlZmluaXRlIEhlc3NpYW4gbWF0cml4LiBTZWUgdmlnbmV0dGUoJ3Ryb3VibGVzaG9vdGluZycpXG4ifQ== -->
+<pre><code>Warning in fitTMB(TMBStruc) :
+  Model convergence problem; non-positive-definite Hessian matrix. See vignette(&#39;troubleshooting&#39;)</code></pre>
+<!-- rnb-output-end -->
+<!-- rnb-output-begin eyJkYXRhIjoiWzFdIFwiMTg5LzI0OFwiXG4ifQ== -->
+<pre><code>[1] &quot;189/248&quot;</code></pre>
+<!-- rnb-output-end -->
+<!-- rnb-output-begin eyJkYXRhIjoiV2FybmluZyBpbiBmaXRUTUIoVE1CU3RydWMpIDpcbiAgTW9kZWwgY29udmVyZ2VuY2UgcHJvYmxlbTsgbm9uLXBvc2l0aXZlLWRlZmluaXRlIEhlc3NpYW4gbWF0cml4LiBTZWUgdmlnbmV0dGUoJ3Ryb3VibGVzaG9vdGluZycpXG4ifQ== -->
+<pre><code>Warning in fitTMB(TMBStruc) :
+  Model convergence problem; non-positive-definite Hessian matrix. See vignette(&#39;troubleshooting&#39;)</code></pre>
+<!-- rnb-output-end -->
+<!-- rnb-output-begin eyJkYXRhIjoiWzFdIFwiMTkwLzI0OFwiXG4ifQ== -->
+<pre><code>[1] &quot;190/248&quot;</code></pre>
+<!-- rnb-output-end -->
+<!-- rnb-output-begin eyJkYXRhIjoiV2FybmluZyBpbiBmaXRUTUIoVE1CU3RydWMpIDpcbiAgTW9kZWwgY29udmVyZ2VuY2UgcHJvYmxlbTsgbm9uLXBvc2l0aXZlLWRlZmluaXRlIEhlc3NpYW4gbWF0cml4LiBTZWUgdmlnbmV0dGUoJ3Ryb3VibGVzaG9vdGluZycpXG4ifQ== -->
+<pre><code>Warning in fitTMB(TMBStruc) :
+  Model convergence problem; non-positive-definite Hessian matrix. See vignette(&#39;troubleshooting&#39;)</code></pre>
+<!-- rnb-output-end -->
+<!-- rnb-output-begin eyJkYXRhIjoiWzFdIFwiMTkxLzI0OFwiXG4ifQ== -->
+<pre><code>[1] &quot;191/248&quot;</code></pre>
+<!-- rnb-output-end -->
+<!-- rnb-output-begin eyJkYXRhIjoiV2FybmluZyBpbiBmaXRUTUIoVE1CU3RydWMpIDpcbiAgTW9kZWwgY29udmVyZ2VuY2UgcHJvYmxlbTsgbm9uLXBvc2l0aXZlLWRlZmluaXRlIEhlc3NpYW4gbWF0cml4LiBTZWUgdmlnbmV0dGUoJ3Ryb3VibGVzaG9vdGluZycpXG4ifQ== -->
+<pre><code>Warning in fitTMB(TMBStruc) :
+  Model convergence problem; non-positive-definite Hessian matrix. See vignette(&#39;troubleshooting&#39;)</code></pre>
+<!-- rnb-output-end -->
+<!-- rnb-output-begin eyJkYXRhIjoiWzFdIFwiMTkyLzI0OFwiXG4ifQ== -->
+<pre><code>[1] &quot;192/248&quot;</code></pre>
+<!-- rnb-output-end -->
+<!-- rnb-output-begin eyJkYXRhIjoiV2FybmluZyBpbiBmaXRUTUIoVE1CU3RydWMpIDpcbiAgTW9kZWwgY29udmVyZ2VuY2UgcHJvYmxlbTsgbm9uLXBvc2l0aXZlLWRlZmluaXRlIEhlc3NpYW4gbWF0cml4LiBTZWUgdmlnbmV0dGUoJ3Ryb3VibGVzaG9vdGluZycpXG4ifQ== -->
+<pre><code>Warning in fitTMB(TMBStruc) :
+  Model convergence problem; non-positive-definite Hessian matrix. See vignette(&#39;troubleshooting&#39;)</code></pre>
+<!-- rnb-output-end -->
+<!-- rnb-output-begin eyJkYXRhIjoiWzFdIFwiMTkzLzI0OFwiXG4ifQ== -->
+<pre><code>[1] &quot;193/248&quot;</code></pre>
+<!-- rnb-output-end -->
+<!-- rnb-output-begin eyJkYXRhIjoiV2FybmluZyBpbiBmaXRUTUIoVE1CU3RydWMpIDpcbiAgTW9kZWwgY29udmVyZ2VuY2UgcHJvYmxlbTsgbm9uLXBvc2l0aXZlLWRlZmluaXRlIEhlc3NpYW4gbWF0cml4LiBTZWUgdmlnbmV0dGUoJ3Ryb3VibGVzaG9vdGluZycpXG4ifQ== -->
+<pre><code>Warning in fitTMB(TMBStruc) :
+  Model convergence problem; non-positive-definite Hessian matrix. See vignette(&#39;troubleshooting&#39;)</code></pre>
+<!-- rnb-output-end -->
+<!-- rnb-output-begin eyJkYXRhIjoiWzFdIFwiMTk0LzI0OFwiXG4ifQ== -->
+<pre><code>[1] &quot;194/248&quot;</code></pre>
+<!-- rnb-output-end -->
+<!-- rnb-output-begin eyJkYXRhIjoiV2FybmluZyBpbiBmaXRUTUIoVE1CU3RydWMpIDpcbiAgTW9kZWwgY29udmVyZ2VuY2UgcHJvYmxlbTsgbm9uLXBvc2l0aXZlLWRlZmluaXRlIEhlc3NpYW4gbWF0cml4LiBTZWUgdmlnbmV0dGUoJ3Ryb3VibGVzaG9vdGluZycpXG4ifQ== -->
+<pre><code>Warning in fitTMB(TMBStruc) :
+  Model convergence problem; non-positive-definite Hessian matrix. See vignette(&#39;troubleshooting&#39;)</code></pre>
+<!-- rnb-output-end -->
+<!-- rnb-output-begin eyJkYXRhIjoiWzFdIFwiMTk1LzI0OFwiXG4ifQ== -->
+<pre><code>[1] &quot;195/248&quot;</code></pre>
+<!-- rnb-output-end -->
+<!-- rnb-output-begin eyJkYXRhIjoiV2FybmluZyBpbiBmaXRUTUIoVE1CU3RydWMpIDpcbiAgTW9kZWwgY29udmVyZ2VuY2UgcHJvYmxlbTsgbm9uLXBvc2l0aXZlLWRlZmluaXRlIEhlc3NpYW4gbWF0cml4LiBTZWUgdmlnbmV0dGUoJ3Ryb3VibGVzaG9vdGluZycpXG4ifQ== -->
+<pre><code>Warning in fitTMB(TMBStruc) :
+  Model convergence problem; non-positive-definite Hessian matrix. See vignette(&#39;troubleshooting&#39;)</code></pre>
+<!-- rnb-output-end -->
+<!-- rnb-output-begin eyJkYXRhIjoiWzFdIFwiMTk2LzI0OFwiXG4ifQ== -->
+<pre><code>[1] &quot;196/248&quot;</code></pre>
+<!-- rnb-output-end -->
+<!-- rnb-output-begin eyJkYXRhIjoiV2FybmluZyBpbiBmaXRUTUIoVE1CU3RydWMpIDpcbiAgTW9kZWwgY29udmVyZ2VuY2UgcHJvYmxlbTsgbm9uLXBvc2l0aXZlLWRlZmluaXRlIEhlc3NpYW4gbWF0cml4LiBTZWUgdmlnbmV0dGUoJ3Ryb3VibGVzaG9vdGluZycpXG4ifQ== -->
+<pre><code>Warning in fitTMB(TMBStruc) :
+  Model convergence problem; non-positive-definite Hessian matrix. See vignette(&#39;troubleshooting&#39;)</code></pre>
+<!-- rnb-output-end -->
+<!-- rnb-output-begin eyJkYXRhIjoiWzFdIFwiMTk3LzI0OFwiXG4ifQ== -->
+<pre><code>[1] &quot;197/248&quot;</code></pre>
+<!-- rnb-output-end -->
+<!-- rnb-output-begin eyJkYXRhIjoiV2FybmluZyBpbiBmaXRUTUIoVE1CU3RydWMpIDpcbiAgTW9kZWwgY29udmVyZ2VuY2UgcHJvYmxlbTsgbm9uLXBvc2l0aXZlLWRlZmluaXRlIEhlc3NpYW4gbWF0cml4LiBTZWUgdmlnbmV0dGUoJ3Ryb3VibGVzaG9vdGluZycpXG4ifQ== -->
+<pre><code>Warning in fitTMB(TMBStruc) :
+  Model convergence problem; non-positive-definite Hessian matrix. See vignette(&#39;troubleshooting&#39;)</code></pre>
+<!-- rnb-output-end -->
+<!-- rnb-output-begin eyJkYXRhIjoiWzFdIFwiMTk4LzI0OFwiXG4ifQ== -->
+<pre><code>[1] &quot;198/248&quot;</code></pre>
+<!-- rnb-output-end -->
+<!-- rnb-output-begin eyJkYXRhIjoiV2FybmluZyBpbiBmaXRUTUIoVE1CU3RydWMpIDpcbiAgTW9kZWwgY29udmVyZ2VuY2UgcHJvYmxlbTsgbm9uLXBvc2l0aXZlLWRlZmluaXRlIEhlc3NpYW4gbWF0cml4LiBTZWUgdmlnbmV0dGUoJ3Ryb3VibGVzaG9vdGluZycpXG4ifQ== -->
+<pre><code>Warning in fitTMB(TMBStruc) :
+  Model convergence problem; non-positive-definite Hessian matrix. See vignette(&#39;troubleshooting&#39;)</code></pre>
+<!-- rnb-output-end -->
+<!-- rnb-output-begin eyJkYXRhIjoiWzFdIFwiMTk5LzI0OFwiXG4ifQ== -->
+<pre><code>[1] &quot;199/248&quot;</code></pre>
+<!-- rnb-output-end -->
+<!-- rnb-output-begin eyJkYXRhIjoiV2FybmluZyBpbiBmaXRUTUIoVE1CU3RydWMpIDpcbiAgTW9kZWwgY29udmVyZ2VuY2UgcHJvYmxlbTsgbm9uLXBvc2l0aXZlLWRlZmluaXRlIEhlc3NpYW4gbWF0cml4LiBTZWUgdmlnbmV0dGUoJ3Ryb3VibGVzaG9vdGluZycpXG4ifQ== -->
+<pre><code>Warning in fitTMB(TMBStruc) :
+  Model convergence problem; non-positive-definite Hessian matrix. See vignette(&#39;troubleshooting&#39;)</code></pre>
+<!-- rnb-output-end -->
+<!-- rnb-output-begin eyJkYXRhIjoiWzFdIFwiMjAwLzI0OFwiXG4ifQ== -->
+<pre><code>[1] &quot;200/248&quot;</code></pre>
+<!-- rnb-output-end -->
+<!-- rnb-output-begin eyJkYXRhIjoiV2FybmluZyBpbiBmaXRUTUIoVE1CU3RydWMpIDpcbiAgTW9kZWwgY29udmVyZ2VuY2UgcHJvYmxlbTsgbm9uLXBvc2l0aXZlLWRlZmluaXRlIEhlc3NpYW4gbWF0cml4LiBTZWUgdmlnbmV0dGUoJ3Ryb3VibGVzaG9vdGluZycpXG4ifQ== -->
+<pre><code>Warning in fitTMB(TMBStruc) :
+  Model convergence problem; non-positive-definite Hessian matrix. See vignette(&#39;troubleshooting&#39;)</code></pre>
+<!-- rnb-output-end -->
+<!-- rnb-output-begin eyJkYXRhIjoiWzFdIFwiMjAxLzI0OFwiXG4ifQ== -->
+<pre><code>[1] &quot;201/248&quot;</code></pre>
+<!-- rnb-output-end -->
+<!-- rnb-output-begin eyJkYXRhIjoiV2FybmluZyBpbiBmaXRUTUIoVE1CU3RydWMpIDpcbiAgTW9kZWwgY29udmVyZ2VuY2UgcHJvYmxlbTsgbm9uLXBvc2l0aXZlLWRlZmluaXRlIEhlc3NpYW4gbWF0cml4LiBTZWUgdmlnbmV0dGUoJ3Ryb3VibGVzaG9vdGluZycpXG4ifQ== -->
+<pre><code>Warning in fitTMB(TMBStruc) :
+  Model convergence problem; non-positive-definite Hessian matrix. See vignette(&#39;troubleshooting&#39;)</code></pre>
+<!-- rnb-output-end -->
+<!-- rnb-output-begin eyJkYXRhIjoiWzFdIFwiMjAyLzI0OFwiXG4ifQ== -->
+<pre><code>[1] &quot;202/248&quot;</code></pre>
+<!-- rnb-output-end -->
+<!-- rnb-output-begin eyJkYXRhIjoiV2FybmluZyBpbiBmaXRUTUIoVE1CU3RydWMpIDpcbiAgTW9kZWwgY29udmVyZ2VuY2UgcHJvYmxlbTsgbm9uLXBvc2l0aXZlLWRlZmluaXRlIEhlc3NpYW4gbWF0cml4LiBTZWUgdmlnbmV0dGUoJ3Ryb3VibGVzaG9vdGluZycpXG4ifQ== -->
+<pre><code>Warning in fitTMB(TMBStruc) :
+  Model convergence problem; non-positive-definite Hessian matrix. See vignette(&#39;troubleshooting&#39;)</code></pre>
+<!-- rnb-output-end -->
+<!-- rnb-output-begin eyJkYXRhIjoiWzFdIFwiMjAzLzI0OFwiXG4ifQ== -->
+<pre><code>[1] &quot;203/248&quot;</code></pre>
+<!-- rnb-output-end -->
+<!-- rnb-output-begin eyJkYXRhIjoiV2FybmluZyBpbiBmaXRUTUIoVE1CU3RydWMpIDpcbiAgTW9kZWwgY29udmVyZ2VuY2UgcHJvYmxlbTsgbm9uLXBvc2l0aXZlLWRlZmluaXRlIEhlc3NpYW4gbWF0cml4LiBTZWUgdmlnbmV0dGUoJ3Ryb3VibGVzaG9vdGluZycpXG4ifQ== -->
+<pre><code>Warning in fitTMB(TMBStruc) :
+  Model convergence problem; non-positive-definite Hessian matrix. See vignette(&#39;troubleshooting&#39;)</code></pre>
+<!-- rnb-output-end -->
+<!-- rnb-output-begin eyJkYXRhIjoiWzFdIFwiMjA0LzI0OFwiXG4ifQ== -->
+<pre><code>[1] &quot;204/248&quot;</code></pre>
+<!-- rnb-output-end -->
+<!-- rnb-output-begin eyJkYXRhIjoiV2FybmluZyBpbiBmaXRUTUIoVE1CU3RydWMpIDpcbiAgTW9kZWwgY29udmVyZ2VuY2UgcHJvYmxlbTsgbm9uLXBvc2l0aXZlLWRlZmluaXRlIEhlc3NpYW4gbWF0cml4LiBTZWUgdmlnbmV0dGUoJ3Ryb3VibGVzaG9vdGluZycpXG4ifQ== -->
+<pre><code>Warning in fitTMB(TMBStruc) :
+  Model convergence problem; non-positive-definite Hessian matrix. See vignette(&#39;troubleshooting&#39;)</code></pre>
+<!-- rnb-output-end -->
+<!-- rnb-output-begin eyJkYXRhIjoiWzFdIFwiMjA1LzI0OFwiXG4ifQ== -->
+<pre><code>[1] &quot;205/248&quot;</code></pre>
+<!-- rnb-output-end -->
+<!-- rnb-output-begin eyJkYXRhIjoiV2FybmluZyBpbiBmaXRUTUIoVE1CU3RydWMpIDpcbiAgTW9kZWwgY29udmVyZ2VuY2UgcHJvYmxlbTsgbm9uLXBvc2l0aXZlLWRlZmluaXRlIEhlc3NpYW4gbWF0cml4LiBTZWUgdmlnbmV0dGUoJ3Ryb3VibGVzaG9vdGluZycpXG4ifQ== -->
+<pre><code>Warning in fitTMB(TMBStruc) :
+  Model convergence problem; non-positive-definite Hessian matrix. See vignette(&#39;troubleshooting&#39;)</code></pre>
+<!-- rnb-output-end -->
+<!-- rnb-output-begin eyJkYXRhIjoiWzFdIFwiMjA2LzI0OFwiXG4ifQ== -->
+<pre><code>[1] &quot;206/248&quot;</code></pre>
+<!-- rnb-output-end -->
+<!-- rnb-output-begin eyJkYXRhIjoiV2FybmluZyBpbiBmaXRUTUIoVE1CU3RydWMpIDpcbiAgTW9kZWwgY29udmVyZ2VuY2UgcHJvYmxlbTsgbm9uLXBvc2l0aXZlLWRlZmluaXRlIEhlc3NpYW4gbWF0cml4LiBTZWUgdmlnbmV0dGUoJ3Ryb3VibGVzaG9vdGluZycpXG4ifQ== -->
+<pre><code>Warning in fitTMB(TMBStruc) :
+  Model convergence problem; non-positive-definite Hessian matrix. See vignette(&#39;troubleshooting&#39;)</code></pre>
+<!-- rnb-output-end -->
+<!-- rnb-output-begin eyJkYXRhIjoiWzFdIFwiMjA3LzI0OFwiXG4ifQ== -->
+<pre><code>[1] &quot;207/248&quot;</code></pre>
+<!-- rnb-output-end -->
+<!-- rnb-output-begin eyJkYXRhIjoiV2FybmluZyBpbiBmaXRUTUIoVE1CU3RydWMpIDpcbiAgTW9kZWwgY29udmVyZ2VuY2UgcHJvYmxlbTsgbm9uLXBvc2l0aXZlLWRlZmluaXRlIEhlc3NpYW4gbWF0cml4LiBTZWUgdmlnbmV0dGUoJ3Ryb3VibGVzaG9vdGluZycpXG4ifQ== -->
+<pre><code>Warning in fitTMB(TMBStruc) :
+  Model convergence problem; non-positive-definite Hessian matrix. See vignette(&#39;troubleshooting&#39;)</code></pre>
+<!-- rnb-output-end -->
+<!-- rnb-output-begin eyJkYXRhIjoiWzFdIFwiMjA4LzI0OFwiXG5bMV0gXCIyMDkvMjQ4XCJcbiJ9 -->
+<pre><code>[1] &quot;208/248&quot;
+[1] &quot;209/248&quot;</code></pre>
+<!-- rnb-output-end -->
+<!-- rnb-output-begin eyJkYXRhIjoiV2FybmluZyBpbiBmaXRUTUIoVE1CU3RydWMpIDpcbiAgTW9kZWwgY29udmVyZ2VuY2UgcHJvYmxlbTsgbm9uLXBvc2l0aXZlLWRlZmluaXRlIEhlc3NpYW4gbWF0cml4LiBTZWUgdmlnbmV0dGUoJ3Ryb3VibGVzaG9vdGluZycpXG4ifQ== -->
+<pre><code>Warning in fitTMB(TMBStruc) :
+  Model convergence problem; non-positive-definite Hessian matrix. See vignette(&#39;troubleshooting&#39;)</code></pre>
+<!-- rnb-output-end -->
+<!-- rnb-output-begin eyJkYXRhIjoiWzFdIFwiMjEwLzI0OFwiXG5bMV0gXCIyMTEvMjQ4XCJcblsxXSBcIjIxMi8yNDhcIlxuIn0= -->
+<pre><code>[1] &quot;210/248&quot;
+[1] &quot;211/248&quot;
+[1] &quot;212/248&quot;</code></pre>
+<!-- rnb-output-end -->
+<!-- rnb-output-begin eyJkYXRhIjoiV2FybmluZyBpbiBmaXRUTUIoVE1CU3RydWMpIDpcbiAgTW9kZWwgY29udmVyZ2VuY2UgcHJvYmxlbTsgbm9uLXBvc2l0aXZlLWRlZmluaXRlIEhlc3NpYW4gbWF0cml4LiBTZWUgdmlnbmV0dGUoJ3Ryb3VibGVzaG9vdGluZycpXG4ifQ== -->
+<pre><code>Warning in fitTMB(TMBStruc) :
+  Model convergence problem; non-positive-definite Hessian matrix. See vignette(&#39;troubleshooting&#39;)</code></pre>
+<!-- rnb-output-end -->
+<!-- rnb-output-begin eyJkYXRhIjoiWzFdIFwiMjEzLzI0OFwiXG4ifQ== -->
+<pre><code>[1] &quot;213/248&quot;</code></pre>
+<!-- rnb-output-end -->
+<!-- rnb-output-begin eyJkYXRhIjoiV2FybmluZyBpbiBmaXRUTUIoVE1CU3RydWMpIDpcbiAgTW9kZWwgY29udmVyZ2VuY2UgcHJvYmxlbTsgbm9uLXBvc2l0aXZlLWRlZmluaXRlIEhlc3NpYW4gbWF0cml4LiBTZWUgdmlnbmV0dGUoJ3Ryb3VibGVzaG9vdGluZycpXG4ifQ== -->
+<pre><code>Warning in fitTMB(TMBStruc) :
+  Model convergence problem; non-positive-definite Hessian matrix. See vignette(&#39;troubleshooting&#39;)</code></pre>
+<!-- rnb-output-end -->
+<!-- rnb-output-begin eyJkYXRhIjoiWzFdIFwiMjE0LzI0OFwiXG4ifQ== -->
+<pre><code>[1] &quot;214/248&quot;</code></pre>
+<!-- rnb-output-end -->
+<!-- rnb-output-begin eyJkYXRhIjoiV2FybmluZyBpbiBmaXRUTUIoVE1CU3RydWMpIDpcbiAgTW9kZWwgY29udmVyZ2VuY2UgcHJvYmxlbTsgbm9uLXBvc2l0aXZlLWRlZmluaXRlIEhlc3NpYW4gbWF0cml4LiBTZWUgdmlnbmV0dGUoJ3Ryb3VibGVzaG9vdGluZycpXG4ifQ== -->
+<pre><code>Warning in fitTMB(TMBStruc) :
+  Model convergence problem; non-positive-definite Hessian matrix. See vignette(&#39;troubleshooting&#39;)</code></pre>
+<!-- rnb-output-end -->
+<!-- rnb-output-begin eyJkYXRhIjoiWzFdIFwiMjE1LzI0OFwiXG5bMV0gXCIyMTYvMjQ4XCJcbiJ9 -->
+<pre><code>[1] &quot;215/248&quot;
+[1] &quot;216/248&quot;</code></pre>
+<!-- rnb-output-end -->
+<!-- rnb-output-begin eyJkYXRhIjoiV2FybmluZyBpbiBmaXRUTUIoVE1CU3RydWMpIDpcbiAgTW9kZWwgY29udmVyZ2VuY2UgcHJvYmxlbTsgbm9uLXBvc2l0aXZlLWRlZmluaXRlIEhlc3NpYW4gbWF0cml4LiBTZWUgdmlnbmV0dGUoJ3Ryb3VibGVzaG9vdGluZycpXG4ifQ== -->
+<pre><code>Warning in fitTMB(TMBStruc) :
+  Model convergence problem; non-positive-definite Hessian matrix. See vignette(&#39;troubleshooting&#39;)</code></pre>
+<!-- rnb-output-end -->
+<!-- rnb-output-begin eyJkYXRhIjoiWzFdIFwiMjE3LzI0OFwiXG5bMV0gXCIyMTgvMjQ4XCJcblsxXSBcIjIxOS8yNDhcIlxuIn0= -->
+<pre><code>[1] &quot;217/248&quot;
+[1] &quot;218/248&quot;
+[1] &quot;219/248&quot;</code></pre>
+<!-- rnb-output-end -->
+<!-- rnb-output-begin eyJkYXRhIjoiV2FybmluZyBpbiBmaXRUTUIoVE1CU3RydWMpIDpcbiAgTW9kZWwgY29udmVyZ2VuY2UgcHJvYmxlbTsgbm9uLXBvc2l0aXZlLWRlZmluaXRlIEhlc3NpYW4gbWF0cml4LiBTZWUgdmlnbmV0dGUoJ3Ryb3VibGVzaG9vdGluZycpXG4ifQ== -->
+<pre><code>Warning in fitTMB(TMBStruc) :
+  Model convergence problem; non-positive-definite Hessian matrix. See vignette(&#39;troubleshooting&#39;)</code></pre>
+<!-- rnb-output-end -->
+<!-- rnb-output-begin eyJkYXRhIjoiWzFdIFwiMjIwLzI0OFwiXG5bMV0gXCIyMjEvMjQ4XCJcbiJ9 -->
+<pre><code>[1] &quot;220/248&quot;
+[1] &quot;221/248&quot;</code></pre>
+<!-- rnb-output-end -->
+<!-- rnb-output-begin eyJkYXRhIjoiV2FybmluZyBpbiBmaXRUTUIoVE1CU3RydWMpIDpcbiAgTW9kZWwgY29udmVyZ2VuY2UgcHJvYmxlbTsgbm9uLXBvc2l0aXZlLWRlZmluaXRlIEhlc3NpYW4gbWF0cml4LiBTZWUgdmlnbmV0dGUoJ3Ryb3VibGVzaG9vdGluZycpXG4ifQ== -->
+<pre><code>Warning in fitTMB(TMBStruc) :
+  Model convergence problem; non-positive-definite Hessian matrix. See vignette(&#39;troubleshooting&#39;)</code></pre>
+<!-- rnb-output-end -->
+<!-- rnb-output-begin eyJkYXRhIjoiWzFdIFwiMjIyLzI0OFwiXG5bMV0gXCIyMjMvMjQ4XCJcbiJ9 -->
+<pre><code>[1] &quot;222/248&quot;
+[1] &quot;223/248&quot;</code></pre>
+<!-- rnb-output-end -->
+<!-- rnb-output-begin eyJkYXRhIjoiV2FybmluZyBpbiBmaXRUTUIoVE1CU3RydWMpIDpcbiAgTW9kZWwgY29udmVyZ2VuY2UgcHJvYmxlbTsgbm9uLXBvc2l0aXZlLWRlZmluaXRlIEhlc3NpYW4gbWF0cml4LiBTZWUgdmlnbmV0dGUoJ3Ryb3VibGVzaG9vdGluZycpXG4ifQ== -->
+<pre><code>Warning in fitTMB(TMBStruc) :
+  Model convergence problem; non-positive-definite Hessian matrix. See vignette(&#39;troubleshooting&#39;)</code></pre>
+<!-- rnb-output-end -->
+<!-- rnb-output-begin eyJkYXRhIjoiWzFdIFwiMjI0LzI0OFwiXG5bMV0gXCIyMjUvMjQ4XCJcblsxXSBcIjIyNi8yNDhcIlxuIn0= -->
+<pre><code>[1] &quot;224/248&quot;
+[1] &quot;225/248&quot;
+[1] &quot;226/248&quot;</code></pre>
+<!-- rnb-output-end -->
+<!-- rnb-output-begin eyJkYXRhIjoiV2FybmluZyBpbiBmaXRUTUIoVE1CU3RydWMpIDpcbiAgTW9kZWwgY29udmVyZ2VuY2UgcHJvYmxlbTsgbm9uLXBvc2l0aXZlLWRlZmluaXRlIEhlc3NpYW4gbWF0cml4LiBTZWUgdmlnbmV0dGUoJ3Ryb3VibGVzaG9vdGluZycpXG4ifQ== -->
+<pre><code>Warning in fitTMB(TMBStruc) :
+  Model convergence problem; non-positive-definite Hessian matrix. See vignette(&#39;troubleshooting&#39;)</code></pre>
+<!-- rnb-output-end -->
+<!-- rnb-output-begin eyJkYXRhIjoiWzFdIFwiMjI3LzI0OFwiXG5bMV0gXCIyMjgvMjQ4XCJcbiJ9 -->
+<pre><code>[1] &quot;227/248&quot;
+[1] &quot;228/248&quot;</code></pre>
+<!-- rnb-output-end -->
+<!-- rnb-output-begin eyJkYXRhIjoiV2FybmluZyBpbiBmaXRUTUIoVE1CU3RydWMpIDpcbiAgTW9kZWwgY29udmVyZ2VuY2UgcHJvYmxlbTsgbm9uLXBvc2l0aXZlLWRlZmluaXRlIEhlc3NpYW4gbWF0cml4LiBTZWUgdmlnbmV0dGUoJ3Ryb3VibGVzaG9vdGluZycpXG4ifQ== -->
+<pre><code>Warning in fitTMB(TMBStruc) :
+  Model convergence problem; non-positive-definite Hessian matrix. See vignette(&#39;troubleshooting&#39;)</code></pre>
+<!-- rnb-output-end -->
+<!-- rnb-output-begin eyJkYXRhIjoiWzFdIFwiMjI5LzI0OFwiXG5bMV0gXCIyMzAvMjQ4XCJcblsxXSBcIjIzMS8yNDhcIlxuWzFdIFwiMjMyLzI0OFwiXG5bMV0gXCIyMzMvMjQ4XCJcblsxXSBcIjIzNC8yNDhcIlxuWzFdIFwiMjM1LzI0OFwiXG5bMV0gXCIyMzYvMjQ4XCJcblsxXSBcIjIzNy8yNDhcIlxuWzFdIFwiMjM4LzI0OFwiXG4ifQ== -->
+<pre><code>[1] &quot;229/248&quot;
+[1] &quot;230/248&quot;
+[1] &quot;231/248&quot;
+[1] &quot;232/248&quot;
+[1] &quot;233/248&quot;
+[1] &quot;234/248&quot;
+[1] &quot;235/248&quot;
+[1] &quot;236/248&quot;
+[1] &quot;237/248&quot;
+[1] &quot;238/248&quot;</code></pre>
+<!-- rnb-output-end -->
+<!-- rnb-output-begin eyJkYXRhIjoiV2FybmluZyBpbiBmaXRUTUIoVE1CU3RydWMpIDpcbiAgTW9kZWwgY29udmVyZ2VuY2UgcHJvYmxlbTsgbm9uLXBvc2l0aXZlLWRlZmluaXRlIEhlc3NpYW4gbWF0cml4LiBTZWUgdmlnbmV0dGUoJ3Ryb3VibGVzaG9vdGluZycpXG4ifQ== -->
+<pre><code>Warning in fitTMB(TMBStruc) :
+  Model convergence problem; non-positive-definite Hessian matrix. See vignette(&#39;troubleshooting&#39;)</code></pre>
+<!-- rnb-output-end -->
+<!-- rnb-output-begin eyJkYXRhIjoiWzFdIFwiMjM5LzI0OFwiXG5bMV0gXCIyNDAvMjQ4XCJcblsxXSBcIjI0MS8yNDhcIlxuWzFdIFwiMjQyLzI0OFwiXG5bMV0gXCIyNDMvMjQ4XCJcblsxXSBcIjI0NC8yNDhcIlxuWzFdIFwiMjQ1LzI0OFwiXG5bMV0gXCIyNDYvMjQ4XCJcblsxXSBcIjI0Ny8yNDhcIlxuWzFdIFwiMjQ4LzI0OFwiXG4ifQ== -->
+<pre><code>[1] &quot;239/248&quot;
+[1] &quot;240/248&quot;
+[1] &quot;241/248&quot;
+[1] &quot;242/248&quot;
+[1] &quot;243/248&quot;
+[1] &quot;244/248&quot;
+[1] &quot;245/248&quot;
+[1] &quot;246/248&quot;
+[1] &quot;247/248&quot;
+[1] &quot;248/248&quot;</code></pre>
+<!-- rnb-output-end -->
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuc2F2ZVJEUyhvYmplY3QgPSBhcnJpdmFsX21vZGVsX2NvbXBhcmlzb25fYW5udWFsX29ic190YXhvbm9teSwgZmlsZSA9IGhlcmU6OmhlcmUoXCJNb2RlbF9yZXN1bHRzXCIsXCJhcnJpdmFsX21vZGVsX2NvbXBhcmlzb25fYW5udWFsX29ic190YXhvbm9teS5yZHNcIikpXG5cbmZ3cml0ZShhcnJpdmFsX21vZGVsX2NvbXBhcmlzb25fYW5udWFsX29ic190YXhvbm9teSwgZmlsZSA9IGhlcmU6OmhlcmUoXCJNb2RlbF9yZXN1bHRzXCIsXCJhcnJpdmFsX21vZGVsX2NvbXBhcmlzb25fYW5udWFsX29ic190YXhvbm9teS5jc3ZcIikpXG5cbmFycml2YWxfbW9kZWxfY29tcGFyaXNvbl9hbm51YWxfb2JzX3RheG9ub215IDwtIHJlYWRSRFMoaGVyZTo6aGVyZShcIk1vZGVsX3Jlc3VsdHNcIixcImFycml2YWxfbW9kZWxfY29tcGFyaXNvbl9hbm51YWxfb2JzX3RheG9ub215LnJkc1wiKSlcblxuYGBgIn0= -->
+<pre class="r"><code>saveRDS(object = arrival_model_comparison_annual_obs_taxonomy, file = here::here(&quot;Model_results&quot;,&quot;arrival_model_comparison_annual_obs_taxonomy.rds&quot;))
 
-#by setting nACQ to 0, all models converged
+fwrite(arrival_model_comparison_annual_obs_taxonomy, file = here::here(&quot;Model_results&quot;,&quot;arrival_model_comparison_annual_obs_taxonomy.csv&quot;))
 
-saveRDS(object = arrival_model_comparison_annual_obs, file = here::here(&quot;Model_results&quot;,&quot;arrival_model_comparison_annual_obs.rds&quot;))
-
-arrival_model_comparison_annual_obs &lt;- readRDS(here::here(&quot;Model_results&quot;,&quot;arrival_model_comparison_annual_obs.rds&quot;))
+arrival_model_comparison_annual_obs_taxonomy &lt;- readRDS(here::here(&quot;Model_results&quot;,&quot;arrival_model_comparison_annual_obs_taxonomy.rds&quot;))
 </code></pre>
 <!-- rnb-source-end -->
 <!-- rnb-chunk-end -->
@@ -292,55 +1222,316 @@ arrival_model_comparison_annual_obs &lt;- readRDS(here::here(&quot;Model_results
 <p>Departure Models without Traits</p>
 <!-- rnb-text-end -->
 <!-- rnb-chunk-begin -->
-<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuXG5kZXBhcnR1cmVfbW9kZWxfY29tcGFyaXNvbl9hbm51YWxfb2JzIDwtIGFzLmRhdGEudGFibGUobWF0cml4KG5yb3cgPSBsZW5ndGgodmFyaWFibGVzX3NjYWxlZCkpKVxuZGVwYXJ0dXJlX21vZGVsX2NvbXBhcmlzb25fYW5udWFsX29ic1ssIHZhcmlhYmxlOj1hcy5mYWN0b3IoVjEpXVssIGNvZWY6PWFzLm51bWVyaWMoVjEpXVssIHBfdmFsdWU6PWFzLm51bWVyaWMoVjEpXVssIEFJQ2M6PWFzLm51bWVyaWMoVjEpXVxuZGVwYXJ0dXJlX21vZGVsX2NvbXBhcmlzb25fYW5udWFsX29ic1ssIFYxIDo9IE5VTExdXG5cbmZvciAoaSBpbiAxOmxlbmd0aCh2YXJpYWJsZXNfc2NhbGVkKSl7XG4gIG1vZCA8LSBnbG1tVE1CKG5vd19leHQgfiBnZXQodmFyaWFibGVzX3NjYWxlZFtpXSkgKyAoMXxyZWcpICsgKDF8cGh5bHVtKSArICgxfGNsYXNzKSArICgxfG9yZGVyKSArICgxfGZhbWlseSkgKyAoMXxnZW51cykgKyAoMXxzcHApLCBmYW1pbHkgPSBiaW5vbWlhbCwgZGF0YSA9IHNwcF9tYXN0ZXJfenRlbXBfc2V1c19idW95X3NjYWxlZF9hbm51YWxfb2JzKVxuICBkZXBhcnR1cmVfbW9kZWxfY29tcGFyaXNvbl9hbm51YWxfb2JzW2ksdmFyaWFibGUgOj0gdmFyaWFibGVzX3NjYWxlZFtpXV1cbiAgZGVwYXJ0dXJlX21vZGVsX2NvbXBhcmlzb25fYW5udWFsX29ic1tpLGNvZWYgOj0gY29lZihzdW1tYXJ5KG1vZCkpWyxcIkVzdGltYXRlXCJdWzJdXVxuICBkZXBhcnR1cmVfbW9kZWxfY29tcGFyaXNvbl9hbm51YWxfb2JzW2kscF92YWx1ZSA6PSBjb2VmKHN1bW1hcnkobW9kKSlbLFwiUHIoPnx6fClcIl1bMl1dXG4gIGRlcGFydHVyZV9tb2RlbF9jb21wYXJpc29uX2FubnVhbF9vYnNbaSxBSUNjIDo9IEFJQ2MobW9kKV1cbiAgXG4gIHByaW50KHBhc3RlKGksIGxlbmd0aCh2YXJpYWJsZXNfc2NhbGVkKSwgc2VwID0gXCIvXCIpKVxuICAgIFxufVxuXG5zYXZlUkRTKG9iamVjdCA9IGRlcGFydHVyZV9tb2RlbF9jb21wYXJpc29uX2FubnVhbF9vYnMsIGZpbGUgPSBoZXJlOjpoZXJlKFwiTW9kZWxfcmVzdWx0c1wiLFwiZGVwYXJ0dXJlX21vZGVsX2NvbXBhcmlzb25fYW5udWFsX29icy5yZHNcIikpXG5kZXBhcnR1cmVfbW9kZWxfY29tcGFyaXNvbl9hbm51YWxfb2JzIDwtIHJlYWRSRFMoaGVyZTo6aGVyZShcIk1vZGVsX3Jlc3VsdHNcIixcImRlcGFydHVyZV9tb2RlbF9jb21wYXJpc29uX2FubnVhbF9vYnMucmRzXCIpKVxuXG5gYGAifQ== -->
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuXG5kZXBhcnR1cmVfbW9kZWxfY29tcGFyaXNvbl9hbm51YWxfb2JzX3RheG9ub215IDwtIGFzLmRhdGEudGFibGUobWF0cml4KG5yb3cgPSBsZW5ndGgodmFyaWFibGVzX3NjYWxlZCkpKVxuZGVwYXJ0dXJlX21vZGVsX2NvbXBhcmlzb25fYW5udWFsX29ic190YXhvbm9teVssIHZhcmlhYmxlOj1hcy5mYWN0b3IoVjEpXVssIGNvZWY6PWFzLm51bWVyaWMoVjEpXVssIHBfdmFsdWU6PWFzLm51bWVyaWMoVjEpXVssIEFJQ2M6PWFzLm51bWVyaWMoVjEpXVxuZGVwYXJ0dXJlX21vZGVsX2NvbXBhcmlzb25fYW5udWFsX29ic190YXhvbm9teVssIFYxIDo9IE5VTExdXG5cbmZvciAoaSBpbiAxOmxlbmd0aCh2YXJpYWJsZXNfc2NhbGVkKSl7XG4gIG1vZCA8LSBnbG1tVE1CKG5vd19leHQgfiBnZXQodmFyaWFibGVzX3NjYWxlZFtpXSkgKyAoMXxyZWcpICsgKDF8cGh5bHVtKSArICgxfGNsYXNzKSArICgxfG9yZGVyKSArICgxfGZhbWlseSkgKyAoMXxnZW51cykgKyAoMXxzcHApLCBmYW1pbHkgPSBiaW5vbWlhbCwgZGF0YSA9IHNwcF9tYXN0ZXJfenRlbXBfc2V1c19idW95X3NjYWxlZF9hbm51YWxfb2JzKVxuICBkZXBhcnR1cmVfbW9kZWxfY29tcGFyaXNvbl9hbm51YWxfb2JzX3RheG9ub215W2ksdmFyaWFibGUgOj0gdmFyaWFibGVzX3NjYWxlZFtpXV1cbiAgZGVwYXJ0dXJlX21vZGVsX2NvbXBhcmlzb25fYW5udWFsX29ic190YXhvbm9teVtpLGNvZWYgOj0gY29lZihzdW1tYXJ5KG1vZCkpJGNvbmRbLFwiRXN0aW1hdGVcIl1bWzJdXV1cbiAgZGVwYXJ0dXJlX21vZGVsX2NvbXBhcmlzb25fYW5udWFsX29ic190YXhvbm9teVtpLHBfdmFsdWUgOj0gY29lZihzdW1tYXJ5KG1vZCkpJGNvbmRbLFwiUHIoPnx6fClcIl1bWzJdXV1cbiAgZGVwYXJ0dXJlX21vZGVsX2NvbXBhcmlzb25fYW5udWFsX29ic190YXhvbm9teVtpLEFJQ2MgOj0gQUlDYyhtb2QpXVxuICBcbiAgcHJpbnQocGFzdGUoaSwgbGVuZ3RoKHZhcmlhYmxlc19zY2FsZWQpLCBzZXAgPSBcIi9cIikpXG4gICAgXG59XG5gYGAifQ== -->
 <pre class="r"><code>
-departure_model_comparison_annual_obs &lt;- as.data.table(matrix(nrow = length(variables_scaled)))
-departure_model_comparison_annual_obs[, variable:=as.factor(V1)][, coef:=as.numeric(V1)][, p_value:=as.numeric(V1)][, AICc:=as.numeric(V1)]
-departure_model_comparison_annual_obs[, V1 := NULL]
+departure_model_comparison_annual_obs_taxonomy &lt;- as.data.table(matrix(nrow = length(variables_scaled)))
+departure_model_comparison_annual_obs_taxonomy[, variable:=as.factor(V1)][, coef:=as.numeric(V1)][, p_value:=as.numeric(V1)][, AICc:=as.numeric(V1)]
+departure_model_comparison_annual_obs_taxonomy[, V1 := NULL]
 
 for (i in 1:length(variables_scaled)){
   mod &lt;- glmmTMB(now_ext ~ get(variables_scaled[i]) + (1|reg) + (1|phylum) + (1|class) + (1|order) + (1|family) + (1|genus) + (1|spp), family = binomial, data = spp_master_ztemp_seus_buoy_scaled_annual_obs)
-  departure_model_comparison_annual_obs[i,variable := variables_scaled[i]]
-  departure_model_comparison_annual_obs[i,coef := coef(summary(mod))[,&quot;Estimate&quot;][2]]
-  departure_model_comparison_annual_obs[i,p_value := coef(summary(mod))[,&quot;Pr(&gt;|z|)&quot;][2]]
-  departure_model_comparison_annual_obs[i,AICc := AICc(mod)]
+  departure_model_comparison_annual_obs_taxonomy[i,variable := variables_scaled[i]]
+  departure_model_comparison_annual_obs_taxonomy[i,coef := coef(summary(mod))$cond[,&quot;Estimate&quot;][[2]]]
+  departure_model_comparison_annual_obs_taxonomy[i,p_value := coef(summary(mod))$cond[,&quot;Pr(&gt;|z|)&quot;][[2]]]
+  departure_model_comparison_annual_obs_taxonomy[i,AICc := AICc(mod)]
   
   print(paste(i, length(variables_scaled), sep = &quot;/&quot;))
     
-}
-
-saveRDS(object = departure_model_comparison_annual_obs, file = here::here(&quot;Model_results&quot;,&quot;departure_model_comparison_annual_obs.rds&quot;))
-departure_model_comparison_annual_obs &lt;- readRDS(here::here(&quot;Model_results&quot;,&quot;departure_model_comparison_annual_obs.rds&quot;))
-</code></pre>
+}</code></pre>
 <!-- rnb-source-end -->
+<!-- rnb-output-begin eyJkYXRhIjoiWzFdIFwiMS8yNDhcIlxuWzFdIFwiMi8yNDhcIlxuWzFdIFwiMy8yNDhcIlxuWzFdIFwiNC8yNDhcIlxuWzFdIFwiNS8yNDhcIlxuWzFdIFwiNi8yNDhcIlxuWzFdIFwiNy8yNDhcIlxuWzFdIFwiOC8yNDhcIlxuWzFdIFwiOS8yNDhcIlxuWzFdIFwiMTAvMjQ4XCJcblsxXSBcIjExLzI0OFwiXG5bMV0gXCIxMi8yNDhcIlxuWzFdIFwiMTMvMjQ4XCJcblsxXSBcIjE0LzI0OFwiXG5bMV0gXCIxNS8yNDhcIlxuWzFdIFwiMTYvMjQ4XCJcblsxXSBcIjE3LzI0OFwiXG5bMV0gXCIxOC8yNDhcIlxuWzFdIFwiMTkvMjQ4XCJcblsxXSBcIjIwLzI0OFwiXG5bMV0gXCIyMS8yNDhcIlxuWzFdIFwiMjIvMjQ4XCJcblsxXSBcIjIzLzI0OFwiXG5bMV0gXCIyNC8yNDhcIlxuWzFdIFwiMjUvMjQ4XCJcblsxXSBcIjI2LzI0OFwiXG5bMV0gXCIyNy8yNDhcIlxuWzFdIFwiMjgvMjQ4XCJcblsxXSBcIjI5LzI0OFwiXG5bMV0gXCIzMC8yNDhcIlxuWzFdIFwiMzEvMjQ4XCJcblsxXSBcIjMyLzI0OFwiXG4ifQ== -->
+<pre><code>[1] &quot;1/248&quot;
+[1] &quot;2/248&quot;
+[1] &quot;3/248&quot;
+[1] &quot;4/248&quot;
+[1] &quot;5/248&quot;
+[1] &quot;6/248&quot;
+[1] &quot;7/248&quot;
+[1] &quot;8/248&quot;
+[1] &quot;9/248&quot;
+[1] &quot;10/248&quot;
+[1] &quot;11/248&quot;
+[1] &quot;12/248&quot;
+[1] &quot;13/248&quot;
+[1] &quot;14/248&quot;
+[1] &quot;15/248&quot;
+[1] &quot;16/248&quot;
+[1] &quot;17/248&quot;
+[1] &quot;18/248&quot;
+[1] &quot;19/248&quot;
+[1] &quot;20/248&quot;
+[1] &quot;21/248&quot;
+[1] &quot;22/248&quot;
+[1] &quot;23/248&quot;
+[1] &quot;24/248&quot;
+[1] &quot;25/248&quot;
+[1] &quot;26/248&quot;
+[1] &quot;27/248&quot;
+[1] &quot;28/248&quot;
+[1] &quot;29/248&quot;
+[1] &quot;30/248&quot;
+[1] &quot;31/248&quot;
+[1] &quot;32/248&quot;</code></pre>
+<!-- rnb-output-end -->
+<!-- rnb-output-begin eyJkYXRhIjoiV2FybmluZyBpbiBmaXRUTUIoVE1CU3RydWMpIDpcbiAgTW9kZWwgY29udmVyZ2VuY2UgcHJvYmxlbTsgbm9uLXBvc2l0aXZlLWRlZmluaXRlIEhlc3NpYW4gbWF0cml4LiBTZWUgdmlnbmV0dGUoJ3Ryb3VibGVzaG9vdGluZycpXG4ifQ== -->
+<pre><code>Warning in fitTMB(TMBStruc) :
+  Model convergence problem; non-positive-definite Hessian matrix. See vignette(&#39;troubleshooting&#39;)</code></pre>
+<!-- rnb-output-end -->
+<!-- rnb-output-begin eyJkYXRhIjoiWzFdIFwiMzMvMjQ4XCJcblsxXSBcIjM0LzI0OFwiXG5bMV0gXCIzNS8yNDhcIlxuWzFdIFwiMzYvMjQ4XCJcblsxXSBcIjM3LzI0OFwiXG5bMV0gXCIzOC8yNDhcIlxuWzFdIFwiMzkvMjQ4XCJcblsxXSBcIjQwLzI0OFwiXG5bMV0gXCI0MS8yNDhcIlxuWzFdIFwiNDIvMjQ4XCJcblsxXSBcIjQzLzI0OFwiXG5bMV0gXCI0NC8yNDhcIlxuWzFdIFwiNDUvMjQ4XCJcblsxXSBcIjQ2LzI0OFwiXG5bMV0gXCI0Ny8yNDhcIlxuWzFdIFwiNDgvMjQ4XCJcblsxXSBcIjQ5LzI0OFwiXG5bMV0gXCI1MC8yNDhcIlxuWzFdIFwiNTEvMjQ4XCJcblsxXSBcIjUyLzI0OFwiXG5bMV0gXCI1My8yNDhcIlxuWzFdIFwiNTQvMjQ4XCJcblsxXSBcIjU1LzI0OFwiXG5bMV0gXCI1Ni8yNDhcIlxuWzFdIFwiNTcvMjQ4XCJcblsxXSBcIjU4LzI0OFwiXG5bMV0gXCI1OS8yNDhcIlxuWzFdIFwiNjAvMjQ4XCJcblsxXSBcIjYxLzI0OFwiXG5bMV0gXCI2Mi8yNDhcIlxuWzFdIFwiNjMvMjQ4XCJcblsxXSBcIjY0LzI0OFwiXG5bMV0gXCI2NS8yNDhcIlxuWzFdIFwiNjYvMjQ4XCJcblsxXSBcIjY3LzI0OFwiXG5bMV0gXCI2OC8yNDhcIlxuWzFdIFwiNjkvMjQ4XCJcblsxXSBcIjcwLzI0OFwiXG5bMV0gXCI3MS8yNDhcIlxuWzFdIFwiNzIvMjQ4XCJcblsxXSBcIjczLzI0OFwiXG5bMV0gXCI3NC8yNDhcIlxuWzFdIFwiNzUvMjQ4XCJcblsxXSBcIjc2LzI0OFwiXG5bMV0gXCI3Ny8yNDhcIlxuWzFdIFwiNzgvMjQ4XCJcblsxXSBcIjc5LzI0OFwiXG5bMV0gXCI4MC8yNDhcIlxuWzFdIFwiODEvMjQ4XCJcblsxXSBcIjgyLzI0OFwiXG5bMV0gXCI4My8yNDhcIlxuWzFdIFwiODQvMjQ4XCJcblsxXSBcIjg1LzI0OFwiXG5bMV0gXCI4Ni8yNDhcIlxuWzFdIFwiODcvMjQ4XCJcblsxXSBcIjg4LzI0OFwiXG5bMV0gXCI4OS8yNDhcIlxuWzFdIFwiOTAvMjQ4XCJcblsxXSBcIjkxLzI0OFwiXG5bMV0gXCI5Mi8yNDhcIlxuWzFdIFwiOTMvMjQ4XCJcblsxXSBcIjk0LzI0OFwiXG5bMV0gXCI5NS8yNDhcIlxuWzFdIFwiOTYvMjQ4XCJcblsxXSBcIjk3LzI0OFwiXG5bMV0gXCI5OC8yNDhcIlxuWzFdIFwiOTkvMjQ4XCJcblsxXSBcIjEwMC8yNDhcIlxuWzFdIFwiMTAxLzI0OFwiXG5bMV0gXCIxMDIvMjQ4XCJcblsxXSBcIjEwMy8yNDhcIlxuWzFdIFwiMTA0LzI0OFwiXG5bMV0gXCIxMDUvMjQ4XCJcblsxXSBcIjEwNi8yNDhcIlxuWzFdIFwiMTA3LzI0OFwiXG5bMV0gXCIxMDgvMjQ4XCJcblsxXSBcIjEwOS8yNDhcIlxuWzFdIFwiMTEwLzI0OFwiXG5bMV0gXCIxMTEvMjQ4XCJcblsxXSBcIjExMi8yNDhcIlxuWzFdIFwiMTEzLzI0OFwiXG5bMV0gXCIxMTQvMjQ4XCJcblsxXSBcIjExNS8yNDhcIlxuWzFdIFwiMTE2LzI0OFwiXG5bMV0gXCIxMTcvMjQ4XCJcblsxXSBcIjExOC8yNDhcIlxuWzFdIFwiMTE5LzI0OFwiXG5bMV0gXCIxMjAvMjQ4XCJcblsxXSBcIjEyMS8yNDhcIlxuWzFdIFwiMTIyLzI0OFwiXG5bMV0gXCIxMjMvMjQ4XCJcblsxXSBcIjEyNC8yNDhcIlxuWzFdIFwiMTI1LzI0OFwiXG5bMV0gXCIxMjYvMjQ4XCJcblsxXSBcIjEyNy8yNDhcIlxuWzFdIFwiMTI4LzI0OFwiXG5bMV0gXCIxMjkvMjQ4XCJcblsxXSBcIjEzMC8yNDhcIlxuWzFdIFwiMTMxLzI0OFwiXG5bMV0gXCIxMzIvMjQ4XCJcblsxXSBcIjEzMy8yNDhcIlxuWzFdIFwiMTM0LzI0OFwiXG5bMV0gXCIxMzUvMjQ4XCJcblsxXSBcIjEzNi8yNDhcIlxuWzFdIFwiMTM3LzI0OFwiXG5bMV0gXCIxMzgvMjQ4XCJcblsxXSBcIjEzOS8yNDhcIlxuWzFdIFwiMTQwLzI0OFwiXG5bMV0gXCIxNDEvMjQ4XCJcblsxXSBcIjE0Mi8yNDhcIlxuWzFdIFwiMTQzLzI0OFwiXG5bMV0gXCIxNDQvMjQ4XCJcblsxXSBcIjE0NS8yNDhcIlxuWzFdIFwiMTQ2LzI0OFwiXG5bMV0gXCIxNDcvMjQ4XCJcblsxXSBcIjE0OC8yNDhcIlxuWzFdIFwiMTQ5LzI0OFwiXG5bMV0gXCIxNTAvMjQ4XCJcblsxXSBcIjE1MS8yNDhcIlxuWzFdIFwiMTUyLzI0OFwiXG5bMV0gXCIxNTMvMjQ4XCJcblsxXSBcIjE1NC8yNDhcIlxuWzFdIFwiMTU1LzI0OFwiXG5bMV0gXCIxNTYvMjQ4XCJcblsxXSBcIjE1Ny8yNDhcIlxuWzFdIFwiMTU4LzI0OFwiXG5bMV0gXCIxNTkvMjQ4XCJcblsxXSBcIjE2MC8yNDhcIlxuWzFdIFwiMTYxLzI0OFwiXG5bMV0gXCIxNjIvMjQ4XCJcblsxXSBcIjE2My8yNDhcIlxuWzFdIFwiMTY0LzI0OFwiXG5bMV0gXCIxNjUvMjQ4XCJcblsxXSBcIjE2Ni8yNDhcIlxuWzFdIFwiMTY3LzI0OFwiXG5bMV0gXCIxNjgvMjQ4XCJcblsxXSBcIjE2OS8yNDhcIlxuWzFdIFwiMTcwLzI0OFwiXG5bMV0gXCIxNzEvMjQ4XCJcblsxXSBcIjE3Mi8yNDhcIlxuWzFdIFwiMTczLzI0OFwiXG5bMV0gXCIxNzQvMjQ4XCJcblsxXSBcIjE3NS8yNDhcIlxuWzFdIFwiMTc2LzI0OFwiXG5bMV0gXCIxNzcvMjQ4XCJcblsxXSBcIjE3OC8yNDhcIlxuWzFdIFwiMTc5LzI0OFwiXG5bMV0gXCIxODAvMjQ4XCJcblsxXSBcIjE4MS8yNDhcIlxuWzFdIFwiMTgyLzI0OFwiXG5bMV0gXCIxODMvMjQ4XCJcblsxXSBcIjE4NC8yNDhcIlxuWzFdIFwiMTg1LzI0OFwiXG5bMV0gXCIxODYvMjQ4XCJcblsxXSBcIjE4Ny8yNDhcIlxuWzFdIFwiMTg4LzI0OFwiXG5bMV0gXCIxODkvMjQ4XCJcblsxXSBcIjE5MC8yNDhcIlxuWzFdIFwiMTkxLzI0OFwiXG5bMV0gXCIxOTIvMjQ4XCJcblsxXSBcIjE5My8yNDhcIlxuWzFdIFwiMTk0LzI0OFwiXG5bMV0gXCIxOTUvMjQ4XCJcblsxXSBcIjE5Ni8yNDhcIlxuWzFdIFwiMTk3LzI0OFwiXG5bMV0gXCIxOTgvMjQ4XCJcblsxXSBcIjE5OS8yNDhcIlxuWzFdIFwiMjAwLzI0OFwiXG5bMV0gXCIyMDEvMjQ4XCJcblsxXSBcIjIwMi8yNDhcIlxuWzFdIFwiMjAzLzI0OFwiXG5bMV0gXCIyMDQvMjQ4XCJcblsxXSBcIjIwNS8yNDhcIlxuWzFdIFwiMjA2LzI0OFwiXG5bMV0gXCIyMDcvMjQ4XCJcblsxXSBcIjIwOC8yNDhcIlxuWzFdIFwiMjA5LzI0OFwiXG5bMV0gXCIyMTAvMjQ4XCJcblsxXSBcIjIxMS8yNDhcIlxuWzFdIFwiMjEyLzI0OFwiXG5bMV0gXCIyMTMvMjQ4XCJcblsxXSBcIjIxNC8yNDhcIlxuWzFdIFwiMjE1LzI0OFwiXG5bMV0gXCIyMTYvMjQ4XCJcblsxXSBcIjIxNy8yNDhcIlxuWzFdIFwiMjE4LzI0OFwiXG5bMV0gXCIyMTkvMjQ4XCJcblsxXSBcIjIyMC8yNDhcIlxuWzFdIFwiMjIxLzI0OFwiXG5bMV0gXCIyMjIvMjQ4XCJcblsxXSBcIjIyMy8yNDhcIlxuWzFdIFwiMjI0LzI0OFwiXG5bMV0gXCIyMjUvMjQ4XCJcblsxXSBcIjIyNi8yNDhcIlxuWzFdIFwiMjI3LzI0OFwiXG5bMV0gXCIyMjgvMjQ4XCJcblsxXSBcIjIyOS8yNDhcIlxuWzFdIFwiMjMwLzI0OFwiXG5bMV0gXCIyMzEvMjQ4XCJcblsxXSBcIjIzMi8yNDhcIlxuWzFdIFwiMjMzLzI0OFwiXG5bMV0gXCIyMzQvMjQ4XCJcblsxXSBcIjIzNS8yNDhcIlxuWzFdIFwiMjM2LzI0OFwiXG5bMV0gXCIyMzcvMjQ4XCJcblsxXSBcIjIzOC8yNDhcIlxuWzFdIFwiMjM5LzI0OFwiXG5bMV0gXCIyNDAvMjQ4XCJcblsxXSBcIjI0MS8yNDhcIlxuWzFdIFwiMjQyLzI0OFwiXG5bMV0gXCIyNDMvMjQ4XCJcblsxXSBcIjI0NC8yNDhcIlxuWzFdIFwiMjQ1LzI0OFwiXG5bMV0gXCIyNDYvMjQ4XCJcblsxXSBcIjI0Ny8yNDhcIlxuWzFdIFwiMjQ4LzI0OFwiXG4ifQ== -->
+<pre><code>[1] &quot;33/248&quot;
+[1] &quot;34/248&quot;
+[1] &quot;35/248&quot;
+[1] &quot;36/248&quot;
+[1] &quot;37/248&quot;
+[1] &quot;38/248&quot;
+[1] &quot;39/248&quot;
+[1] &quot;40/248&quot;
+[1] &quot;41/248&quot;
+[1] &quot;42/248&quot;
+[1] &quot;43/248&quot;
+[1] &quot;44/248&quot;
+[1] &quot;45/248&quot;
+[1] &quot;46/248&quot;
+[1] &quot;47/248&quot;
+[1] &quot;48/248&quot;
+[1] &quot;49/248&quot;
+[1] &quot;50/248&quot;
+[1] &quot;51/248&quot;
+[1] &quot;52/248&quot;
+[1] &quot;53/248&quot;
+[1] &quot;54/248&quot;
+[1] &quot;55/248&quot;
+[1] &quot;56/248&quot;
+[1] &quot;57/248&quot;
+[1] &quot;58/248&quot;
+[1] &quot;59/248&quot;
+[1] &quot;60/248&quot;
+[1] &quot;61/248&quot;
+[1] &quot;62/248&quot;
+[1] &quot;63/248&quot;
+[1] &quot;64/248&quot;
+[1] &quot;65/248&quot;
+[1] &quot;66/248&quot;
+[1] &quot;67/248&quot;
+[1] &quot;68/248&quot;
+[1] &quot;69/248&quot;
+[1] &quot;70/248&quot;
+[1] &quot;71/248&quot;
+[1] &quot;72/248&quot;
+[1] &quot;73/248&quot;
+[1] &quot;74/248&quot;
+[1] &quot;75/248&quot;
+[1] &quot;76/248&quot;
+[1] &quot;77/248&quot;
+[1] &quot;78/248&quot;
+[1] &quot;79/248&quot;
+[1] &quot;80/248&quot;
+[1] &quot;81/248&quot;
+[1] &quot;82/248&quot;
+[1] &quot;83/248&quot;
+[1] &quot;84/248&quot;
+[1] &quot;85/248&quot;
+[1] &quot;86/248&quot;
+[1] &quot;87/248&quot;
+[1] &quot;88/248&quot;
+[1] &quot;89/248&quot;
+[1] &quot;90/248&quot;
+[1] &quot;91/248&quot;
+[1] &quot;92/248&quot;
+[1] &quot;93/248&quot;
+[1] &quot;94/248&quot;
+[1] &quot;95/248&quot;
+[1] &quot;96/248&quot;
+[1] &quot;97/248&quot;
+[1] &quot;98/248&quot;
+[1] &quot;99/248&quot;
+[1] &quot;100/248&quot;
+[1] &quot;101/248&quot;
+[1] &quot;102/248&quot;
+[1] &quot;103/248&quot;
+[1] &quot;104/248&quot;
+[1] &quot;105/248&quot;
+[1] &quot;106/248&quot;
+[1] &quot;107/248&quot;
+[1] &quot;108/248&quot;
+[1] &quot;109/248&quot;
+[1] &quot;110/248&quot;
+[1] &quot;111/248&quot;
+[1] &quot;112/248&quot;
+[1] &quot;113/248&quot;
+[1] &quot;114/248&quot;
+[1] &quot;115/248&quot;
+[1] &quot;116/248&quot;
+[1] &quot;117/248&quot;
+[1] &quot;118/248&quot;
+[1] &quot;119/248&quot;
+[1] &quot;120/248&quot;
+[1] &quot;121/248&quot;
+[1] &quot;122/248&quot;
+[1] &quot;123/248&quot;
+[1] &quot;124/248&quot;
+[1] &quot;125/248&quot;
+[1] &quot;126/248&quot;
+[1] &quot;127/248&quot;
+[1] &quot;128/248&quot;
+[1] &quot;129/248&quot;
+[1] &quot;130/248&quot;
+[1] &quot;131/248&quot;
+[1] &quot;132/248&quot;
+[1] &quot;133/248&quot;
+[1] &quot;134/248&quot;
+[1] &quot;135/248&quot;
+[1] &quot;136/248&quot;
+[1] &quot;137/248&quot;
+[1] &quot;138/248&quot;
+[1] &quot;139/248&quot;
+[1] &quot;140/248&quot;
+[1] &quot;141/248&quot;
+[1] &quot;142/248&quot;
+[1] &quot;143/248&quot;
+[1] &quot;144/248&quot;
+[1] &quot;145/248&quot;
+[1] &quot;146/248&quot;
+[1] &quot;147/248&quot;
+[1] &quot;148/248&quot;
+[1] &quot;149/248&quot;
+[1] &quot;150/248&quot;
+[1] &quot;151/248&quot;
+[1] &quot;152/248&quot;
+[1] &quot;153/248&quot;
+[1] &quot;154/248&quot;
+[1] &quot;155/248&quot;
+[1] &quot;156/248&quot;
+[1] &quot;157/248&quot;
+[1] &quot;158/248&quot;
+[1] &quot;159/248&quot;
+[1] &quot;160/248&quot;
+[1] &quot;161/248&quot;
+[1] &quot;162/248&quot;
+[1] &quot;163/248&quot;
+[1] &quot;164/248&quot;
+[1] &quot;165/248&quot;
+[1] &quot;166/248&quot;
+[1] &quot;167/248&quot;
+[1] &quot;168/248&quot;
+[1] &quot;169/248&quot;
+[1] &quot;170/248&quot;
+[1] &quot;171/248&quot;
+[1] &quot;172/248&quot;
+[1] &quot;173/248&quot;
+[1] &quot;174/248&quot;
+[1] &quot;175/248&quot;
+[1] &quot;176/248&quot;
+[1] &quot;177/248&quot;
+[1] &quot;178/248&quot;
+[1] &quot;179/248&quot;
+[1] &quot;180/248&quot;
+[1] &quot;181/248&quot;
+[1] &quot;182/248&quot;
+[1] &quot;183/248&quot;
+[1] &quot;184/248&quot;
+[1] &quot;185/248&quot;
+[1] &quot;186/248&quot;
+[1] &quot;187/248&quot;
+[1] &quot;188/248&quot;
+[1] &quot;189/248&quot;
+[1] &quot;190/248&quot;
+[1] &quot;191/248&quot;
+[1] &quot;192/248&quot;
+[1] &quot;193/248&quot;
+[1] &quot;194/248&quot;
+[1] &quot;195/248&quot;
+[1] &quot;196/248&quot;
+[1] &quot;197/248&quot;
+[1] &quot;198/248&quot;
+[1] &quot;199/248&quot;
+[1] &quot;200/248&quot;
+[1] &quot;201/248&quot;
+[1] &quot;202/248&quot;
+[1] &quot;203/248&quot;
+[1] &quot;204/248&quot;
+[1] &quot;205/248&quot;
+[1] &quot;206/248&quot;
+[1] &quot;207/248&quot;
+[1] &quot;208/248&quot;
+[1] &quot;209/248&quot;
+[1] &quot;210/248&quot;
+[1] &quot;211/248&quot;
+[1] &quot;212/248&quot;
+[1] &quot;213/248&quot;
+[1] &quot;214/248&quot;
+[1] &quot;215/248&quot;
+[1] &quot;216/248&quot;
+[1] &quot;217/248&quot;
+[1] &quot;218/248&quot;
+[1] &quot;219/248&quot;
+[1] &quot;220/248&quot;
+[1] &quot;221/248&quot;
+[1] &quot;222/248&quot;
+[1] &quot;223/248&quot;
+[1] &quot;224/248&quot;
+[1] &quot;225/248&quot;
+[1] &quot;226/248&quot;
+[1] &quot;227/248&quot;
+[1] &quot;228/248&quot;
+[1] &quot;229/248&quot;
+[1] &quot;230/248&quot;
+[1] &quot;231/248&quot;
+[1] &quot;232/248&quot;
+[1] &quot;233/248&quot;
+[1] &quot;234/248&quot;
+[1] &quot;235/248&quot;
+[1] &quot;236/248&quot;
+[1] &quot;237/248&quot;
+[1] &quot;238/248&quot;
+[1] &quot;239/248&quot;
+[1] &quot;240/248&quot;
+[1] &quot;241/248&quot;
+[1] &quot;242/248&quot;
+[1] &quot;243/248&quot;
+[1] &quot;244/248&quot;
+[1] &quot;245/248&quot;
+[1] &quot;246/248&quot;
+[1] &quot;247/248&quot;
+[1] &quot;248/248&quot;</code></pre>
+<!-- rnb-output-end -->
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuc2F2ZVJEUyhvYmplY3QgPSBkZXBhcnR1cmVfbW9kZWxfY29tcGFyaXNvbl9hbm51YWxfb2JzX3RheG9ub215LCBmaWxlID0gaGVyZTo6aGVyZShcIk1vZGVsX3Jlc3VsdHNcIixcImRlcGFydHVyZV9tb2RlbF9jb21wYXJpc29uX2FubnVhbF9vYnNfdGF4b25vbXkucmRzXCIpKVxuZndyaXRlKGRlcGFydHVyZV9tb2RlbF9jb21wYXJpc29uX2FubnVhbF9vYnNfdGF4b25vbXksIGZpbGUgPSBoZXJlOjpoZXJlKFwiTW9kZWxfcmVzdWx0c1wiLFwiZGVwYXJ0dXJlX21vZGVsX2NvbXBhcmlzb25fYW5udWFsX29ic190YXhvbm9teS5yZHNcIikpXG5cbmRlcGFydHVyZV9tb2RlbF9jb21wYXJpc29uX2FubnVhbF9vYnNfdGF4b25vbXkgPC0gcmVhZFJEUyhoZXJlOjpoZXJlKFwiTW9kZWxfcmVzdWx0c1wiLFwiZGVwYXJ0dXJlX21vZGVsX2NvbXBhcmlzb25fYW5udWFsX29ic190YXhvbm9teS5yZHNcIikpXG5gYGAifQ== -->
+<pre class="r"><code>saveRDS(object = departure_model_comparison_annual_obs_taxonomy, file = here::here(&quot;Model_results&quot;,&quot;departure_model_comparison_annual_obs_taxonomy.rds&quot;))
+fwrite(departure_model_comparison_annual_obs_taxonomy, file = here::here(&quot;Model_results&quot;,&quot;departure_model_comparison_annual_obs_taxonomy.rds&quot;))
+
+departure_model_comparison_annual_obs_taxonomy &lt;- readRDS(here::here(&quot;Model_results&quot;,&quot;departure_model_comparison_annual_obs_taxonomy.rds&quot;))</code></pre>
+<!-- rnb-source-end -->
+<!-- rnb-output-begin eyJkYXRhIjoiRXJyb3IgaW4gcmVhZFJEUyhoZXJlOjpoZXJlKFwiTW9kZWxfcmVzdWx0c1wiLCBcImRlcGFydHVyZV9tb2RlbF9jb21wYXJpc29uX2FubnVhbF9vYnNfdGF4b25vbXkucmRzXCIpKSA6IFxuICB1bmtub3duIGlucHV0IGZvcm1hdFxuIn0= -->
+<pre><code>Error in readRDS(here::here(&quot;Model_results&quot;, &quot;departure_model_comparison_annual_obs_taxonomy.rds&quot;)) : 
+  unknown input format</code></pre>
+<!-- rnb-output-end -->
 <!-- rnb-chunk-end -->
 <!-- rnb-text-begin -->
 <p>Relative Variable Importance</p>
 <p>NB: I didn’t end up using mean as a predictor variable (patterns captured in min and max, less relevant to thermal niche)</p>
 <!-- rnb-text-end -->
 <!-- rnb-chunk-begin -->
-<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuYXJyaXZhbF9tb2RlbF9jb21wYXJpc29uX2FubnVhbF9vYnNfbm9tZWFuIDwtIGFycml2YWxfbW9kZWxfY29tcGFyaXNvbl9hbm51YWxfb2JzWyFncmVwbChcIm1lYW5cIix2YXJpYWJsZSksXVxuXG5kZXBhcnR1cmVfbW9kZWxfY29tcGFyaXNvbl9hbm51YWxfb2JzX25vbWVhbiA8LSBkZXBhcnR1cmVfbW9kZWxfY29tcGFyaXNvbl9hbm51YWxfb2JzWyFncmVwbChcIm1lYW5cIix2YXJpYWJsZSksXVxuXG5cbmBgYCJ9 -->
-<pre class="r"><code>arrival_model_comparison_annual_obs_nomean &lt;- arrival_model_comparison_annual_obs[!grepl(&quot;mean&quot;,variable),]
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuYXJyaXZhbF9tb2RlbF9jb21wYXJpc29uX2FubnVhbF9vYnNfbm9tZWFuIDwtIGFycml2YWxfbW9kZWxfY29tcGFyaXNvbl9hbm51YWxfb2JzX3RheG9ub215WyFncmVwbChcIm1lYW5cIix2YXJpYWJsZSksXVxuXG5kZXBhcnR1cmVfbW9kZWxfY29tcGFyaXNvbl9hbm51YWxfb2JzX25vbWVhbiA8LSBkZXBhcnR1cmVfbW9kZWxfY29tcGFyaXNvbl9hbm51YWxfb2JzX3RheG9ub215WyFncmVwbChcIm1lYW5cIix2YXJpYWJsZSksXVxuYGBgIn0= -->
+<pre class="r"><code>arrival_model_comparison_annual_obs_nomean &lt;- arrival_model_comparison_annual_obs_taxonomy[!grepl(&quot;mean&quot;,variable),]
 
-departure_model_comparison_annual_obs_nomean &lt;- departure_model_comparison_annual_obs[!grepl(&quot;mean&quot;,variable),]
-</code></pre>
+departure_model_comparison_annual_obs_nomean &lt;- departure_model_comparison_annual_obs_taxonomy[!grepl(&quot;mean&quot;,variable),]</code></pre>
 <!-- rnb-source-end -->
+<!-- rnb-output-begin eyJkYXRhIjoiRXJyb3I6IG9iamVjdCAnZGVwYXJ0dXJlX21vZGVsX2NvbXBhcmlzb25fYW5udWFsX29ic190YXhvbm9teScgbm90IGZvdW5kXG4ifQ== -->
+<pre><code>Error: object &#39;departure_model_comparison_annual_obs_taxonomy&#39; not found</code></pre>
+<!-- rnb-output-end -->
 <!-- rnb-chunk-end -->
 <!-- rnb-text-begin -->
 <p>How does the null model with only random effects perform?</p>
 <!-- rnb-text-end -->
 <!-- rnb-chunk-begin -->
-<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuI2FkZCBudWxsIHRvIHRhYmxlc1xuaW50ZXJjZXB0X2Fycml2YWxfbW9kX3NjYWxlZCA8LSBnbG1tVE1CKGNvbCB+ICgxfHJlZykgKyAoMXxwaHlsdW0pICsgKDF8Y2xhc3MpICsgKDF8b3JkZXIpICsgKDF8ZmFtaWx5KSArICgxfGdlbnVzKSArICgxfHNwcCksIGZhbWlseSA9IGJpbm9taWFsLCBkYXRhID0gc3BwX21hc3Rlcl96dGVtcF9zZXVzX2J1b3lfc2NhbGVkX2FubnVhbF9vYnMpXG5cbmludGVyY2VwdF9kZXBhcnR1cmVfbW9kX3NjYWxlZCA8LSBnbG1tVE1CKG5vd19leHQgfiAoMXxyZWcpICsgKDF8cGh5bHVtKSArICgxfGNsYXNzKSArICgxfG9yZGVyKSArICgxfGZhbWlseSkgKyAoMXxnZW51cykgKyAoMXxzcHApLCBmYW1pbHkgPSBiaW5vbWlhbCwgZGF0YSA9IHNwcF9tYXN0ZXJfenRlbXBfc2V1c19idW95X3NjYWxlZF9hbm51YWxfb2JzKVxuXG4jYmVzdCBtb2RlbCBiZXR0ZXIgdGhhbiBudWxsPyB5ZXNcbkFJQ2MoaW50ZXJjZXB0X2Fycml2YWxfbW9kX3NjYWxlZCktbWluKGFycml2YWxfbW9kZWxfY29tcGFyaXNvbl9hbm51YWxfb2JzJEFJQ2MpXG5BSUNjKGludGVyY2VwdF9kZXBhcnR1cmVfbW9kX3NjYWxlZCktbWluKGRlcGFydHVyZV9tb2RlbF9jb21wYXJpc29uX2FubnVhbF9vYnMkQUlDYylcblxuXG5gYGAifQ== -->
-<pre class="r"><code>#add null to tables
-intercept_arrival_mod_scaled &lt;- glmmTMB(col ~ (1|reg) + (1|phylum) + (1|class) + (1|order) + (1|family) + (1|genus) + (1|spp), family = binomial, data = spp_master_ztemp_seus_buoy_scaled_annual_obs)
-
-intercept_departure_mod_scaled &lt;- glmmTMB(now_ext ~ (1|reg) + (1|phylum) + (1|class) + (1|order) + (1|family) + (1|genus) + (1|spp), family = binomial, data = spp_master_ztemp_seus_buoy_scaled_annual_obs)
-
-#best model better than null? yes
-AICc(intercept_arrival_mod_scaled)-min(arrival_model_comparison_annual_obs$AICc)
-AICc(intercept_departure_mod_scaled)-min(departure_model_comparison_annual_obs$AICc)
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuaW50ZXJjZXB0X2Fycml2YWxfbW9kX3NjYWxlZCA8LSBnbG1tVE1CKGNvbCB+ICgxfHJlZykgKyAoMXxwaHlsdW0pICsgKDF8Y2xhc3MpICsgKDF8b3JkZXIpICsgKDF8ZmFtaWx5KSArICgxfGdlbnVzKSArICgxfHNwcCksIGZhbWlseSA9IGJpbm9taWFsLCBkYXRhID0gc3BwX21hc3Rlcl96dGVtcF9zZXVzX2J1b3lfc2NhbGVkX2FubnVhbF9vYnMpXG5cbmBgYCJ9 -->
+<pre class="r"><code>intercept_arrival_mod_scaled &lt;- glmmTMB(col ~ (1|reg) + (1|phylum) + (1|class) + (1|order) + (1|family) + (1|genus) + (1|spp), family = binomial, data = spp_master_ztemp_seus_buoy_scaled_annual_obs)
 </code></pre>
 <!-- rnb-source-end -->
+<!-- rnb-output-begin eyJkYXRhIjoiRXJyb3IgaW4gZXZhbChvZmZzdWIsIGRhdGEsIGVuY2xvcyA9IGVudmlyb25tZW50KGZvcm11bGEpKSA6IFxuICBvYmplY3QgJ3NwcF9tYXN0ZXJfenRlbXBfc2V1c19idW95X3NjYWxlZF9hbm51YWxfb2JzJyBub3QgZm91bmRcbiJ9 -->
+<pre><code>Error in eval(offsub, data, enclos = environment(formula)) : 
+  object &#39;spp_master_ztemp_seus_buoy_scaled_annual_obs&#39; not found</code></pre>
+<!-- rnb-output-end -->
 <!-- rnb-chunk-end -->
 <!-- rnb-text-begin -->
 <p>Relative Variable Importance for Arrival Models</p>
@@ -759,7 +1950,7 @@ departure_seas_change_avg_coef &lt;-
 <!-- rnb-source-end -->
 <!-- rnb-chunk-end -->
 
-<div id="rmd-source-code">LS0tCnRpdGxlOiAiQXJyaXZhbCBhbmQgRGVwYXJ0dXJlIEZpbmFsIE1vZGVsczogRVhDTFVESU5HIEFJLCBHT0EsIFdDVFJJIgpvdXRwdXQ6IGh0bWxfbm90ZWJvb2sKLS0tCgpUaGlzIGlzIGEgY2xlYW5lZCB2ZXJzaW9uIG9mIDA0XzI0XzE5IFRlbXAgbGluayB0cmFpdCBmaXNoLlJtZC8xMV8yMF8xOV9UZW1wX2xpbmtfdHJhaXRzX2Zpc2guUm1kLgpDaGFuZ2VzCiogaW1wcm92ZWQgZm9ybWF0dGluZwoqIGVhc2llciB0byBmb2xsb3cKKiBzcGVjaWVzIGFuZCByZWdpb24gYXMgcmFuZG9tIGVmZmVjdHMKKiBzY2FsaW5nIHRlbXBlcmF0dXJlIHZhbHVlcwoqIHNldHRpbmcgbkFDUSB0byAwLCBzZWUgd2h5IChub3QgYW55bW9yZSBhcyBvZiBGcmlkYXkgQXVndXN0IDI2LCAyMDIyLCB1c2luZyBnbG1tVE1CIGluc3RlYWQpIFtoZXJlXShodHRwczovL3N0YXRzLnN0YWNrZXhjaGFuZ2UuY29tL3F1ZXN0aW9ucy83NzMxMy93aHktY2FudC1pLW1hdGNoLWdsbWVyLWZhbWlseS1iaW5vbWlhbC1vdXRwdXQtd2l0aC1tYW51YWwtaW1wbGVtZW50YXRpb24tb2YtZykuIAoKYGBge3Igc2V0dXB9CmxpYnJhcnkoTXVNSW4pCmxpYnJhcnkobG1lNCkKbGlicmFyeShkYXRhLnRhYmxlKQpsaWJyYXJ5KGdncGxvdDIpCmxpYnJhcnkoaGVyZSkKbGlicmFyeSh3ZXNhbmRlcnNvbikgIyB0byBjb2xvciBwbG90cwpsaWJyYXJ5KGdsbW1UTUIpCgpzcHBfbWFzdGVyX3p0ZW1wX3NldXNfYnVveV9zY2FsZWQgPC0gcmVhZFJEUygifi9Eb2N1bWVudHMvZ3JhZCBzY2hvb2wvUnV0Z2Vycy9SZXBvc2l0b3JpZXMvQ29sX0V4dC9EYXRhL1NwcF9tYXN0ZXIvc3BwX21hc3Rlcl96dGVtcF9zZXVzX2J1b3lfc2NhbGVkLnJkcyIpCmBgYAoKRGVsZXRlIGFsbCBvYnNlcnZhdGlvbnMgb2YgcmVnaW9ucyB0aGF0IGRvIG5vdCBzYW1wbGUgZXZlcnkgeWVhcgpgYGB7ciBkZWxldGUgb2JzIG9mIHJlZ3Mgbm90IGFubnVhbGx5IHNhbXBsZWR9CmxldmVscyhzcHBfbWFzdGVyX3p0ZW1wX3NldXNfYnVveV9zY2FsZWQkcmVnKQoKc3BwX21hc3Rlcl96dGVtcF9zZXVzX2J1b3lfc2NhbGVkX2FubnVhbF9vYnMgPC0gc3BwX21hc3Rlcl96dGVtcF9zZXVzX2J1b3lfc2NhbGVkWyEocmVnICVpbiUgYygiYWkiLCJnb2EiLCJ3Y3RyaSIpKSxdCgpgYGAKCkxpbmsgdXAgd2l0aCBzcHAga2V5IHRvIGFkZCBwaHlsdW0sIG9yZGVyLCBmYW1pbHksIGV0Yy4KYGBge3IgcHVsbCBpbiBzcHAsIG9yZGVyLCBmYW1pbHksIGV0Yy59CnNwcF9rZXkgPC0gZnJlYWQoaGVyZTo6aGVyZSgiRGF0YSIsIlNwcF9tYXN0ZXIiLCJzcHBfa2V5LmNzdiIpKQoKc3BwX21hc3Rlcl96dGVtcF9zZXVzX2J1b3lfc2NhbGVkX2FubnVhbF9vYnMgPC0gc3BwX21hc3Rlcl96dGVtcF9zZXVzX2J1b3lfc2NhbGVkX2FubnVhbF9vYnNbc3BwX2tleSwgb24gPSAic3BwIl0KCigxfHJlZykgKyAoMXxwaHlsdW0pICsgKDF8Y2xhc3MpICsgKDF8b3JkZXIpICsgKDF8ZmFtaWx5KSArICgxfGdlbnVzKSArICgxfHNwcCkKICAgIApgYGAKClJ1bm5pbmcsIGFuZCByYW5raW5nIGFycml2YWwgbW9kZWxzIHdpdGhvdXQgdHJhaXRzCgojI0hlcmUsIEkgc2NhbGVkIGFsbCB0ZW1wZXJhdHVyZSB2YWx1ZXMgYWNyb3NzIGFsbCByZWdpb25zLCBhbmQgaW5jbHVkZWQgc3BlY2llcyBhcyBhIHJhbmRvbSBlZmZlY3QuIEluIG9yZGVyIHRvIGRvIHRoaXMsIEkgaGFkIHRvIGNoYW5nZSB0aGUgYWxnb3JpdGhtIHNsaWdodGx5LS1uQUdRID0gMC4KCmBgYHtyIGFycml2YWwgbW9kZWxzIHdpdGhvdXQgdHJhaXRzfQojbmFtZXMgb2Ygc2NhbGVkIGNvbHVtbnMKdmFyaWFibGVzX3NjYWxlZCA8LSBncmVwKCIqX3NjYWxlZCIsIG5hbWVzKHNwcF9tYXN0ZXJfenRlbXBfc2V1c19idW95X3NjYWxlZF9hbm51YWxfb2JzKSwgdmFsdWUgPSBUKQoKI2dvaW5nIHRvIG1ha2UgbG9vcCB0byBtYWtlIGFsbCBtb2RlbHMgSSBuZWVkIHRvIGxvb2sgYXQgd2l0aCBhIHNpbmdsZSB0ZW1wZXJhdHVyZSB2YXJpYWJsZQoKYXJyaXZhbF9tb2RlbF9jb21wYXJpc29uX2FubnVhbF9vYnMgPC0gYXMuZGF0YS50YWJsZShtYXRyaXgobnJvdyA9IGxlbmd0aCh2YXJpYWJsZXNfc2NhbGVkKSkpCmFycml2YWxfbW9kZWxfY29tcGFyaXNvbl9hbm51YWxfb2JzWywgdmFyaWFibGU6PWFzLmZhY3RvcihWMSldWywgY29lZjo9YXMubnVtZXJpYyhWMSldWywgcF92YWx1ZTo9YXMubnVtZXJpYyhWMSldWywgQUlDYzo9YXMubnVtZXJpYyhWMSldCmFycml2YWxfbW9kZWxfY29tcGFyaXNvbl9hbm51YWxfb2JzWywgVjEgOj0gTlVMTF0KCmZvciAoaSBpbiAxOmxlbmd0aCh2YXJpYWJsZXNfc2NhbGVkKSl7CiAgbW9kIDwtIGdsbW1UTUIoY29sIH4gZ2V0KHZhcmlhYmxlc19zY2FsZWRbaV0pICsgKDF8cmVnKSArICgxfHBoeWx1bSkgKyAoMXxjbGFzcykgKyAoMXxvcmRlcikgKyAoMXxmYW1pbHkpICsgKDF8Z2VudXMpICsgKDF8c3BwKSwgZmFtaWx5ID0gYmlub21pYWwsIGRhdGEgPSBzcHBfbWFzdGVyX3p0ZW1wX3NldXNfYnVveV9zY2FsZWRfYW5udWFsX29icykKICBhcnJpdmFsX21vZGVsX2NvbXBhcmlzb25fYW5udWFsX29ic1tpLHZhcmlhYmxlIDo9IHZhcmlhYmxlc19zY2FsZWRbaV1dCiAgYXJyaXZhbF9tb2RlbF9jb21wYXJpc29uX2FubnVhbF9vYnNbaSxjb2VmIDo9IGNvZWYoc3VtbWFyeShtb2QpKVssIkVzdGltYXRlIl1bMl1dCiAgYXJyaXZhbF9tb2RlbF9jb21wYXJpc29uX2FubnVhbF9vYnNbaSxwX3ZhbHVlIDo9IGNvZWYoc3VtbWFyeShtb2QpKVssIlByKD58enwpIl1bMl1dCiAgYXJyaXZhbF9tb2RlbF9jb21wYXJpc29uX2FubnVhbF9vYnNbaSxBSUNjIDo9IEFJQ2MobW9kKV0KICAKICBwcmludChwYXN0ZShpLCBsZW5ndGgodmFyaWFibGVzX3NjYWxlZCksIHNlcCA9ICIvIikpCiAgICAKfQoKI2J5IHNldHRpbmcgbkFDUSB0byAwLCBhbGwgbW9kZWxzIGNvbnZlcmdlZAoKc2F2ZVJEUyhvYmplY3QgPSBhcnJpdmFsX21vZGVsX2NvbXBhcmlzb25fYW5udWFsX29icywgZmlsZSA9IGhlcmU6OmhlcmUoIk1vZGVsX3Jlc3VsdHMiLCJhcnJpdmFsX21vZGVsX2NvbXBhcmlzb25fYW5udWFsX29icy5yZHMiKSkKCmFycml2YWxfbW9kZWxfY29tcGFyaXNvbl9hbm51YWxfb2JzIDwtIHJlYWRSRFMoaGVyZTo6aGVyZSgiTW9kZWxfcmVzdWx0cyIsImFycml2YWxfbW9kZWxfY29tcGFyaXNvbl9hbm51YWxfb2JzLnJkcyIpKQoKYGBgCgpEZXBhcnR1cmUgTW9kZWxzIHdpdGhvdXQgVHJhaXRzCmBgYHtyIGRlcGFydHVyZSBtb2RlbHMgd2l0aG91dCB0cmFpdHN9CgpkZXBhcnR1cmVfbW9kZWxfY29tcGFyaXNvbl9hbm51YWxfb2JzIDwtIGFzLmRhdGEudGFibGUobWF0cml4KG5yb3cgPSBsZW5ndGgodmFyaWFibGVzX3NjYWxlZCkpKQpkZXBhcnR1cmVfbW9kZWxfY29tcGFyaXNvbl9hbm51YWxfb2JzWywgdmFyaWFibGU6PWFzLmZhY3RvcihWMSldWywgY29lZjo9YXMubnVtZXJpYyhWMSldWywgcF92YWx1ZTo9YXMubnVtZXJpYyhWMSldWywgQUlDYzo9YXMubnVtZXJpYyhWMSldCmRlcGFydHVyZV9tb2RlbF9jb21wYXJpc29uX2FubnVhbF9vYnNbLCBWMSA6PSBOVUxMXQoKZm9yIChpIGluIDE6bGVuZ3RoKHZhcmlhYmxlc19zY2FsZWQpKXsKICBtb2QgPC0gZ2xtbVRNQihub3dfZXh0IH4gZ2V0KHZhcmlhYmxlc19zY2FsZWRbaV0pICsgKDF8cmVnKSArICgxfHBoeWx1bSkgKyAoMXxjbGFzcykgKyAoMXxvcmRlcikgKyAoMXxmYW1pbHkpICsgKDF8Z2VudXMpICsgKDF8c3BwKSwgZmFtaWx5ID0gYmlub21pYWwsIGRhdGEgPSBzcHBfbWFzdGVyX3p0ZW1wX3NldXNfYnVveV9zY2FsZWRfYW5udWFsX29icykKICBkZXBhcnR1cmVfbW9kZWxfY29tcGFyaXNvbl9hbm51YWxfb2JzW2ksdmFyaWFibGUgOj0gdmFyaWFibGVzX3NjYWxlZFtpXV0KICBkZXBhcnR1cmVfbW9kZWxfY29tcGFyaXNvbl9hbm51YWxfb2JzW2ksY29lZiA6PSBjb2VmKHN1bW1hcnkobW9kKSlbLCJFc3RpbWF0ZSJdWzJdXQogIGRlcGFydHVyZV9tb2RlbF9jb21wYXJpc29uX2FubnVhbF9vYnNbaSxwX3ZhbHVlIDo9IGNvZWYoc3VtbWFyeShtb2QpKVssIlByKD58enwpIl1bMl1dCiAgZGVwYXJ0dXJlX21vZGVsX2NvbXBhcmlzb25fYW5udWFsX29ic1tpLEFJQ2MgOj0gQUlDYyhtb2QpXQogIAogIHByaW50KHBhc3RlKGksIGxlbmd0aCh2YXJpYWJsZXNfc2NhbGVkKSwgc2VwID0gIi8iKSkKICAgIAp9CgpzYXZlUkRTKG9iamVjdCA9IGRlcGFydHVyZV9tb2RlbF9jb21wYXJpc29uX2FubnVhbF9vYnMsIGZpbGUgPSBoZXJlOjpoZXJlKCJNb2RlbF9yZXN1bHRzIiwiZGVwYXJ0dXJlX21vZGVsX2NvbXBhcmlzb25fYW5udWFsX29icy5yZHMiKSkKZGVwYXJ0dXJlX21vZGVsX2NvbXBhcmlzb25fYW5udWFsX29icyA8LSByZWFkUkRTKGhlcmU6OmhlcmUoIk1vZGVsX3Jlc3VsdHMiLCJkZXBhcnR1cmVfbW9kZWxfY29tcGFyaXNvbl9hbm51YWxfb2JzLnJkcyIpKQoKYGBgCgpSZWxhdGl2ZSBWYXJpYWJsZSBJbXBvcnRhbmNlCgpOQjogSSBkaWRuJ3QgZW5kIHVwIHVzaW5nIG1lYW4gYXMgYSBwcmVkaWN0b3IgdmFyaWFibGUgKHBhdHRlcm5zIGNhcHR1cmVkIGluIG1pbiBhbmQgbWF4LCBsZXNzIHJlbGV2YW50IHRvIHRoZXJtYWwgbmljaGUpCmBgYHtyIGdldCByaWQgb2YgYW55IG1vZGVscyB1c2luZyBtZWFufQphcnJpdmFsX21vZGVsX2NvbXBhcmlzb25fYW5udWFsX29ic19ub21lYW4gPC0gYXJyaXZhbF9tb2RlbF9jb21wYXJpc29uX2FubnVhbF9vYnNbIWdyZXBsKCJtZWFuIix2YXJpYWJsZSksXQoKZGVwYXJ0dXJlX21vZGVsX2NvbXBhcmlzb25fYW5udWFsX29ic19ub21lYW4gPC0gZGVwYXJ0dXJlX21vZGVsX2NvbXBhcmlzb25fYW5udWFsX29ic1shZ3JlcGwoIm1lYW4iLHZhcmlhYmxlKSxdCgoKYGBgCgpIb3cgZG9lcyB0aGUgbnVsbCBtb2RlbCB3aXRoIG9ubHkgcmFuZG9tIGVmZmVjdHMgcGVyZm9ybT8KYGBge3IgbnVsbCBtb2RlbHN9CiNhZGQgbnVsbCB0byB0YWJsZXMKaW50ZXJjZXB0X2Fycml2YWxfbW9kX3NjYWxlZCA8LSBnbG1tVE1CKGNvbCB+ICgxfHJlZykgKyAoMXxwaHlsdW0pICsgKDF8Y2xhc3MpICsgKDF8b3JkZXIpICsgKDF8ZmFtaWx5KSArICgxfGdlbnVzKSArICgxfHNwcCksIGZhbWlseSA9IGJpbm9taWFsLCBkYXRhID0gc3BwX21hc3Rlcl96dGVtcF9zZXVzX2J1b3lfc2NhbGVkX2FubnVhbF9vYnMpCgppbnRlcmNlcHRfZGVwYXJ0dXJlX21vZF9zY2FsZWQgPC0gZ2xtbVRNQihub3dfZXh0IH4gKDF8cmVnKSArICgxfHBoeWx1bSkgKyAoMXxjbGFzcykgKyAoMXxvcmRlcikgKyAoMXxmYW1pbHkpICsgKDF8Z2VudXMpICsgKDF8c3BwKSwgZmFtaWx5ID0gYmlub21pYWwsIGRhdGEgPSBzcHBfbWFzdGVyX3p0ZW1wX3NldXNfYnVveV9zY2FsZWRfYW5udWFsX29icykKCiNiZXN0IG1vZGVsIGJldHRlciB0aGFuIG51bGw/IHllcwpBSUNjKGludGVyY2VwdF9hcnJpdmFsX21vZF9zY2FsZWQpLW1pbihhcnJpdmFsX21vZGVsX2NvbXBhcmlzb25fYW5udWFsX29icyRBSUNjKQpBSUNjKGludGVyY2VwdF9kZXBhcnR1cmVfbW9kX3NjYWxlZCktbWluKGRlcGFydHVyZV9tb2RlbF9jb21wYXJpc29uX2FubnVhbF9vYnMkQUlDYykKCgpgYGAKCgpSZWxhdGl2ZSBWYXJpYWJsZSBJbXBvcnRhbmNlIGZvciBBcnJpdmFsIE1vZGVscwpgYGB7ciBSVkkgYXJyaXZhbHN9CiNhZGQg4oiGQUlDIHRvIHRhYmxlcwptaW5fYXJyaXZhbF9BSUNjIDwtIG1pbihhcnJpdmFsX21vZGVsX2NvbXBhcmlzb25fYW5udWFsX29ic19ub21lYW5bLCBBSUNjXSkKYXJyaXZhbF9tb2RlbF9jb21wYXJpc29uX2FubnVhbF9vYnNfbm9tZWFuWywiZGVsdGFBSUNjIiA6PSAoQUlDYyAtIG1pbl9hcnJpdmFsX0FJQ2MpXQoKI2FkZCByZWxhdGl2ZSBsaWtlbGlob29kIGV4cCggLTAuNSAqIOKIhkFJQyBzY29yZSBmb3IgdGhhdCBtb2RlbCkKYXJyaXZhbF9tb2RlbF9jb21wYXJpc29uX2FubnVhbF9vYnNfbm9tZWFuWywicmVsX2xpa2VsaWhvb2QiIDo9IGV4cCgoLTAuNSAqIGRlbHRhQUlDYykpXQojc3VtIHJlbGF0aXZlIGxpa2VsaWhvb2RzIGFjcm9zcyBhbGwgbW9kZWxzCmFycml2YWxfbW9kZWxfY29tcGFyaXNvbl9hbm51YWxfb2JzX25vbWVhbi5saWtlbGlob29kc3VtIDwtIHN1bShhcnJpdmFsX21vZGVsX2NvbXBhcmlzb25fYW5udWFsX29ic19ub21lYW5bLCByZWxfbGlrZWxpaG9vZF0pCiNBa2Fpa2Ugd2VpZ2h0IGZvciBhIG1vZGVsIGlzIHRoaXMgcmVsX2xpa2VsaWhvb2QgZGl2aWRlZCBieSB0aGUgc3VtIG9mIHRoZXNlIHZhbHVlcyBhY3Jvc3MgYWxsIG1vZGVscwphcnJpdmFsX21vZGVsX2NvbXBhcmlzb25fYW5udWFsX29ic19ub21lYW5bLCJha2Fpa2Vfd2VpZ2h0IiA6PSByZWxfbGlrZWxpaG9vZC9hcnJpdmFsX21vZGVsX2NvbXBhcmlzb25fYW5udWFsX29ic19ub21lYW4ubGlrZWxpaG9vZHN1bV0KCiNJIHdhbnQgdG8gbG9vayBhdCByZWxhdGl2ZSBpbXBvcnRhbmNlIEZPUjoKCiNib3R0b20vc3VyZmFjZSAoYm90dG9tID0gaW5jbHVkZXMgc2J0LCBncmVwbCgic2J0IiwgdmFyaWFibGUpKQphcnJpdmFsX2JvdHRvbV9pbXBvcnRhbmNlIDwtIHN1bShhcnJpdmFsX21vZGVsX2NvbXBhcmlzb25fYW5udWFsX29ic19ub21lYW5bZ3JlcCgic2J0IiwgdmFyaWFibGUpLCBdJGFrYWlrZV93ZWlnaHQpCmFycml2YWxfc3VyZmFjZV9pbXBvcnRhbmNlIDwtIHN1bShhcnJpdmFsX21vZGVsX2NvbXBhcmlzb25fYW5udWFsX29ic19ub21lYW5bZ3JlcCgic3N0IiwgdmFyaWFibGUpLCBdJGFrYWlrZV93ZWlnaHQpCgojbGFnL25vdCBsYWdnZWQgKGdyZXBsKCJsYWciLCB2YXJpYWJsZSkpCmFycml2YWxfbGFnX2ltcG9ydGFuY2UgPC0gc3VtKGFycml2YWxfbW9kZWxfY29tcGFyaXNvbl9hbm51YWxfb2JzX25vbWVhbltncmVwKCJsYWciLCB2YXJpYWJsZSksIF0kYWthaWtlX3dlaWdodCkKYXJyaXZhbF9ub2xhZ19pbXBvcnRhbmNlIDwtIHN1bShhcnJpdmFsX21vZGVsX2NvbXBhcmlzb25fYW5udWFsX29ic19ub21lYW5bIWdyZXAoImxhZyIsIHZhcmlhYmxlKSwgXSRha2Fpa2Vfd2VpZ2h0KQoKI2Fic29sdXRlIChncmVwbCgiYWJzIiwgdmFyaWFibGUpKQphcnJpdmFsX2Fic19pbXBvcnRhbmNlIDwtIHN1bShhcnJpdmFsX21vZGVsX2NvbXBhcmlzb25fYW5udWFsX29ic19ub21lYW5bZ3JlcCgiYWJzIiwgdmFyaWFibGUpLCBdJGFrYWlrZV93ZWlnaHQpCgojcmF3ICghZ3JlcGwoImNoYW5nZSIpKQphcnJpdmFsX3Jhd19pbXBvcnRhbmNlIDwtIHN1bShhcnJpdmFsX21vZGVsX2NvbXBhcmlzb25fYW5udWFsX29ic19ub21lYW5bIWdyZXAoImNoYW5nZSIsIHZhcmlhYmxlKSwgXSRha2Fpa2Vfd2VpZ2h0KQoKI2NoYW5nZSAoZ3JlcGwoImNoYW5nZSIsIHZhcmlhYmxlKSwgKCFncmVwbCgiYWJzIikpKQphcnJpdmFsX2NoYW5nZV9pbXBvcnRhbmNlIDwtIHN1bShhcnJpdmFsX21vZGVsX2NvbXBhcmlzb25fYW5udWFsX29ic19ub21lYW5bZ3JlcCgiY2hhbmdlIiwgdmFyaWFibGUpLCBdWyFncmVwKCJhYnMiLCB2YXJpYWJsZSksXSRha2Fpa2Vfd2VpZ2h0KQoKI3R5cGUgb2YgdGVtcCB2YXJpYWJsZSAobWF4LCBtaW4sIHNlYXMpCmFycml2YWxfbWF4X3RlbXBfaW1wb3J0YW5jZSA8LSBzdW0oYXJyaXZhbF9tb2RlbF9jb21wYXJpc29uX2FubnVhbF9vYnNfbm9tZWFuW2dyZXAoIm1heCIsIHZhcmlhYmxlKSwgXSRha2Fpa2Vfd2VpZ2h0KQphcnJpdmFsX21pbl90ZW1wX2ltcG9ydGFuY2UgPC0gc3VtKGFycml2YWxfbW9kZWxfY29tcGFyaXNvbl9hbm51YWxfb2JzX25vbWVhbltncmVwKCJtaW4iLCB2YXJpYWJsZSksIF0kYWthaWtlX3dlaWdodCkKYXJyaXZhbF9zZWFzX3RlbXBfaW1wb3J0YW5jZSA8LSBzdW0oYXJyaXZhbF9tb2RlbF9jb21wYXJpc29uX2FubnVhbF9vYnNfbm9tZWFuW2dyZXAoInNlYXMiLCB2YXJpYWJsZSksIF0kYWthaWtlX3dlaWdodCkKCmFycml2YWxfbW9kZWxfY29tcGFyaXNvbl9hbm51YWxfb2JzX25vbWVhbl9ha2Fpa2V3ZWlnaHRzIDwtIGFycml2YWxfbW9kZWxfY29tcGFyaXNvbl9hbm51YWxfb2JzX25vbWVhbgoKc2F2ZVJEUyhhcnJpdmFsX21vZGVsX2NvbXBhcmlzb25fYW5udWFsX29ic19ub21lYW5fYWthaWtld2VpZ2h0cywgZmlsZSA9IGhlcmU6OmhlcmUoIk1vZGVsX3Jlc3VsdHMiLCJhcnJpdmFsX21vZGVsX2NvbXBhcmlzb25fYW5udWFsX29ic19ub21lYW5fYWthaWtld2VpZ2h0c19hbm51YWxfb2JzLnJkcyIpKQpzYXZlUkRTKGFycml2YWxfbW9kZWxfY29tcGFyaXNvbl9hbm51YWxfb2JzX25vbWVhbl9ha2Fpa2V3ZWlnaHRzLCBmaWxlID0gaGVyZTo6aGVyZSgidGFibGVzIiwiYXJyaXZhbF9tb2RlbF9jb21wYXJpc29uX2FubnVhbF9vYnNfbm9tZWFuX2FrYWlrZXdlaWdodHNfYW5udWFsX29icy5yZHMiKSkKYXJyaXZhbF9tb2RlbF9jb21wYXJpc29uX2FubnVhbF9vYnNfbm9tZWFuX2FrYWlrZXdlaWdodHMgPC0gcmVhZFJEUyhmaWxlID0gaGVyZTo6aGVyZSgiTW9kZWxfcmVzdWx0cyIsImFycml2YWxfbW9kZWxfY29tcGFyaXNvbl9hbm51YWxfb2JzX25vbWVhbl9ha2Fpa2V3ZWlnaHRzX2FubnVhbF9vYnMucmRzIikpCgpgYGAKClJlbGF0aXZlIFZhcmlhYmxlIEltcG9ydGFuY2UgZm9yIGRpZmZlcmVudCBQYWlycyBvZiBUcmFuc2Zvcm1hdGlvbiBhbmQgTWV0cmljCmBgYHtyIFJWSSBhcnJpdmFsIFBhaXJzIFRyYW5zZm9ybWF0aW9uIGFuZCBNZXRyaWN9CgojSSB3YW50IHRvIGxvb2sgYXQgcmVsYXRpdmUgaW1wb3J0YW5jZSBGT1IgCiNtb2RlbHMgd2l0aCByYXcgYW5kIG1pbgphcnJpdmFsX3Jhd19taW5faW1wb3J0YW5jZSA8LSBzdW0oYXJyaXZhbF9tb2RlbF9jb21wYXJpc29uX2FubnVhbF9vYnNfbm9tZWFuW2dyZXAoIm1pbiIsIHZhcmlhYmxlKSwgXVshZ3JlcCgiY2hhbmdlIiwgdmFyaWFibGUpXSRha2Fpa2Vfd2VpZ2h0KQoKI21vZGVscyB3aXRoIHJhdyBhbmQgbWF4CmFycml2YWxfcmF3X21heF9pbXBvcnRhbmNlIDwtIHN1bShhcnJpdmFsX21vZGVsX2NvbXBhcmlzb25fYW5udWFsX29ic19ub21lYW5bZ3JlcCgibWF4IiwgdmFyaWFibGUpLCBdWyFncmVwKCJjaGFuZ2UiLCB2YXJpYWJsZSldJGFrYWlrZV93ZWlnaHQpCgojbW9kZWxzIHdpdGggcmF3IGFuZCBzZWFzCmFycml2YWxfcmF3X3NlYXNfaW1wb3J0YW5jZSA8LSBzdW0oYXJyaXZhbF9tb2RlbF9jb21wYXJpc29uX2FubnVhbF9vYnNfbm9tZWFuW2dyZXAoInNlYXMiLCB2YXJpYWJsZSksIF1bIWdyZXAoImNoYW5nZSIsIHZhcmlhYmxlKV0kYWthaWtlX3dlaWdodCkKCgojbW9kZWxzIHdpdGggY2hhbmdlIGFuZCBtaW4KYXJyaXZhbF9jaGFuZ2VfbWluX2ltcG9ydGFuY2UgPC0gc3VtKGFycml2YWxfbW9kZWxfY29tcGFyaXNvbl9hbm51YWxfb2JzX25vbWVhbltncmVwKCJtaW5fcy50X3RlbXBfY2hhbmdlIiwgdmFyaWFibGUpLCBdWyFncmVwKCJhYnMiLCB2YXJpYWJsZSldJGFrYWlrZV93ZWlnaHQpCgojbW9kZWxzIHdpdGggY2hhbmdlIGFuZCBtYXgKYXJyaXZhbF9jaGFuZ2VfbWF4X2ltcG9ydGFuY2UgPC0gc3VtKGFycml2YWxfbW9kZWxfY29tcGFyaXNvbl9hbm51YWxfb2JzX25vbWVhbltncmVwKCJtYXhfcy50X3RlbXBfY2hhbmdlIiwgdmFyaWFibGUpLCBdWyFncmVwKCJhYnMiLCB2YXJpYWJsZSldJGFrYWlrZV93ZWlnaHQpCgojbW9kZWxzIHdpdGggY2hhbmdlIGFuZCBzZWFzCmFycml2YWxfY2hhbmdlX3NlYXNfaW1wb3J0YW5jZSA8LSBzdW0oYXJyaXZhbF9tb2RlbF9jb21wYXJpc29uX2FubnVhbF9vYnNfbm9tZWFuW2dyZXAoInNlYXNfcy50X3RlbXBfY2hhbmdlIiwgdmFyaWFibGUpLCBdWyFncmVwKCJhYnMiLCB2YXJpYWJsZSldJGFrYWlrZV93ZWlnaHQpCgojbW9kZWxzIHdpdGggYWJzIGNoYW5nZSBhbmQgbWluCmFycml2YWxfYWJzX2NoYW5nZV9taW5faW1wb3J0YW5jZSA8LSBzdW0oYXJyaXZhbF9tb2RlbF9jb21wYXJpc29uX2FubnVhbF9vYnNfbm9tZWFuW2dyZXAoIm1pbl9zLnRfdGVtcF9jaGFuZ2VfYWJzIiwgdmFyaWFibGUpLCBdJGFrYWlrZV93ZWlnaHQpCgojbW9kZWxzIHdpdGggYWJzIGNoYW5nZSBhbmQgbWF4CmFycml2YWxfYWJzX2NoYW5nZV9tYXhfaW1wb3J0YW5jZSA8LSBzdW0oYXJyaXZhbF9tb2RlbF9jb21wYXJpc29uX2FubnVhbF9vYnNfbm9tZWFuW2dyZXAoIm1heF9zLnRfdGVtcF9jaGFuZ2VfYWJzIiwgdmFyaWFibGUpLCBdJGFrYWlrZV93ZWlnaHQpCgojbW9kZWxzIHdpdGggYWJzIGNoYW5nZSBhbmQgc2VhcwphcnJpdmFsX2Fic19jaGFuZ2Vfc2Vhc19pbXBvcnRhbmNlIDwtIHN1bShhcnJpdmFsX21vZGVsX2NvbXBhcmlzb25fYW5udWFsX29ic19ub21lYW5bZ3JlcCgic2Vhc19zLnRfdGVtcF9jaGFuZ2VfYWJzIiwgdmFyaWFibGUpLCBdJGFrYWlrZV93ZWlnaHQpCgphcnJpdmFsX3RyYW5zZm9ybV9tZXRyaWNfY29tcGFyaXNvbiA8LSBkYXRhLnRhYmxlKFRyYW5zZm9ybWF0aW9uID0KICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgYygicmF3IiwgInJhdyIsICJyYXciLCAiY2hhbmdlIiwgImNoYW5nZSIsICJjaGFuZ2UiLCAiYWJzX2NoYW5nZSIsICJhYnNfY2hhbmdlIiwgImFic19jaGFuZ2UiKSwgCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICBNZXRyaWMgPSAKICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgcmVwKGMoIm1pbiIsICJtYXgiLCAic2VhcyIpLCAzKSwgCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICBSVkkgPSAKICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgYyhhcnJpdmFsX3Jhd19taW5faW1wb3J0YW5jZSwgYXJyaXZhbF9yYXdfbWF4X2ltcG9ydGFuY2UsIAogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIGFycml2YWxfcmF3X3NlYXNfaW1wb3J0YW5jZSwgYXJyaXZhbF9jaGFuZ2VfbWluX2ltcG9ydGFuY2UsIAogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIGFycml2YWxfY2hhbmdlX21heF9pbXBvcnRhbmNlLCBhcnJpdmFsX2NoYW5nZV9zZWFzX2ltcG9ydGFuY2UsIAogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIGFycml2YWxfYWJzX2NoYW5nZV9taW5faW1wb3J0YW5jZSwgYXJyaXZhbF9hYnNfY2hhbmdlX21heF9pbXBvcnRhbmNlLCAKICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICBhcnJpdmFsX2Fic19jaGFuZ2Vfc2Vhc19pbXBvcnRhbmNlKSkKCgpgYGAKCgpSZWxhdGl2ZSBWYXJpYWJsZSBJbXBvcnRhbmNlIERlcGFydHVyZSBNb2RlbHMKYGBge3IgUlZJIGRlcGFydHVyZX0KI2FkZCDiiIZBSUMgdG8gdGFibGVzCm1pbl9kZXBhcnR1cmVfQUlDYyA8LSBtaW4oZGVwYXJ0dXJlX21vZGVsX2NvbXBhcmlzb25fYW5udWFsX29ic19ub21lYW5bLCBBSUNjXSkKZGVwYXJ0dXJlX21vZGVsX2NvbXBhcmlzb25fYW5udWFsX29ic19ub21lYW5bLCJkZWx0YUFJQ2MiIDo9IChBSUNjIC0gbWluX2RlcGFydHVyZV9BSUNjKV0KCiNhZGQgcmVsYXRpdmUgbGlrZWxpaG9vZCBleHAoIC0wLjUgKiDiiIZBSUMgc2NvcmUgZm9yIHRoYXQgbW9kZWwpCmRlcGFydHVyZV9tb2RlbF9jb21wYXJpc29uX2FubnVhbF9vYnNfbm9tZWFuWywicmVsX2xpa2VsaWhvb2QiIDo9IGV4cCgoLTAuNSAqIGRlbHRhQUlDYykpXQojc3VtIHJlbGF0aXZlIGxpa2VsaWhvb2RzIGFjcm9zcyBhbGwgbW9kZWxzCmRlcGFydHVyZV9tb2RlbF9jb21wYXJpc29uX2FubnVhbF9vYnNfbm9tZWFuLmxpa2VsaWhvb2RzdW0gPC0gc3VtKGRlcGFydHVyZV9tb2RlbF9jb21wYXJpc29uX2FubnVhbF9vYnNfbm9tZWFuWywgcmVsX2xpa2VsaWhvb2RdKQojQWthaWtlIHdlaWdodCBmb3IgYSBtb2RlbCBpcyB0aGlzIHJlbF9saWtlbGlob29kIGRldmlkZWQgYnkgdGhlIHN1bSBvZiB0aGVzZSB2YWx1ZXMgYWNyb3NzIGFsbCBtb2RlbHMKZGVwYXJ0dXJlX21vZGVsX2NvbXBhcmlzb25fYW5udWFsX29ic19ub21lYW5bLCJha2Fpa2Vfd2VpZ2h0IiA6PSByZWxfbGlrZWxpaG9vZC9kZXBhcnR1cmVfbW9kZWxfY29tcGFyaXNvbl9hbm51YWxfb2JzX25vbWVhbi5saWtlbGlob29kc3VtXQoKI0kgd2FudCB0byBsb29rIGF0IHJlbGF0aXZlIGltcG9ydGFuY2UgRk9SIAojYm90dG9tL3N1cmZhY2UgKGJvdHRvbSA9IGluY2x1ZGVzIHNidCwgZ3JlcGwoInNidCIsIHZhcmlhYmxlKSkKZGVwYXJ0dXJlX2JvdHRvbV9pbXBvcnRhbmNlIDwtIHN1bShkZXBhcnR1cmVfbW9kZWxfY29tcGFyaXNvbl9hbm51YWxfb2JzX25vbWVhbltncmVwKCJzYnQiLCB2YXJpYWJsZSksIF0kYWthaWtlX3dlaWdodCkKZGVwYXJ0dXJlX3N1cmZhY2VfaW1wb3J0YW5jZSA8LSBzdW0oZGVwYXJ0dXJlX21vZGVsX2NvbXBhcmlzb25fYW5udWFsX29ic19ub21lYW5bZ3JlcCgic3N0IiwgdmFyaWFibGUpLCBdJGFrYWlrZV93ZWlnaHQpCgojbGFnL25vdCBsYWdnZWQgKGdyZXBsKCJsYWciLCB2YXJpYWJsZSkpCmRlcGFydHVyZV9sYWdfaW1wb3J0YW5jZSA8LSBzdW0oZGVwYXJ0dXJlX21vZGVsX2NvbXBhcmlzb25fYW5udWFsX29ic19ub21lYW5bZ3JlcCgibGFnIiwgdmFyaWFibGUpLCBdJGFrYWlrZV93ZWlnaHQpCmRlcGFydHVyZV9ub2xhZ19pbXBvcnRhbmNlIDwtIHN1bShkZXBhcnR1cmVfbW9kZWxfY29tcGFyaXNvbl9hbm51YWxfb2JzX25vbWVhblshZ3JlcCgibGFnIiwgdmFyaWFibGUpLCBdJGFrYWlrZV93ZWlnaHQpCgojYWJzb2x1dGUgKGdyZXBsKCJhYnMiLCB2YXJpYWJsZSkpCmRlcGFydHVyZV9hYnNfaW1wb3J0YW5jZSA8LSBzdW0oZGVwYXJ0dXJlX21vZGVsX2NvbXBhcmlzb25fYW5udWFsX29ic19ub21lYW5bZ3JlcCgiYWJzIiwgdmFyaWFibGUpLCBdJGFrYWlrZV93ZWlnaHQpCgojcmF3ICghZ3JlcGwoImNoYW5nZSIpKQpkZXBhcnR1cmVfcmF3X2ltcG9ydGFuY2UgPC0gc3VtKGRlcGFydHVyZV9tb2RlbF9jb21wYXJpc29uX2FubnVhbF9vYnNfbm9tZWFuWyFncmVwKCJjaGFuZ2UiLCB2YXJpYWJsZSksIF0kYWthaWtlX3dlaWdodCkKCiNjaGFuZ2UgKGdyZXBsKCJjaGFuZ2UiLCB2YXJpYWJsZSksICghZ3JlcGwoImFicyIpKSkKZGVwYXJ0dXJlX2NoYW5nZV9pbXBvcnRhbmNlIDwtIHN1bShkZXBhcnR1cmVfbW9kZWxfY29tcGFyaXNvbl9hbm51YWxfb2JzX25vbWVhbltncmVwKCJjaGFuZ2UiLCB2YXJpYWJsZSksIF1bIWdyZXAoImFicyIsIHZhcmlhYmxlKSxdJGFrYWlrZV93ZWlnaHQpCgojdHlwZSBvZiB0ZW1wIHZhcmlhYmxlIChtYXgsIG1pbiwgc2VhcykKZGVwYXJ0dXJlX21heF90ZW1wX2ltcG9ydGFuY2UgPC0gc3VtKGRlcGFydHVyZV9tb2RlbF9jb21wYXJpc29uX2FubnVhbF9vYnNfbm9tZWFuW2dyZXAoIm1heCIsIHZhcmlhYmxlKSwgXSRha2Fpa2Vfd2VpZ2h0KQpkZXBhcnR1cmVfbWluX3RlbXBfaW1wb3J0YW5jZSA8LSBzdW0oZGVwYXJ0dXJlX21vZGVsX2NvbXBhcmlzb25fYW5udWFsX29ic19ub21lYW5bZ3JlcCgibWluIiwgdmFyaWFibGUpLCBdJGFrYWlrZV93ZWlnaHQpCmRlcGFydHVyZV9zZWFzX3RlbXBfaW1wb3J0YW5jZSA8LSBzdW0oZGVwYXJ0dXJlX21vZGVsX2NvbXBhcmlzb25fYW5udWFsX29ic19ub21lYW5bZ3JlcCgic2VhcyIsIHZhcmlhYmxlKSwgXSRha2Fpa2Vfd2VpZ2h0KQoKZGVwYXJ0dXJlX21vZGVsX2NvbXBhcmlzb25fYW5udWFsX29ic19ub21lYW5fYWthaWtld2VpZ2h0cyA8LSBkZXBhcnR1cmVfbW9kZWxfY29tcGFyaXNvbl9hbm51YWxfb2JzX25vbWVhbgoKc2F2ZVJEUyhkZXBhcnR1cmVfbW9kZWxfY29tcGFyaXNvbl9hbm51YWxfb2JzX25vbWVhbl9ha2Fpa2V3ZWlnaHRzLCBmaWxlID0gaGVyZTo6aGVyZSgiTW9kZWxfcmVzdWx0cyIsImRlcGFydHVyZV9tb2RlbF9jb21wYXJpc29uX2FubnVhbF9vYnNfbm9tZWFuX2FrYWlrZXdlaWdodHNfYW5udWFsX29icy5yZHMiKSkKc2F2ZVJEUyhkZXBhcnR1cmVfbW9kZWxfY29tcGFyaXNvbl9hbm51YWxfb2JzX25vbWVhbl9ha2Fpa2V3ZWlnaHRzLCBmaWxlID0gaGVyZTo6aGVyZSgidGFibGVzIiwiZGVwYXJ0dXJlX21vZGVsX2NvbXBhcmlzb25fYW5udWFsX29ic19ub21lYW5fYWthaWtld2VpZ2h0c19hbm51YWxfb2JzLnJkcyIpKQpkZXBhcnR1cmVfbW9kZWxfY29tcGFyaXNvbl9hbm51YWxfb2JzX25vbWVhbl9ha2Fpa2V3ZWlnaHRzIDwtIHJlYWRSRFMoZmlsZSA9IGhlcmU6OmhlcmUoIk1vZGVsX3Jlc3VsdHMiLCJkZXBhcnR1cmVfbW9kZWxfY29tcGFyaXNvbl9hbm51YWxfb2JzX25vbWVhbl9ha2Fpa2V3ZWlnaHRzX2FubnVhbF9vYnMucmRzIikpCgpgYGAKClJlbGF0aXZlIFZhcmlhYmxlIEltcG9ydGFuY2UgZm9yIFBhaXJzIG9mIFRyYW5zZm9ybWF0aW9uIGFuZCBNZXRyaWMgUHJlZGljdGluZyBkZXBhcnR1cmVzCmBgYHtyIFJWSSBkZXBhcnR1cmUgUGFpcnMgVHJhbnNmb3JtYXRpb24gYW5kIE1ldHJpY30KCiNJIHdhbnQgdG8gbG9vayBhdCByZWxhdGl2ZSBpbXBvcnRhbmNlIEZPUiAKI21vZGVscyB3aXRoIHJhdyBhbmQgbWluCmRlcGFydHVyZV9yYXdfbWluX2ltcG9ydGFuY2UgPC0gc3VtKGRlcGFydHVyZV9tb2RlbF9jb21wYXJpc29uX2FubnVhbF9vYnNfbm9tZWFuW2dyZXAoIm1pbiIsIHZhcmlhYmxlKSwgXVshZ3JlcCgiY2hhbmdlIiwgdmFyaWFibGUpXSRha2Fpa2Vfd2VpZ2h0KQoKI21vZGVscyB3aXRoIHJhdyBhbmQgbWF4CmRlcGFydHVyZV9yYXdfbWF4X2ltcG9ydGFuY2UgPC0gc3VtKGRlcGFydHVyZV9tb2RlbF9jb21wYXJpc29uX2FubnVhbF9vYnNfbm9tZWFuW2dyZXAoIm1heCIsIHZhcmlhYmxlKSwgXVshZ3JlcCgiY2hhbmdlIiwgdmFyaWFibGUpXSRha2Fpa2Vfd2VpZ2h0KQoKI21vZGVscyB3aXRoIHJhdyBhbmQgc2VhcwpkZXBhcnR1cmVfcmF3X3NlYXNfaW1wb3J0YW5jZSA8LSBzdW0oZGVwYXJ0dXJlX21vZGVsX2NvbXBhcmlzb25fYW5udWFsX29ic19ub21lYW5bZ3JlcCgic2VhcyIsIHZhcmlhYmxlKSwgXVshZ3JlcCgiY2hhbmdlIiwgdmFyaWFibGUpXSRha2Fpa2Vfd2VpZ2h0KQoKCiNtb2RlbHMgd2l0aCBjaGFuZ2UgYW5kIG1pbgpkZXBhcnR1cmVfY2hhbmdlX21pbl9pbXBvcnRhbmNlIDwtIHN1bShkZXBhcnR1cmVfbW9kZWxfY29tcGFyaXNvbl9hbm51YWxfb2JzX25vbWVhbltncmVwKCJtaW5fcy50X3RlbXBfY2hhbmdlIiwgdmFyaWFibGUpLCBdWyFncmVwKCJhYnMiLCB2YXJpYWJsZSldJGFrYWlrZV93ZWlnaHQpCgojbW9kZWxzIHdpdGggY2hhbmdlIGFuZCBtYXgKZGVwYXJ0dXJlX2NoYW5nZV9tYXhfaW1wb3J0YW5jZSA8LSBzdW0oZGVwYXJ0dXJlX21vZGVsX2NvbXBhcmlzb25fYW5udWFsX29ic19ub21lYW5bZ3JlcCgibWF4X3MudF90ZW1wX2NoYW5nZSIsIHZhcmlhYmxlKSwgXVshZ3JlcCgiYWJzIiwgdmFyaWFibGUpXSRha2Fpa2Vfd2VpZ2h0KQoKI21vZGVscyB3aXRoIGNoYW5nZSBhbmQgc2VhcwpkZXBhcnR1cmVfY2hhbmdlX3NlYXNfaW1wb3J0YW5jZSA8LSBzdW0oZGVwYXJ0dXJlX21vZGVsX2NvbXBhcmlzb25fYW5udWFsX29ic19ub21lYW5bZ3JlcCgic2Vhc19zLnRfdGVtcF9jaGFuZ2UiLCB2YXJpYWJsZSksIF1bIWdyZXAoImFicyIsIHZhcmlhYmxlKV0kYWthaWtlX3dlaWdodCkKCiNtb2RlbHMgd2l0aCBhYnMgY2hhbmdlIGFuZCBtaW4KZGVwYXJ0dXJlX2Fic19jaGFuZ2VfbWluX2ltcG9ydGFuY2UgPC0gc3VtKGRlcGFydHVyZV9tb2RlbF9jb21wYXJpc29uX2FubnVhbF9vYnNfbm9tZWFuW2dyZXAoIm1pbl9zLnRfdGVtcF9jaGFuZ2VfYWJzIiwgdmFyaWFibGUpLCBdJGFrYWlrZV93ZWlnaHQpCgojbW9kZWxzIHdpdGggYWJzIGNoYW5nZSBhbmQgbWF4CmRlcGFydHVyZV9hYnNfY2hhbmdlX21heF9pbXBvcnRhbmNlIDwtIHN1bShkZXBhcnR1cmVfbW9kZWxfY29tcGFyaXNvbl9hbm51YWxfb2JzX25vbWVhbltncmVwKCJtYXhfcy50X3RlbXBfY2hhbmdlX2FicyIsIHZhcmlhYmxlKSwgXSRha2Fpa2Vfd2VpZ2h0KQoKI21vZGVscyB3aXRoIGFicyBjaGFuZ2UgYW5kIHNlYXMKZGVwYXJ0dXJlX2Fic19jaGFuZ2Vfc2Vhc19pbXBvcnRhbmNlIDwtIHN1bShkZXBhcnR1cmVfbW9kZWxfY29tcGFyaXNvbl9hbm51YWxfb2JzX25vbWVhbltncmVwKCJzZWFzX3MudF90ZW1wX2NoYW5nZV9hYnMiLCB2YXJpYWJsZSksIF0kYWthaWtlX3dlaWdodCkKCmRlcGFydHVyZV90cmFuc2Zvcm1fbWV0cmljX2NvbXBhcmlzb24gPC0gZGF0YS50YWJsZShUcmFuc2Zvcm1hdGlvbiA9CiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIGMoInJhdyIsICJyYXciLCAicmF3IiwgImNoYW5nZSIsICJjaGFuZ2UiLCAiY2hhbmdlIiwgImFic19jaGFuZ2UiLCAiYWJzX2NoYW5nZSIsICJhYnNfY2hhbmdlIiksIAogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgTWV0cmljID0gCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIHJlcChjKCJtaW4iLCAibWF4IiwgInNlYXMiKSwgMyksIAogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgUlZJID0gCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIGMoZGVwYXJ0dXJlX3Jhd19taW5faW1wb3J0YW5jZSwgZGVwYXJ0dXJlX3Jhd19tYXhfaW1wb3J0YW5jZSwgCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgZGVwYXJ0dXJlX3Jhd19zZWFzX2ltcG9ydGFuY2UsIGRlcGFydHVyZV9jaGFuZ2VfbWluX2ltcG9ydGFuY2UsIAogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIGRlcGFydHVyZV9jaGFuZ2VfbWF4X2ltcG9ydGFuY2UsIGRlcGFydHVyZV9jaGFuZ2Vfc2Vhc19pbXBvcnRhbmNlLCAKICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICBkZXBhcnR1cmVfYWJzX2NoYW5nZV9taW5faW1wb3J0YW5jZSwgZGVwYXJ0dXJlX2Fic19jaGFuZ2VfbWF4X2ltcG9ydGFuY2UsIAogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIGRlcGFydHVyZV9hYnNfY2hhbmdlX3NlYXNfaW1wb3J0YW5jZSkpCgpgYGAKCgpMZXQncyBzZWUgaG93IHRoZSBSVkkgaW1wb3J0YW5jZSB2YXJpZXMgYnkgbG9va2luZyBhdCBzcGVjaWZpYyBsYWcgdmFsdWVzCmBgYHtyIG1ha2UgYSBwbG90IGhlcmUgZm9yIHZhcmlhYmlsaXR5IGFjcm9zcyBsYWcgdmFsdWVzfQoKI2ZpcnN0LCB0YWJsZSBmb3IgbGFncwpsYWdzX1JWSV9zY2FsZWQgPC0gZGF0YS50YWJsZShhcnJpdmFsX2xhZyA9IGMoMDo5KSwgYXJyaXZhbF9SVkkgPSAwLCBkZXBhcnR1cmVfUlZJID0gMCkKCiNhcnJpdmFscwpsYWdzX1JWSV9zY2FsZWRbMSwyXSA8LSAxLXN1bShhcnJpdmFsX21vZGVsX2NvbXBhcmlzb25fYW5udWFsX29ic19ub21lYW5bZ3JlcCgibGFnIiwgdmFyaWFibGUpLCBdJGFrYWlrZV93ZWlnaHQpCmxhZ3NfUlZJX3NjYWxlZFsyLDJdIDwtIHN1bShhcnJpdmFsX21vZGVsX2NvbXBhcmlzb25fYW5udWFsX29ic19ub21lYW5bZ3JlcCgibGFnMSIsIHZhcmlhYmxlKSwgXSRha2Fpa2Vfd2VpZ2h0KQpsYWdzX1JWSV9zY2FsZWRbMywyXSA8LSBzdW0oYXJyaXZhbF9tb2RlbF9jb21wYXJpc29uX2FubnVhbF9vYnNfbm9tZWFuW2dyZXAoImxhZzIiLCB2YXJpYWJsZSksIF0kYWthaWtlX3dlaWdodCkKbGFnc19SVklfc2NhbGVkWzQsMl0gPC0gc3VtKGFycml2YWxfbW9kZWxfY29tcGFyaXNvbl9hbm51YWxfb2JzX25vbWVhbltncmVwKCJsYWczIiwgdmFyaWFibGUpLCBdJGFrYWlrZV93ZWlnaHQpCmxhZ3NfUlZJX3NjYWxlZFs1LDJdIDwtIHN1bShhcnJpdmFsX21vZGVsX2NvbXBhcmlzb25fYW5udWFsX29ic19ub21lYW5bZ3JlcCgibGFnNCIsIHZhcmlhYmxlKSwgXSRha2Fpa2Vfd2VpZ2h0KQpsYWdzX1JWSV9zY2FsZWRbNiwyXSA8LSBzdW0oYXJyaXZhbF9tb2RlbF9jb21wYXJpc29uX2FubnVhbF9vYnNfbm9tZWFuW2dyZXAoImxhZzUiLCB2YXJpYWJsZSksIF0kYWthaWtlX3dlaWdodCkKbGFnc19SVklfc2NhbGVkWzcsMl0gPC0gc3VtKGFycml2YWxfbW9kZWxfY29tcGFyaXNvbl9hbm51YWxfb2JzX25vbWVhbltncmVwKCJsYWc2IiwgdmFyaWFibGUpLCBdJGFrYWlrZV93ZWlnaHQpCmxhZ3NfUlZJX3NjYWxlZFs4LDJdIDwtIHN1bShhcnJpdmFsX21vZGVsX2NvbXBhcmlzb25fYW5udWFsX29ic19ub21lYW5bZ3JlcCgibGFnNyIsIHZhcmlhYmxlKSwgXSRha2Fpa2Vfd2VpZ2h0KQpsYWdzX1JWSV9zY2FsZWRbOSwyXSA8LSBzdW0oYXJyaXZhbF9tb2RlbF9jb21wYXJpc29uX2FubnVhbF9vYnNfbm9tZWFuW2dyZXAoImxhZzgiLCB2YXJpYWJsZSksIF0kYWthaWtlX3dlaWdodCkKbGFnc19SVklfc2NhbGVkWzEwLDJdIDwtIHN1bShhcnJpdmFsX21vZGVsX2NvbXBhcmlzb25fYW5udWFsX29ic19ub21lYW5bZ3JlcCgibGFnOSIsIHZhcmlhYmxlKSwgXSRha2Fpa2Vfd2VpZ2h0KQoKI2RlcGFydHVyZXMKbGFnc19SVklfc2NhbGVkWzEsM10gPC0gMS1zdW0oZGVwYXJ0dXJlX21vZGVsX2NvbXBhcmlzb25fYW5udWFsX29ic19ub21lYW5bZ3JlcCgibGFnIiwgdmFyaWFibGUpLCBdJGFrYWlrZV93ZWlnaHQpCmxhZ3NfUlZJX3NjYWxlZFsyLDNdIDwtIHN1bShkZXBhcnR1cmVfbW9kZWxfY29tcGFyaXNvbl9hbm51YWxfb2JzX25vbWVhbltncmVwKCJsYWcxIiwgdmFyaWFibGUpLCBdJGFrYWlrZV93ZWlnaHQpCmxhZ3NfUlZJX3NjYWxlZFszLDNdIDwtIHN1bShkZXBhcnR1cmVfbW9kZWxfY29tcGFyaXNvbl9hbm51YWxfb2JzX25vbWVhbltncmVwKCJsYWcyIiwgdmFyaWFibGUpLCBdJGFrYWlrZV93ZWlnaHQpCmxhZ3NfUlZJX3NjYWxlZFs0LDNdIDwtIHN1bShkZXBhcnR1cmVfbW9kZWxfY29tcGFyaXNvbl9hbm51YWxfb2JzX25vbWVhbltncmVwKCJsYWczIiwgdmFyaWFibGUpLCBdJGFrYWlrZV93ZWlnaHQpCmxhZ3NfUlZJX3NjYWxlZFs1LDNdIDwtIHN1bShkZXBhcnR1cmVfbW9kZWxfY29tcGFyaXNvbl9hbm51YWxfb2JzX25vbWVhbltncmVwKCJsYWc0IiwgdmFyaWFibGUpLCBdJGFrYWlrZV93ZWlnaHQpCmxhZ3NfUlZJX3NjYWxlZFs2LDNdIDwtIHN1bShkZXBhcnR1cmVfbW9kZWxfY29tcGFyaXNvbl9hbm51YWxfb2JzX25vbWVhbltncmVwKCJsYWc1IiwgdmFyaWFibGUpLCBdJGFrYWlrZV93ZWlnaHQpCmxhZ3NfUlZJX3NjYWxlZFs3LDNdIDwtIHN1bShkZXBhcnR1cmVfbW9kZWxfY29tcGFyaXNvbl9hbm51YWxfb2JzX25vbWVhbltncmVwKCJsYWc2IiwgdmFyaWFibGUpLCBdJGFrYWlrZV93ZWlnaHQpCmxhZ3NfUlZJX3NjYWxlZFs4LDNdIDwtIHN1bShkZXBhcnR1cmVfbW9kZWxfY29tcGFyaXNvbl9hbm51YWxfb2JzX25vbWVhbltncmVwKCJsYWc3IiwgdmFyaWFibGUpLCBdJGFrYWlrZV93ZWlnaHQpCmxhZ3NfUlZJX3NjYWxlZFs5LDNdIDwtIHN1bShkZXBhcnR1cmVfbW9kZWxfY29tcGFyaXNvbl9hbm51YWxfb2JzX25vbWVhbltncmVwKCJsYWc4IiwgdmFyaWFibGUpLCBdJGFrYWlrZV93ZWlnaHQpCmxhZ3NfUlZJX3NjYWxlZFsxMCwzXSA8LSBzdW0oZGVwYXJ0dXJlX21vZGVsX2NvbXBhcmlzb25fYW5udWFsX29ic19ub21lYW5bZ3JlcCgibGFnOSIsIHZhcmlhYmxlKSwgXSRha2Fpa2Vfd2VpZ2h0KQoKc2F2ZVJEUyhsYWdzX1JWSV9zY2FsZWQsIGhlcmU6OmhlcmUoIk1vZGVsX3Jlc3VsdHMiLCJsYWdzX1JWSV9zY2FsZWRfYW5udWFsX29icy5yZHMiKSkKbGFnc19SVklfc2NhbGVkIDwtIHJlYWRSRFMoaGVyZTo6aGVyZSgiTW9kZWxfcmVzdWx0cyIsImxhZ3NfUlZJX3NjYWxlZF9hbm51YWxfb2JzLnJkcyIpKQoKCgojdmlzdWFsaXplIGxhZ3MgdGhyb3VnaCB0aW1lCmxhZ3Nfb3Zlcl90aW1lX2FubnVhbF9yZWdzIDwtIGdncGxvdChkYXRhID0gbGFnc19SVklfc2NhbGVkLCBhZXMoeCA9IGFycml2YWxfbGFnKSkgKwogIGdlb21fbGluZShhZXMoeSA9IGFycml2YWxfUlZJKSwgKSArCiAgZ2VvbV9saW5lKGFlcyh5ID0gZGVwYXJ0dXJlX1JWSSksIGxpbmV0eXBlID0gImRhc2hlZCIpICsKICBsYWJzKHggPSAiTGFnICh5ZWFycykiLCB5ID0gIlJlbGF0aXZlIFZhcmlhYmxlIEltcG9ydGFuY2UiKSArCiAgc2NhbGVfY29sb3JfZGlzY3JldGUoKSArICNob3cgdG8gbWFrZSBhIGxlZ2VuZAogIHRoZW1lX2NsYXNzaWMoKSArCiAgdGhlbWUodGV4dCA9IGVsZW1lbnRfdGV4dChzaXplID0gMTMpKSArCiAgc2NhbGVfeF9jb250aW51b3VzKGJyZWFrcyA9IGMoMDo5KSkKCnNhdmUobGFnc19vdmVyX3RpbWVfYW5udWFsX3JlZ3MsIGZpbGUgPSBoZXJlOjpoZXJlKCJmaWd1cmVzIiwiU3VwcGxlbWVudGFsIiwiYW5udWFsX3NlbnNpdGl2aXR5IiwibGFnc19vdmVyX3RpbWVfYW5udWFsX3JlZ3MuUkRhdGEiKSkKCmBgYAoKVGFibGUgZm9yIFJWSSBkYXRhIGZvciBhcnJpdmFsCmBgYHtyIHB1dCBSVklzIGZvciBhcnJpdmFsIGludG8gZGF0YSB0YWJsZX0KYXJyaXZhbF9kZXBhcnR1cmUgPC0gYygiYXJyaXZhbCIsImFycml2YWwiLCJhcnJpdmFsIiwiYXJyaXZhbCIsImFycml2YWwiLCAiYXJyaXZhbCIsImFycml2YWwiLCAiYXJyaXZhbCIsICJhcnJpdmFsIiwiYXJyaXZhbCIsImFycml2YWwiLCJhcnJpdmFsIiwiYXJyaXZhbCIsImFycml2YWwiLCAiYXJyaXZhbCIsImFycml2YWwiLCAiYXJyaXZhbCIsICJhcnJpdmFsIiwiYXJyaXZhbCIpCnR5cGUgPC0gYygiRGVwdGgiLCAiRGVwdGgiLCAibGFnIiwgImxhZyIsICJUcmFuc2Zvcm1hdGlvbiIsICJUcmFuc2Zvcm1hdGlvbiIsICJUcmFuc2Zvcm1hdGlvbiIsICJNZXRyaWMiLCAiTWV0cmljIiwgIk1ldHJpYyIsICJUcmFuc2Zvcm1hdGlvbiB4IE1ldHJpYyIsICJUcmFuc2Zvcm1hdGlvbiB4IE1ldHJpYyIsICJUcmFuc2Zvcm1hdGlvbiB4IE1ldHJpYyIsICJUcmFuc2Zvcm1hdGlvbiB4IE1ldHJpYyIsICJUcmFuc2Zvcm1hdGlvbiB4IE1ldHJpYyIsICJUcmFuc2Zvcm1hdGlvbiB4IE1ldHJpYyIsICJUcmFuc2Zvcm1hdGlvbiB4IE1ldHJpYyIsICJUcmFuc2Zvcm1hdGlvbiB4IE1ldHJpYyIsICJUcmFuc2Zvcm1hdGlvbiB4IE1ldHJpYyIpCnZhcmlhYmxlIDwtIGMoIkJvdHRvbSIsICJTdXJmYWNlIiwgIm5vX2xhZyIsICJsYWdnZWQiLCAifENoYW5nZXwiLCAiQ2hhbmdlIiwgIlJhdyIsICJNaW4iLCAiTWF4IiwgIlNlYXMiLCAiUmF3IHggTWluIiwgIlJhdyB4IE1heCIsICJSYXcgeCBTZWFzIiwgIkNoYW5nZSB4IE1pbiIsICJDaGFuZ2UgeCBNYXgiLCAiQ2hhbmdlIHggU2VhcyIsICJ8Q2hhbmdlfCB4IE1pbiIsICJ8Q2hhbmdlfCB4IE1heCIsICJ8Q2hhbmdlfCB4IFNlYXMiKQoKCnZhbHVlIDwtIGMoYXJyaXZhbF9ib3R0b21faW1wb3J0YW5jZSwgYXJyaXZhbF9zdXJmYWNlX2ltcG9ydGFuY2UsIGFycml2YWxfbm9sYWdfaW1wb3J0YW5jZSwgYXJyaXZhbF9sYWdfaW1wb3J0YW5jZSwgYXJyaXZhbF9hYnNfaW1wb3J0YW5jZSwgYXJyaXZhbF9jaGFuZ2VfaW1wb3J0YW5jZSwgYXJyaXZhbF9yYXdfaW1wb3J0YW5jZSwgYXJyaXZhbF9taW5fdGVtcF9pbXBvcnRhbmNlLCBhcnJpdmFsX21heF90ZW1wX2ltcG9ydGFuY2UsIGFycml2YWxfc2Vhc190ZW1wX2ltcG9ydGFuY2UsIGFycml2YWxfcmF3X21pbl9pbXBvcnRhbmNlLCBhcnJpdmFsX3Jhd19tYXhfaW1wb3J0YW5jZSwgYXJyaXZhbF9yYXdfc2Vhc19pbXBvcnRhbmNlLCBhcnJpdmFsX2NoYW5nZV9taW5faW1wb3J0YW5jZSwgYXJyaXZhbF9jaGFuZ2VfbWF4X2ltcG9ydGFuY2UsIGFycml2YWxfY2hhbmdlX3NlYXNfaW1wb3J0YW5jZSwgYXJyaXZhbF9hYnNfY2hhbmdlX21pbl9pbXBvcnRhbmNlLCBhcnJpdmFsX2Fic19jaGFuZ2VfbWF4X2ltcG9ydGFuY2UsIGFycml2YWxfYWJzX2NoYW5nZV9zZWFzX2ltcG9ydGFuY2UpCgpSVklfYXJyaXZhbCA8LSBkYXRhLnRhYmxlKGFycml2YWxfZGVwYXJ0dXJlLCB0eXBlLCB2YXJpYWJsZSwgdmFsdWUpCmBgYAoKVGFibGUgZm9yIFJWSSBkYXRhIGZvciBkZXBhcnR1cmUKYGBge3IgcHV0IFJWSXMgZm9yIGRlcGFydHVyZSBpbnRvIGRhdGEgdGFibGV9CmFycml2YWxfZGVwYXJ0dXJlIDwtIGMoImRlcGFydHVyZSIsImRlcGFydHVyZSIsImRlcGFydHVyZSIsImRlcGFydHVyZSIsImRlcGFydHVyZSIsICJkZXBhcnR1cmUiLCJkZXBhcnR1cmUiLCAiZGVwYXJ0dXJlIiwgImRlcGFydHVyZSIsImRlcGFydHVyZSIsImRlcGFydHVyZSIsImRlcGFydHVyZSIsImRlcGFydHVyZSIsImRlcGFydHVyZSIsICJkZXBhcnR1cmUiLCJkZXBhcnR1cmUiLCAiZGVwYXJ0dXJlIiwgImRlcGFydHVyZSIsImRlcGFydHVyZSIpCnR5cGUgPC0gYygiRGVwdGgiLCAiRGVwdGgiLCAibGFnIiwgImxhZyIsICJUcmFuc2Zvcm1hdGlvbiIsICJUcmFuc2Zvcm1hdGlvbiIsICJUcmFuc2Zvcm1hdGlvbiIsICJNZXRyaWMiLCAiTWV0cmljIiwgIk1ldHJpYyIsICJUcmFuc2Zvcm1hdGlvbiB4IE1ldHJpYyIsICJUcmFuc2Zvcm1hdGlvbiB4IE1ldHJpYyIsICJUcmFuc2Zvcm1hdGlvbiB4IE1ldHJpYyIsICJUcmFuc2Zvcm1hdGlvbiB4IE1ldHJpYyIsICJUcmFuc2Zvcm1hdGlvbiB4IE1ldHJpYyIsICJUcmFuc2Zvcm1hdGlvbiB4IE1ldHJpYyIsICJUcmFuc2Zvcm1hdGlvbiB4IE1ldHJpYyIsICJUcmFuc2Zvcm1hdGlvbiB4IE1ldHJpYyIsICJUcmFuc2Zvcm1hdGlvbiB4IE1ldHJpYyIpCnZhcmlhYmxlIDwtIGMoIkJvdHRvbSIsICJTdXJmYWNlIiwgIm5vX2xhZyIsICJsYWdnZWQiLCAifENoYW5nZXwiLCAiQ2hhbmdlIiwgIlJhdyIsICJNaW4iLCAiTWF4IiwgIlNlYXMiLCAiUmF3IHggTWluIiwgIlJhdyB4IE1heCIsICJSYXcgeCBTZWFzIiwgIkNoYW5nZSB4IE1pbiIsICJDaGFuZ2UgeCBNYXgiLCAiQ2hhbmdlIHggU2VhcyIsICJ8Q2hhbmdlfCB4IE1pbiIsICJ8Q2hhbmdlfCB4IE1heCIsICJ8Q2hhbmdlfCB4IFNlYXMiKQp2YWx1ZSA8LSBjKGRlcGFydHVyZV9ib3R0b21faW1wb3J0YW5jZSwgZGVwYXJ0dXJlX3N1cmZhY2VfaW1wb3J0YW5jZSwgZGVwYXJ0dXJlX25vbGFnX2ltcG9ydGFuY2UsIGRlcGFydHVyZV9sYWdfaW1wb3J0YW5jZSwgZGVwYXJ0dXJlX2Fic19pbXBvcnRhbmNlLCBkZXBhcnR1cmVfY2hhbmdlX2ltcG9ydGFuY2UsIGRlcGFydHVyZV9yYXdfaW1wb3J0YW5jZSwgZGVwYXJ0dXJlX21pbl90ZW1wX2ltcG9ydGFuY2UsIGRlcGFydHVyZV9tYXhfdGVtcF9pbXBvcnRhbmNlLCBkZXBhcnR1cmVfc2Vhc190ZW1wX2ltcG9ydGFuY2UsIGRlcGFydHVyZV9yYXdfbWluX2ltcG9ydGFuY2UsIGRlcGFydHVyZV9yYXdfbWF4X2ltcG9ydGFuY2UsIGRlcGFydHVyZV9yYXdfc2Vhc19pbXBvcnRhbmNlLCBkZXBhcnR1cmVfY2hhbmdlX21pbl9pbXBvcnRhbmNlLCBkZXBhcnR1cmVfY2hhbmdlX21heF9pbXBvcnRhbmNlLCBkZXBhcnR1cmVfY2hhbmdlX3NlYXNfaW1wb3J0YW5jZSwgZGVwYXJ0dXJlX2Fic19jaGFuZ2VfbWluX2ltcG9ydGFuY2UsIGRlcGFydHVyZV9hYnNfY2hhbmdlX21heF9pbXBvcnRhbmNlLCBkZXBhcnR1cmVfYWJzX2NoYW5nZV9zZWFzX2ltcG9ydGFuY2UpCgpSVklfZGVwYXJ0dXJlIDwtIGRhdGEudGFibGUoYXJyaXZhbF9kZXBhcnR1cmUsIHR5cGUsIHZhcmlhYmxlLCB2YWx1ZSkKYGBgCgpNZXJnZSBSVkkgdGFibGVzIGZvciBhcnJpdmFsIGFuZCBkZXBhcnR1cmUsIGFuZCB0aGVuIGdyYXBoCmBgYHtyIG1lcmdlIFJWSSB0YWJsZXMgYW5kIHBsb3R9ClJWSV90YWJsZSA8LSBhcy5kYXRhLnRhYmxlKHJiaW5kKFJWSV9hcnJpdmFsLCBSVklfZGVwYXJ0dXJlKSkgI2JpbmQgUlZJIGZvciBhcnJpdmFscyBhbmQgZGVwYXJ0dXJlcwoKUlZJX3RhYmxlLnIgPC0gUlZJX3RhYmxlWyFncmVwKCJTdXJmYWNlIiwgdmFyaWFibGUpXVshZ3JlcCgibGFnZ2VkIiwgdmFyaWFibGUpXQoKI2NoYW5nZSBvcmRlciBvZiBmYWN0b3IgbGV2ZWxzClJWSV90YWJsZS5yWywgdmFyaWFibGUgOj0gZmFjdG9yKHZhcmlhYmxlLCBsZXZlbHMgPSBjKCJCb3R0b20iLCAibm9fbGFnIiwgIlJhdyIsICJDaGFuZ2UiLCAifENoYW5nZXwiLCAiTWluIiwgIk1heCIsICJTZWFzIikpXQoKc2F2ZVJEUyhSVklfdGFibGUsIGZpbGUgPSBoZXJlOjpoZXJlKCJNb2RlbF9yZXN1bHRzIiwgIlJWSV90YWJsZV9hbm51YWxfb2JzLnJkcyIpKQoKZ2dwbG90KGRhdGEgPSBSVklfdGFibGUuciwgYWVzKHg9dmFyaWFibGUsIHkgPSB2YWx1ZSwgZmlsbCA9IGFycml2YWxfZGVwYXJ0dXJlKSkgKwogIGdlb21fYmFyKHN0YXQgPSAiaWRlbnRpdHkiLCBwb3NpdGlvbiA9ICJkb2RnZSIpICsKICBzY2FsZV94X2Rpc2NyZXRlKGJyZWFrcyA9IGMoIkJvdHRvbSIsICJub19sYWciLCAiUmF3IiwgIkNoYW5nZSIsICJ8Q2hhbmdlfCIsICJNaW4iLCAiTWF4IiwgIlNlYXMiKSwgCiAgICAgICAgICAgICAgICAgICBsYWJlbHMgPSBjKCJCb3R0b20gVGVtcCIsICJObyBMYWciLCAiUmF3IFRlbXAiLCAiQ2hhbmdlIGluIFxuVGVtcCIsICJ8IENoYW5nZSBpblxuIFRlbXAgfCIsICJNaW4gVGVtcCIsICJNYXggVGVtcCIsICJTZWFzIikpICsKICBsYWJzKHggPSAiVGVtcGVyYXR1cmUgVmFyaWFibGVzIiwgeSA9ICJSZWxhdGl2ZSBWYXJpYWJsZSBJbXBvcnRhbmNlIikgICsKICB0aGVtZV9idygpCgpgYGAKCkFub3RoZXIgd2F5IHRvIHZpc3VhbGl6ZSBpcyBzdGFja2VkIGJhciBwbG90LgoKYGBge3IgUlZJIHN0YWNrZWQgcGxvdH0KI3B1dCBsZXZlbHMgaW50byBjb3JyZWN0IG9yZGVyIGZvciB2aWV3aW5nLCBhbmQgYWRkIGR1bW15IGxldmVsIGZvciBsZWdlbmQKUlZJX2Fycml2YWxbLCB2YXJpYWJsZSA6PSBmYWN0b3IodmFyaWFibGUsIGxldmVscyA9IGMoIkJvdHRvbSIsICJTdXJmYWNlIiwiICAiLCAiUmF3IiwgIkNoYW5nZSIsICJ8Q2hhbmdlfCIsIiIsICJub19sYWciLCAibGFnZ2VkIiwgIk1pbiIsICJNYXgiLCAiU2VhcyIpKV0KUlZJX2Fycml2YWxbLCB0eXBlIDo9IGZhY3Rvcih0eXBlLCBsZXZlbHMgPSBjKCJEZXB0aCIsICJUcmFuc2Zvcm1hdGlvbiIsICJNZXRyaWMiLCAibGFnIikpXQoKUlZJX2Fycml2YWxfbm9sYWcgPC0gUlZJX2Fycml2YWxbdHlwZSAhPSAibGFnIixdClJWSV9hcnJpdmFsX25vbGFnWywgdHlwZSA6PSBmYWN0b3IodHlwZSwgbGV2ZWxzID0gYygiRGVwdGgiLCAiVHJhbnNmb3JtYXRpb24iLCAiTWV0cmljIikpXVssIHZhcmlhYmxlIDo9IGZhY3Rvcih2YXJpYWJsZSwgbGV2ZWxzID0gYygiQm90dG9tIiwgIlN1cmZhY2UiLCIgICIsICJSYXciLCAiQ2hhbmdlIiwgInxDaGFuZ2V8IiwiIiwgIk1pbiIsICJNYXgiLCAiU2VhcyIpKV0KCnNhdmVSRFMoUlZJX2Fycml2YWxfbm9sYWcsIGhlcmU6OmhlcmUoIk1vZGVsX3Jlc3VsdHMiLCAiUlZJX2Fycml2YWxfbm9sYWdfYW5udWFsX29icy5yZHMiKSkKCiNhbmQgYWdhaW4gZm9yIGRlcGFydHVyZQpSVklfZGVwYXJ0dXJlWywgdmFyaWFibGUgOj0gZmFjdG9yKHZhcmlhYmxlLCBsZXZlbHMgPSBjKCJCb3R0b20iLCAiU3VyZmFjZSIsIiAgIiwgIlJhdyIsICJDaGFuZ2UiLCAifENoYW5nZXwiLCIiLCAibm9fbGFnIiwgImxhZ2dlZCIsICJNaW4iLCAiTWF4IiwgIlNlYXMiKSldClJWSV9kZXBhcnR1cmVbLCB0eXBlIDo9IGZhY3Rvcih0eXBlLCBsZXZlbHMgPSBjKCJEZXB0aCIsICJUcmFuc2Zvcm1hdGlvbiIsICJNZXRyaWMiLCAibGFnIikpXQoKUlZJX2RlcGFydHVyZV9ub2xhZyA8LSBSVklfZGVwYXJ0dXJlW3R5cGUgIT0gImxhZyIsXQpSVklfZGVwYXJ0dXJlX25vbGFnWywgdHlwZSA6PSBmYWN0b3IodHlwZSwgbGV2ZWxzID0gYygiRGVwdGgiLCAiVHJhbnNmb3JtYXRpb24iLCAiTWV0cmljIikpXVssIHZhcmlhYmxlIDo9IGZhY3Rvcih2YXJpYWJsZSwgbGV2ZWxzID0gYygiQm90dG9tIiwgIlN1cmZhY2UiLCIgICIsICJSYXciLCAiQ2hhbmdlIiwgInxDaGFuZ2V8IiwiIiwgIk1pbiIsICJNYXgiLCAiU2VhcyIpKV0KCnNhdmVSRFMoUlZJX2RlcGFydHVyZV9ub2xhZywgaGVyZTo6aGVyZSgiTW9kZWxfcmVzdWx0cyIsICJSVklfZGVwYXJ0dXJlX25vbGFnX2FubnVhbF9vYnMucmRzIikpCgoKI3Bsb3R0aW5nCnBhbCA8LSB3ZXNfcGFsZXR0ZSgiR3JhbmRCdWRhcGVzdDEiLCA4LCB0eXBlID0gImNvbnRpbnVvdXMiKQpjb2xvcnMgPC0gYyhwYWxbMV0sIHBhbFsyXSwgIiNGRkZGRkYiLCBwYWxbM10sIHBhbFs0XSwgcGFsWzVdLCIjRkZGRkZGIiwgcGFsWzZdLCBwYWxbN10sIHBhbFs4XSkKCiNhcnJpdmFscwpSVklfYXJyaXZhbF9wbG90IDwtIGdncGxvdChkYXRhID0gUlZJX2Fycml2YWxfbm9sYWcsIGFlcyh4PXR5cGUsIHkgPSB2YWx1ZSwgZmlsbCA9IHZhcmlhYmxlKSkgKwogIGdlb21fYmFyKHN0YXQ9ImlkZW50aXR5IiwgY29sb3IgPSAiYmxhY2siLCBzaXplID0gMCwgd2lkdGggPSAwLjgpICsKICBzY2FsZV94X2Rpc2NyZXRlKGJyZWFrcyA9IGMoIkRlcHRoIiwgIlRyYW5zZm9ybWF0aW9uIiwgIk1ldHJpYyIpLCBsYWJlbHMgPSBjKCJEZXB0aCIsICJUcmFuc2Zvcm1hdGlvbiIsICJNZXRyaWMiKSkgKwogIGxhYnMoeCA9ICJUZW1wZXJhdHVyZSBWYXJpYWJsZXMiLCB5ID0gIlJlbGF0aXZlIFZhcmlhYmxlIEltcG9ydGFuY2UiKSArCiAgdGhlbWVfY2xhc3NpYygpICsKICB0aGVtZSh0ZXh0ID0gZWxlbWVudF90ZXh0KHNpemUgPSAxMS41KSwgCiAgICAgICAgbGVnZW5kLnBvc2l0aW9uID0gInJpZ2h0IiwgCiAgICAgICAgbGVnZW5kLnRpdGxlID0gZWxlbWVudF9ibGFuaygpLCAKICAgICAgICBsZWdlbmQuc3BhY2luZy54ID0gdW5pdCgwLjIsICdjbScpLAogICAgICAgIGxlZ2VuZC5qdXN0aWZpY2F0aW9uID0gImNlbnRlciIsCiAgICAgICAgYXNwZWN0LnJhdGlvID0gKDEpLAogICAgICAgICMsIGxlZ2VuZC5wb3NpdGlvbiA9ICJub25lIgogICAgICAgICkgKwogIGd1aWRlcyhmaWxsPWd1aWRlX2xlZ2VuZChuY29sPTEpKSArCiAgc2NhbGVfZmlsbF9tYW51YWwodmFsdWVzID0gY29sb3JzLAogICAgICAgICAgICAgICAgICAgIGRyb3AgPSBGKQoKI2RlcGFydHVyZQpSVklfZGVwYXJ0dXJlX3Bsb3QgPC0gZ2dwbG90KGRhdGEgPSBSVklfZGVwYXJ0dXJlX25vbGFnLCBhZXMoeD10eXBlLCB5ID0gdmFsdWUsIGZpbGwgPSB2YXJpYWJsZSkpICsKICBnZW9tX2JhcihzdGF0PSJpZGVudGl0eSIsIGNvbG9yID0gImJsYWNrIiwgc2l6ZSA9IDAsIHdpZHRoID0gMC44KSArCiAgc2NhbGVfeF9kaXNjcmV0ZShicmVha3MgPSBjKCJEZXB0aCIsICJUcmFuc2Zvcm1hdGlvbiIsICJNZXRyaWMiKSwgbGFiZWxzID0gYygiRGVwdGgiLCAiVHJhbnNmb3JtYXRpb24iLCAiTWV0cmljIikpICsKICBsYWJzKHggPSAiVGVtcGVyYXR1cmUgVmFyaWFibGVzIiwgeSA9ICJSZWxhdGl2ZSBWYXJpYWJsZSBJbXBvcnRhbmNlIikgKwogIHRoZW1lX2NsYXNzaWMoKSArCiAgdGhlbWUodGV4dCA9IGVsZW1lbnRfdGV4dChzaXplID0gMTEuNSksIAogICAgICAgIGxlZ2VuZC5wb3NpdGlvbiA9ICJyaWdodCIsIAogICAgICAgIGxlZ2VuZC50aXRsZSA9IGVsZW1lbnRfYmxhbmsoKSwgCiAgICAgICAgbGVnZW5kLnNwYWNpbmcueCA9IHVuaXQoMC4yLCAnY20nKSwKICAgICAgICBsZWdlbmQuanVzdGlmaWNhdGlvbiA9ICJjZW50ZXIiLAogICAgICAgIGFzcGVjdC5yYXRpbyA9ICgxKSwKICAgICAgICAjLCBsZWdlbmQucG9zaXRpb24gPSAibm9uZSIKICAgICAgICApICsKICBndWlkZXMoZmlsbD1ndWlkZV9sZWdlbmQobmNvbD0xKSkgKwogIHNjYWxlX2ZpbGxfbWFudWFsKHZhbHVlcyA9IGNvbG9ycywKICAgICAgICAgICAgICAgICAgICBkcm9wID0gRikKClJWSV90YWJsZQpSVklfYXJyaXZhbF9wbG90ClJWSV9kZXBhcnR1cmVfcGxvdApgYGAKCk5leHQgc3RlcCBpcyB0byBhZGQgdGhlIGNvZWZmaWNpZW50cyBvbiB0byB0aGUgYmFyIGNoYXJ0LiBUbyBkbyB0aGlzLCBJIHdpbGwgbmVlZCB0byBzdW0gKGFpa2FrZSB3ZWlnaHQgb2YgbW9kZWwgaW5jbHVkaW5nIHZhcmlhYmxlIHggY29lZmZpY2llbnQpLiBJIHRoaW5rIHRoaXMgd2lsbCBiZSBlYXN5IGVub3VnaCBVc2luZyBhcnJpdmFsX21vZGVsX2NvbXBhcmlzb25fYW5udWFsX29ic19ub21lYW4gZGF0YSBmcmFtZS4gSSB3aWxsIGFkZCBuZXcgY29sdW1uIHRvIGRhdGEgZnJhbWUgb2YgYWlrYWlrZSB3ZWlnaHQgeCBjb2VmZmljaWVudAoKYGBge3IgYXZnIGNvZWZmaWNpZW50cyBmb3IgYXJyaXZhbCBtb2RlbHN9CiNmb3Igc29tZSByZWFzb24gdGhlIGNvZWZmaWNpZW50IGlzIGEgZmFjdG9yCmFycml2YWxfbW9kZWxfY29tcGFyaXNvbl9hbm51YWxfb2JzX25vbWVhblssY29lZl9udW0gOj0gYXMubnVtZXJpYyhhcy5jaGFyYWN0ZXIoY29lZikpXQphcnJpdmFsX21vZGVsX2NvbXBhcmlzb25fYW5udWFsX29ic19ub21lYW5bLGF3X2NvZWYgOj0gYWthaWtlX3dlaWdodCAqIGNvZWZfbnVtXQoKI2JvdHRvbSB0ZW1wZXJhdHVyZSBhdmcgY29lZmZpY2llbnQKYXJyaXZhbF9ib3R0b21fdGVtcF9hdmdfY29lZiA8LSBzdW0oYXJyaXZhbF9tb2RlbF9jb21wYXJpc29uX2FubnVhbF9vYnNfbm9tZWFuW2dyZXAoInNidCIsIHZhcmlhYmxlKV0kY29lZl9udW0pCgojc3VyZmFjZSB0ZW1wZXJhdHVyZSBhdmcgY29lZmZpY2llbnQKYXJyaXZhbF9zdXJmYWNlX3RlbXBfYXZnX2NvZWYgPC0gc3VtKGFycml2YWxfbW9kZWxfY29tcGFyaXNvbl9hbm51YWxfb2JzX25vbWVhbltncmVwKCJzc3QiLCB2YXJpYWJsZSldJGNvZWZfbnVtKQoKI3JhdyBzZWFzb25hbGl0eSBhdmcgY29lZmZpY2llbnQKYXJyaXZhbF9zZWFzX3Jhd19hdmdfY29lZiA8LSAKICBzdW0oYXJyaXZhbF9tb2RlbF9jb21wYXJpc29uX2FubnVhbF9vYnNfbm9tZWFuW2dyZXAoInNlYXMiLCB2YXJpYWJsZSksIF1bIWdyZXAoImNoYW5nZSIsIHZhcmlhYmxlKV0kY29lZl9udW0pCgojbWF4IGFicyBjaGFuZ2UgYXZnIGNvZWZmaWNpZW50CmFycml2YWxfbWF4X2Fic19jaGFuZ2VfYXZnX2NvZWYgPC0gCiAgc3VtKGFycml2YWxfbW9kZWxfY29tcGFyaXNvbl9hbm51YWxfb2JzX25vbWVhbltncmVwKCJtYXhfcy50X3RlbXBfY2hhbmdlX2FicyIsIHZhcmlhYmxlKSwgXSRjb2VmX251bSkKCgpgYGAKCmBgYHtyIGF2ZyBjb2VmZmljaWVudHMgZm9yIGRlcGFydHVyZSBtb2RlbHN9CiNmb3Igc29tZSByZWFzb24gdGhlIGNvZWZmaWNpZW50IGlzIGEgZmFjdG9yCmRlcGFydHVyZV9tb2RlbF9jb21wYXJpc29uX2FubnVhbF9vYnNfbm9tZWFuWyxjb2VmX251bSA6PSBhcy5udW1lcmljKGFzLmNoYXJhY3Rlcihjb2VmKSldCmRlcGFydHVyZV9tb2RlbF9jb21wYXJpc29uX2FubnVhbF9vYnNfbm9tZWFuWyxhd19jb2VmIDo9IGFrYWlrZV93ZWlnaHQgKiBjb2VmX251bV0KCiNib3R0b20gdGVtcGVyYXR1cmUgYXZnIGNvZWZmaWNpZW50CmRlcGFydHVyZV9ib3R0b21fdGVtcF9hdmdfY29lZiA8LSBzdW0oZGVwYXJ0dXJlX21vZGVsX2NvbXBhcmlzb25fYW5udWFsX29ic19ub21lYW5bZ3JlcCgic2J0IiwgdmFyaWFibGUpXSRjb2VmX251bSkKCiNzdXJmYWNlIHRlbXBlcmF0dXJlIGF2ZyBjb2VmZmljaWVudApkZXBhcnR1cmVfc3VyZmFjZV90ZW1wX2F2Z19jb2VmIDwtIHN1bShkZXBhcnR1cmVfbW9kZWxfY29tcGFyaXNvbl9hbm51YWxfb2JzX25vbWVhbltncmVwKCJzc3QiLCB2YXJpYWJsZSldJGNvZWZfbnVtKQoKI3JhdyBzZWFzb25hbGl0eSBhdmcgY29lZmZpY2llbnQKZGVwYXJ0dXJlX3NlYXNfcmF3X2F2Z19jb2VmIDwtIAogIHN1bShkZXBhcnR1cmVfbW9kZWxfY29tcGFyaXNvbl9hbm51YWxfb2JzX25vbWVhbltncmVwKCJzZWFzIiwgdmFyaWFibGUpLCBdWyFncmVwKCJjaGFuZ2UiLCB2YXJpYWJsZSldJGNvZWZfbnVtKQoKI21pbiBjaGFuZ2UgYXZnIGNvZWZmaWNpZW50CmRlcGFydHVyZV9taW5fYWJzX2NoYW5nZV9hdmdfY29lZiA8LSAKICBzdW0oZGVwYXJ0dXJlX21vZGVsX2NvbXBhcmlzb25fYW5udWFsX29ic19ub21lYW5bZ3JlcCgibWluX3MudF90ZW1wX2NoYW5nZSIsIHZhcmlhYmxlKSwgXVshZ3JlcCgiYWJzIiwgdmFyaWFibGUpXSRjb2VmX251bSkKCiNzZWFzIGNoYW5nZSBhdmcgY29lZmZpY2llbnQKZGVwYXJ0dXJlX3NlYXNfY2hhbmdlX2F2Z19jb2VmIDwtIAogIHN1bShkZXBhcnR1cmVfbW9kZWxfY29tcGFyaXNvbl9hbm51YWxfb2JzX25vbWVhbltncmVwKCJzZWFzX3MudF90ZW1wX2NoYW5nZSIsIHZhcmlhYmxlKSwgXVshZ3JlcCgiYWJzIiwgdmFyaWFibGUpXSRjb2VmX251bSkKCgpgYGA=</div>
+<div id="rmd-source-code">LS0tCnRpdGxlOiAiQXJyaXZhbCBhbmQgRGVwYXJ0dXJlIEZpbmFsIE1vZGVsczogRVhDTFVESU5HIEFJLCBHT0EsIFdDVFJJIgpvdXRwdXQ6IGh0bWxfbm90ZWJvb2sKLS0tCgpUaGlzIGlzIGEgY2xlYW5lZCB2ZXJzaW9uIG9mIDA0XzI0XzE5IFRlbXAgbGluayB0cmFpdCBmaXNoLlJtZC8xMV8yMF8xOV9UZW1wX2xpbmtfdHJhaXRzX2Zpc2guUm1kLgpDaGFuZ2VzCiogaW1wcm92ZWQgZm9ybWF0dGluZwoqIGVhc2llciB0byBmb2xsb3cKKiBzcGVjaWVzIGFuZCByZWdpb24gYXMgcmFuZG9tIGVmZmVjdHMKKiBzY2FsaW5nIHRlbXBlcmF0dXJlIHZhbHVlcwoqIHNldHRpbmcgbkFDUSB0byAwLCBzZWUgd2h5IChub3QgYW55bW9yZSBhcyBvZiBGcmlkYXkgQXVndXN0IDI2LCAyMDIyLCB1c2luZyBnbG1tVE1CIGluc3RlYWQpIFtoZXJlXShodHRwczovL3N0YXRzLnN0YWNrZXhjaGFuZ2UuY29tL3F1ZXN0aW9ucy83NzMxMy93aHktY2FudC1pLW1hdGNoLWdsbWVyLWZhbWlseS1iaW5vbWlhbC1vdXRwdXQtd2l0aC1tYW51YWwtaW1wbGVtZW50YXRpb24tb2YtZykuIAoKYGBge3Igc2V0dXB9CmxpYnJhcnkoTXVNSW4pCmxpYnJhcnkobG1lNCkKbGlicmFyeShkYXRhLnRhYmxlKQpsaWJyYXJ5KGdncGxvdDIpCmxpYnJhcnkoaGVyZSkKbGlicmFyeSh3ZXNhbmRlcnNvbikgIyB0byBjb2xvciBwbG90cwpsaWJyYXJ5KGdsbW1UTUIpCgpzcHBfbWFzdGVyX3p0ZW1wX3NldXNfYnVveV9zY2FsZWQgPC0gcmVhZFJEUygifi9Eb2N1bWVudHMvZ3JhZCBzY2hvb2wvUnV0Z2Vycy9SZXBvc2l0b3JpZXMvQ29sX0V4dC9EYXRhL1NwcF9tYXN0ZXIvc3BwX21hc3Rlcl96dGVtcF9zZXVzX2J1b3lfc2NhbGVkLnJkcyIpCmBgYAoKRGVsZXRlIGFsbCBvYnNlcnZhdGlvbnMgb2YgcmVnaW9ucyB0aGF0IGRvIG5vdCBzYW1wbGUgZXZlcnkgeWVhcgpgYGB7ciBkZWxldGUgb2JzIG9mIHJlZ3Mgbm90IGFubnVhbGx5IHNhbXBsZWR9CmxldmVscyhzcHBfbWFzdGVyX3p0ZW1wX3NldXNfYnVveV9zY2FsZWQkcmVnKQoKc3BwX21hc3Rlcl96dGVtcF9zZXVzX2J1b3lfc2NhbGVkX2FubnVhbF9vYnMgPC0gc3BwX21hc3Rlcl96dGVtcF9zZXVzX2J1b3lfc2NhbGVkWyEocmVnICVpbiUgYygiYWkiLCJnb2EiLCJ3Y3RyaSIpKSxdCgpgYGAKCkxpbmsgdXAgd2l0aCBzcHAga2V5IHRvIGFkZCBwaHlsdW0sIG9yZGVyLCBmYW1pbHksIGV0Yy4KYGBge3IgcHVsbCBpbiBzcHAsIG9yZGVyLCBmYW1pbHksIGV0Yy59CnNwcF9rZXkgPC0gZnJlYWQoaGVyZTo6aGVyZSgiRGF0YSIsIlNwcF9tYXN0ZXIiLCJzcHBfa2V5LmNzdiIpKQoKc3BwX21hc3Rlcl96dGVtcF9zZXVzX2J1b3lfc2NhbGVkX2FubnVhbF9vYnMgPC0gc3BwX21hc3Rlcl96dGVtcF9zZXVzX2J1b3lfc2NhbGVkX2FubnVhbF9vYnNbc3BwX2tleSwgb24gPSAic3BwIl0KCiMoMXxyZWcpICsgKDF8cGh5bHVtKSArICgxfGNsYXNzKSArICgxfG9yZGVyKSArICgxfGZhbWlseSkgKyAoMXxnZW51cykgKyAoMXxzcHApCiAgICAKYGBgCgpSdW5uaW5nLCBhbmQgcmFua2luZyBhcnJpdmFsIG1vZGVscyB3aXRob3V0IHRyYWl0cwoKIyNIZXJlLCBJIHNjYWxlZCBhbGwgdGVtcGVyYXR1cmUgdmFsdWVzIGFjcm9zcyBhbGwgcmVnaW9ucywgYW5kIGluY2x1ZGVkIHNwZWNpZXMgYXMgYSByYW5kb20gZWZmZWN0LiBJbiBvcmRlciB0byBkbyB0aGlzLCBJIGhhZCB0byBjaGFuZ2UgdGhlIGFsZ29yaXRobSBzbGlnaHRseS0tbkFHUSA9IDAuCgpgYGB7ciBhcnJpdmFsIG1vZGVscyB3aXRob3V0IHRyYWl0c30KI25hbWVzIG9mIHNjYWxlZCBjb2x1bW5zCnZhcmlhYmxlc19zY2FsZWQgPC0gZ3JlcCgiKl9zY2FsZWQiLCBuYW1lcyhzcHBfbWFzdGVyX3p0ZW1wX3NldXNfYnVveV9zY2FsZWRfYW5udWFsX29icyksIHZhbHVlID0gVCkKCiNnb2luZyB0byBtYWtlIGxvb3AgdG8gbWFrZSBhbGwgbW9kZWxzIEkgbmVlZCB0byBsb29rIGF0IHdpdGggYSBzaW5nbGUgdGVtcGVyYXR1cmUgdmFyaWFibGUKCmFycml2YWxfbW9kZWxfY29tcGFyaXNvbl9hbm51YWxfb2JzX3RheG9ub215IDwtIGFzLmRhdGEudGFibGUobWF0cml4KG5yb3cgPSBsZW5ndGgodmFyaWFibGVzX3NjYWxlZCkpKQphcnJpdmFsX21vZGVsX2NvbXBhcmlzb25fYW5udWFsX29ic190YXhvbm9teVssIHZhcmlhYmxlOj1hcy5mYWN0b3IoVjEpXVssIGNvZWY6PWFzLm51bWVyaWMoVjEpXVssIHBfdmFsdWU6PWFzLm51bWVyaWMoVjEpXVssIEFJQ2M6PWFzLm51bWVyaWMoVjEpXQphcnJpdmFsX21vZGVsX2NvbXBhcmlzb25fYW5udWFsX29ic190YXhvbm9teVssIFYxIDo9IE5VTExdCgpmb3IgKGkgaW4gMTpsZW5ndGgodmFyaWFibGVzX3NjYWxlZCkpewogIG1vZCA8LSBnbG1tVE1CKGNvbCB+IGdldCh2YXJpYWJsZXNfc2NhbGVkW2ldKSArICgxfHJlZykgKyAoMXxwaHlsdW0pICsgKDF8Y2xhc3MpICsgKDF8b3JkZXIpICsgKDF8ZmFtaWx5KSArICgxfGdlbnVzKSArICgxfHNwcCksIGZhbWlseSA9IGJpbm9taWFsLCBkYXRhID0gc3BwX21hc3Rlcl96dGVtcF9zZXVzX2J1b3lfc2NhbGVkX2FubnVhbF9vYnMpCiAgYXJyaXZhbF9tb2RlbF9jb21wYXJpc29uX2FubnVhbF9vYnNfdGF4b25vbXlbaSx2YXJpYWJsZSA6PSB2YXJpYWJsZXNfc2NhbGVkW2ldXQogIGFycml2YWxfbW9kZWxfY29tcGFyaXNvbl9hbm51YWxfb2JzX3RheG9ub215W2ksY29lZiA6PSBjb2VmKHN1bW1hcnkobW9kKSkkY29uZFssIkVzdGltYXRlIl1bWzJdXV0KICBhcnJpdmFsX21vZGVsX2NvbXBhcmlzb25fYW5udWFsX29ic190YXhvbm9teVtpLHBfdmFsdWUgOj0gY29lZihzdW1tYXJ5KG1vZCkpJGNvbmRbLCJQcig+fHp8KSJdW1syXV1dCiAgYXJyaXZhbF9tb2RlbF9jb21wYXJpc29uX2FubnVhbF9vYnNfdGF4b25vbXlbaSxBSUNjIDo9IEFJQ2MobW9kKV0KICAKICBwcmludChwYXN0ZShpLCBsZW5ndGgodmFyaWFibGVzX3NjYWxlZCksIHNlcCA9ICIvIikpCiAgICAKfQoKCnNhdmVSRFMob2JqZWN0ID0gYXJyaXZhbF9tb2RlbF9jb21wYXJpc29uX2FubnVhbF9vYnNfdGF4b25vbXksIGZpbGUgPSBoZXJlOjpoZXJlKCJNb2RlbF9yZXN1bHRzIiwiYXJyaXZhbF9tb2RlbF9jb21wYXJpc29uX2FubnVhbF9vYnNfdGF4b25vbXkucmRzIikpCgpmd3JpdGUoYXJyaXZhbF9tb2RlbF9jb21wYXJpc29uX2FubnVhbF9vYnNfdGF4b25vbXksIGZpbGUgPSBoZXJlOjpoZXJlKCJNb2RlbF9yZXN1bHRzIiwiYXJyaXZhbF9tb2RlbF9jb21wYXJpc29uX2FubnVhbF9vYnNfdGF4b25vbXkuY3N2IikpCgphcnJpdmFsX21vZGVsX2NvbXBhcmlzb25fYW5udWFsX29ic190YXhvbm9teSA8LSByZWFkUkRTKGhlcmU6OmhlcmUoIk1vZGVsX3Jlc3VsdHMiLCJhcnJpdmFsX21vZGVsX2NvbXBhcmlzb25fYW5udWFsX29ic190YXhvbm9teS5yZHMiKSkKCmBgYAoKRGVwYXJ0dXJlIE1vZGVscyB3aXRob3V0IFRyYWl0cwpgYGB7ciBkZXBhcnR1cmUgbW9kZWxzIHdpdGhvdXQgdHJhaXRzfQoKZGVwYXJ0dXJlX21vZGVsX2NvbXBhcmlzb25fYW5udWFsX29ic190YXhvbm9teSA8LSBhcy5kYXRhLnRhYmxlKG1hdHJpeChucm93ID0gbGVuZ3RoKHZhcmlhYmxlc19zY2FsZWQpKSkKZGVwYXJ0dXJlX21vZGVsX2NvbXBhcmlzb25fYW5udWFsX29ic190YXhvbm9teVssIHZhcmlhYmxlOj1hcy5mYWN0b3IoVjEpXVssIGNvZWY6PWFzLm51bWVyaWMoVjEpXVssIHBfdmFsdWU6PWFzLm51bWVyaWMoVjEpXVssIEFJQ2M6PWFzLm51bWVyaWMoVjEpXQpkZXBhcnR1cmVfbW9kZWxfY29tcGFyaXNvbl9hbm51YWxfb2JzX3RheG9ub215WywgVjEgOj0gTlVMTF0KCmZvciAoaSBpbiAxOmxlbmd0aCh2YXJpYWJsZXNfc2NhbGVkKSl7CiAgbW9kIDwtIGdsbW1UTUIobm93X2V4dCB+IGdldCh2YXJpYWJsZXNfc2NhbGVkW2ldKSArICgxfHJlZykgKyAoMXxwaHlsdW0pICsgKDF8Y2xhc3MpICsgKDF8b3JkZXIpICsgKDF8ZmFtaWx5KSArICgxfGdlbnVzKSArICgxfHNwcCksIGZhbWlseSA9IGJpbm9taWFsLCBkYXRhID0gc3BwX21hc3Rlcl96dGVtcF9zZXVzX2J1b3lfc2NhbGVkX2FubnVhbF9vYnMpCiAgZGVwYXJ0dXJlX21vZGVsX2NvbXBhcmlzb25fYW5udWFsX29ic190YXhvbm9teVtpLHZhcmlhYmxlIDo9IHZhcmlhYmxlc19zY2FsZWRbaV1dCiAgZGVwYXJ0dXJlX21vZGVsX2NvbXBhcmlzb25fYW5udWFsX29ic190YXhvbm9teVtpLGNvZWYgOj0gY29lZihzdW1tYXJ5KG1vZCkpJGNvbmRbLCJFc3RpbWF0ZSJdW1syXV1dCiAgZGVwYXJ0dXJlX21vZGVsX2NvbXBhcmlzb25fYW5udWFsX29ic190YXhvbm9teVtpLHBfdmFsdWUgOj0gY29lZihzdW1tYXJ5KG1vZCkpJGNvbmRbLCJQcig+fHp8KSJdW1syXV1dCiAgZGVwYXJ0dXJlX21vZGVsX2NvbXBhcmlzb25fYW5udWFsX29ic190YXhvbm9teVtpLEFJQ2MgOj0gQUlDYyhtb2QpXQogIAogIHByaW50KHBhc3RlKGksIGxlbmd0aCh2YXJpYWJsZXNfc2NhbGVkKSwgc2VwID0gIi8iKSkKICAgIAp9CgpzYXZlUkRTKG9iamVjdCA9IGRlcGFydHVyZV9tb2RlbF9jb21wYXJpc29uX2FubnVhbF9vYnNfdGF4b25vbXksIGZpbGUgPSBoZXJlOjpoZXJlKCJNb2RlbF9yZXN1bHRzIiwiZGVwYXJ0dXJlX21vZGVsX2NvbXBhcmlzb25fYW5udWFsX29ic190YXhvbm9teS5yZHMiKSkKZndyaXRlKGRlcGFydHVyZV9tb2RlbF9jb21wYXJpc29uX2FubnVhbF9vYnNfdGF4b25vbXksIGZpbGUgPSBoZXJlOjpoZXJlKCJNb2RlbF9yZXN1bHRzIiwiZGVwYXJ0dXJlX21vZGVsX2NvbXBhcmlzb25fYW5udWFsX29ic190YXhvbm9teS5yZHMiKSkKCmRlcGFydHVyZV9tb2RlbF9jb21wYXJpc29uX2FubnVhbF9vYnNfdGF4b25vbXkgPC0gcmVhZFJEUyhoZXJlOjpoZXJlKCJNb2RlbF9yZXN1bHRzIiwiZGVwYXJ0dXJlX21vZGVsX2NvbXBhcmlzb25fYW5udWFsX29ic190YXhvbm9teS5yZHMiKSkKCmBgYAoKUmVsYXRpdmUgVmFyaWFibGUgSW1wb3J0YW5jZQoKTkI6IEkgZGlkbid0IGVuZCB1cCB1c2luZyBtZWFuIGFzIGEgcHJlZGljdG9yIHZhcmlhYmxlIChwYXR0ZXJucyBjYXB0dXJlZCBpbiBtaW4gYW5kIG1heCwgbGVzcyByZWxldmFudCB0byB0aGVybWFsIG5pY2hlKQpgYGB7ciBnZXQgcmlkIG9mIGFueSBtb2RlbHMgdXNpbmcgbWVhbn0KYXJyaXZhbF9tb2RlbF9jb21wYXJpc29uX2FubnVhbF9vYnNfbm9tZWFuIDwtIGFycml2YWxfbW9kZWxfY29tcGFyaXNvbl9hbm51YWxfb2JzX3RheG9ub215WyFncmVwbCgibWVhbiIsdmFyaWFibGUpLF0KCmRlcGFydHVyZV9tb2RlbF9jb21wYXJpc29uX2FubnVhbF9vYnNfbm9tZWFuIDwtIGRlcGFydHVyZV9tb2RlbF9jb21wYXJpc29uX2FubnVhbF9vYnNfdGF4b25vbXlbIWdyZXBsKCJtZWFuIix2YXJpYWJsZSksXQoKCmBgYAoKSG93IGRvZXMgdGhlIG51bGwgbW9kZWwgd2l0aCBvbmx5IHJhbmRvbSBlZmZlY3RzIHBlcmZvcm0/CmBgYHtyIG51bGwgbW9kZWxzfQojYWRkIG51bGwgdG8gdGFibGVzCmludGVyY2VwdF9hcnJpdmFsX21vZF9zY2FsZWQgPC0gZ2xtbVRNQihjb2wgfiAoMXxyZWcpICsgKDF8cGh5bHVtKSArICgxfGNsYXNzKSArICgxfG9yZGVyKSArICgxfGZhbWlseSkgKyAoMXxnZW51cykgKyAoMXxzcHApLCBmYW1pbHkgPSBiaW5vbWlhbCwgZGF0YSA9IHNwcF9tYXN0ZXJfenRlbXBfc2V1c19idW95X3NjYWxlZF9hbm51YWxfb2JzKQoKaW50ZXJjZXB0X2RlcGFydHVyZV9tb2Rfc2NhbGVkIDwtIGdsbW1UTUIobm93X2V4dCB+ICgxfHJlZykgKyAoMXxwaHlsdW0pICsgKDF8Y2xhc3MpICsgKDF8b3JkZXIpICsgKDF8ZmFtaWx5KSArICgxfGdlbnVzKSArICgxfHNwcCksIGZhbWlseSA9IGJpbm9taWFsLCBkYXRhID0gc3BwX21hc3Rlcl96dGVtcF9zZXVzX2J1b3lfc2NhbGVkX2FubnVhbF9vYnMpCgojYmVzdCBtb2RlbCBiZXR0ZXIgdGhhbiBudWxsPyB5ZXMKQUlDYyhpbnRlcmNlcHRfYXJyaXZhbF9tb2Rfc2NhbGVkKS1taW4oYXJyaXZhbF9tb2RlbF9jb21wYXJpc29uX2FubnVhbF9vYnMkQUlDYykKQUlDYyhpbnRlcmNlcHRfZGVwYXJ0dXJlX21vZF9zY2FsZWQpLW1pbihkZXBhcnR1cmVfbW9kZWxfY29tcGFyaXNvbl9hbm51YWxfb2JzJEFJQ2MpCgoKYGBgCgoKUmVsYXRpdmUgVmFyaWFibGUgSW1wb3J0YW5jZSBmb3IgQXJyaXZhbCBNb2RlbHMKYGBge3IgUlZJIGFycml2YWxzfQojYWRkIOKIhkFJQyB0byB0YWJsZXMKbWluX2Fycml2YWxfQUlDYyA8LSBtaW4oYXJyaXZhbF9tb2RlbF9jb21wYXJpc29uX2FubnVhbF9vYnNfbm9tZWFuWywgQUlDY10pCmFycml2YWxfbW9kZWxfY29tcGFyaXNvbl9hbm51YWxfb2JzX25vbWVhblssImRlbHRhQUlDYyIgOj0gKEFJQ2MgLSBtaW5fYXJyaXZhbF9BSUNjKV0KCiNhZGQgcmVsYXRpdmUgbGlrZWxpaG9vZCBleHAoIC0wLjUgKiDiiIZBSUMgc2NvcmUgZm9yIHRoYXQgbW9kZWwpCmFycml2YWxfbW9kZWxfY29tcGFyaXNvbl9hbm51YWxfb2JzX25vbWVhblssInJlbF9saWtlbGlob29kIiA6PSBleHAoKC0wLjUgKiBkZWx0YUFJQ2MpKV0KI3N1bSByZWxhdGl2ZSBsaWtlbGlob29kcyBhY3Jvc3MgYWxsIG1vZGVscwphcnJpdmFsX21vZGVsX2NvbXBhcmlzb25fYW5udWFsX29ic19ub21lYW4ubGlrZWxpaG9vZHN1bSA8LSBzdW0oYXJyaXZhbF9tb2RlbF9jb21wYXJpc29uX2FubnVhbF9vYnNfbm9tZWFuWywgcmVsX2xpa2VsaWhvb2RdKQojQWthaWtlIHdlaWdodCBmb3IgYSBtb2RlbCBpcyB0aGlzIHJlbF9saWtlbGlob29kIGRpdmlkZWQgYnkgdGhlIHN1bSBvZiB0aGVzZSB2YWx1ZXMgYWNyb3NzIGFsbCBtb2RlbHMKYXJyaXZhbF9tb2RlbF9jb21wYXJpc29uX2FubnVhbF9vYnNfbm9tZWFuWywiYWthaWtlX3dlaWdodCIgOj0gcmVsX2xpa2VsaWhvb2QvYXJyaXZhbF9tb2RlbF9jb21wYXJpc29uX2FubnVhbF9vYnNfbm9tZWFuLmxpa2VsaWhvb2RzdW1dCgojSSB3YW50IHRvIGxvb2sgYXQgcmVsYXRpdmUgaW1wb3J0YW5jZSBGT1I6CgojYm90dG9tL3N1cmZhY2UgKGJvdHRvbSA9IGluY2x1ZGVzIHNidCwgZ3JlcGwoInNidCIsIHZhcmlhYmxlKSkKYXJyaXZhbF9ib3R0b21faW1wb3J0YW5jZSA8LSBzdW0oYXJyaXZhbF9tb2RlbF9jb21wYXJpc29uX2FubnVhbF9vYnNfbm9tZWFuW2dyZXAoInNidCIsIHZhcmlhYmxlKSwgXSRha2Fpa2Vfd2VpZ2h0KQphcnJpdmFsX3N1cmZhY2VfaW1wb3J0YW5jZSA8LSBzdW0oYXJyaXZhbF9tb2RlbF9jb21wYXJpc29uX2FubnVhbF9vYnNfbm9tZWFuW2dyZXAoInNzdCIsIHZhcmlhYmxlKSwgXSRha2Fpa2Vfd2VpZ2h0KQoKI2xhZy9ub3QgbGFnZ2VkIChncmVwbCgibGFnIiwgdmFyaWFibGUpKQphcnJpdmFsX2xhZ19pbXBvcnRhbmNlIDwtIHN1bShhcnJpdmFsX21vZGVsX2NvbXBhcmlzb25fYW5udWFsX29ic19ub21lYW5bZ3JlcCgibGFnIiwgdmFyaWFibGUpLCBdJGFrYWlrZV93ZWlnaHQpCmFycml2YWxfbm9sYWdfaW1wb3J0YW5jZSA8LSBzdW0oYXJyaXZhbF9tb2RlbF9jb21wYXJpc29uX2FubnVhbF9vYnNfbm9tZWFuWyFncmVwKCJsYWciLCB2YXJpYWJsZSksIF0kYWthaWtlX3dlaWdodCkKCiNhYnNvbHV0ZSAoZ3JlcGwoImFicyIsIHZhcmlhYmxlKSkKYXJyaXZhbF9hYnNfaW1wb3J0YW5jZSA8LSBzdW0oYXJyaXZhbF9tb2RlbF9jb21wYXJpc29uX2FubnVhbF9vYnNfbm9tZWFuW2dyZXAoImFicyIsIHZhcmlhYmxlKSwgXSRha2Fpa2Vfd2VpZ2h0KQoKI3JhdyAoIWdyZXBsKCJjaGFuZ2UiKSkKYXJyaXZhbF9yYXdfaW1wb3J0YW5jZSA8LSBzdW0oYXJyaXZhbF9tb2RlbF9jb21wYXJpc29uX2FubnVhbF9vYnNfbm9tZWFuWyFncmVwKCJjaGFuZ2UiLCB2YXJpYWJsZSksIF0kYWthaWtlX3dlaWdodCkKCiNjaGFuZ2UgKGdyZXBsKCJjaGFuZ2UiLCB2YXJpYWJsZSksICghZ3JlcGwoImFicyIpKSkKYXJyaXZhbF9jaGFuZ2VfaW1wb3J0YW5jZSA8LSBzdW0oYXJyaXZhbF9tb2RlbF9jb21wYXJpc29uX2FubnVhbF9vYnNfbm9tZWFuW2dyZXAoImNoYW5nZSIsIHZhcmlhYmxlKSwgXVshZ3JlcCgiYWJzIiwgdmFyaWFibGUpLF0kYWthaWtlX3dlaWdodCkKCiN0eXBlIG9mIHRlbXAgdmFyaWFibGUgKG1heCwgbWluLCBzZWFzKQphcnJpdmFsX21heF90ZW1wX2ltcG9ydGFuY2UgPC0gc3VtKGFycml2YWxfbW9kZWxfY29tcGFyaXNvbl9hbm51YWxfb2JzX25vbWVhbltncmVwKCJtYXgiLCB2YXJpYWJsZSksIF0kYWthaWtlX3dlaWdodCkKYXJyaXZhbF9taW5fdGVtcF9pbXBvcnRhbmNlIDwtIHN1bShhcnJpdmFsX21vZGVsX2NvbXBhcmlzb25fYW5udWFsX29ic19ub21lYW5bZ3JlcCgibWluIiwgdmFyaWFibGUpLCBdJGFrYWlrZV93ZWlnaHQpCmFycml2YWxfc2Vhc190ZW1wX2ltcG9ydGFuY2UgPC0gc3VtKGFycml2YWxfbW9kZWxfY29tcGFyaXNvbl9hbm51YWxfb2JzX25vbWVhbltncmVwKCJzZWFzIiwgdmFyaWFibGUpLCBdJGFrYWlrZV93ZWlnaHQpCgphcnJpdmFsX21vZGVsX2NvbXBhcmlzb25fYW5udWFsX29ic19ub21lYW5fYWthaWtld2VpZ2h0cyA8LSBhcnJpdmFsX21vZGVsX2NvbXBhcmlzb25fYW5udWFsX29ic19ub21lYW4KCnNhdmVSRFMoYXJyaXZhbF9tb2RlbF9jb21wYXJpc29uX2FubnVhbF9vYnNfbm9tZWFuX2FrYWlrZXdlaWdodHMsIGZpbGUgPSBoZXJlOjpoZXJlKCJNb2RlbF9yZXN1bHRzIiwiYXJyaXZhbF9tb2RlbF9jb21wYXJpc29uX2FubnVhbF9vYnNfbm9tZWFuX2FrYWlrZXdlaWdodHNfYW5udWFsX29icy5yZHMiKSkKc2F2ZVJEUyhhcnJpdmFsX21vZGVsX2NvbXBhcmlzb25fYW5udWFsX29ic19ub21lYW5fYWthaWtld2VpZ2h0cywgZmlsZSA9IGhlcmU6OmhlcmUoInRhYmxlcyIsImFycml2YWxfbW9kZWxfY29tcGFyaXNvbl9hbm51YWxfb2JzX25vbWVhbl9ha2Fpa2V3ZWlnaHRzX2FubnVhbF9vYnMucmRzIikpCmFycml2YWxfbW9kZWxfY29tcGFyaXNvbl9hbm51YWxfb2JzX25vbWVhbl9ha2Fpa2V3ZWlnaHRzIDwtIHJlYWRSRFMoZmlsZSA9IGhlcmU6OmhlcmUoIk1vZGVsX3Jlc3VsdHMiLCJhcnJpdmFsX21vZGVsX2NvbXBhcmlzb25fYW5udWFsX29ic19ub21lYW5fYWthaWtld2VpZ2h0c19hbm51YWxfb2JzLnJkcyIpKQoKYGBgCgpSZWxhdGl2ZSBWYXJpYWJsZSBJbXBvcnRhbmNlIGZvciBkaWZmZXJlbnQgUGFpcnMgb2YgVHJhbnNmb3JtYXRpb24gYW5kIE1ldHJpYwpgYGB7ciBSVkkgYXJyaXZhbCBQYWlycyBUcmFuc2Zvcm1hdGlvbiBhbmQgTWV0cmljfQoKI0kgd2FudCB0byBsb29rIGF0IHJlbGF0aXZlIGltcG9ydGFuY2UgRk9SIAojbW9kZWxzIHdpdGggcmF3IGFuZCBtaW4KYXJyaXZhbF9yYXdfbWluX2ltcG9ydGFuY2UgPC0gc3VtKGFycml2YWxfbW9kZWxfY29tcGFyaXNvbl9hbm51YWxfb2JzX25vbWVhbltncmVwKCJtaW4iLCB2YXJpYWJsZSksIF1bIWdyZXAoImNoYW5nZSIsIHZhcmlhYmxlKV0kYWthaWtlX3dlaWdodCkKCiNtb2RlbHMgd2l0aCByYXcgYW5kIG1heAphcnJpdmFsX3Jhd19tYXhfaW1wb3J0YW5jZSA8LSBzdW0oYXJyaXZhbF9tb2RlbF9jb21wYXJpc29uX2FubnVhbF9vYnNfbm9tZWFuW2dyZXAoIm1heCIsIHZhcmlhYmxlKSwgXVshZ3JlcCgiY2hhbmdlIiwgdmFyaWFibGUpXSRha2Fpa2Vfd2VpZ2h0KQoKI21vZGVscyB3aXRoIHJhdyBhbmQgc2VhcwphcnJpdmFsX3Jhd19zZWFzX2ltcG9ydGFuY2UgPC0gc3VtKGFycml2YWxfbW9kZWxfY29tcGFyaXNvbl9hbm51YWxfb2JzX25vbWVhbltncmVwKCJzZWFzIiwgdmFyaWFibGUpLCBdWyFncmVwKCJjaGFuZ2UiLCB2YXJpYWJsZSldJGFrYWlrZV93ZWlnaHQpCgoKI21vZGVscyB3aXRoIGNoYW5nZSBhbmQgbWluCmFycml2YWxfY2hhbmdlX21pbl9pbXBvcnRhbmNlIDwtIHN1bShhcnJpdmFsX21vZGVsX2NvbXBhcmlzb25fYW5udWFsX29ic19ub21lYW5bZ3JlcCgibWluX3MudF90ZW1wX2NoYW5nZSIsIHZhcmlhYmxlKSwgXVshZ3JlcCgiYWJzIiwgdmFyaWFibGUpXSRha2Fpa2Vfd2VpZ2h0KQoKI21vZGVscyB3aXRoIGNoYW5nZSBhbmQgbWF4CmFycml2YWxfY2hhbmdlX21heF9pbXBvcnRhbmNlIDwtIHN1bShhcnJpdmFsX21vZGVsX2NvbXBhcmlzb25fYW5udWFsX29ic19ub21lYW5bZ3JlcCgibWF4X3MudF90ZW1wX2NoYW5nZSIsIHZhcmlhYmxlKSwgXVshZ3JlcCgiYWJzIiwgdmFyaWFibGUpXSRha2Fpa2Vfd2VpZ2h0KQoKI21vZGVscyB3aXRoIGNoYW5nZSBhbmQgc2VhcwphcnJpdmFsX2NoYW5nZV9zZWFzX2ltcG9ydGFuY2UgPC0gc3VtKGFycml2YWxfbW9kZWxfY29tcGFyaXNvbl9hbm51YWxfb2JzX25vbWVhbltncmVwKCJzZWFzX3MudF90ZW1wX2NoYW5nZSIsIHZhcmlhYmxlKSwgXVshZ3JlcCgiYWJzIiwgdmFyaWFibGUpXSRha2Fpa2Vfd2VpZ2h0KQoKI21vZGVscyB3aXRoIGFicyBjaGFuZ2UgYW5kIG1pbgphcnJpdmFsX2Fic19jaGFuZ2VfbWluX2ltcG9ydGFuY2UgPC0gc3VtKGFycml2YWxfbW9kZWxfY29tcGFyaXNvbl9hbm51YWxfb2JzX25vbWVhbltncmVwKCJtaW5fcy50X3RlbXBfY2hhbmdlX2FicyIsIHZhcmlhYmxlKSwgXSRha2Fpa2Vfd2VpZ2h0KQoKI21vZGVscyB3aXRoIGFicyBjaGFuZ2UgYW5kIG1heAphcnJpdmFsX2Fic19jaGFuZ2VfbWF4X2ltcG9ydGFuY2UgPC0gc3VtKGFycml2YWxfbW9kZWxfY29tcGFyaXNvbl9hbm51YWxfb2JzX25vbWVhbltncmVwKCJtYXhfcy50X3RlbXBfY2hhbmdlX2FicyIsIHZhcmlhYmxlKSwgXSRha2Fpa2Vfd2VpZ2h0KQoKI21vZGVscyB3aXRoIGFicyBjaGFuZ2UgYW5kIHNlYXMKYXJyaXZhbF9hYnNfY2hhbmdlX3NlYXNfaW1wb3J0YW5jZSA8LSBzdW0oYXJyaXZhbF9tb2RlbF9jb21wYXJpc29uX2FubnVhbF9vYnNfbm9tZWFuW2dyZXAoInNlYXNfcy50X3RlbXBfY2hhbmdlX2FicyIsIHZhcmlhYmxlKSwgXSRha2Fpa2Vfd2VpZ2h0KQoKYXJyaXZhbF90cmFuc2Zvcm1fbWV0cmljX2NvbXBhcmlzb24gPC0gZGF0YS50YWJsZShUcmFuc2Zvcm1hdGlvbiA9CiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIGMoInJhdyIsICJyYXciLCAicmF3IiwgImNoYW5nZSIsICJjaGFuZ2UiLCAiY2hhbmdlIiwgImFic19jaGFuZ2UiLCAiYWJzX2NoYW5nZSIsICJhYnNfY2hhbmdlIiksIAogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgTWV0cmljID0gCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIHJlcChjKCJtaW4iLCAibWF4IiwgInNlYXMiKSwgMyksIAogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgUlZJID0gCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIGMoYXJyaXZhbF9yYXdfbWluX2ltcG9ydGFuY2UsIGFycml2YWxfcmF3X21heF9pbXBvcnRhbmNlLCAKICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICBhcnJpdmFsX3Jhd19zZWFzX2ltcG9ydGFuY2UsIGFycml2YWxfY2hhbmdlX21pbl9pbXBvcnRhbmNlLCAKICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICBhcnJpdmFsX2NoYW5nZV9tYXhfaW1wb3J0YW5jZSwgYXJyaXZhbF9jaGFuZ2Vfc2Vhc19pbXBvcnRhbmNlLCAKICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICBhcnJpdmFsX2Fic19jaGFuZ2VfbWluX2ltcG9ydGFuY2UsIGFycml2YWxfYWJzX2NoYW5nZV9tYXhfaW1wb3J0YW5jZSwgCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgYXJyaXZhbF9hYnNfY2hhbmdlX3NlYXNfaW1wb3J0YW5jZSkpCgoKYGBgCgoKUmVsYXRpdmUgVmFyaWFibGUgSW1wb3J0YW5jZSBEZXBhcnR1cmUgTW9kZWxzCmBgYHtyIFJWSSBkZXBhcnR1cmV9CiNhZGQg4oiGQUlDIHRvIHRhYmxlcwptaW5fZGVwYXJ0dXJlX0FJQ2MgPC0gbWluKGRlcGFydHVyZV9tb2RlbF9jb21wYXJpc29uX2FubnVhbF9vYnNfbm9tZWFuWywgQUlDY10pCmRlcGFydHVyZV9tb2RlbF9jb21wYXJpc29uX2FubnVhbF9vYnNfbm9tZWFuWywiZGVsdGFBSUNjIiA6PSAoQUlDYyAtIG1pbl9kZXBhcnR1cmVfQUlDYyldCgojYWRkIHJlbGF0aXZlIGxpa2VsaWhvb2QgZXhwKCAtMC41ICog4oiGQUlDIHNjb3JlIGZvciB0aGF0IG1vZGVsKQpkZXBhcnR1cmVfbW9kZWxfY29tcGFyaXNvbl9hbm51YWxfb2JzX25vbWVhblssInJlbF9saWtlbGlob29kIiA6PSBleHAoKC0wLjUgKiBkZWx0YUFJQ2MpKV0KI3N1bSByZWxhdGl2ZSBsaWtlbGlob29kcyBhY3Jvc3MgYWxsIG1vZGVscwpkZXBhcnR1cmVfbW9kZWxfY29tcGFyaXNvbl9hbm51YWxfb2JzX25vbWVhbi5saWtlbGlob29kc3VtIDwtIHN1bShkZXBhcnR1cmVfbW9kZWxfY29tcGFyaXNvbl9hbm51YWxfb2JzX25vbWVhblssIHJlbF9saWtlbGlob29kXSkKI0FrYWlrZSB3ZWlnaHQgZm9yIGEgbW9kZWwgaXMgdGhpcyByZWxfbGlrZWxpaG9vZCBkZXZpZGVkIGJ5IHRoZSBzdW0gb2YgdGhlc2UgdmFsdWVzIGFjcm9zcyBhbGwgbW9kZWxzCmRlcGFydHVyZV9tb2RlbF9jb21wYXJpc29uX2FubnVhbF9vYnNfbm9tZWFuWywiYWthaWtlX3dlaWdodCIgOj0gcmVsX2xpa2VsaWhvb2QvZGVwYXJ0dXJlX21vZGVsX2NvbXBhcmlzb25fYW5udWFsX29ic19ub21lYW4ubGlrZWxpaG9vZHN1bV0KCiNJIHdhbnQgdG8gbG9vayBhdCByZWxhdGl2ZSBpbXBvcnRhbmNlIEZPUiAKI2JvdHRvbS9zdXJmYWNlIChib3R0b20gPSBpbmNsdWRlcyBzYnQsIGdyZXBsKCJzYnQiLCB2YXJpYWJsZSkpCmRlcGFydHVyZV9ib3R0b21faW1wb3J0YW5jZSA8LSBzdW0oZGVwYXJ0dXJlX21vZGVsX2NvbXBhcmlzb25fYW5udWFsX29ic19ub21lYW5bZ3JlcCgic2J0IiwgdmFyaWFibGUpLCBdJGFrYWlrZV93ZWlnaHQpCmRlcGFydHVyZV9zdXJmYWNlX2ltcG9ydGFuY2UgPC0gc3VtKGRlcGFydHVyZV9tb2RlbF9jb21wYXJpc29uX2FubnVhbF9vYnNfbm9tZWFuW2dyZXAoInNzdCIsIHZhcmlhYmxlKSwgXSRha2Fpa2Vfd2VpZ2h0KQoKI2xhZy9ub3QgbGFnZ2VkIChncmVwbCgibGFnIiwgdmFyaWFibGUpKQpkZXBhcnR1cmVfbGFnX2ltcG9ydGFuY2UgPC0gc3VtKGRlcGFydHVyZV9tb2RlbF9jb21wYXJpc29uX2FubnVhbF9vYnNfbm9tZWFuW2dyZXAoImxhZyIsIHZhcmlhYmxlKSwgXSRha2Fpa2Vfd2VpZ2h0KQpkZXBhcnR1cmVfbm9sYWdfaW1wb3J0YW5jZSA8LSBzdW0oZGVwYXJ0dXJlX21vZGVsX2NvbXBhcmlzb25fYW5udWFsX29ic19ub21lYW5bIWdyZXAoImxhZyIsIHZhcmlhYmxlKSwgXSRha2Fpa2Vfd2VpZ2h0KQoKI2Fic29sdXRlIChncmVwbCgiYWJzIiwgdmFyaWFibGUpKQpkZXBhcnR1cmVfYWJzX2ltcG9ydGFuY2UgPC0gc3VtKGRlcGFydHVyZV9tb2RlbF9jb21wYXJpc29uX2FubnVhbF9vYnNfbm9tZWFuW2dyZXAoImFicyIsIHZhcmlhYmxlKSwgXSRha2Fpa2Vfd2VpZ2h0KQoKI3JhdyAoIWdyZXBsKCJjaGFuZ2UiKSkKZGVwYXJ0dXJlX3Jhd19pbXBvcnRhbmNlIDwtIHN1bShkZXBhcnR1cmVfbW9kZWxfY29tcGFyaXNvbl9hbm51YWxfb2JzX25vbWVhblshZ3JlcCgiY2hhbmdlIiwgdmFyaWFibGUpLCBdJGFrYWlrZV93ZWlnaHQpCgojY2hhbmdlIChncmVwbCgiY2hhbmdlIiwgdmFyaWFibGUpLCAoIWdyZXBsKCJhYnMiKSkpCmRlcGFydHVyZV9jaGFuZ2VfaW1wb3J0YW5jZSA8LSBzdW0oZGVwYXJ0dXJlX21vZGVsX2NvbXBhcmlzb25fYW5udWFsX29ic19ub21lYW5bZ3JlcCgiY2hhbmdlIiwgdmFyaWFibGUpLCBdWyFncmVwKCJhYnMiLCB2YXJpYWJsZSksXSRha2Fpa2Vfd2VpZ2h0KQoKI3R5cGUgb2YgdGVtcCB2YXJpYWJsZSAobWF4LCBtaW4sIHNlYXMpCmRlcGFydHVyZV9tYXhfdGVtcF9pbXBvcnRhbmNlIDwtIHN1bShkZXBhcnR1cmVfbW9kZWxfY29tcGFyaXNvbl9hbm51YWxfb2JzX25vbWVhbltncmVwKCJtYXgiLCB2YXJpYWJsZSksIF0kYWthaWtlX3dlaWdodCkKZGVwYXJ0dXJlX21pbl90ZW1wX2ltcG9ydGFuY2UgPC0gc3VtKGRlcGFydHVyZV9tb2RlbF9jb21wYXJpc29uX2FubnVhbF9vYnNfbm9tZWFuW2dyZXAoIm1pbiIsIHZhcmlhYmxlKSwgXSRha2Fpa2Vfd2VpZ2h0KQpkZXBhcnR1cmVfc2Vhc190ZW1wX2ltcG9ydGFuY2UgPC0gc3VtKGRlcGFydHVyZV9tb2RlbF9jb21wYXJpc29uX2FubnVhbF9vYnNfbm9tZWFuW2dyZXAoInNlYXMiLCB2YXJpYWJsZSksIF0kYWthaWtlX3dlaWdodCkKCmRlcGFydHVyZV9tb2RlbF9jb21wYXJpc29uX2FubnVhbF9vYnNfbm9tZWFuX2FrYWlrZXdlaWdodHMgPC0gZGVwYXJ0dXJlX21vZGVsX2NvbXBhcmlzb25fYW5udWFsX29ic19ub21lYW4KCnNhdmVSRFMoZGVwYXJ0dXJlX21vZGVsX2NvbXBhcmlzb25fYW5udWFsX29ic19ub21lYW5fYWthaWtld2VpZ2h0cywgZmlsZSA9IGhlcmU6OmhlcmUoIk1vZGVsX3Jlc3VsdHMiLCJkZXBhcnR1cmVfbW9kZWxfY29tcGFyaXNvbl9hbm51YWxfb2JzX25vbWVhbl9ha2Fpa2V3ZWlnaHRzX2FubnVhbF9vYnMucmRzIikpCnNhdmVSRFMoZGVwYXJ0dXJlX21vZGVsX2NvbXBhcmlzb25fYW5udWFsX29ic19ub21lYW5fYWthaWtld2VpZ2h0cywgZmlsZSA9IGhlcmU6OmhlcmUoInRhYmxlcyIsImRlcGFydHVyZV9tb2RlbF9jb21wYXJpc29uX2FubnVhbF9vYnNfbm9tZWFuX2FrYWlrZXdlaWdodHNfYW5udWFsX29icy5yZHMiKSkKZGVwYXJ0dXJlX21vZGVsX2NvbXBhcmlzb25fYW5udWFsX29ic19ub21lYW5fYWthaWtld2VpZ2h0cyA8LSByZWFkUkRTKGZpbGUgPSBoZXJlOjpoZXJlKCJNb2RlbF9yZXN1bHRzIiwiZGVwYXJ0dXJlX21vZGVsX2NvbXBhcmlzb25fYW5udWFsX29ic19ub21lYW5fYWthaWtld2VpZ2h0c19hbm51YWxfb2JzLnJkcyIpKQoKYGBgCgpSZWxhdGl2ZSBWYXJpYWJsZSBJbXBvcnRhbmNlIGZvciBQYWlycyBvZiBUcmFuc2Zvcm1hdGlvbiBhbmQgTWV0cmljIFByZWRpY3RpbmcgZGVwYXJ0dXJlcwpgYGB7ciBSVkkgZGVwYXJ0dXJlIFBhaXJzIFRyYW5zZm9ybWF0aW9uIGFuZCBNZXRyaWN9CgojSSB3YW50IHRvIGxvb2sgYXQgcmVsYXRpdmUgaW1wb3J0YW5jZSBGT1IgCiNtb2RlbHMgd2l0aCByYXcgYW5kIG1pbgpkZXBhcnR1cmVfcmF3X21pbl9pbXBvcnRhbmNlIDwtIHN1bShkZXBhcnR1cmVfbW9kZWxfY29tcGFyaXNvbl9hbm51YWxfb2JzX25vbWVhbltncmVwKCJtaW4iLCB2YXJpYWJsZSksIF1bIWdyZXAoImNoYW5nZSIsIHZhcmlhYmxlKV0kYWthaWtlX3dlaWdodCkKCiNtb2RlbHMgd2l0aCByYXcgYW5kIG1heApkZXBhcnR1cmVfcmF3X21heF9pbXBvcnRhbmNlIDwtIHN1bShkZXBhcnR1cmVfbW9kZWxfY29tcGFyaXNvbl9hbm51YWxfb2JzX25vbWVhbltncmVwKCJtYXgiLCB2YXJpYWJsZSksIF1bIWdyZXAoImNoYW5nZSIsIHZhcmlhYmxlKV0kYWthaWtlX3dlaWdodCkKCiNtb2RlbHMgd2l0aCByYXcgYW5kIHNlYXMKZGVwYXJ0dXJlX3Jhd19zZWFzX2ltcG9ydGFuY2UgPC0gc3VtKGRlcGFydHVyZV9tb2RlbF9jb21wYXJpc29uX2FubnVhbF9vYnNfbm9tZWFuW2dyZXAoInNlYXMiLCB2YXJpYWJsZSksIF1bIWdyZXAoImNoYW5nZSIsIHZhcmlhYmxlKV0kYWthaWtlX3dlaWdodCkKCgojbW9kZWxzIHdpdGggY2hhbmdlIGFuZCBtaW4KZGVwYXJ0dXJlX2NoYW5nZV9taW5faW1wb3J0YW5jZSA8LSBzdW0oZGVwYXJ0dXJlX21vZGVsX2NvbXBhcmlzb25fYW5udWFsX29ic19ub21lYW5bZ3JlcCgibWluX3MudF90ZW1wX2NoYW5nZSIsIHZhcmlhYmxlKSwgXVshZ3JlcCgiYWJzIiwgdmFyaWFibGUpXSRha2Fpa2Vfd2VpZ2h0KQoKI21vZGVscyB3aXRoIGNoYW5nZSBhbmQgbWF4CmRlcGFydHVyZV9jaGFuZ2VfbWF4X2ltcG9ydGFuY2UgPC0gc3VtKGRlcGFydHVyZV9tb2RlbF9jb21wYXJpc29uX2FubnVhbF9vYnNfbm9tZWFuW2dyZXAoIm1heF9zLnRfdGVtcF9jaGFuZ2UiLCB2YXJpYWJsZSksIF1bIWdyZXAoImFicyIsIHZhcmlhYmxlKV0kYWthaWtlX3dlaWdodCkKCiNtb2RlbHMgd2l0aCBjaGFuZ2UgYW5kIHNlYXMKZGVwYXJ0dXJlX2NoYW5nZV9zZWFzX2ltcG9ydGFuY2UgPC0gc3VtKGRlcGFydHVyZV9tb2RlbF9jb21wYXJpc29uX2FubnVhbF9vYnNfbm9tZWFuW2dyZXAoInNlYXNfcy50X3RlbXBfY2hhbmdlIiwgdmFyaWFibGUpLCBdWyFncmVwKCJhYnMiLCB2YXJpYWJsZSldJGFrYWlrZV93ZWlnaHQpCgojbW9kZWxzIHdpdGggYWJzIGNoYW5nZSBhbmQgbWluCmRlcGFydHVyZV9hYnNfY2hhbmdlX21pbl9pbXBvcnRhbmNlIDwtIHN1bShkZXBhcnR1cmVfbW9kZWxfY29tcGFyaXNvbl9hbm51YWxfb2JzX25vbWVhbltncmVwKCJtaW5fcy50X3RlbXBfY2hhbmdlX2FicyIsIHZhcmlhYmxlKSwgXSRha2Fpa2Vfd2VpZ2h0KQoKI21vZGVscyB3aXRoIGFicyBjaGFuZ2UgYW5kIG1heApkZXBhcnR1cmVfYWJzX2NoYW5nZV9tYXhfaW1wb3J0YW5jZSA8LSBzdW0oZGVwYXJ0dXJlX21vZGVsX2NvbXBhcmlzb25fYW5udWFsX29ic19ub21lYW5bZ3JlcCgibWF4X3MudF90ZW1wX2NoYW5nZV9hYnMiLCB2YXJpYWJsZSksIF0kYWthaWtlX3dlaWdodCkKCiNtb2RlbHMgd2l0aCBhYnMgY2hhbmdlIGFuZCBzZWFzCmRlcGFydHVyZV9hYnNfY2hhbmdlX3NlYXNfaW1wb3J0YW5jZSA8LSBzdW0oZGVwYXJ0dXJlX21vZGVsX2NvbXBhcmlzb25fYW5udWFsX29ic19ub21lYW5bZ3JlcCgic2Vhc19zLnRfdGVtcF9jaGFuZ2VfYWJzIiwgdmFyaWFibGUpLCBdJGFrYWlrZV93ZWlnaHQpCgpkZXBhcnR1cmVfdHJhbnNmb3JtX21ldHJpY19jb21wYXJpc29uIDwtIGRhdGEudGFibGUoVHJhbnNmb3JtYXRpb24gPQogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICBjKCJyYXciLCAicmF3IiwgInJhdyIsICJjaGFuZ2UiLCAiY2hhbmdlIiwgImNoYW5nZSIsICJhYnNfY2hhbmdlIiwgImFic19jaGFuZ2UiLCAiYWJzX2NoYW5nZSIpLCAKICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIE1ldHJpYyA9IAogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICByZXAoYygibWluIiwgIm1heCIsICJzZWFzIiksIDMpLCAKICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIFJWSSA9IAogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICBjKGRlcGFydHVyZV9yYXdfbWluX2ltcG9ydGFuY2UsIGRlcGFydHVyZV9yYXdfbWF4X2ltcG9ydGFuY2UsIAogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIGRlcGFydHVyZV9yYXdfc2Vhc19pbXBvcnRhbmNlLCBkZXBhcnR1cmVfY2hhbmdlX21pbl9pbXBvcnRhbmNlLCAKICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICBkZXBhcnR1cmVfY2hhbmdlX21heF9pbXBvcnRhbmNlLCBkZXBhcnR1cmVfY2hhbmdlX3NlYXNfaW1wb3J0YW5jZSwgCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgZGVwYXJ0dXJlX2Fic19jaGFuZ2VfbWluX2ltcG9ydGFuY2UsIGRlcGFydHVyZV9hYnNfY2hhbmdlX21heF9pbXBvcnRhbmNlLCAKICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICBkZXBhcnR1cmVfYWJzX2NoYW5nZV9zZWFzX2ltcG9ydGFuY2UpKQoKYGBgCgoKTGV0J3Mgc2VlIGhvdyB0aGUgUlZJIGltcG9ydGFuY2UgdmFyaWVzIGJ5IGxvb2tpbmcgYXQgc3BlY2lmaWMgbGFnIHZhbHVlcwpgYGB7ciBtYWtlIGEgcGxvdCBoZXJlIGZvciB2YXJpYWJpbGl0eSBhY3Jvc3MgbGFnIHZhbHVlc30KCiNmaXJzdCwgdGFibGUgZm9yIGxhZ3MKbGFnc19SVklfc2NhbGVkIDwtIGRhdGEudGFibGUoYXJyaXZhbF9sYWcgPSBjKDA6OSksIGFycml2YWxfUlZJID0gMCwgZGVwYXJ0dXJlX1JWSSA9IDApCgojYXJyaXZhbHMKbGFnc19SVklfc2NhbGVkWzEsMl0gPC0gMS1zdW0oYXJyaXZhbF9tb2RlbF9jb21wYXJpc29uX2FubnVhbF9vYnNfbm9tZWFuW2dyZXAoImxhZyIsIHZhcmlhYmxlKSwgXSRha2Fpa2Vfd2VpZ2h0KQpsYWdzX1JWSV9zY2FsZWRbMiwyXSA8LSBzdW0oYXJyaXZhbF9tb2RlbF9jb21wYXJpc29uX2FubnVhbF9vYnNfbm9tZWFuW2dyZXAoImxhZzEiLCB2YXJpYWJsZSksIF0kYWthaWtlX3dlaWdodCkKbGFnc19SVklfc2NhbGVkWzMsMl0gPC0gc3VtKGFycml2YWxfbW9kZWxfY29tcGFyaXNvbl9hbm51YWxfb2JzX25vbWVhbltncmVwKCJsYWcyIiwgdmFyaWFibGUpLCBdJGFrYWlrZV93ZWlnaHQpCmxhZ3NfUlZJX3NjYWxlZFs0LDJdIDwtIHN1bShhcnJpdmFsX21vZGVsX2NvbXBhcmlzb25fYW5udWFsX29ic19ub21lYW5bZ3JlcCgibGFnMyIsIHZhcmlhYmxlKSwgXSRha2Fpa2Vfd2VpZ2h0KQpsYWdzX1JWSV9zY2FsZWRbNSwyXSA8LSBzdW0oYXJyaXZhbF9tb2RlbF9jb21wYXJpc29uX2FubnVhbF9vYnNfbm9tZWFuW2dyZXAoImxhZzQiLCB2YXJpYWJsZSksIF0kYWthaWtlX3dlaWdodCkKbGFnc19SVklfc2NhbGVkWzYsMl0gPC0gc3VtKGFycml2YWxfbW9kZWxfY29tcGFyaXNvbl9hbm51YWxfb2JzX25vbWVhbltncmVwKCJsYWc1IiwgdmFyaWFibGUpLCBdJGFrYWlrZV93ZWlnaHQpCmxhZ3NfUlZJX3NjYWxlZFs3LDJdIDwtIHN1bShhcnJpdmFsX21vZGVsX2NvbXBhcmlzb25fYW5udWFsX29ic19ub21lYW5bZ3JlcCgibGFnNiIsIHZhcmlhYmxlKSwgXSRha2Fpa2Vfd2VpZ2h0KQpsYWdzX1JWSV9zY2FsZWRbOCwyXSA8LSBzdW0oYXJyaXZhbF9tb2RlbF9jb21wYXJpc29uX2FubnVhbF9vYnNfbm9tZWFuW2dyZXAoImxhZzciLCB2YXJpYWJsZSksIF0kYWthaWtlX3dlaWdodCkKbGFnc19SVklfc2NhbGVkWzksMl0gPC0gc3VtKGFycml2YWxfbW9kZWxfY29tcGFyaXNvbl9hbm51YWxfb2JzX25vbWVhbltncmVwKCJsYWc4IiwgdmFyaWFibGUpLCBdJGFrYWlrZV93ZWlnaHQpCmxhZ3NfUlZJX3NjYWxlZFsxMCwyXSA8LSBzdW0oYXJyaXZhbF9tb2RlbF9jb21wYXJpc29uX2FubnVhbF9vYnNfbm9tZWFuW2dyZXAoImxhZzkiLCB2YXJpYWJsZSksIF0kYWthaWtlX3dlaWdodCkKCiNkZXBhcnR1cmVzCmxhZ3NfUlZJX3NjYWxlZFsxLDNdIDwtIDEtc3VtKGRlcGFydHVyZV9tb2RlbF9jb21wYXJpc29uX2FubnVhbF9vYnNfbm9tZWFuW2dyZXAoImxhZyIsIHZhcmlhYmxlKSwgXSRha2Fpa2Vfd2VpZ2h0KQpsYWdzX1JWSV9zY2FsZWRbMiwzXSA8LSBzdW0oZGVwYXJ0dXJlX21vZGVsX2NvbXBhcmlzb25fYW5udWFsX29ic19ub21lYW5bZ3JlcCgibGFnMSIsIHZhcmlhYmxlKSwgXSRha2Fpa2Vfd2VpZ2h0KQpsYWdzX1JWSV9zY2FsZWRbMywzXSA8LSBzdW0oZGVwYXJ0dXJlX21vZGVsX2NvbXBhcmlzb25fYW5udWFsX29ic19ub21lYW5bZ3JlcCgibGFnMiIsIHZhcmlhYmxlKSwgXSRha2Fpa2Vfd2VpZ2h0KQpsYWdzX1JWSV9zY2FsZWRbNCwzXSA8LSBzdW0oZGVwYXJ0dXJlX21vZGVsX2NvbXBhcmlzb25fYW5udWFsX29ic19ub21lYW5bZ3JlcCgibGFnMyIsIHZhcmlhYmxlKSwgXSRha2Fpa2Vfd2VpZ2h0KQpsYWdzX1JWSV9zY2FsZWRbNSwzXSA8LSBzdW0oZGVwYXJ0dXJlX21vZGVsX2NvbXBhcmlzb25fYW5udWFsX29ic19ub21lYW5bZ3JlcCgibGFnNCIsIHZhcmlhYmxlKSwgXSRha2Fpa2Vfd2VpZ2h0KQpsYWdzX1JWSV9zY2FsZWRbNiwzXSA8LSBzdW0oZGVwYXJ0dXJlX21vZGVsX2NvbXBhcmlzb25fYW5udWFsX29ic19ub21lYW5bZ3JlcCgibGFnNSIsIHZhcmlhYmxlKSwgXSRha2Fpa2Vfd2VpZ2h0KQpsYWdzX1JWSV9zY2FsZWRbNywzXSA8LSBzdW0oZGVwYXJ0dXJlX21vZGVsX2NvbXBhcmlzb25fYW5udWFsX29ic19ub21lYW5bZ3JlcCgibGFnNiIsIHZhcmlhYmxlKSwgXSRha2Fpa2Vfd2VpZ2h0KQpsYWdzX1JWSV9zY2FsZWRbOCwzXSA8LSBzdW0oZGVwYXJ0dXJlX21vZGVsX2NvbXBhcmlzb25fYW5udWFsX29ic19ub21lYW5bZ3JlcCgibGFnNyIsIHZhcmlhYmxlKSwgXSRha2Fpa2Vfd2VpZ2h0KQpsYWdzX1JWSV9zY2FsZWRbOSwzXSA8LSBzdW0oZGVwYXJ0dXJlX21vZGVsX2NvbXBhcmlzb25fYW5udWFsX29ic19ub21lYW5bZ3JlcCgibGFnOCIsIHZhcmlhYmxlKSwgXSRha2Fpa2Vfd2VpZ2h0KQpsYWdzX1JWSV9zY2FsZWRbMTAsM10gPC0gc3VtKGRlcGFydHVyZV9tb2RlbF9jb21wYXJpc29uX2FubnVhbF9vYnNfbm9tZWFuW2dyZXAoImxhZzkiLCB2YXJpYWJsZSksIF0kYWthaWtlX3dlaWdodCkKCnNhdmVSRFMobGFnc19SVklfc2NhbGVkLCBoZXJlOjpoZXJlKCJNb2RlbF9yZXN1bHRzIiwibGFnc19SVklfc2NhbGVkX2FubnVhbF9vYnMucmRzIikpCmxhZ3NfUlZJX3NjYWxlZCA8LSByZWFkUkRTKGhlcmU6OmhlcmUoIk1vZGVsX3Jlc3VsdHMiLCJsYWdzX1JWSV9zY2FsZWRfYW5udWFsX29icy5yZHMiKSkKCgoKI3Zpc3VhbGl6ZSBsYWdzIHRocm91Z2ggdGltZQpsYWdzX292ZXJfdGltZV9hbm51YWxfcmVncyA8LSBnZ3Bsb3QoZGF0YSA9IGxhZ3NfUlZJX3NjYWxlZCwgYWVzKHggPSBhcnJpdmFsX2xhZykpICsKICBnZW9tX2xpbmUoYWVzKHkgPSBhcnJpdmFsX1JWSSksICkgKwogIGdlb21fbGluZShhZXMoeSA9IGRlcGFydHVyZV9SVkkpLCBsaW5ldHlwZSA9ICJkYXNoZWQiKSArCiAgbGFicyh4ID0gIkxhZyAoeWVhcnMpIiwgeSA9ICJSZWxhdGl2ZSBWYXJpYWJsZSBJbXBvcnRhbmNlIikgKwogIHNjYWxlX2NvbG9yX2Rpc2NyZXRlKCkgKyAjaG93IHRvIG1ha2UgYSBsZWdlbmQKICB0aGVtZV9jbGFzc2ljKCkgKwogIHRoZW1lKHRleHQgPSBlbGVtZW50X3RleHQoc2l6ZSA9IDEzKSkgKwogIHNjYWxlX3hfY29udGludW91cyhicmVha3MgPSBjKDA6OSkpCgpzYXZlKGxhZ3Nfb3Zlcl90aW1lX2FubnVhbF9yZWdzLCBmaWxlID0gaGVyZTo6aGVyZSgiZmlndXJlcyIsIlN1cHBsZW1lbnRhbCIsImFubnVhbF9zZW5zaXRpdml0eSIsImxhZ3Nfb3Zlcl90aW1lX2FubnVhbF9yZWdzLlJEYXRhIikpCgpgYGAKClRhYmxlIGZvciBSVkkgZGF0YSBmb3IgYXJyaXZhbApgYGB7ciBwdXQgUlZJcyBmb3IgYXJyaXZhbCBpbnRvIGRhdGEgdGFibGV9CmFycml2YWxfZGVwYXJ0dXJlIDwtIGMoImFycml2YWwiLCJhcnJpdmFsIiwiYXJyaXZhbCIsImFycml2YWwiLCJhcnJpdmFsIiwgImFycml2YWwiLCJhcnJpdmFsIiwgImFycml2YWwiLCAiYXJyaXZhbCIsImFycml2YWwiLCJhcnJpdmFsIiwiYXJyaXZhbCIsImFycml2YWwiLCJhcnJpdmFsIiwgImFycml2YWwiLCJhcnJpdmFsIiwgImFycml2YWwiLCAiYXJyaXZhbCIsImFycml2YWwiKQp0eXBlIDwtIGMoIkRlcHRoIiwgIkRlcHRoIiwgImxhZyIsICJsYWciLCAiVHJhbnNmb3JtYXRpb24iLCAiVHJhbnNmb3JtYXRpb24iLCAiVHJhbnNmb3JtYXRpb24iLCAiTWV0cmljIiwgIk1ldHJpYyIsICJNZXRyaWMiLCAiVHJhbnNmb3JtYXRpb24geCBNZXRyaWMiLCAiVHJhbnNmb3JtYXRpb24geCBNZXRyaWMiLCAiVHJhbnNmb3JtYXRpb24geCBNZXRyaWMiLCAiVHJhbnNmb3JtYXRpb24geCBNZXRyaWMiLCAiVHJhbnNmb3JtYXRpb24geCBNZXRyaWMiLCAiVHJhbnNmb3JtYXRpb24geCBNZXRyaWMiLCAiVHJhbnNmb3JtYXRpb24geCBNZXRyaWMiLCAiVHJhbnNmb3JtYXRpb24geCBNZXRyaWMiLCAiVHJhbnNmb3JtYXRpb24geCBNZXRyaWMiKQp2YXJpYWJsZSA8LSBjKCJCb3R0b20iLCAiU3VyZmFjZSIsICJub19sYWciLCAibGFnZ2VkIiwgInxDaGFuZ2V8IiwgIkNoYW5nZSIsICJSYXciLCAiTWluIiwgIk1heCIsICJTZWFzIiwgIlJhdyB4IE1pbiIsICJSYXcgeCBNYXgiLCAiUmF3IHggU2VhcyIsICJDaGFuZ2UgeCBNaW4iLCAiQ2hhbmdlIHggTWF4IiwgIkNoYW5nZSB4IFNlYXMiLCAifENoYW5nZXwgeCBNaW4iLCAifENoYW5nZXwgeCBNYXgiLCAifENoYW5nZXwgeCBTZWFzIikKCgp2YWx1ZSA8LSBjKGFycml2YWxfYm90dG9tX2ltcG9ydGFuY2UsIGFycml2YWxfc3VyZmFjZV9pbXBvcnRhbmNlLCBhcnJpdmFsX25vbGFnX2ltcG9ydGFuY2UsIGFycml2YWxfbGFnX2ltcG9ydGFuY2UsIGFycml2YWxfYWJzX2ltcG9ydGFuY2UsIGFycml2YWxfY2hhbmdlX2ltcG9ydGFuY2UsIGFycml2YWxfcmF3X2ltcG9ydGFuY2UsIGFycml2YWxfbWluX3RlbXBfaW1wb3J0YW5jZSwgYXJyaXZhbF9tYXhfdGVtcF9pbXBvcnRhbmNlLCBhcnJpdmFsX3NlYXNfdGVtcF9pbXBvcnRhbmNlLCBhcnJpdmFsX3Jhd19taW5faW1wb3J0YW5jZSwgYXJyaXZhbF9yYXdfbWF4X2ltcG9ydGFuY2UsIGFycml2YWxfcmF3X3NlYXNfaW1wb3J0YW5jZSwgYXJyaXZhbF9jaGFuZ2VfbWluX2ltcG9ydGFuY2UsIGFycml2YWxfY2hhbmdlX21heF9pbXBvcnRhbmNlLCBhcnJpdmFsX2NoYW5nZV9zZWFzX2ltcG9ydGFuY2UsIGFycml2YWxfYWJzX2NoYW5nZV9taW5faW1wb3J0YW5jZSwgYXJyaXZhbF9hYnNfY2hhbmdlX21heF9pbXBvcnRhbmNlLCBhcnJpdmFsX2Fic19jaGFuZ2Vfc2Vhc19pbXBvcnRhbmNlKQoKUlZJX2Fycml2YWwgPC0gZGF0YS50YWJsZShhcnJpdmFsX2RlcGFydHVyZSwgdHlwZSwgdmFyaWFibGUsIHZhbHVlKQpgYGAKClRhYmxlIGZvciBSVkkgZGF0YSBmb3IgZGVwYXJ0dXJlCmBgYHtyIHB1dCBSVklzIGZvciBkZXBhcnR1cmUgaW50byBkYXRhIHRhYmxlfQphcnJpdmFsX2RlcGFydHVyZSA8LSBjKCJkZXBhcnR1cmUiLCJkZXBhcnR1cmUiLCJkZXBhcnR1cmUiLCJkZXBhcnR1cmUiLCJkZXBhcnR1cmUiLCAiZGVwYXJ0dXJlIiwiZGVwYXJ0dXJlIiwgImRlcGFydHVyZSIsICJkZXBhcnR1cmUiLCJkZXBhcnR1cmUiLCJkZXBhcnR1cmUiLCJkZXBhcnR1cmUiLCJkZXBhcnR1cmUiLCJkZXBhcnR1cmUiLCAiZGVwYXJ0dXJlIiwiZGVwYXJ0dXJlIiwgImRlcGFydHVyZSIsICJkZXBhcnR1cmUiLCJkZXBhcnR1cmUiKQp0eXBlIDwtIGMoIkRlcHRoIiwgIkRlcHRoIiwgImxhZyIsICJsYWciLCAiVHJhbnNmb3JtYXRpb24iLCAiVHJhbnNmb3JtYXRpb24iLCAiVHJhbnNmb3JtYXRpb24iLCAiTWV0cmljIiwgIk1ldHJpYyIsICJNZXRyaWMiLCAiVHJhbnNmb3JtYXRpb24geCBNZXRyaWMiLCAiVHJhbnNmb3JtYXRpb24geCBNZXRyaWMiLCAiVHJhbnNmb3JtYXRpb24geCBNZXRyaWMiLCAiVHJhbnNmb3JtYXRpb24geCBNZXRyaWMiLCAiVHJhbnNmb3JtYXRpb24geCBNZXRyaWMiLCAiVHJhbnNmb3JtYXRpb24geCBNZXRyaWMiLCAiVHJhbnNmb3JtYXRpb24geCBNZXRyaWMiLCAiVHJhbnNmb3JtYXRpb24geCBNZXRyaWMiLCAiVHJhbnNmb3JtYXRpb24geCBNZXRyaWMiKQp2YXJpYWJsZSA8LSBjKCJCb3R0b20iLCAiU3VyZmFjZSIsICJub19sYWciLCAibGFnZ2VkIiwgInxDaGFuZ2V8IiwgIkNoYW5nZSIsICJSYXciLCAiTWluIiwgIk1heCIsICJTZWFzIiwgIlJhdyB4IE1pbiIsICJSYXcgeCBNYXgiLCAiUmF3IHggU2VhcyIsICJDaGFuZ2UgeCBNaW4iLCAiQ2hhbmdlIHggTWF4IiwgIkNoYW5nZSB4IFNlYXMiLCAifENoYW5nZXwgeCBNaW4iLCAifENoYW5nZXwgeCBNYXgiLCAifENoYW5nZXwgeCBTZWFzIikKdmFsdWUgPC0gYyhkZXBhcnR1cmVfYm90dG9tX2ltcG9ydGFuY2UsIGRlcGFydHVyZV9zdXJmYWNlX2ltcG9ydGFuY2UsIGRlcGFydHVyZV9ub2xhZ19pbXBvcnRhbmNlLCBkZXBhcnR1cmVfbGFnX2ltcG9ydGFuY2UsIGRlcGFydHVyZV9hYnNfaW1wb3J0YW5jZSwgZGVwYXJ0dXJlX2NoYW5nZV9pbXBvcnRhbmNlLCBkZXBhcnR1cmVfcmF3X2ltcG9ydGFuY2UsIGRlcGFydHVyZV9taW5fdGVtcF9pbXBvcnRhbmNlLCBkZXBhcnR1cmVfbWF4X3RlbXBfaW1wb3J0YW5jZSwgZGVwYXJ0dXJlX3NlYXNfdGVtcF9pbXBvcnRhbmNlLCBkZXBhcnR1cmVfcmF3X21pbl9pbXBvcnRhbmNlLCBkZXBhcnR1cmVfcmF3X21heF9pbXBvcnRhbmNlLCBkZXBhcnR1cmVfcmF3X3NlYXNfaW1wb3J0YW5jZSwgZGVwYXJ0dXJlX2NoYW5nZV9taW5faW1wb3J0YW5jZSwgZGVwYXJ0dXJlX2NoYW5nZV9tYXhfaW1wb3J0YW5jZSwgZGVwYXJ0dXJlX2NoYW5nZV9zZWFzX2ltcG9ydGFuY2UsIGRlcGFydHVyZV9hYnNfY2hhbmdlX21pbl9pbXBvcnRhbmNlLCBkZXBhcnR1cmVfYWJzX2NoYW5nZV9tYXhfaW1wb3J0YW5jZSwgZGVwYXJ0dXJlX2Fic19jaGFuZ2Vfc2Vhc19pbXBvcnRhbmNlKQoKUlZJX2RlcGFydHVyZSA8LSBkYXRhLnRhYmxlKGFycml2YWxfZGVwYXJ0dXJlLCB0eXBlLCB2YXJpYWJsZSwgdmFsdWUpCmBgYAoKTWVyZ2UgUlZJIHRhYmxlcyBmb3IgYXJyaXZhbCBhbmQgZGVwYXJ0dXJlLCBhbmQgdGhlbiBncmFwaApgYGB7ciBtZXJnZSBSVkkgdGFibGVzIGFuZCBwbG90fQpSVklfdGFibGUgPC0gYXMuZGF0YS50YWJsZShyYmluZChSVklfYXJyaXZhbCwgUlZJX2RlcGFydHVyZSkpICNiaW5kIFJWSSBmb3IgYXJyaXZhbHMgYW5kIGRlcGFydHVyZXMKClJWSV90YWJsZS5yIDwtIFJWSV90YWJsZVshZ3JlcCgiU3VyZmFjZSIsIHZhcmlhYmxlKV1bIWdyZXAoImxhZ2dlZCIsIHZhcmlhYmxlKV0KCiNjaGFuZ2Ugb3JkZXIgb2YgZmFjdG9yIGxldmVscwpSVklfdGFibGUuclssIHZhcmlhYmxlIDo9IGZhY3Rvcih2YXJpYWJsZSwgbGV2ZWxzID0gYygiQm90dG9tIiwgIm5vX2xhZyIsICJSYXciLCAiQ2hhbmdlIiwgInxDaGFuZ2V8IiwgIk1pbiIsICJNYXgiLCAiU2VhcyIpKV0KCnNhdmVSRFMoUlZJX3RhYmxlLCBmaWxlID0gaGVyZTo6aGVyZSgiTW9kZWxfcmVzdWx0cyIsICJSVklfdGFibGVfYW5udWFsX29icy5yZHMiKSkKCmdncGxvdChkYXRhID0gUlZJX3RhYmxlLnIsIGFlcyh4PXZhcmlhYmxlLCB5ID0gdmFsdWUsIGZpbGwgPSBhcnJpdmFsX2RlcGFydHVyZSkpICsKICBnZW9tX2JhcihzdGF0ID0gImlkZW50aXR5IiwgcG9zaXRpb24gPSAiZG9kZ2UiKSArCiAgc2NhbGVfeF9kaXNjcmV0ZShicmVha3MgPSBjKCJCb3R0b20iLCAibm9fbGFnIiwgIlJhdyIsICJDaGFuZ2UiLCAifENoYW5nZXwiLCAiTWluIiwgIk1heCIsICJTZWFzIiksIAogICAgICAgICAgICAgICAgICAgbGFiZWxzID0gYygiQm90dG9tIFRlbXAiLCAiTm8gTGFnIiwgIlJhdyBUZW1wIiwgIkNoYW5nZSBpbiBcblRlbXAiLCAifCBDaGFuZ2UgaW5cbiBUZW1wIHwiLCAiTWluIFRlbXAiLCAiTWF4IFRlbXAiLCAiU2VhcyIpKSArCiAgbGFicyh4ID0gIlRlbXBlcmF0dXJlIFZhcmlhYmxlcyIsIHkgPSAiUmVsYXRpdmUgVmFyaWFibGUgSW1wb3J0YW5jZSIpICArCiAgdGhlbWVfYncoKQoKYGBgCgpBbm90aGVyIHdheSB0byB2aXN1YWxpemUgaXMgc3RhY2tlZCBiYXIgcGxvdC4KCmBgYHtyIFJWSSBzdGFja2VkIHBsb3R9CiNwdXQgbGV2ZWxzIGludG8gY29ycmVjdCBvcmRlciBmb3Igdmlld2luZywgYW5kIGFkZCBkdW1teSBsZXZlbCBmb3IgbGVnZW5kClJWSV9hcnJpdmFsWywgdmFyaWFibGUgOj0gZmFjdG9yKHZhcmlhYmxlLCBsZXZlbHMgPSBjKCJCb3R0b20iLCAiU3VyZmFjZSIsIiAgIiwgIlJhdyIsICJDaGFuZ2UiLCAifENoYW5nZXwiLCIiLCAibm9fbGFnIiwgImxhZ2dlZCIsICJNaW4iLCAiTWF4IiwgIlNlYXMiKSldClJWSV9hcnJpdmFsWywgdHlwZSA6PSBmYWN0b3IodHlwZSwgbGV2ZWxzID0gYygiRGVwdGgiLCAiVHJhbnNmb3JtYXRpb24iLCAiTWV0cmljIiwgImxhZyIpKV0KClJWSV9hcnJpdmFsX25vbGFnIDwtIFJWSV9hcnJpdmFsW3R5cGUgIT0gImxhZyIsXQpSVklfYXJyaXZhbF9ub2xhZ1ssIHR5cGUgOj0gZmFjdG9yKHR5cGUsIGxldmVscyA9IGMoIkRlcHRoIiwgIlRyYW5zZm9ybWF0aW9uIiwgIk1ldHJpYyIpKV1bLCB2YXJpYWJsZSA6PSBmYWN0b3IodmFyaWFibGUsIGxldmVscyA9IGMoIkJvdHRvbSIsICJTdXJmYWNlIiwiICAiLCAiUmF3IiwgIkNoYW5nZSIsICJ8Q2hhbmdlfCIsIiIsICJNaW4iLCAiTWF4IiwgIlNlYXMiKSldCgpzYXZlUkRTKFJWSV9hcnJpdmFsX25vbGFnLCBoZXJlOjpoZXJlKCJNb2RlbF9yZXN1bHRzIiwgIlJWSV9hcnJpdmFsX25vbGFnX2FubnVhbF9vYnMucmRzIikpCgojYW5kIGFnYWluIGZvciBkZXBhcnR1cmUKUlZJX2RlcGFydHVyZVssIHZhcmlhYmxlIDo9IGZhY3Rvcih2YXJpYWJsZSwgbGV2ZWxzID0gYygiQm90dG9tIiwgIlN1cmZhY2UiLCIgICIsICJSYXciLCAiQ2hhbmdlIiwgInxDaGFuZ2V8IiwiIiwgIm5vX2xhZyIsICJsYWdnZWQiLCAiTWluIiwgIk1heCIsICJTZWFzIikpXQpSVklfZGVwYXJ0dXJlWywgdHlwZSA6PSBmYWN0b3IodHlwZSwgbGV2ZWxzID0gYygiRGVwdGgiLCAiVHJhbnNmb3JtYXRpb24iLCAiTWV0cmljIiwgImxhZyIpKV0KClJWSV9kZXBhcnR1cmVfbm9sYWcgPC0gUlZJX2RlcGFydHVyZVt0eXBlICE9ICJsYWciLF0KUlZJX2RlcGFydHVyZV9ub2xhZ1ssIHR5cGUgOj0gZmFjdG9yKHR5cGUsIGxldmVscyA9IGMoIkRlcHRoIiwgIlRyYW5zZm9ybWF0aW9uIiwgIk1ldHJpYyIpKV1bLCB2YXJpYWJsZSA6PSBmYWN0b3IodmFyaWFibGUsIGxldmVscyA9IGMoIkJvdHRvbSIsICJTdXJmYWNlIiwiICAiLCAiUmF3IiwgIkNoYW5nZSIsICJ8Q2hhbmdlfCIsIiIsICJNaW4iLCAiTWF4IiwgIlNlYXMiKSldCgpzYXZlUkRTKFJWSV9kZXBhcnR1cmVfbm9sYWcsIGhlcmU6OmhlcmUoIk1vZGVsX3Jlc3VsdHMiLCAiUlZJX2RlcGFydHVyZV9ub2xhZ19hbm51YWxfb2JzLnJkcyIpKQoKCiNwbG90dGluZwpwYWwgPC0gd2VzX3BhbGV0dGUoIkdyYW5kQnVkYXBlc3QxIiwgOCwgdHlwZSA9ICJjb250aW51b3VzIikKY29sb3JzIDwtIGMocGFsWzFdLCBwYWxbMl0sICIjRkZGRkZGIiwgcGFsWzNdLCBwYWxbNF0sIHBhbFs1XSwiI0ZGRkZGRiIsIHBhbFs2XSwgcGFsWzddLCBwYWxbOF0pCgojYXJyaXZhbHMKUlZJX2Fycml2YWxfcGxvdCA8LSBnZ3Bsb3QoZGF0YSA9IFJWSV9hcnJpdmFsX25vbGFnLCBhZXMoeD10eXBlLCB5ID0gdmFsdWUsIGZpbGwgPSB2YXJpYWJsZSkpICsKICBnZW9tX2JhcihzdGF0PSJpZGVudGl0eSIsIGNvbG9yID0gImJsYWNrIiwgc2l6ZSA9IDAsIHdpZHRoID0gMC44KSArCiAgc2NhbGVfeF9kaXNjcmV0ZShicmVha3MgPSBjKCJEZXB0aCIsICJUcmFuc2Zvcm1hdGlvbiIsICJNZXRyaWMiKSwgbGFiZWxzID0gYygiRGVwdGgiLCAiVHJhbnNmb3JtYXRpb24iLCAiTWV0cmljIikpICsKICBsYWJzKHggPSAiVGVtcGVyYXR1cmUgVmFyaWFibGVzIiwgeSA9ICJSZWxhdGl2ZSBWYXJpYWJsZSBJbXBvcnRhbmNlIikgKwogIHRoZW1lX2NsYXNzaWMoKSArCiAgdGhlbWUodGV4dCA9IGVsZW1lbnRfdGV4dChzaXplID0gMTEuNSksIAogICAgICAgIGxlZ2VuZC5wb3NpdGlvbiA9ICJyaWdodCIsIAogICAgICAgIGxlZ2VuZC50aXRsZSA9IGVsZW1lbnRfYmxhbmsoKSwgCiAgICAgICAgbGVnZW5kLnNwYWNpbmcueCA9IHVuaXQoMC4yLCAnY20nKSwKICAgICAgICBsZWdlbmQuanVzdGlmaWNhdGlvbiA9ICJjZW50ZXIiLAogICAgICAgIGFzcGVjdC5yYXRpbyA9ICgxKSwKICAgICAgICAjLCBsZWdlbmQucG9zaXRpb24gPSAibm9uZSIKICAgICAgICApICsKICBndWlkZXMoZmlsbD1ndWlkZV9sZWdlbmQobmNvbD0xKSkgKwogIHNjYWxlX2ZpbGxfbWFudWFsKHZhbHVlcyA9IGNvbG9ycywKICAgICAgICAgICAgICAgICAgICBkcm9wID0gRikKCiNkZXBhcnR1cmUKUlZJX2RlcGFydHVyZV9wbG90IDwtIGdncGxvdChkYXRhID0gUlZJX2RlcGFydHVyZV9ub2xhZywgYWVzKHg9dHlwZSwgeSA9IHZhbHVlLCBmaWxsID0gdmFyaWFibGUpKSArCiAgZ2VvbV9iYXIoc3RhdD0iaWRlbnRpdHkiLCBjb2xvciA9ICJibGFjayIsIHNpemUgPSAwLCB3aWR0aCA9IDAuOCkgKwogIHNjYWxlX3hfZGlzY3JldGUoYnJlYWtzID0gYygiRGVwdGgiLCAiVHJhbnNmb3JtYXRpb24iLCAiTWV0cmljIiksIGxhYmVscyA9IGMoIkRlcHRoIiwgIlRyYW5zZm9ybWF0aW9uIiwgIk1ldHJpYyIpKSArCiAgbGFicyh4ID0gIlRlbXBlcmF0dXJlIFZhcmlhYmxlcyIsIHkgPSAiUmVsYXRpdmUgVmFyaWFibGUgSW1wb3J0YW5jZSIpICsKICB0aGVtZV9jbGFzc2ljKCkgKwogIHRoZW1lKHRleHQgPSBlbGVtZW50X3RleHQoc2l6ZSA9IDExLjUpLCAKICAgICAgICBsZWdlbmQucG9zaXRpb24gPSAicmlnaHQiLCAKICAgICAgICBsZWdlbmQudGl0bGUgPSBlbGVtZW50X2JsYW5rKCksIAogICAgICAgIGxlZ2VuZC5zcGFjaW5nLnggPSB1bml0KDAuMiwgJ2NtJyksCiAgICAgICAgbGVnZW5kLmp1c3RpZmljYXRpb24gPSAiY2VudGVyIiwKICAgICAgICBhc3BlY3QucmF0aW8gPSAoMSksCiAgICAgICAgIywgbGVnZW5kLnBvc2l0aW9uID0gIm5vbmUiCiAgICAgICAgKSArCiAgZ3VpZGVzKGZpbGw9Z3VpZGVfbGVnZW5kKG5jb2w9MSkpICsKICBzY2FsZV9maWxsX21hbnVhbCh2YWx1ZXMgPSBjb2xvcnMsCiAgICAgICAgICAgICAgICAgICAgZHJvcCA9IEYpCgpSVklfdGFibGUKUlZJX2Fycml2YWxfcGxvdApSVklfZGVwYXJ0dXJlX3Bsb3QKYGBgCgpOZXh0IHN0ZXAgaXMgdG8gYWRkIHRoZSBjb2VmZmljaWVudHMgb24gdG8gdGhlIGJhciBjaGFydC4gVG8gZG8gdGhpcywgSSB3aWxsIG5lZWQgdG8gc3VtIChhaWtha2Ugd2VpZ2h0IG9mIG1vZGVsIGluY2x1ZGluZyB2YXJpYWJsZSB4IGNvZWZmaWNpZW50KS4gSSB0aGluayB0aGlzIHdpbGwgYmUgZWFzeSBlbm91Z2ggVXNpbmcgYXJyaXZhbF9tb2RlbF9jb21wYXJpc29uX2FubnVhbF9vYnNfbm9tZWFuIGRhdGEgZnJhbWUuIEkgd2lsbCBhZGQgbmV3IGNvbHVtbiB0byBkYXRhIGZyYW1lIG9mIGFpa2Fpa2Ugd2VpZ2h0IHggY29lZmZpY2llbnQKCmBgYHtyIGF2ZyBjb2VmZmljaWVudHMgZm9yIGFycml2YWwgbW9kZWxzfQojZm9yIHNvbWUgcmVhc29uIHRoZSBjb2VmZmljaWVudCBpcyBhIGZhY3RvcgphcnJpdmFsX21vZGVsX2NvbXBhcmlzb25fYW5udWFsX29ic19ub21lYW5bLGNvZWZfbnVtIDo9IGFzLm51bWVyaWMoYXMuY2hhcmFjdGVyKGNvZWYpKV0KYXJyaXZhbF9tb2RlbF9jb21wYXJpc29uX2FubnVhbF9vYnNfbm9tZWFuWyxhd19jb2VmIDo9IGFrYWlrZV93ZWlnaHQgKiBjb2VmX251bV0KCiNib3R0b20gdGVtcGVyYXR1cmUgYXZnIGNvZWZmaWNpZW50CmFycml2YWxfYm90dG9tX3RlbXBfYXZnX2NvZWYgPC0gc3VtKGFycml2YWxfbW9kZWxfY29tcGFyaXNvbl9hbm51YWxfb2JzX25vbWVhbltncmVwKCJzYnQiLCB2YXJpYWJsZSldJGNvZWZfbnVtKQoKI3N1cmZhY2UgdGVtcGVyYXR1cmUgYXZnIGNvZWZmaWNpZW50CmFycml2YWxfc3VyZmFjZV90ZW1wX2F2Z19jb2VmIDwtIHN1bShhcnJpdmFsX21vZGVsX2NvbXBhcmlzb25fYW5udWFsX29ic19ub21lYW5bZ3JlcCgic3N0IiwgdmFyaWFibGUpXSRjb2VmX251bSkKCiNyYXcgc2Vhc29uYWxpdHkgYXZnIGNvZWZmaWNpZW50CmFycml2YWxfc2Vhc19yYXdfYXZnX2NvZWYgPC0gCiAgc3VtKGFycml2YWxfbW9kZWxfY29tcGFyaXNvbl9hbm51YWxfb2JzX25vbWVhbltncmVwKCJzZWFzIiwgdmFyaWFibGUpLCBdWyFncmVwKCJjaGFuZ2UiLCB2YXJpYWJsZSldJGNvZWZfbnVtKQoKI21heCBhYnMgY2hhbmdlIGF2ZyBjb2VmZmljaWVudAphcnJpdmFsX21heF9hYnNfY2hhbmdlX2F2Z19jb2VmIDwtIAogIHN1bShhcnJpdmFsX21vZGVsX2NvbXBhcmlzb25fYW5udWFsX29ic19ub21lYW5bZ3JlcCgibWF4X3MudF90ZW1wX2NoYW5nZV9hYnMiLCB2YXJpYWJsZSksIF0kY29lZl9udW0pCgoKYGBgCgpgYGB7ciBhdmcgY29lZmZpY2llbnRzIGZvciBkZXBhcnR1cmUgbW9kZWxzfQojZm9yIHNvbWUgcmVhc29uIHRoZSBjb2VmZmljaWVudCBpcyBhIGZhY3RvcgpkZXBhcnR1cmVfbW9kZWxfY29tcGFyaXNvbl9hbm51YWxfb2JzX25vbWVhblssY29lZl9udW0gOj0gYXMubnVtZXJpYyhhcy5jaGFyYWN0ZXIoY29lZikpXQpkZXBhcnR1cmVfbW9kZWxfY29tcGFyaXNvbl9hbm51YWxfb2JzX25vbWVhblssYXdfY29lZiA6PSBha2Fpa2Vfd2VpZ2h0ICogY29lZl9udW1dCgojYm90dG9tIHRlbXBlcmF0dXJlIGF2ZyBjb2VmZmljaWVudApkZXBhcnR1cmVfYm90dG9tX3RlbXBfYXZnX2NvZWYgPC0gc3VtKGRlcGFydHVyZV9tb2RlbF9jb21wYXJpc29uX2FubnVhbF9vYnNfbm9tZWFuW2dyZXAoInNidCIsIHZhcmlhYmxlKV0kY29lZl9udW0pCgojc3VyZmFjZSB0ZW1wZXJhdHVyZSBhdmcgY29lZmZpY2llbnQKZGVwYXJ0dXJlX3N1cmZhY2VfdGVtcF9hdmdfY29lZiA8LSBzdW0oZGVwYXJ0dXJlX21vZGVsX2NvbXBhcmlzb25fYW5udWFsX29ic19ub21lYW5bZ3JlcCgic3N0IiwgdmFyaWFibGUpXSRjb2VmX251bSkKCiNyYXcgc2Vhc29uYWxpdHkgYXZnIGNvZWZmaWNpZW50CmRlcGFydHVyZV9zZWFzX3Jhd19hdmdfY29lZiA8LSAKICBzdW0oZGVwYXJ0dXJlX21vZGVsX2NvbXBhcmlzb25fYW5udWFsX29ic19ub21lYW5bZ3JlcCgic2VhcyIsIHZhcmlhYmxlKSwgXVshZ3JlcCgiY2hhbmdlIiwgdmFyaWFibGUpXSRjb2VmX251bSkKCiNtaW4gY2hhbmdlIGF2ZyBjb2VmZmljaWVudApkZXBhcnR1cmVfbWluX2Fic19jaGFuZ2VfYXZnX2NvZWYgPC0gCiAgc3VtKGRlcGFydHVyZV9tb2RlbF9jb21wYXJpc29uX2FubnVhbF9vYnNfbm9tZWFuW2dyZXAoIm1pbl9zLnRfdGVtcF9jaGFuZ2UiLCB2YXJpYWJsZSksIF1bIWdyZXAoImFicyIsIHZhcmlhYmxlKV0kY29lZl9udW0pCgojc2VhcyBjaGFuZ2UgYXZnIGNvZWZmaWNpZW50CmRlcGFydHVyZV9zZWFzX2NoYW5nZV9hdmdfY29lZiA8LSAKICBzdW0oZGVwYXJ0dXJlX21vZGVsX2NvbXBhcmlzb25fYW5udWFsX29ic19ub21lYW5bZ3JlcCgic2Vhc19zLnRfdGVtcF9jaGFuZ2UiLCB2YXJpYWJsZSksIF1bIWdyZXAoImFicyIsIHZhcmlhYmxlKV0kY29lZl9udW0pCgoKYGBg</div>
 
 
 

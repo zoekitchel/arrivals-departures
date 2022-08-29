@@ -16,6 +16,7 @@ library(lme4)
 library(data.table)
 library(ggplot2)
 library(plyr)
+library(glmmTMB)
 
 spp_master_ztemp_seus_buoy.traits_scaled <- readRDS(here::here("Data","Spp_master","spp_master_ztemp_seus_buoy.traits_scaled.rds"))
 
@@ -240,7 +241,7 @@ saveRDS(arrival.reduced_nosleeper.r, file = here::here("figures","Figure5","arri
 
 #for now, going with two traits and one temp variable
 #going to make loop to make all models I need to look at with single variables
-all.temp.variables <- colnames(arrival.reduced_nosleeper.r[,9:256]) #CHECKKK
+all.temp.variables <- colnames(arrival.reduced_nosleeper.r[,14:261]) #CHECKKK
 all.temp.variables.0 <- c(0, all.temp.variables) #add 0 as option so models can just include traits
 all.temp.variables.0 <- all.temp.variables.0[!grepl("*mean*", all.temp.variables.0)]#get rid of MEAN temp variables
 all.trait.variables <- c(0, "tl_ocean_scaled", "age.max_ocean_scaled","age.maturity_ocean_scaled", "length.max_ocean_scaled",
@@ -294,10 +295,10 @@ for (i in 1:nrow(full_var_set.r2)){
   arrival_model_comparison_traits_nosleeper[i,trait_variable := full_var_set.r2$Var3[i]]
   arrival_model_comparison_traits_nosleeper[i,AICc := AICc(mod)]
   
-  warning <- mod@optinfo$conv$lme4$messages[2]
-  converges <- ifelse(is.null(warning) == TRUE, T, F)
+ # warning <- mod@optinfo$conv$lme4$messages[2]
+ # converges <- ifelse(is.null(warning) == TRUE, T, F)
   
-  arrival_model_comparison_traits_nosleeper[i, converge := converges]
+ # arrival_model_comparison_traits_nosleeper[i, converge := converges]
   
   print(paste(i, nrow(arrival_model_comparison_traits_nosleeper), sep = "/"))
     

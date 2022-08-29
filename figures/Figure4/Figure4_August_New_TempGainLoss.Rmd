@@ -36,10 +36,11 @@ Best Temp Only Model Gains
 
 
 #let's take a look at best performing model
-mod_sppregrandom <- glmmTMB(col ~ seas_sst_temp_scaled  + (1|reg) + (1|phylum) + (1|class) + (1|order) + (1|family) + (1|genus) + (1|spp), family = binomial, data = spp_master_ztemp_seus_buoy_scaled)
+mod_sppregrandom <- glmer(col ~ seas_sst_temp_scaled  + (1|reg) + (1|phylum) + (1|class) + (1|order) + (1|family) + (1|genus) + (1|spp), family = binomial, data = spp_master_ztemp_seus_buoy_scaled, nAGQ = 0)
                             
                             #, nAGQ = 0) (Deleted because trying glmmTMB instead of glmer as the function to run the model)
 ```
+
 
 Assumptions
 ```{r}
@@ -52,6 +53,35 @@ Assumptions
 #predict(se.fit=TRUE, re.form=NA, allow.new.levels=TRUE, type = 'response')
 ```
 
+TRYING BOLKER INSTEAD
+
+```{r}
+#best predictor for fish and inverts: seas_sst_temp_scaled as x axis
+
+temp_gains_newdata$col <- predict(mod_sppregrandom,temp_gains_newdata, re.form = NA)
+
+mm <- model.matrix(terms(mod_sppregrandom),temp_gains_newdata)
+
+pvar1 <- diag(mm %*% tcrossprod(vcov(mod_sppregrandom),mm)) #vcov: variance/covariance matrix for fitted model object
+#tcrossproduct (matrix cross product)
+#diag = matrix diagonal
+
+#tvar1 <- pvar1+VarCorr(mod_sppregrandom)$Subject[1]  ## must be adapted for more complex models
+cmult <- 1.96 ## could use 1.96
+temp_gains_newdata <- data.frame(
+    temp_gains_newdata
+    , plo = temp_gains_newdata$col-cmult*sqrt(pvar1)
+    , phi = temp_gains_newdata$col+cmult*sqrt(pvar1)
+  #  , tlo = newdat$distance-cmult*sqrt(tvar1)
+  #  , thi = newdat$distance+cmult*sqrt(tvar1)
+)
+#plot confidence
+g0 <- ggplot(temp_gains_newdata, aes(x=seas_sst_temp_scaled, y=exp(col)/(1+exp(col)))) +
+  geom_line(size = 0.1)
+g0 + geom_ribbon(aes(ymin = exp(plo)/(1+exp(plo)), ymax = exp(phi)/(1+exp(phi))))+
+    labs(title="CI based on fixed-effects uncertainty ONLY") +
+  lims(y = c(0,1))
+```
 
 Plot Gains versus Seasonality
 ```{r}

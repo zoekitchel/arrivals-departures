@@ -37,7 +37,7 @@ spp_key <- fread(here::here("Data","Spp_master","spp_key.csv"))
 
 spp_master_ztemp_seus_buoy_scaled_annual_obs <- spp_master_ztemp_seus_buoy_scaled_annual_obs[spp_key, on = "spp"]
 
-(1|reg) + (1|phylum) + (1|class) + (1|order) + (1|family) + (1|genus) + (1|spp)
+#(1|reg) + (1|phylum) + (1|class) + (1|order) + (1|family) + (1|genus) + (1|spp)
     
 ```
 
@@ -51,49 +51,52 @@ variables_scaled <- grep("*_scaled", names(spp_master_ztemp_seus_buoy_scaled_ann
 
 #going to make loop to make all models I need to look at with a single temperature variable
 
-arrival_model_comparison_annual_obs <- as.data.table(matrix(nrow = length(variables_scaled)))
-arrival_model_comparison_annual_obs[, variable:=as.factor(V1)][, coef:=as.numeric(V1)][, p_value:=as.numeric(V1)][, AICc:=as.numeric(V1)]
-arrival_model_comparison_annual_obs[, V1 := NULL]
+arrival_model_comparison_annual_obs_taxonomy <- as.data.table(matrix(nrow = length(variables_scaled)))
+arrival_model_comparison_annual_obs_taxonomy[, variable:=as.factor(V1)][, coef:=as.numeric(V1)][, p_value:=as.numeric(V1)][, AICc:=as.numeric(V1)]
+arrival_model_comparison_annual_obs_taxonomy[, V1 := NULL]
 
 for (i in 1:length(variables_scaled)){
   mod <- glmmTMB(col ~ get(variables_scaled[i]) + (1|reg) + (1|phylum) + (1|class) + (1|order) + (1|family) + (1|genus) + (1|spp), family = binomial, data = spp_master_ztemp_seus_buoy_scaled_annual_obs)
-  arrival_model_comparison_annual_obs[i,variable := variables_scaled[i]]
-  arrival_model_comparison_annual_obs[i,coef := coef(summary(mod))[,"Estimate"][2]]
-  arrival_model_comparison_annual_obs[i,p_value := coef(summary(mod))[,"Pr(>|z|)"][2]]
-  arrival_model_comparison_annual_obs[i,AICc := AICc(mod)]
+  arrival_model_comparison_annual_obs_taxonomy[i,variable := variables_scaled[i]]
+  arrival_model_comparison_annual_obs_taxonomy[i,coef := coef(summary(mod))$cond[,"Estimate"][[2]]]
+  arrival_model_comparison_annual_obs_taxonomy[i,p_value := coef(summary(mod))$cond[,"Pr(>|z|)"][[2]]]
+  arrival_model_comparison_annual_obs_taxonomy[i,AICc := AICc(mod)]
   
   print(paste(i, length(variables_scaled), sep = "/"))
     
 }
 
-#by setting nACQ to 0, all models converged
 
-saveRDS(object = arrival_model_comparison_annual_obs, file = here::here("Model_results","arrival_model_comparison_annual_obs.rds"))
+saveRDS(object = arrival_model_comparison_annual_obs_taxonomy, file = here::here("Model_results","arrival_model_comparison_annual_obs_taxonomy.rds"))
 
-arrival_model_comparison_annual_obs <- readRDS(here::here("Model_results","arrival_model_comparison_annual_obs.rds"))
+fwrite(arrival_model_comparison_annual_obs_taxonomy, file = here::here("Model_results","arrival_model_comparison_annual_obs_taxonomy.csv"))
+
+arrival_model_comparison_annual_obs_taxonomy <- readRDS(here::here("Model_results","arrival_model_comparison_annual_obs_taxonomy.rds"))
 
 ```
 
 Departure Models without Traits
 ```{r departure models without traits}
 
-departure_model_comparison_annual_obs <- as.data.table(matrix(nrow = length(variables_scaled)))
-departure_model_comparison_annual_obs[, variable:=as.factor(V1)][, coef:=as.numeric(V1)][, p_value:=as.numeric(V1)][, AICc:=as.numeric(V1)]
-departure_model_comparison_annual_obs[, V1 := NULL]
+departure_model_comparison_annual_obs_taxonomy <- as.data.table(matrix(nrow = length(variables_scaled)))
+departure_model_comparison_annual_obs_taxonomy[, variable:=as.factor(V1)][, coef:=as.numeric(V1)][, p_value:=as.numeric(V1)][, AICc:=as.numeric(V1)]
+departure_model_comparison_annual_obs_taxonomy[, V1 := NULL]
 
 for (i in 1:length(variables_scaled)){
   mod <- glmmTMB(now_ext ~ get(variables_scaled[i]) + (1|reg) + (1|phylum) + (1|class) + (1|order) + (1|family) + (1|genus) + (1|spp), family = binomial, data = spp_master_ztemp_seus_buoy_scaled_annual_obs)
-  departure_model_comparison_annual_obs[i,variable := variables_scaled[i]]
-  departure_model_comparison_annual_obs[i,coef := coef(summary(mod))[,"Estimate"][2]]
-  departure_model_comparison_annual_obs[i,p_value := coef(summary(mod))[,"Pr(>|z|)"][2]]
-  departure_model_comparison_annual_obs[i,AICc := AICc(mod)]
+  departure_model_comparison_annual_obs_taxonomy[i,variable := variables_scaled[i]]
+  departure_model_comparison_annual_obs_taxonomy[i,coef := coef(summary(mod))$cond[,"Estimate"][[2]]]
+  departure_model_comparison_annual_obs_taxonomy[i,p_value := coef(summary(mod))$cond[,"Pr(>|z|)"][[2]]]
+  departure_model_comparison_annual_obs_taxonomy[i,AICc := AICc(mod)]
   
   print(paste(i, length(variables_scaled), sep = "/"))
     
 }
 
-saveRDS(object = departure_model_comparison_annual_obs, file = here::here("Model_results","departure_model_comparison_annual_obs.rds"))
-departure_model_comparison_annual_obs <- readRDS(here::here("Model_results","departure_model_comparison_annual_obs.rds"))
+saveRDS(object = departure_model_comparison_annual_obs_taxonomy, file = here::here("Model_results","departure_model_comparison_annual_obs_taxonomy.rds"))
+fwrite(departure_model_comparison_annual_obs_taxonomy, file = here::here("Model_results","departure_model_comparison_annual_obs_taxonomy.rds"))
+
+departure_model_comparison_annual_obs_taxonomy <- readRDS(here::here("Model_results","departure_model_comparison_annual_obs_taxonomy.rds"))
 
 ```
 
@@ -101,9 +104,9 @@ Relative Variable Importance
 
 NB: I didn't end up using mean as a predictor variable (patterns captured in min and max, less relevant to thermal niche)
 ```{r get rid of any models using mean}
-arrival_model_comparison_annual_obs_nomean <- arrival_model_comparison_annual_obs[!grepl("mean",variable),]
+arrival_model_comparison_annual_obs_nomean <- arrival_model_comparison_annual_obs_taxonomy[!grepl("mean",variable),]
 
-departure_model_comparison_annual_obs_nomean <- departure_model_comparison_annual_obs[!grepl("mean",variable),]
+departure_model_comparison_annual_obs_nomean <- departure_model_comparison_annual_obs_taxonomy[!grepl("mean",variable),]
 
 
 ```
