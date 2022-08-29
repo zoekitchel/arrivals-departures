@@ -13,6 +13,15 @@ spp_master_ztemp_seus_buoy.traits_scaled <- readRDS(here::here("Data","Spp_maste
 
 ```
 
+Link up with spp key to add phylum, order, family, etc.
+```{r pull in spp, order, family, etc.}
+spp_key <- fread(here::here("Data","Spp_master","spp_key.csv"))
+
+spp_master_ztemp_seus_buoy_scaled <- spp_master_ztemp_seus_buoy_scaled[spp_key, on = "spp"]
+
+```
+
+
 Regional statistics fish and inverts
 ```{r regional stats fish and inverts}
 #count arrivals by region

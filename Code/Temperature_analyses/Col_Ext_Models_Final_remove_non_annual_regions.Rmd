@@ -9,7 +9,7 @@ Changes
 * easier to follow
 * species and region as random effects
 * scaling temperature values
-* setting nACQ to 0, see why [here](https://stats.stackexchange.com/questions/77313/why-cant-i-match-glmer-family-binomial-output-with-manual-implementation-of-g). 
+* setting nACQ to 0, see why (not anymore as of Friday August 26, 2022, using glmmTMB instead) [here](https://stats.stackexchange.com/questions/77313/why-cant-i-match-glmer-family-binomial-output-with-manual-implementation-of-g). 
 
 ```{r setup}
 library(MuMIn)
@@ -18,6 +18,7 @@ library(data.table)
 library(ggplot2)
 library(here)
 library(wesanderson) # to color plots
+library(glmmTMB)
 
 spp_master_ztemp_seus_buoy_scaled <- readRDS("~/Documents/grad school/Rutgers/Repositories/Col_Ext/Data/Spp_master/spp_master_ztemp_seus_buoy_scaled.rds")
 ```
@@ -30,6 +31,15 @@ spp_master_ztemp_seus_buoy_scaled_annual_obs <- spp_master_ztemp_seus_buoy_scale
 
 ```
 
+Link up with spp key to add phylum, order, family, etc.
+```{r pull in spp, order, family, etc.}
+spp_key <- fread(here::here("Data","Spp_master","spp_key.csv"))
+
+spp_master_ztemp_seus_buoy_scaled_annual_obs <- spp_master_ztemp_seus_buoy_scaled_annual_obs[spp_key, on = "spp"]
+
+(1|reg) + (1|phylum) + (1|class) + (1|order) + (1|family) + (1|genus) + (1|spp)
+    
+```
 
 Running, and ranking arrival models without traits
 
@@ -46,7 +56,7 @@ arrival_model_comparison_annual_obs[, variable:=as.factor(V1)][, coef:=as.numeri
 arrival_model_comparison_annual_obs[, V1 := NULL]
 
 for (i in 1:length(variables_scaled)){
-  mod <- glmer(col ~ get(variables_scaled[i]) + (1|reg) + (1|spp), family = binomial, data = spp_master_ztemp_seus_buoy_scaled_annual_obs, nAGQ = 0)
+  mod <- glmmTMB(col ~ get(variables_scaled[i]) + (1|reg) + (1|phylum) + (1|class) + (1|order) + (1|family) + (1|genus) + (1|spp), family = binomial, data = spp_master_ztemp_seus_buoy_scaled_annual_obs)
   arrival_model_comparison_annual_obs[i,variable := variables_scaled[i]]
   arrival_model_comparison_annual_obs[i,coef := coef(summary(mod))[,"Estimate"][2]]
   arrival_model_comparison_annual_obs[i,p_value := coef(summary(mod))[,"Pr(>|z|)"][2]]
@@ -72,7 +82,7 @@ departure_model_comparison_annual_obs[, variable:=as.factor(V1)][, coef:=as.nume
 departure_model_comparison_annual_obs[, V1 := NULL]
 
 for (i in 1:length(variables_scaled)){
-  mod <- glmer(now_ext ~ get(variables_scaled[i]) + (1|reg) + (1|spp), family = binomial, data = spp_master_ztemp_seus_buoy_scaled_annual_obs, nAGQ = 0)
+  mod <- glmmTMB(now_ext ~ get(variables_scaled[i]) + (1|reg) + (1|phylum) + (1|class) + (1|order) + (1|family) + (1|genus) + (1|spp), family = binomial, data = spp_master_ztemp_seus_buoy_scaled_annual_obs)
   departure_model_comparison_annual_obs[i,variable := variables_scaled[i]]
   departure_model_comparison_annual_obs[i,coef := coef(summary(mod))[,"Estimate"][2]]
   departure_model_comparison_annual_obs[i,p_value := coef(summary(mod))[,"Pr(>|z|)"][2]]
@@ -81,8 +91,6 @@ for (i in 1:length(variables_scaled)){
   print(paste(i, length(variables_scaled), sep = "/"))
     
 }
-
-#by setting nACQ to 0, all models converged
 
 saveRDS(object = departure_model_comparison_annual_obs, file = here::here("Model_results","departure_model_comparison_annual_obs.rds"))
 departure_model_comparison_annual_obs <- readRDS(here::here("Model_results","departure_model_comparison_annual_obs.rds"))
@@ -103,9 +111,9 @@ departure_model_comparison_annual_obs_nomean <- departure_model_comparison_annua
 How does the null model with only random effects perform?
 ```{r null models}
 #add null to tables
-intercept_arrival_mod_scaled <- glmer(col ~ (1|spp) + (1|reg), family = binomial, nAGQ = 0, data = spp_master_ztemp_seus_buoy_scaled_annual_obs)
+intercept_arrival_mod_scaled <- glmmTMB(col ~ (1|reg) + (1|phylum) + (1|class) + (1|order) + (1|family) + (1|genus) + (1|spp), family = binomial, data = spp_master_ztemp_seus_buoy_scaled_annual_obs)
 
-intercept_departure_mod_scaled <- glmer(now_ext ~ (1|reg) + (1|spp), family = binomial, data = spp_master_ztemp_seus_buoy_scaled_annual_obs, nAGQ = 0)
+intercept_departure_mod_scaled <- glmmTMB(now_ext ~ (1|reg) + (1|phylum) + (1|class) + (1|order) + (1|family) + (1|genus) + (1|spp), family = binomial, data = spp_master_ztemp_seus_buoy_scaled_annual_obs)
 
 #best model better than null? yes
 AICc(intercept_arrival_mod_scaled)-min(arrival_model_comparison_annual_obs$AICc)

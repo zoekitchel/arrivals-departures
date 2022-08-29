@@ -9,7 +9,7 @@ Changes
 * easier to follow
 * species and region as random effects
 * scaling temperature values
-* setting nACQ to 0, see why [here](https://stats.stackexchange.com/questions/77313/why-cant-i-match-glmer-family-binomial-output-with-manual-implementation-of-g). 
+* setting nACQ to 0, see why (As  of August 26, 2022, this is no longer necessary because I'm using glmmTMB instead of GLMER) [here](https://stats.stackexchange.com/questions/77313/why-cant-i-match-glmmTMB-family-binomial-output-with-manual-implementation-of-g). 
 
 August 11, 2022: Working on Revisions from Global Ecology and Biogeography
 * Add random effects for order, genus, family, etc.
@@ -23,6 +23,7 @@ library(here)
 library(wesanderson) # to color plots
 library(taxize) #to obtain order, genus, family
 library(dplyr)
+library(glmmTMB)
 
 spp_master_ztemp_seus_buoy_scaled <- readRDS(here("Data","Spp_master", "spp_master_ztemp_seus_buoy_scaled.rds"))
 ```
@@ -32,63 +33,17 @@ Link up with spp key to add phylum, order, family, etc.
 spp_key <- fread(here::here("Data","Spp_master","spp_key.csv"))
 
 spp_master_ztemp_seus_buoy_scaled <- spp_master_ztemp_seus_buoy_scaled[spp_key, on = "spp"]
+
     
 ```
 
 
 Running, and ranking arrival models without traits
 
-##Here, I scaled all temperature values across all regions, and included species as a random effect. In order to do this, I had to change the algorithm slightly--nAGQ = 0.
-
-```{r arrival models without traits}
-#names of scaled columns
-variables_scaled <- grep("*_scaled", names(spp_master_ztemp_seus_buoy_scaled), value = T)
-
-#going to make loop to make all models I need to look at with a single temperature variable
-
-arrival_model_comparison <- as.data.table(matrix(nrow = length(variables_scaled)))
-arrival_model_comparison[, variable:=as.factor(V1)][, coef:=as.numeric(V1)][, p_value:=as.numeric(V1)][, AICc:=as.numeric(V1)]
-arrival_model_comparison[, V1 := NULL]
-
-for (i in 1:length(variables_scaled)){
-  mod <- glmer(col ~ get(variables_scaled[i]) + (1|reg) + (1|spp), family = binomial, data = spp_master_ztemp_seus_buoy_scaled, nAGQ = 0)
-  arrival_model_comparison[i,variable := variables_scaled[i]]
-  arrival_model_comparison[i,coef := coef(summary(mod))[,"Estimate"][2]]
-  arrival_model_comparison[i,p_value := coef(summary(mod))[,"Pr(>|z|)"][2]]
-  arrival_model_comparison[i,AICc := AICc(mod)]
-  
-  print(paste(i, length(variables_scaled), sep = "/"))
-    
-}
-
-#by setting nACQ to 0, all models converged
-
-saveRDS(object = arrival_model_comparison, file = here("Model_results","arrival_model_results.rds"))
-
-fwrite(arrival_model_comparison, file = here("Model_results","arrival_model_results.csv"))
-
-arrival_model_comparison <- readRDS(here("Model_results","arrival_model_results.rds"))
-
-#let's take a look at best performing model, and check assumptions
-mod_sppregrandom <- glmer(col ~ seas_sst_temp_scaled  + (1|reg) + (1|spp), family = binomial, data = spp_master_ztemp_seus_buoy_scaled, nAGQ = 0)
-
-
-#R-Squared
-r.squaredGLMM(mod_sppregrandom)
-
-#theoretical variance:
-  #the variance explained by the fixed effects: 0.0395
-  #a variance explained by the entire model, including both fixed and random effects: 0.43
-
-#delta (observational) variance:
-  #the variance explained by the fixed effects: 0.01149
-  #a variance explained by the entire model, including both fixed and random effects: 0.1255
-
-```
+##Here, I scaled all temperature values across all regions, and included species as a random effect. In order to do this, I had to change the algorithm slightly--nAGQ = 0.(No longer true as of 8/26/22 because using glmmTMB instead of glmer)
 
 Gain/Arrival Models with Additional random effects
 
-NB: August 13, 2022: These models seem to be running, but much slower than models with just a random effect for region and species. 
 ```{r arrival models without traits additional random effects for phylogeny }
 
 #going to make loop to make all models I need to look at with a single temperature variable
@@ -98,11 +53,11 @@ arrival_model_comparison_taxonomy[, variable:=as.factor(V1)][, coef:=as.numeric(
 arrival_model_comparison_taxonomy[, V1 := NULL]
 
 for (i in 1:length(variables_scaled)){
-  mod <- glmer(col ~ get(variables_scaled[i]) + (1|reg) + (1|phylum) + (1|class) + (1|order) + (1|family) + (1|genus) + (1|spp),
-               family = binomial, data = spp_master_ztemp_seus_buoy_scaled, nAGQ = 0)
+  mod <- glmmTMB(col ~ get(variables_scaled[i]) + (1|reg) + (1|phylum) + (1|class) + (1|order) + (1|family) + (1|genus) + (1|spp),
+               family = binomial, data = spp_master_ztemp_seus_buoy_scaled)
   arrival_model_comparison_taxonomy[i,variable := variables_scaled[i]]
-  arrival_model_comparison_taxonomy[i,coef := coef(summary(mod))[,"Estimate"][2]]
-  arrival_model_comparison_taxonomy[i,p_value := coef(summary(mod))[,"Pr(>|z|)"][2]]
+  arrival_model_comparison_taxonomy[i,coef := coef(summary(mod))$cond[,"Estimate"][[2]]]
+  arrival_model_comparison_taxonomy[i,p_value := coef(summary(mod))$cond[,"Pr(>|z|)"][[2]]]
   arrival_model_comparison_taxonomy[i,AICc := AICc(mod)]
   
   print(paste(i, length(variables_scaled), sep = "/"))
@@ -113,21 +68,21 @@ for (i in 1:length(variables_scaled)){
 
 saveRDS(object = arrival_model_comparison_taxonomy, file = here("Model_results","arrival_model_results_taxonomy.rds"))
 fwrite(arrival_model_comparison_taxonomy, file = here("Model_results","arrival_model_results_taxonomy.csv"))
-arrival_model_comparison_taxonomy <- readRDS(here("Model_results","arrival_model_results.rds"))
+arrival_model_comparison_taxonomy <- readRDS(here("Model_results","arrival_model_results_taxonomy.rds"))
 
 #let's take a look at best performing model, and check assumptions
-mod_extrarandom <- glmer(col ~ seas_sst_temp_scaled  + (1|reg) + (1|phylum) + (1|class) + (1|order) + (1|family) + (1|genus) + (1|spp), family = binomial, data = spp_master_ztemp_seus_buoy_scaled, nAGQ = 0)
+mod_extrarandom <- glmmTMB(col ~ seas_sst_temp_scaled  + (1|reg) + (1|phylum) + (1|class) + (1|order) + (1|family) + (1|genus) + (1|spp), family = binomial, data = spp_master_ztemp_seus_buoy_scaled)
 
 #R-Squared
 r.squaredGLMM(mod_extrarandom)
 
 #theoretical variance:
-  #the variance explained by the fixed effects: 0.0407
+  #the variance explained by the fixed effects: 0.04
   #a variance explained by the entire model, including both fixed and random effects: 0.44
 
 #delta (observational) variance:
-  #the variance explained by the fixed effects: 0.0176
-  #a variance explained by the entire model, including both fixed and random effects: 0.1935
+  #the variance explained by the fixed effects: 0.02
+  #a variance explained by the entire model, including both fixed and random effects: 0.19
 
 #coef =  -0.49
 #how much the probability changes with a given change in temperature
@@ -135,31 +90,6 @@ r.squaredGLMM(mod_extrarandom)
 ```
 "The estimate for seasonality of -0.49 means that a 1 degree increase in seasonality is associated with a 0.49 decrease in the log-odds of a Gain occuring, compared to no Gain occuring. If we exponentiate this number then we obtain the odds ratio of 0.6108308, which means that for a 1 degree increase in Seasonality we expect to see (approximately) a 39% decrease in the odds of a Gain Occurring." From this [Stack Exchange post](https://stats.stackexchange.com/questions/444797/interpreting-a-generalised-linear-mixed-model-with-binomial-data). 
 
-###Departure Models without Traits
-```{r departure models without traits}
-
-departure_model_comparison <- as.data.table(matrix(nrow = length(variables_scaled)))
-departure_model_comparison[, variable:=as.factor(V1)][, coef:=as.numeric(V1)][, p_value:=as.numeric(V1)][, AICc:=as.numeric(V1)]
-departure_model_comparison[, V1 := NULL]
-
-for (i in 1:length(variables_scaled)){
-  mod <- glmer(now_ext ~ get(variables_scaled[i]) + (1|reg) + (1|spp), family = binomial, data = spp_master_ztemp_seus_buoy_scaled, nAGQ = 0)
-  departure_model_comparison[i,variable := variables_scaled[i]]
-  departure_model_comparison[i,coef := coef(summary(mod))[,"Estimate"][2]]
-  departure_model_comparison[i,p_value := coef(summary(mod))[,"Pr(>|z|)"][2]]
-  departure_model_comparison[i,AICc := AICc(mod)]
-  
-  print(paste(i, length(variables_scaled), sep = "/"))
-    
-}
-
-#by setting nACQ to 0, all models converged
-
-saveRDS(object = departure_model_comparison, file = here("Model_results","departure_model_results.rds"))
-fwrite(departure_model_comparison, file = here("Model_results","departure_model_results.csv"))
-departure_model_comparison <- readRDS(here("Model_results","departure_model_results.rds"))
-
-```
 ###Departure Models without Traits, but with random effects for phylogeny
 ```{r departure models without traits with random effect phylogeny}
 
@@ -167,25 +97,42 @@ departure_model_comparison_taxonomy <- as.data.table(matrix(nrow = length(variab
 departure_model_comparison_taxonomy[, variable:=as.factor(V1)][, coef:=as.numeric(V1)][, p_value:=as.numeric(V1)][, AICc:=as.numeric(V1)]
 departure_model_comparison_taxonomy[, V1 := NULL]
 
-for (i in 205:length(variables_scaled)){
-  mod <- glmer(now_ext ~ get(variables_scaled[i]) + (1|reg) + (1|phylum) + (1|class) + (1|order) + (1|family) + (1|genus) + (1|spp), family = binomial, data = spp_master_ztemp_seus_buoy_scaled, nAGQ = 0)
+for (i in 1:length(variables_scaled)){
+  mod <- glmmTMB(now_ext ~ get(variables_scaled[i]) + (1|reg) + (1|phylum) + (1|class) + (1|order) + (1|family) + (1|genus) + (1|spp), family = binomial, data = spp_master_ztemp_seus_buoy_scaled)
   departure_model_comparison_taxonomy[i,variable := variables_scaled[i]]
-  departure_model_comparison_taxonomy[i,coef := coef(summary(mod))[,"Estimate"][2]]
-  departure_model_comparison_taxonomy[i,p_value := coef(summary(mod))[,"Pr(>|z|)"][2]]
+  departure_model_comparison_taxonomy[i,coef := coef(summary(mod))$cond[,"Estimate"][[2]]]
+  departure_model_comparison_taxonomy[i,p_value := coef(summary(mod))$cond[,"Pr(>|z|)"][[2]]]
   departure_model_comparison_taxonomy[i,AICc := AICc(mod)]
   
   print(paste(i, length(variables_scaled), sep = "/"))
     
 }
 
-#by setting nACQ to 0, all models converged
 
 saveRDS(object = departure_model_comparison_taxonomy, file = here("Model_results","departure_model_results_taxonomy.rds"))
 fwrite(departure_model_comparison_taxonomy, file = here("Model_results","departure_model_results_taxonomy.csv"))
 
 departure_model_comparison_taxonomy <- readRDS(here("Model_results","departure_model_results_taxonomy.rds"))
 
+#let's take a look at best performing model, and check assumptions
+mod_extrarandom_loss <- glmmTMB(now_ext ~ seas_sst_temp_lag3_scaled  + (1|reg) + (1|phylum) + (1|class) + (1|order) + (1|family) + (1|genus) + (1|spp), family = binomial, data = spp_master_ztemp_seus_buoy_scaled)
+
+#R-Squared
+r.squaredGLMM(mod_extrarandom_loss)
+
+#theoretical variance:
+  #the variance explained by the fixed effects: 0.017800760
+  #a variance explained by the entire model, including both fixed and random effects: 0.4442535
+
+#delta (observational) variance:
+  #the variance explained by the fixed effects: 0.004274866
+  #a variance explained by the entire model, including both fixed and random effects: 0.1066878
+
+#coef =  -0.3242
+#how much the probability changes with a given change in temperature
+
 ```
+"The estimate for seasonality of -0.3242 means that a 1 degree increase in seasonality is associated with a 0.3242 decrease in the log-odds of a Loss occuring, compared to no Loss occuring. If we exponentiate this number then we obtain the odds ratio of 0.7231, which means that for a 1 degree increase in Seasonality we expect to see (approximately) a 18% decrease in the odds of a Loss Occurring." From this [Stack Exchange post](https://stats.stackexchange.com/questions/444797/interpreting-a-generalised-linear-mixed-model-with-binomial-data). 
 
 
 
@@ -193,9 +140,9 @@ departure_model_comparison_taxonomy <- readRDS(here("Model_results","departure_m
 
 NB: I didn't end up using mean as a predictor variable (patterns captured in min and max, less relevant to thermal niche)
 ```{r get rid of any models using mean}
-arrival_model_comparison_nomean <- arrival_model_comparison[!grepl("mean",variable),]
+arrival_model_comparison_nomean <- arrival_model_comparison_taxonomy[!grepl("mean",variable),]
 
-departure_model_comparison_nomean <- departure_model_comparison[!grepl("mean",variable),]
+departure_model_comparison_nomean <- departure_model_comparison_taxonomy[!grepl("mean",variable),]
 
 
 ```
@@ -203,13 +150,13 @@ departure_model_comparison_nomean <- departure_model_comparison[!grepl("mean",va
 How does the null model with only random effects perform?
 ```{r null models}
 #add null to tables
-intercept_arrival_mod_scaled <- glmer(col ~ (1|spp) + (1|reg), family = binomial, nAGQ = 0, data = spp_master_ztemp_seus_buoy_scaled)
+intercept_arrival_mod_scaled <- glmmTMB(col ~ + (1|reg) + (1|phylum) + (1|class) + (1|order) + (1|family) + (1|genus) + (1|spp), family = binomial, data = spp_master_ztemp_seus_buoy_scaled)
 
-intercept_departure_mod_scaled <- glmer(now_ext ~ (1|reg) + (1|spp), family = binomial, data = spp_master_ztemp_seus_buoy_scaled, nAGQ = 0)
+intercept_departure_mod_scaled <- glmmTMB(now_ext ~ + (1|reg) + (1|phylum) + (1|class) + (1|order) + (1|family) + (1|genus) + (1|spp), family = binomial, data = spp_master_ztemp_seus_buoy_scaled)
 
 #best model better than null? yes
-AICc(intercept_arrival_mod_scaled)-min(arrival_model_comparison_nomean_akaikeweights$AICc)
-AICc(intercept_departure_mod_scaled)-min(departure_model_comparison_nomean_akaikeweights$AICc)
+AICc(intercept_arrival_mod_scaled, mod_extrarandom)
+AICc(intercept_departure_mod_scaled, mod_extrarandom_loss)
 
 
 ```
@@ -600,7 +547,11 @@ departure_seas_change_avg_coef <-
 ```
 
 
-**********************
+*************************
+*************************
+*************************
+*************************
+(These analyses were irrelevant and therefore not repeated for revisions)
 ##What if we run these models with fish only? No traits? How do inverts change the story? Because it looks like above, not a ton of invertebrates are going in and out. 
 
 ```{r fish only}
@@ -633,7 +584,7 @@ arrival_model_comparison_spprandom_scaled_seus_update_fishonly[, variable:=as.fa
 arrival_model_comparison_spprandom_scaled_seus_update_fishonly[, V1 := NULL]
 
 for (i in 1:length(variables_scaled)){
-  mod <- glmer(col ~ get(variables_scaled[i]) + (1|reg) + (1|spp), family = binomial, data = spp_master_ztemp_seus_buoy_scaled_fishonly2, nAGQ = 0)
+  mod <- glmmTMB(col ~ get(variables_scaled[i]) + (1|reg) + (1|spp), family = binomial, data = spp_master_ztemp_seus_buoy_scaled_fishonly2)
   arrival_model_comparison_spprandom_scaled_seus_update_fishonly[i,variable := variables_scaled[i]]
   arrival_model_comparison_spprandom_scaled_seus_update_fishonly[i,coef := coef(summary(mod))[,"Estimate"][2]]
   arrival_model_comparison_spprandom_scaled_seus_update_fishonly[i,p_value := coef(summary(mod))[,"Pr(>|z|)"][2]]
@@ -657,7 +608,7 @@ departure_model_comparison_spprandom_scaled_seus_update_fishonly[, variable:=as.
 departure_model_comparison_spprandom_scaled_seus_update_fishonly[, V1 := NULL]
 
 for (i in 1:length(variables_scaled)){
-  mod <- glmer(now_ext ~ get(variables_scaled[i]) + (1|reg) + (1|spp), family = binomial, data = spp_master_ztemp_seus_buoy_scaled_fishonly2, nAGQ = 0)
+  mod <- glmmTMB(now_ext ~ get(variables_scaled[i]) + (1|reg) + (1|spp), family = binomial, data = spp_master_ztemp_seus_buoy_scaled_fishonly2)
   departure_model_comparison_spprandom_scaled_seus_update_fishonly[i,variable := variables_scaled[i]]
   departure_model_comparison_spprandom_scaled_seus_update_fishonly[i,coef := coef(summary(mod))[,"Estimate"][2]]
   departure_model_comparison_spprandom_scaled_seus_update_fishonly[i,p_value := coef(summary(mod))[,"Pr(>|z|)"][2]]
@@ -679,10 +630,10 @@ arrival_model_comparison_spprandom_scaled_seus_update_fishonly_nomean <- arrival
 departure_model_comparison_spprandom_scaled_seus_update_fishonly_nomean <- departure_model_comparison_spprandom_scaled_seus_update_fishonly[!grepl("mean",variable),]
 
 #comparison to null
-col_mod_null <- glmer(col ~ (1|reg) + (1|spp), family = binomial, data = spp_master_ztemp_seus_buoy_scaled_fishonly2, nAGQ = 0)
+col_mod_null <- glmmTMB(col ~ (1|reg) + (1|spp), family = binomial, data = spp_master_ztemp_seus_buoy_scaled_fishonly2)
 AICc(col_mod_null)-min(arrival_model_comparison_spprandom_scaled_seus_update_fishonly_nomean$AICc)
 
-ext_mod_null <- glmer(ext ~ (1|reg) + (1|spp), family = binomial, data = spp_master_ztemp_seus_buoy_scaled_fishonly2, nAGQ = 0)
+ext_mod_null <- glmmTMB(ext ~ (1|reg) + (1|spp), family = binomial, data = spp_master_ztemp_seus_buoy_scaled_fishonly2)
 AICc(ext_mod_null)-min(departure_model_comparison_spprandom_scaled_seus_update_fishonly_nomean$AICc)
 ```
 
