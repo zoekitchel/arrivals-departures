@@ -53,9 +53,21 @@ Assumptions
 #predict(se.fit=TRUE, re.form=NA, allow.new.levels=TRUE, type = 'response')
 ```
 
-TRYING BOLKER INSTEAD
+##Plot Gains versus Seasonality
+
+Here we use this method by [Bolker](https://bbolker.github.io/mixedmodels-misc/glmmFAQ.html#predictions-andor-confidence-or-prediction-intervals-on-predictions) to calculate confidence intervals using standard error. 
 
 ```{r}
+#best predictor for fish and inverts: seas_sst_temp_scaled as x axis
+temp_gains_newdata <- data.table(seas_sst_temp_scaled =  runif(500,min(spp_master_ztemp_seus_buoy_scaled$seas_sst_temp_scaled, na.rm = T), max(spp_master_ztemp_seus_buoy_scaled$seas_sst_temp_scaled, na.rm = T)))
+
+
+#I want x axis to be meaningful
+mod_gain_reverse_scaledtemp <- lm(seas_sst_temp ~ seas_sst_temp_scaled, data = spp_master_ztemp_seus_buoy_scaled)
+
+
+temp_gains_newdata[,seas_sst_temp := mod_gain_reverse_scaledtemp$coefficients[2]*seas_sst_temp_scaled + mod_gain_reverse_scaledtemp$coefficients[1] ]
+
 #best predictor for fish and inverts: seas_sst_temp_scaled as x axis
 
 temp_gains_newdata$col <- predict(mod_sppregrandom,temp_gains_newdata, re.form = NA)
@@ -75,69 +87,27 @@ temp_gains_newdata <- data.frame(
   #  , tlo = newdat$distance-cmult*sqrt(tvar1)
   #  , thi = newdat$distance+cmult*sqrt(tvar1)
 )
-#plot confidence
-g0 <- ggplot(temp_gains_newdata, aes(x=seas_sst_temp_scaled, y=exp(col)/(1+exp(col)))) +
-  geom_line(size = 0.1)
-g0 + geom_ribbon(aes(ymin = exp(plo)/(1+exp(plo)), ymax = exp(phi)/(1+exp(phi))))+
-    labs(title="CI based on fixed-effects uncertainty ONLY") +
-  lims(y = c(0,1))
-```
 
-Plot Gains versus Seasonality
-```{r}
-#best predictor for fish and inverts: seas_sst_temp_scaled as x axis
-temp_gains_newdata <- data.table(seas_sst_temp_scaled =  runif(500,min(spp_master_ztemp_seus_buoy_scaled$seas_sst_temp_scaled, na.rm = T), max(spp_master_ztemp_seus_buoy_scaled$seas_sst_temp_scaled, na.rm = T)))
-
-#all combinations of all variables
-
-#species
-#genus
-#family
-#order
-#class
-#phyla
-#reg
-
-#all realistic taxonomy and region combos
-taxonomy_unique <- unique(spp_master_ztemp_seus_buoy_scaled[,.(reg, spp, genus, family, class, order, phylum, kingdom)])
-
-
-
-#cross combine with all possible temps from temp_gains_newdata
-taxonomy_temp_unique <- setkey(taxonomy_unique[,c(k=1,.SD)],k)[temp_gains_newdata[,c(k=1,.SD)],allow.cartesian=TRUE][,k:=NULL]
-
-preds <- predict(mod_sppregrandom,newdata = taxonomy_temp_unique, se.fit=TRUE,re.form  = NA, allow.new.levels=TRUE, type = 'response')
-
-preds_predictors_gain <- data.table(cbind(taxonomy_temp_unique, fit = preds$fit, se = preds$se.fit))
-
-#I want x axis to be meaningful
-mod_gain_reverse_scaledtemp <- lm(seas_sst_temp ~ seas_sst_temp_scaled, data = spp_master_ztemp_seus_buoy_scaled)
-
-
-preds_predictors_gain[,seas_sst_temp := mod_gain_reverse_scaledtemp$coefficients[2]*seas_sst_temp_scaled + mod_gain_reverse_scaledtemp$coefficients[1] ]
-
-#unique for plotting
-preds_predictors_gain.u <- unique(preds_predictors_gain[,.(seas_sst_temp, fit, se)])
-
-#1.96 * standard error is 95% confidence interval 
+#plot
 (gain_preds_temp_only <- ggplot() +
-  geom_ribbon(data =  preds_predictors_gain.u, aes(x = seas_sst_temp, ymin = fit-1.96*se, ymax = fit+1.96*se), fill = "lightgrey") +
+  geom_ribbon(data = temp_gains_newdata, aes(x = seas_sst_temp, ymin = exp(plo)/(1+exp(plo)), ymax = exp(phi)/(1+exp(phi))), fill = "lightgrey") +
   geom_point(data = spp_master_ztemp_seus_buoy_scaled, aes(x = seas_sst_temp, y = col), size = 2, shape = "|") +
-  geom_line(data = preds_predictors_gain.u, aes(x = seas_sst_temp, y = fit)) +
+  geom_line(data = temp_gains_newdata, aes(x = seas_sst_temp, y=exp(col)/(1+exp(col)))) +
   labs(x = "Seasonality of Sea Surface Temperature (\u00B0C)", y = "Probability of Gain") +
   theme_classic() +
   theme(text=element_text(size = 10)))
 
+
 ggsave(gain_preds_temp_only, path = here::here("figures/Figure4"), file = "Figure4_gains_CI.jpg")
 ggsave(gain_preds_temp_only, path = here::here("figures/Figure4"), file = "Figure4_gains_CI.eps")
-```
 
+```
 
 Best Temp Only Model Losses
 
 ```{r}
 #let's take a look at best performing model
-mod_sppregrandom_losses <- glmmTMB(now_ext ~ seas_sst_temp_lag3_scaled + (1|reg) + (1|phylum) + (1|class) + (1|order) + (1|family) + (1|genus) + (1|spp), family = binomial, data = spp_master_ztemp_seus_buoy_scaled)
+mod_sppregrandom_losses <- glmer(now_ext ~ seas_sst_temp_lag3_scaled + (1|reg) + (1|phylum) + (1|class) + (1|order) + (1|family) + (1|genus) + (1|spp), family = binomial, data = spp_master_ztemp_seus_buoy_scaled, nAGQ = 0)
 ```
 
 Plot Losses versus Seasonality 
@@ -146,32 +116,38 @@ Plot Losses versus Seasonality
 #best predictor for fish and inverts: seas_sst_temp_lag3_scaled as x axis
 temp_losses_newdata <- data.table(seas_sst_temp_lag3_scaled = runif(500,min(spp_master_ztemp_seus_buoy_scaled$seas_sst_temp_lag3_scaled, na.rm =  T), max(spp_master_ztemp_seus_buoy_scaled$seas_sst_temp_lag3_scaled, na.rm =  T)))
 
-#cross combine with all possible temps from temp_gains_newdata
-taxonomy_temp_unique_loss <- setkey(taxonomy_unique[,c(k=1,.SD)],k)[temp_losses_newdata[,c(k=1,.SD)],allow.cartesian=TRUE][,k:=NULL]
+temp_losses_newdata$now_ext <- predict(mod_sppregrandom_losses,temp_losses_newdata, re.form = NA)
 
-#run here
-preds_losses <- predict(mod_sppregrandom_losses, newdata = taxonomy_temp_unique_loss, se.fit=TRUE,re.form  = NA, allow.new.levels=TRUE, type = 'response')
+mm_loss <- model.matrix(terms(mod_sppregrandom_losses),temp_losses_newdata)
 
+pvar1_loss <- diag(mm_loss %*% tcrossprod(vcov(mod_sppregrandom_losses),mm_loss)) #vcov: variance/covariance matrix for fitted model object
+#tcrossproduct (matrix cross product)
+#diag = matrix diagonal
 
-preds_predictors_loss <- data.table(cbind(taxonomy_temp_unique_loss, fit = preds_losses$fit, se = preds_losses$se.fit))
-
-saveRDS(preds_predictors_loss, here::here("Data","preds_predictors_loss.rds"))
+#tvar1 <- pvar1+VarCorr(mod_sppregrandom)$Subject[1]  ## must be adapted for more complex models
+cmult <- 1.96 ## could use 1.96
+temp_losses_newdata <- data.frame(
+    temp_losses_newdata
+    , plo = temp_losses_newdata$now_ext-cmult*sqrt(pvar1_loss)
+    , phi = temp_losses_newdata$now_ext+cmult*sqrt(pvar1_loss)
+  #  , tlo = newdat$distance-cmult*sqrt(tvar1)
+  #  , thi = newdat$distance+cmult*sqrt(tvar1)
+)
 
 #I want x axis to be meaningful
 mod_loss_reverse_scaledtemp <- lm(seas_sst_temp_lag3 ~ seas_sst_temp_lag3_scaled, data = spp_master_ztemp_seus_buoy_scaled)
 
+temp_losses_newdata <- data.table(temp_losses_newdata)
 
-preds_predictors_loss[,seas_sst_temp_lag3 := mod_loss_reverse_scaledtemp$coefficients[2]*seas_sst_temp_lag3_scaled + mod_loss_reverse_scaledtemp$coefficients[1] ]
+temp_losses_newdata[,seas_sst_temp_lag3 := mod_loss_reverse_scaledtemp$coefficients[2]*seas_sst_temp_lag3_scaled + mod_loss_reverse_scaledtemp$coefficients[1] ]
 
 
-#unique for plotting
-preds_predictors_loss.u <- unique(preds_predictors_loss[,.(seas_sst_temp_lag3, fit, se)])
 
 #1.96 * standard error is 95% confidence interval 
 (loss_preds_temp_only <- ggplot() +
-  geom_ribbon(data =  preds_predictors_loss.u, aes(x = seas_sst_temp_lag3, ymin = fit-1.96*se, ymax = fit+1.96*se), fill = "lightgrey") +
+  geom_ribbon(data = temp_losses_newdata, aes(x = seas_sst_temp_lag3, ymin = exp(plo)/(1+exp(plo)), ymax = exp(phi)/(1+exp(phi))), fill = "lightgrey") +
   geom_point(data = spp_master_ztemp_seus_buoy_scaled, aes(x = seas_sst_temp_lag3, y = now_ext), size = 2, shape = "|") +
-  geom_line(data = preds_predictors_loss.u, aes(x = seas_sst_temp_lag3, y = fit)) +
+  geom_line(data = temp_losses_newdata, aes(x = seas_sst_temp_lag3, y=exp(now_ext)/(1+exp(now_ext)))) +
   labs(x = "Seasonality of Sea Surface Temperature (\u00B0C)\nLagged Three Years", y = "Probability of Loss") +
   theme_classic() +
   theme(text=element_text(size = 10)))
