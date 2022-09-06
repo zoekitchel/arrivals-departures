@@ -27,8 +27,11 @@ spp_master_ztemp_seus_buoy_surface.r <- melt(spp_master_ztemp_seus_buoy_surface,
 spp_master_ztemp_seus_buoy_bottom <- unique(spp_master_ztemp_seus_buoy[,.(reg,year, max_sst_temp, seas_sst_temp, min_sst_temp)])
 spp_master_ztemp_seus_buoy_bottom.r <- melt(spp_master_ztemp_seus_buoy_bottom, id.vars = 1:2, measure.vars = 3:5)
 
+#delete bottom temp values for SEUS
+spp_master_ztemp_seus_buoy_bottom.r[,value := ifelse(reg == "Southeast US",NA,value)]
+
 regional_surface_temp <- ggplot(data = spp_master_ztemp_seus_buoy_surface.r, aes(x=year, y = value, color = variable)) +
-  geom_point() +
+  geom_point(size = 1) +
   facet_wrap(~reg, scales = "free") +
   scale_color_manual(name =  "Temperature Metric", values = c("red","slategrey","blue"), labels = c("Maximum Temperature", "Temperature Seasonality", "Minimum Temperature")) +
   labs(y =  paste0("Surface Temperature (", "\u00B0C)"), x = "Year") +
@@ -38,7 +41,7 @@ ggsave(file = "temp_over_time_surface_seusbuoy.jpg")
 ggsave(file = "temp_over_time_surface_seusbuoy.eps")
 
 regional_bottom_temp <- ggplot(data = spp_master_ztemp_seus_buoy_bottom.r, aes(x=year, y = value, color = variable)) +
-  geom_point() +
+  geom_point(size = 1) +
   facet_wrap(~reg, scales = "free") +
   scale_color_manual(name =  "Temperature Metric", values = c("red","slategrey","blue"), labels = c("Maximum Temperature", "Temperature Seasonality", "Minimum Temperature")) +
   labs(y = paste0("Bottom Temperature (", "\u00B0C)"), x = "Year") +
@@ -59,6 +62,7 @@ step1 <- plot_grid(regional_surface_temp + theme(legend.position = "none"), regi
 
 final_temp_region_plot <- plot_grid(step1, legend, nrow = 1, ncol = 2, rel_widths = c(4,1))
 
-ggsave(final_temp_region_plot, height = 8, width = 9.7, units = "in", path = "~/Documents/grad school/Rutgers/Repositories/Col_Ext/figures/Supplemental", filename = "S4_regional_temp_over_time.eps")
+ggsave(final_temp_region_plot, height = 8, width = 9.7, units = "in", path = here::here("figures","Supplemental"), filename = "S4_regional_temp_over_time.eps")
+ggsave(final_temp_region_plot, height = 8, width = 9.7, units = "in", path = here::here("figures","Supplemental"), filename = "S4_regional_temp_over_time.jpg")
 ```
 

@@ -20,6 +20,7 @@ library(plyr)
 spp_master_ztemp_seus_buoy.traits_scaled <- readRDS(here::here("Data","Spp_master","spp_master_ztemp_seus_buoy.traits_scaled.rds"))
 
 spp_master_ztemp_seus_buoy_scaled <- readRDS(here::here("Data","Spp_master","spp_master_ztemp_seus_buoy_scaled.rds"))
+
 ```
 
 I will be looking at:
@@ -41,15 +42,16 @@ cor(spp_master_ztemp_seus_buoy.traits_scaled[,.(age.max_ocean_scaled, age.maturi
 pairs(spp_master_ztemp_seus_buoy.traits_scaled[,.(age.max_ocean_scaled, age.maturity_ocean_scaled, tl_ocean_scaled, length.max_ocean_scaled)])
 
 ```
+
 What's the distribution of trait values?
 ```{r unique trait values}
 spp_master_ztemp_seus_buoy.traits_scaled.unique <- unique(spp_master_ztemp_seus_buoy.traits_scaled[,.(spp, reg, age.maturity_ocean, age.max_ocean, tl_ocean, length.max_ocean)])
 
-ggplot(spp_master_ztemp_seus_buoy.traits_scaled.unique, aes(x = age.maturity))  +
+ggplot(spp_master_ztemp_seus_buoy.traits_scaled.unique, aes(x = age.maturity_ocean))  +
   geom_histogram() +
   theme_classic()
 
-summary(spp_master_ztemp_seus_buoy.traits_scaled.unique$age.maturity)
+summary(spp_master_ztemp_seus_buoy.traits_scaled.unique$age.maturity_ocean)
 
 #what about when we leave out ai, goa, and wctri
 
@@ -60,6 +62,13 @@ ggplot(spp_master_ztemp_seus_buoy.traits_scaled.unique[!(reg %in% c("ai","goa","
 summary(spp_master_ztemp_seus_buoy.traits_scaled.unique[!(reg %in% c("ai","goa","wctri"))][!(reg %in% c("ai","goa","wctri"))]$age.maturity_ocean)
 ```
 
+Link up with spp key to add phylum, order, family, etc.
+```{r pull in spp, order, family, etc.}
+spp_key <- fread(here::here("Data","Spp_master","spp_key.csv"))
+
+spp_master_ztemp_seus_buoy.traits_scaled <- spp_master_ztemp_seus_buoy.traits_scaled[spp_key, on = "spp"]
+    
+```
 
 Prep for model runs
 ```{r prep for model runs}
@@ -69,7 +78,7 @@ Prep for model runs
 tempvars <- grep(".*temp.*scaled", names(spp_master_ztemp_seus_buoy.traits_scaled[!(reg %in% c("ai","goa","wctri"))]), value = T)
 
 #other reference and trait columns we need
-othervars_arrivals <- c("reg", "year", "col", "spp", "age.max_ocean_scaled", "age.maturity_ocean_scaled", "tl_ocean_scaled", "length.max_ocean_scaled")
+othervars_arrivals <- c("reg", "year", "col", "phylum","class","order","family","genus","spp", "age.max_ocean_scaled", "age.maturity_ocean_scaled", "tl_ocean_scaled", "length.max_ocean_scaled")
 
 colstosaveforarrivals <- c(othervars_arrivals, tempvars)
 
@@ -78,7 +87,7 @@ arrival.reduced_annual_obs <- spp_master_ztemp_seus_buoy.traits_scaled[,colstosa
 
 #Departure table
 
-othervars_departure <- c("reg", "year", "now_ext", "spp", "age.max_ocean_scaled", "age.maturity_ocean_scaled", "tl_ocean_scaled", "length.max_ocean_scaled")
+othervars_departure <- c("reg", "year", "now_ext", "phylum","class","order","family","genus","spp", "age.max_ocean_scaled", "age.maturity_ocean_scaled", "tl_ocean_scaled", "length.max_ocean_scaled")
 colstosavefordeparture <- c(othervars_departure, tempvars)
 
 departure.reduced_annual_obs <- spp_master_ztemp_seus_buoy.traits_scaled[,colstosavefordeparture, with = F][!(reg %in% c("ai","goa","wctri"))] #reduces to columns we need
@@ -87,6 +96,7 @@ spp_master_ztemp_seus_buoy.traits_scaled.6regions <- spp_master_ztemp_seus_buoy.
 
 #save for specific figure code
 saveRDS(spp_master_ztemp_seus_buoy.traits_scaled.6regions, here::here("figures","Supplemental","annual_sensitivity","spp_master_ztemp_seus_buoy.traits_scaled.6regions.rds"))
+
 
 ```
 
@@ -102,9 +112,10 @@ arrival.reduced_annual_obs.r <- arrival.reduced_annual_obs[complete.cases(arriva
 #save for specific figure code
 saveRDS(arrival.reduced_annual_obs.r,file = here::here("figures","Supplemental","annual_sensitivity","arrival.reduced_annual_obs.r.rds"))
 
+
 #for now, going with two traits and one temp variable
 #going to make loop to make all models I need to look at with single variables
-all.temp.variables <- colnames(arrival.reduced_annual_obs.r[,9:256])
+all.temp.variables <- colnames(arrival.reduced_annual_obs.r[,14:261])
 all.temp.variables.0 <- c(0, all.temp.variables) #add 0 as option so models can just include traits
 all.temp.variables.0 <- all.temp.variables.0[!grepl("*mean*", all.temp.variables.0)]#get rid of MEAN temp variables
 all.trait.variables <- c(0, "tl_ocean_scaled", "age.max_ocean_scaled","age.maturity_ocean_scaled", "length.max_ocean_scaled",
@@ -142,12 +153,12 @@ for (i in 1:nrow(full_var_set.r2)){
   trait <- full_var_set.r2$Var3[i]
   
   raw_form <- ifelse(temp == 0 & trait != 0,
-      paste("col ~", trait, "+ (1|reg) + (1|spp)"),
+      paste("col ~", trait, "+ (1|reg)  + (1|class) + (1|order) + (1|family) + (1|genus) + (1|spp)"),
           ifelse(temp != 0 & trait == 0,
-           paste("col ~", temp, "+ (1|reg) + (1|spp)"),
+           paste("col ~", temp, "+ (1|reg)  + (1|class) + (1|order) + (1|family) + (1|genus) + (1|spp)"),
               ifelse(temp == 0 & trait == 0,
               paste("col ~", "(1|reg) + (1|spp)"),
-                paste("col ~",temp,sign,trait, "+ (1|reg) + (1|spp)"))))
+                paste("col ~",temp,sign,trait, "+ (1|reg)  + (1|class) + (1|order) + (1|family) + (1|genus) + (1|spp)"))))
 
   formula <- as.formula(raw_form)
   
@@ -169,6 +180,8 @@ for (i in 1:nrow(full_var_set.r2)){
 
 
 saveRDS(arrival_model_comparison_traits_annual_only, here::here("Model_results","Traits","arrival_model_comparison_traits_annual_obs.rds"))
+
+fwrite(arrival_model_comparison_traits_annual_only, here::here("Model_results","Traits","arrival_model_comparison_traits_annual_obs.csv"))
 
 arrival_model_comparison_traits_annual_only <- readRDS(here::here("Model_results","Traits","arrival_model_comparison_traits_annual_obs.rds"))
 
@@ -203,12 +216,12 @@ for (i in 1:nrow(full_var_set.r2)){
   trait <- full_var_set.r2$Var3[i]
   
   raw_form <- ifelse(temp == 0 & trait != 0,
-      paste("now_ext ~", trait, "+ (1|reg) + (1|spp)"),
+      paste("now_ext ~", trait, "+ (1|reg)  + (1|class) + (1|order) + (1|family) + (1|genus) + (1|spp)"),
           ifelse(temp != 0 & trait == 0,
-           paste("now_ext ~", temp, "+ (1|reg) + (1|spp)"),
+           paste("now_ext ~", temp, "+ (1|reg)  + (1|class) + (1|order) + (1|family) + (1|genus) + (1|spp)"),
               ifelse(temp == 0 & trait == 0,
               paste("now_ext ~", "(1|reg) + (1|spp)"),
-                paste("now_ext ~",temp,sign,trait, "+ (1|reg) + (1|spp)"))))
+                paste("now_ext ~",temp,sign,trait, "+ (1|reg)  + (1|class) + (1|order) + (1|family) + (1|genus) + (1|spp)"))))
 
   formula <- as.formula(raw_form)
   
@@ -230,6 +243,8 @@ for (i in 1:nrow(full_var_set.r2)){
 
 
 saveRDS(departure_model_comparison_traits_annual_obs, here::here("Model_results","Traits","departure_model_comparison_traits_annual_obs.rds"))
+
+fwrite(departure_model_comparison_traits_annual_obs, here::here("Model_results","Traits","departure_model_comparison_traits_annual_obs.csv"))
 
 
 departure_model_comparison_traits_annual_only <- readRDS(here::here("Model_results","Traits","departure_model_comparison_traits_annual_obs.rds"))

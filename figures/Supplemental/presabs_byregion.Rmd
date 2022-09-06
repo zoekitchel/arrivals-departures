@@ -10,6 +10,15 @@ library(here)
 spp_master_ztemp_seus_buoy <- readRDS(here::here("Data","Spp_master", "spp_master_ztemp_seus_buoy.rds")) #load in processed presence/absence data
 ```
 
+Link up with spp key to add phylum, order, family, etc.
+```{r pull in spp, order, family, etc.}
+spp_key <- fread(here::here("Data","Spp_master","spp_key.csv"))
+
+spp_master_ztemp_seus_buoy <- spp_master_ztemp_seus_buoy[spp_key, on = "spp"]
+
+    
+```
+
 ```{r data setup}
 #rename region factors for plotting
 spp_master_ztemp_seus_buoy[, region := factor(reg, labels = c("Aleutian Islands", "Eastern Bering Sea", "Gulf of Mexico", "Gulf of Alaska", "Northeast US", "Newfoundland","Southeast US","Scotian Shelf" ,"West Coast US"))]

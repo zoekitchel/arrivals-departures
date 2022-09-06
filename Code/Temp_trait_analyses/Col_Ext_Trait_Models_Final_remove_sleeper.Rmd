@@ -20,6 +20,8 @@ library(glmmTMB)
 
 spp_master_ztemp_seus_buoy.traits_scaled <- readRDS(here::here("Data","Spp_master","spp_master_ztemp_seus_buoy.traits_scaled.rds"))
 
+
+
 spp_master_ztemp_seus_buoy_scaled <- readRDS(here::here("Data","Spp_master","spp_master_ztemp_seus_buoy_scaled.rds"))
 ```
 
@@ -225,10 +227,15 @@ spp_master_ztemp_seus_buoy.traits_scaled.nosleeper <- spp_master_ztemp_seus_buoy
 #save for plotting later
 saveRDS(spp_master_ztemp_seus_buoy.traits_scaled.nosleeper, here::here("figures","Figure5","spp_master_ztemp_seus_buoy.traits_scaled.nosleeper.rds"))
 
+
+
+
 ```
 
 
 Making all models for arrival
+
+NB: deleted + (1|phylum) because there's only one phylum (chordata)
 ```{r all models arrival}
 #to assist with convergence: year as factor
 arrival.reduced_nosleeper[,year := as.factor(year)]
@@ -279,31 +286,34 @@ for (i in 1:nrow(full_var_set.r2)){
   trait <- full_var_set.r2$Var3[i]
   
   raw_form <- ifelse(temp == 0 & trait != 0,
-      paste("col ~", trait, "+ (1|reg) + (1|phylum) + (1|class) + (1|order) + (1|family) + (1|genus) + (1|spp)"),
+      paste("col ~", trait, "+ (1|reg)  + (1|class) + (1|order) + (1|family) + (1|genus) + (1|spp)"),
           ifelse(temp != 0 & trait == 0,
-           paste("col ~", temp, "+ (1|reg) + (1|phylum) + (1|class) + (1|order) + (1|family) + (1|genus) + (1|spp)"),
+           paste("col ~", temp, "+ (1|reg)  + (1|class) + (1|order) + (1|family) + (1|genus) + (1|spp)"),
               ifelse(temp == 0 & trait == 0,
-              paste("col ~", "(1|reg) + (1|phylum) + (1|class) + (1|order) + (1|family) + (1|genus) + (1|spp)"),
-                paste("col ~",temp,sign,trait, "+ (1|reg) + (1|phylum) + (1|class) + (1|order) + (1|family) + (1|genus) + (1|spp)"))))
+              paste("col ~", "(1|reg)  + (1|class) + (1|order) + (1|family) + (1|genus) + (1|spp)"),
+                paste("col ~",temp,sign,trait, "+ (1|reg)  + (1|class) + (1|order) + (1|family) + (1|genus) + (1|spp)"))))
 
   formula <- as.formula(raw_form)
   
-  mod <- glmmTMB(formula, family = binomial, data = arrival.reduced_nosleeper.r)
+  mod <- glmer(formula, family = binomial, data = arrival.reduced_nosleeper.r, nAGQ = 0)
   
   arrival_model_comparison_traits_nosleeper[i,temp_variable := full_var_set.r2$Var1[i]]
   arrival_model_comparison_traits_nosleeper[i,sign := full_var_set.r2$Var2[i]]
   arrival_model_comparison_traits_nosleeper[i,trait_variable := full_var_set.r2$Var3[i]]
   arrival_model_comparison_traits_nosleeper[i,AICc := AICc(mod)]
   
- # warning <- mod@optinfo$conv$lme4$messages[2]
- # converges <- ifelse(is.null(warning) == TRUE, T, F)
+  warning <- mod@optinfo$conv$lme4$messages[2]
+  converges <- ifelse(is.null(warning) == TRUE, T, F)
   
- # arrival_model_comparison_traits_nosleeper[i, converge := converges]
+  arrival_model_comparison_traits_nosleeper[i, converge := converges]
   
   print(paste(i, nrow(arrival_model_comparison_traits_nosleeper), sep = "/"))
     
 }
 
+saveRDS(arrival_model_comparison_traits_nosleeper, "arrival_model_comparison_traits_nosleeper.rds")
+
+fwrite("arrival_model_comparison_traits_nosleeper.csv")
 
 saveRDS(arrival_model_comparison_traits_nosleeper, here::here("Model_results","Traits","arrival_model_comparison_traits_nosleeper.rds"))
 
@@ -327,6 +337,7 @@ departure.reduced_nosleeper.r <- departure.reduced_nosleeper[complete.cases(depa
 #save for plotting in separate script
 saveRDS(departure.reduced_nosleeper.r, file = here::here("figures","Figure5","departure.reduced_nosleeper.r.rds"))
 
+
 departure_model_comparison_traits_nosleeper <- as.data.table(matrix(nrow = nrow(full_var_set.r2))) 
 departure_model_comparison_traits_nosleeper[, temp_variable:=as.factor(V1)][, sign:=as.factor(V1)][, trait_variable:=as.factor(V1)][, AICc:=as.numeric(V1)][, converge:= as.logical(V1)]
 departure_model_comparison_traits_nosleeper[, V1 := NULL]
@@ -338,16 +349,16 @@ for (i in 1:nrow(full_var_set.r2)){
   trait <- full_var_set.r2$Var3[i]
   
   raw_form <- ifelse(temp == 0 & trait != 0,
-      paste("now_ext ~", trait, "+ (1|reg) + (1|phylum) + (1|class) + (1|order) + (1|family) + (1|genus) + (1|spp)"),
+      paste("now_ext ~", trait, "+ (1|reg)  + (1|class) + (1|order) + (1|family) + (1|genus) + (1|spp)"),
           ifelse(temp != 0 & trait == 0,
-           paste("now_ext ~", temp, "+ (1|reg) + (1|phylum) + (1|class) + (1|order) + (1|family) + (1|genus) + (1|spp)"),
+           paste("now_ext ~", temp, "+ (1|reg)  + (1|class) + (1|order) + (1|family) + (1|genus) + (1|spp)"),
               ifelse(temp == 0 & trait == 0,
-              paste("now_ext ~", "(1|reg) + (1|phylum) + (1|class) + (1|order) + (1|family) + (1|genus) + (1|spp)"),
-                paste("now_ext ~",temp,sign,trait, "+ (1|reg) + (1|phylum) + (1|class) + (1|order) + (1|family) + (1|genus) + (1|spp)"))))
+              paste("now_ext ~", "(1|reg)  + (1|class) + (1|order) + (1|family) + (1|genus) + (1|spp)"),
+                paste("now_ext ~",temp,sign,trait, "+ (1|reg)  + (1|class) + (1|order) + (1|family) + (1|genus) + (1|spp)"))))
 
   formula <- as.formula(raw_form)
   
-  mod <- glmmTMB(formula, family = binomial, data = departure.reduced_nosleeper.r)
+  mod <- glmer(formula, family = binomial, data = departure.reduced_nosleeper.r, nAGQ = 0)
   
   departure_model_comparison_traits_nosleeper[i,temp_variable := full_var_set.r2$Var1[i]]
   departure_model_comparison_traits_nosleeper[i,sign := full_var_set.r2$Var2[i]]
@@ -362,6 +373,7 @@ for (i in 1:nrow(full_var_set.r2)){
   print(paste(i, nrow(departure_model_comparison_traits_nosleeper), sep = "/"))
     
 }
+
 
 saveRDS(departure_model_comparison_traits_nosleeper, here::here("Model_results","Traits","departure_model_comparison_traits_nosleeper.rds"))
 
@@ -459,41 +471,70 @@ RVI_arrival_traits <- data.table(arrival_departure, type, variable, value)
 
 Parameters for best arrival models (AIC<2)
 
+"The estimate for max temp of -0.27 means that a 1 degree increase in seasonality is associated with a 0.27 decrease in the log-odds of a Gain occuring, compared to no Gain occuring. If we exponentiate this number then we obtain the odds ratio of 0.7633795, which means that for a 1 degree increase in the absolute change in max temp we expect to see (approximately) a 24% decrease in the odds of a Gain Occurring." From this [Stack Exchange post](https://stats.stackexchange.com/questions/444797/interpreting-a-generalised-linear-mixed-model-with-binomial-data).
+
+"The estimate for max age of -0.71 means that a 1 year increase in max age is associated with a 0.71 decrease in the log-odds of a Gain occuring, compared to no Gain occuring. If we exponentiate this number then we obtain the odds ratio of 0.49, which means that for a 1 year increase in the max age we expect to see (approximately) a 51% decrease in the odds of a Gain Occurring." From this [Stack Exchange post](https://stats.stackexchange.com/questions/444797/interpreting-a-generalised-linear-mixed-model-with-binomial-data).
+
 ```{r arrival model best parameter comparison}
 
-colmod1 <- glmmTMB(col ~ max_sst_temp_change_abs_lag1_scaled*age.max_ocean_scaled + (1|reg) + (1|phylum) + (1|class) + (1|order) + (1|family) + (1|genus) + (1|spp), family = "binomial", data = arrival.reduced_nosleeper.r)
+colmod1 <- glmer(col ~max_sst_temp_change_abs_lag1_scaled	*	age.max_ocean_scaled+ (1|reg)  + (1|class) + (1|order) + (1|family) + (1|genus) + (1|spp), family = "binomial", data = arrival.reduced_nosleeper.r, nAGQ = 0)
 
-colmod2 <- glmmTMB(col ~ max_sst_temp_change_abs_lag1_scaled*age.max_ocean_scaled+tl_ocean_scaled + (1|reg) + (1|phylum) + (1|class) + (1|order) + (1|family) + (1|genus) + (1|spp), family = "binomial", data = arrival.reduced_nosleeper.r)
+colmod2 <- glmer(col ~max_sbt_temp_lag6_scaled	*	age.max_ocean_scaled+ (1|reg)  + (1|class) + (1|order) + (1|family) + (1|genus) + (1|spp), family = "binomial", data = arrival.reduced_nosleeper.r, nAGQ = 0)
 
-colmod3 <- glmmTMB(col ~ 
-max_sst_temp_change_abs_lag1_scaled*age.max_ocean_scaled+length.max_ocean_scaled + (1|reg) + (1|phylum) + (1|class) + (1|order) + (1|family) + (1|genus) + (1|spp), family = "binomial", data = arrival.reduced_nosleeper.r)
+colmod3 <- glmer(col ~ max_sbt_temp_lag4_scaled	*	age.max_ocean_scaled+ (1|reg)  + (1|class) + (1|order) + (1|family) + (1|genus) + (1|spp), family = "binomial", data = arrival.reduced_nosleeper.r, nAGQ = 0)
 
-colmod4 <- glmmTMB(col ~ max_sst_temp_change_abs_lag1_scaled*age.max_ocean_scaled+age.maturity_ocean_scaled + (1|reg) + (1|phylum) + (1|class) + (1|order) + (1|family) + (1|genus) + (1|spp), family = "binomial", data = arrival.reduced_nosleeper.r)
+colmod4 <- glmer(col ~max_sst_temp_change_abs_lag1_scaled	*	age.max_ocean_scaled + tl_ocean_scaled+ (1|reg)  + (1|class) + (1|order) + (1|family) + (1|genus) + (1|spp), family = "binomial", data = arrival.reduced_nosleeper.r, nAGQ = 0)
+
+colmod5 <- glmer(col ~max_sbt_temp_lag3_scaled	*	age.max_ocean_scaled+ (1|reg)  + (1|class) + (1|order) + (1|family) + (1|genus) + (1|spp), family = "binomial", data = arrival.reduced_nosleeper.r, nAGQ = 0)
+
+colmod6 <- glmer(col ~max_sst_temp_change_abs_lag1_scaled	*	age.max_ocean_scaled + age.maturity_ocean_scaled+ (1|reg)  + (1|class) + (1|order) + (1|family) + (1|genus) + (1|spp), family = "binomial", data = arrival.reduced_nosleeper.r, nAGQ = 0)
+
+colmod7 <- glmer(col ~max_sbt_temp_lag6_scaled	*	age.max_ocean_scaled + tl_ocean_scaled+ (1|reg)  + (1|class) + (1|order) + (1|family) + (1|genus) + (1|spp), family = "binomial", data = arrival.reduced_nosleeper.r, nAGQ = 0)
 
 #no temp
-colmod_notemp <- glmmTMB(col ~ age.max_ocean_scaled + (1|reg) + (1|phylum) + (1|class) + (1|order) + (1|family) + (1|genus) + (1|spp), family = "binomial", data = arrival.reduced_nosleeper.r)
+colmod_notemp <- glmer(col ~ age.max_ocean_scaled + (1|reg)  + (1|class) + (1|order) + (1|family) + (1|genus) + (1|spp), family = "binomial", data = arrival.reduced_nosleeper.r, nAGQ = 0)
 #no trait
-colmod_notrait <- glmmTMB(col ~ max_sst_temp_change_abs_lag1_scaled + (1|reg) + (1|phylum) + (1|class) + (1|order) + (1|family) + (1|genus) + (1|spp), family = "binomial", data = arrival.reduced_nosleeper.r)
+colmod_notrait <- glmer(col ~ max_sst_temp_change_abs_lag1_scaled + (1|reg)  + (1|class) + (1|order) + (1|family) + (1|genus) + (1|spp), family = "binomial", data = arrival.reduced_nosleeper.r, nAGQ = 0)
 
 #null
 
-colmod_null <- glmmTMB(col ~ (1|reg) + (1|phylum) + (1|class) + (1|order) + (1|family) + (1|genus) + (1|spp), family = "binomial", data = arrival.reduced_nosleeper.r)
+colmod_null <- glmer(col ~ (1|reg)  + (1|class) + (1|order) + (1|family) + (1|genus) + (1|spp), family = "binomial", data = arrival.reduced_nosleeper.r, nAGQ = 0)
 
 summary(colmod1)[10]
+r.squaredGLMM(colmod1)[4]
 summary(colmod2)[10]
+r.squaredGLMM(colmod2)[4]
 summary(colmod3)[10]
+r.squaredGLMM(colmod3)[4]
 summary(colmod4)[10]
+r.squaredGLMM(colmod4)[4]
+summary(colmod5)[10]
+r.squaredGLMM(colmod5)[4]
+summary(colmod6)[10]
+r.squaredGLMM(colmod6)[4]
+summary(colmod7)[10]
+r.squaredGLMM(colmod7)[4]
+
+
 summary(colmod_notemp)[10]
+r.squaredGLMM(colmod_notemp)[4]
 summary(colmod_notrait)[10]
+r.squaredGLMM(colmod_notrait)[4]
 summary(colmod_null)[10]
+r.squaredGLMM(colmod_null)[4]
 
 AICc(colmod1)
 AICc(colmod2)-AICc(colmod1)
 AICc(colmod3)-AICc(colmod1)
 AICc(colmod4)-AICc(colmod1)
-AICc(colmod_notemp)-AICc(colmod1)
-AICc(colmod_notrait)-AICc(colmod1)
-AICc(colmod_null)-AICc(colmod1)
+AICc(colmod5)-AICc(colmod1)
+AICc(colmod6)-AICc(colmod1)
+AICc(colmod7)-AICc(colmod1)
+
+
+AICc(colmod_notemp)-AICc(colmod1) #traitonly
+AICc(colmod_notrait)-AICc(colmod1) #temponly
+AICc(colmod_null)-AICc(colmod1) #null 
 
 ```
 
@@ -585,36 +626,74 @@ Parameters for best departure models (AIC<2)
 
 ```{r departure model best parameter comparison}
 
-now_extmod1 <- glmmTMB(now_ext ~ max_sst_temp_lag6_scaled*length.max_ocean_scaled + age.max_ocean_scaled + (1|reg) + (1|phylum) + (1|class) + (1|order) + (1|family) + (1|genus) + (1|spp), family = "binomial", data = departure.reduced_nosleeper.r)
+now_extmod1 <- glmer(now_ext ~max_sst_temp_lag6_scaled	*	length.max_ocean_scaled + age.max_ocean_scaled + (1|reg)  + (1|class) + (1|order) + (1|family) + (1|genus) + (1|spp), family = "binomial", data = departure.reduced_nosleeper.r, nAGQ = 0)
 
-now_extmod2 <- glmmTMB(now_ext ~ max_sst_temp_lag2_scaled*length.max_ocean_scaled + age.max_ocean_scaled + (1|reg) + (1|phylum) + (1|class) + (1|order) + (1|family) + (1|genus) + (1|spp), family = "binomial", data = departure.reduced_nosleeper.r)
+now_extmod2 <- glmer(now_ext ~max_sst_temp_lag6_scaled	*	length.max_ocean_scaled + age.maturity_ocean_scaled+ (1|reg)  + (1|class) + (1|order) + (1|family) + (1|genus) + (1|spp), family = "binomial", data = departure.reduced_nosleeper.r, nAGQ = 0)
 
-now_extmod3 <- glmmTMB(now_ext ~ max_sst_temp_scaled*length.max_ocean_scaled + age.max_ocean_scaled + (1|reg) + (1|phylum) + (1|class) + (1|order) + (1|family) + (1|genus) + (1|spp), family = "binomial", data = departure.reduced_nosleeper.r)
+now_extmod3 <- glmer(now_ext ~ max_sst_temp_lag5_scaled	*	length.max_ocean_scaled + age.max_ocean_scaled+ (1|reg)  + (1|class) + (1|order) + (1|family) + (1|genus) + (1|spp), family = "binomial", data = departure.reduced_nosleeper.r, nAGQ = 0)
 
-now_extmod4 <- glmmTMB(now_ext ~ max_sst_temp_lag5_scaled*length.max_ocean_scaled + age.max_ocean_scaled + (1|reg) + (1|phylum) + (1|class) + (1|order) + (1|family) + (1|genus) + (1|spp), family = "binomial", data = departure.reduced_nosleeper.r)
+now_extmod4 <- glmer(now_ext ~max_sst_temp_lag5_scaled	*	length.max_ocean_scaled + age.maturity_ocean_scaled + (1|reg)  + (1|class) + (1|order) + (1|family) + (1|genus) + (1|spp), family = "binomial", data = departure.reduced_nosleeper.r, nAGQ = 0)
 
-now_extmod5 <- glmmTMB(now_ext ~ max_sst_temp_lag6_scaled*length.max_ocean_scaled + age.maturity_ocean_scaled+ (1|reg) + (1|phylum) + (1|class) + (1|order) + (1|family) + (1|genus) + (1|spp), family = "binomial", data = departure.reduced_nosleeper.r)
+now_extmod5 <- glmer(now_ext ~max_sst_temp_scaled	*	length.max_ocean_scaled + age.maturity_ocean_scaled + (1|reg)  + (1|class) + (1|order) + (1|family) + (1|genus) + (1|spp), family = "binomial", data = departure.reduced_nosleeper.r, nAGQ = 0)
 
-now_extmod6 <- glmmTMB(now_ext ~ max_sst_temp_lag1_scaled*length.max_ocean_scaled + age.max_ocean_scaled + (1|reg) + (1|phylum) + (1|class) + (1|order) + (1|family) + (1|genus) + (1|spp), family = "binomial", data = departure.reduced_nosleeper.r)
+now_extmod6 <- glmer(now_ext ~min_sst_temp_lag8_scaled	*	age.max_ocean_scaled+ (1|reg)  + (1|class) + (1|order) + (1|family) + (1|genus) + (1|spp), family = "binomial", data = departure.reduced_nosleeper.r, nAGQ = 0)
+
+now_extmod7 <- glmer(now_ext ~max_sst_temp_scaled	*	length.max_ocean_scaled + age.max_ocean_scaled+ (1|reg)  + (1|class) + (1|order) + (1|family) + (1|genus) + (1|spp), family = "binomial", data = departure.reduced_nosleeper.r, nAGQ = 0)
+
+now_extmod8 <- glmer(now_ext ~max_sst_temp_lag2_scaled	*	length.max_ocean_scaled + age.maturity_ocean_scaled+ (1|reg)  + (1|class) + (1|order) + (1|family) + (1|genus) + (1|spp), family = "binomial", data = departure.reduced_nosleeper.r, nAGQ = 0)
+
+now_extmod9 <- glmer(now_ext ~max_sst_temp_lag2_scaled	*	length.max_ocean_scaled + age.max_ocean_scaled+ (1|reg)  + (1|class) + (1|order) + (1|family) + (1|genus) + (1|spp), family = "binomial", data = departure.reduced_nosleeper.r, nAGQ = 0)
+
+now_extmod10 <- glmer(now_ext ~ max_sst_temp_lag1_scaled	*	length.max_ocean_scaled + age.maturity_ocean_scaled + (1|reg)  + (1|class) + (1|order) + (1|family) + (1|genus) + (1|spp), family = "binomial", data = departure.reduced_nosleeper.r, nAGQ = 0)
+
+now_extmod11 <- glmer(now_ext ~ max_sst_temp_lag1_scaled	*	length.max_ocean_scaled + age.max_ocean_scaled + (1|reg)  + (1|class) + (1|order) + (1|family) + (1|genus) + (1|spp), family = "binomial", data = departure.reduced_nosleeper.r, nAGQ = 0)
+
+now_extmod12 <- glmer(now_ext ~ min_sst_temp_lag8_scaled	*	age.max_ocean_scaled + tl_ocean_scaled + (1|reg)  + (1|class) + (1|order) + (1|family) + (1|genus) + (1|spp), family = "binomial", data = departure.reduced_nosleeper.r, nAGQ = 0)
+
+now_extmod13 <- glmer(now_ext ~ min_sst_temp_lag8_scaled	*	age.max_ocean_scaled + age.maturity_ocean_scaled + (1|reg)  + (1|class) + (1|order) + (1|family) + (1|genus) + (1|spp), family = "binomial", data = departure.reduced_nosleeper.r, nAGQ = 0)
 
 #no temp
-now_extmod_notemp <- glmmTMB(now_ext ~ age.max_ocean_scaled + (1|reg) + (1|phylum) + (1|class) + (1|order) + (1|family) + (1|genus) + (1|spp), family = "binomial", data = departure.reduced_nosleeper.r)
+now_extmod_notemp <- glmer(now_ext ~ age.max_ocean_scaled + (1|reg)  + (1|class) + (1|order) + (1|family) + (1|genus) + (1|spp), family = "binomial", data = departure.reduced_nosleeper.r, nAGQ = 0)
 #no trait
-now_extmod_notrait <- glmmTMB(now_ext ~ min_sst_temp_change_lag2_scaled + (1|reg) + (1|phylum) + (1|class) + (1|order) + (1|family) + (1|genus) + (1|spp), family = "binomial", data = departure.reduced_nosleeper.r)
+now_extmod_notrait <- glmer(now_ext ~ min_sst_temp_change_lag2_scaled + (1|reg)  + (1|class) + (1|order) + (1|family) + (1|genus) + (1|spp), family = "binomial", data = departure.reduced_nosleeper.r, nAGQ = 0)
 
 #null
 
-now_extmod_null <- glmmTMB(now_ext ~ (1|reg) + (1|phylum) + (1|class) + (1|order) + (1|family) + (1|genus) + (1|spp), family = "binomial", data = departure.reduced_nosleeper.r)
+now_extmod_null <- glmer(now_ext ~ (1|reg)  + (1|class) + (1|order) + (1|family) + (1|genus) + (1|spp), family = "binomial", data = departure.reduced_nosleeper.r, nAGQ = 0)
 
 summary(now_extmod1)[10]
+r.squaredGLMM(now_extmod1)[4]
 summary(now_extmod2)[10]
+r.squaredGLMM(now_extmod2)[4]
 summary(now_extmod3)[10]
+r.squaredGLMM(now_extmod3)[4]
 summary(now_extmod4)[10]
+r.squaredGLMM(now_extmod4)[4]
 summary(now_extmod5)[10]
+r.squaredGLMM(now_extmod5)[4]
 summary(now_extmod6)[10]
+r.squaredGLMM(now_extmod6)[4]
+summary(now_extmod7)[10]
+r.squaredGLMM(now_extmod7)[4]
+summary(now_extmod8)[10]
+r.squaredGLMM(now_extmod8)[4]
+summary(now_extmod9)[10]
+r.squaredGLMM(now_extmod9)[4]
+summary(now_extmod10)[10]
+r.squaredGLMM(now_extmod10)[4]
+summary(now_extmod11)[10]
+r.squaredGLMM(now_extmod11)[4]
+summary(now_extmod12)[10]
+r.squaredGLMM(now_extmod12)[4]
+summary(now_extmod13)[10]
+r.squaredGLMM(now_extmod13)[4]
+
 summary(now_extmod_notemp)[10]
+r.squaredGLMM(now_extmod_notemp)[4]
 summary(now_extmod_notrait)[10]
+r.squaredGLMM(now_extmod_notrait)[4]
 summary(now_extmod_null)[10]
+r.squaredGLMM(now_extmod_null)[4]
 
 AICc(now_extmod1)
 AICc(now_extmod2)-AICc(now_extmod1)
@@ -622,10 +701,18 @@ AICc(now_extmod3)-AICc(now_extmod1)
 AICc(now_extmod4)-AICc(now_extmod1)
 AICc(now_extmod5)-AICc(now_extmod1)
 AICc(now_extmod6)-AICc(now_extmod1)
-AICc(now_extmod_notemp)-AICc(now_extmod1)
-AICc(now_extmod_notrait)-AICc(now_extmod1)
-AICc(now_extmod_null)-AICc(now_extmod1)
+AICc(now_extmod7)-AICc(now_extmod1)
+AICc(now_extmod8)-AICc(now_extmod1)
+AICc(now_extmod9)-AICc(now_extmod1)
+AICc(now_extmod10)-AICc(now_extmod1)
+AICc(now_extmod11)-AICc(now_extmod1)
+AICc(now_extmod12)-AICc(now_extmod1)
+AICc(now_extmod13)-AICc(now_extmod1)
 
+
+AICc(now_extmod_notemp)-AICc(now_extmod1) #trait only
+AICc(now_extmod_notrait)-AICc(now_extmod1) #temp only
+AICc(now_extmod_null)-AICc(now_extmod1) #full null 
 ```
 
 Merge RVI tables for colonization and extinction with traits, and then graph
@@ -743,7 +830,7 @@ library(wesanderson)
 pal <- c("#F9BC77","#AD6D51","#7E7976","#62B3BE","#174A4A")
 
 #best model with fish only 
-mod_arrival_trait <- glmmTMB(col ~ max_sst_temp_change_abs_lag1_scaled * age.max_ocean_scaled + (1|reg) + (1|phylum) + (1|class) + (1|order) + (1|family) + (1|genus) + (1|spp), family = "binomial", data = arrival.reduced_nosleeper.r)
+mod_arrival_trait <- glmer(col ~ max_sst_temp_change_abs_lag1_scaled * age.max_ocean_scaled + (1|reg)  + (1|class) + (1|order) + (1|family) + (1|genus) + (1|spp), family = "binomial", data = arrival.reduced_nosleeper.r)
 
 #reverse to age max unscaled
 mod_arrival_reverse_scaled_agemax <- lm(age.max_ocean ~ age.max_ocean_scaled, data = spp_master_ztemp_seus_buoy.traits_scaled.nosleeper) 
@@ -798,7 +885,7 @@ Best model from analyses with temperature only: max_sst_temp_scaled
 
 ```{r predicted values departure}
 #best model with fish only 
-mod_departure_trait <- glmmTMB(now_ext ~ max_sst_temp_lag6_scaled * length.max_ocean_scaled + age.max_ocean_scaled + (1|reg) + (1|phylum) + (1|class) + (1|order) + (1|family) + (1|genus) + (1|spp), family = "binomial", data = departure.reduced_nosleeper.r)
+mod_departure_trait <- glmer(now_ext ~ max_sst_temp_lag6_scaled * length.max_ocean_scaled + age.max_ocean_scaled + (1|reg)  + (1|class) + (1|order) + (1|family) + (1|genus) + (1|spp), family = "binomial", data = departure.reduced_nosleeper.r)
 
 #reverse to length max unscaled
      mod_departure_reverse_scaled_lengthmax <- lm(length.max_ocean ~ length.max_ocean_scaled, data = spp_master_ztemp_seus_buoy.traits_scaled.nosleeper) 

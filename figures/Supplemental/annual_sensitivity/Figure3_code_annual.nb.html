@@ -218,28 +218,39 @@ pre code {
 <p>See Col_Ext_Models_Final for more context (~line 287)</p>
 <!-- rnb-text-end -->
 <!-- rnb-chunk-begin -->
-<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxubGlicmFyeShnZ3Bsb3QyKVxubGlicmFyeShkYXRhLnRhYmxlKVxuXG5sYWdzX1JWSV9zY2FsZWQgPC0gcmVhZFJEUyhoZXJlKFwiTW9kZWxfcmVzdWx0c1wiLFwibGFnc19SVklfc2NhbGVkX2FubnVhbF9vYnMucmRzXCIpKVxuYGBgIn0= -->
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxubGlicmFyeShnZ3Bsb3QyKVxubGlicmFyeShkYXRhLnRhYmxlKVxuXG5sYWdzX1JWSV9zY2FsZWQgPC0gcmVhZFJEUyhoZXJlOjpoZXJlKFwiTW9kZWxfcmVzdWx0c1wiLFwibGFnc19SVklfc2NhbGVkX2FubnVhbF9vYnMucmRzXCIpKVxuXG5gYGAifQ== -->
 <pre class="r"><code>library(ggplot2)
 library(data.table)
 
-lags_RVI_scaled &lt;- readRDS(here(&quot;Model_results&quot;,&quot;lags_RVI_scaled_annual_obs.rds&quot;))</code></pre>
+lags_RVI_scaled &lt;- readRDS(here::here(&quot;Model_results&quot;,&quot;lags_RVI_scaled_annual_obs.rds&quot;))
+</code></pre>
 <!-- rnb-source-end -->
-<!-- rnb-output-begin eyJkYXRhIjoiRXJyb3IgaW4gaGVyZShcIk1vZGVsX3Jlc3VsdHNcIiwgXCJsYWdzX1JWSV9zY2FsZWRfYW5udWFsX29icy5yZHNcIikgOiBcbiAgdW51c2VkIGFyZ3VtZW50IChcImxhZ3NfUlZJX3NjYWxlZF9hbm51YWxfb2JzLnJkc1wiKVxuIn0= -->
-<pre><code>Error in here(&quot;Model_results&quot;, &quot;lags_RVI_scaled_annual_obs.rds&quot;) : 
-  unused argument (&quot;lags_RVI_scaled_annual_obs.rds&quot;)</code></pre>
-<!-- rnb-output-end -->
 <!-- rnb-chunk-end -->
 <!-- rnb-text-begin -->
 <!-- rnb-text-end -->
 <!-- rnb-chunk-begin -->
-<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuZ2dzYXZlKGhlcmUoXCJmaWd1cmVzXCIsXCJTdXBwbGVtZW50YWxcIiwgXCJhbm51YWxfc2Vuc2l0aXZpdHlcIixcIkZpZ3VyZTNfYW5udWFsb25seS5lcHNcIiksIGhlaWdodCA9IDQsIHdpZHRoID0gNilcblxuYGBgIn0= -->
-<pre class="r"><code>ggsave(here(&quot;figures&quot;,&quot;Supplemental&quot;, &quot;annual_sensitivity&quot;,&quot;Figure3_annualonly.eps&quot;), height = 4, width = 6)
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuI21lbHQgd2lkZSB0byBsb25nXG5sYWdzX1JWSV9zY2FsZWQubCA8LSBtZWx0KGxhZ3NfUlZJX3NjYWxlZCxcbiAgICAgICAgICAgICAgICBtZWFzdXJlLnZhcnMgPSBjKFwiYXJyaXZhbF9SVklcIiwgXCJkZXBhcnR1cmVfUlZJXCIpKVxuXG5sZXZlbHMobGFnc19SVklfc2NhbGVkLmwkdmFyaWFibGUpIDwtIGMoXCJHYWluXCIsXCJMb3NzXCIpXG5cbiN2aXN1YWxpemUgbGFncyB0aHJvdWdoIHRpbWVcbmxhZ3Nfb3Zlcl90aW1lX2FubnVhbF9yZWcgPC0gZ2dwbG90KGRhdGEgPSBsYWdzX1JWSV9zY2FsZWQubCwgYWVzKHggPSBhcnJpdmFsX2xhZywgeSA9IHZhbHVlKSkgK1xuICBnZW9tX2xpbmUoYWVzKGxpbmV0eXBlID0gdmFyaWFibGUpKSArXG4gIGxhYnMoeCA9IFwiTGFnICh5ZWFycylcIiwgeSA9IFwiUmVsYXRpdmUgVmFyaWFibGUgSW1wb3J0YW5jZVwiKSArXG4gIHRoZW1lX2NsYXNzaWMoKSArXG4gIHRoZW1lKHRleHQgPSBlbGVtZW50X3RleHQoc2l6ZSA9IDEyKSwgbGVnZW5kLnRpdGxlID0gZWxlbWVudF9ibGFuaygpLFxuICAgIGxlZ2VuZC5wb3NpdGlvbiA9IGMoMC43NSwwLjc1KSkgK1xuICBzY2FsZV94X2NvbnRpbnVvdXMoYnJlYWtzID0gYygwOjkpKVxuXG5zYXZlKGxhZ3Nfb3Zlcl90aW1lX2FubnVhbF9yZWcsIGZpbGUgPSBoZXJlOjpoZXJlKFwiZmlndXJlc1wiLFwiU3VwcGxlbWVudGFsXCIsXCJhbm51YWxfc2Vuc2l0aXZpdHlcIixcImxhZ3Nfb3Zlcl90aW1lX2FubnVhbF9yZWdzLlJEYXRhXCIpKVxuXG5nZ3NhdmUoaGVyZTo6aGVyZShcImZpZ3VyZXNcIixcIlN1cHBsZW1lbnRhbFwiLCBcImFubnVhbF9zZW5zaXRpdml0eVwiLFwiRmlndXJlM19hbm51YWxvbmx5LmVwc1wiKSwgaGVpZ2h0ID0gNCwgd2lkdGggPSA2KVxuZ2dzYXZlKGhlcmU6OmhlcmUoXCJmaWd1cmVzXCIsXCJTdXBwbGVtZW50YWxcIiwgXCJhbm51YWxfc2Vuc2l0aXZpdHlcIixcIkZpZ3VyZTNfYW5udWFsb25seS5qcGdcIiksIGhlaWdodCA9IDQsIHdpZHRoID0gNilcblxuXG5gYGAifQ== -->
+<pre class="r"><code>#melt wide to long
+lags_RVI_scaled.l &lt;- melt(lags_RVI_scaled,
+                measure.vars = c(&quot;arrival_RVI&quot;, &quot;departure_RVI&quot;))
+
+levels(lags_RVI_scaled.l$variable) &lt;- c(&quot;Gain&quot;,&quot;Loss&quot;)
+
+#visualize lags through time
+lags_over_time_annual_reg &lt;- ggplot(data = lags_RVI_scaled.l, aes(x = arrival_lag, y = value)) +
+  geom_line(aes(linetype = variable)) +
+  labs(x = &quot;Lag (years)&quot;, y = &quot;Relative Variable Importance&quot;) +
+  theme_classic() +
+  theme(text = element_text(size = 12), legend.title = element_blank(),
+    legend.position = c(0.75,0.75)) +
+  scale_x_continuous(breaks = c(0:9))
+
+save(lags_over_time_annual_reg, file = here::here(&quot;figures&quot;,&quot;Supplemental&quot;,&quot;annual_sensitivity&quot;,&quot;lags_over_time_annual_regs.RData&quot;))
+
+ggsave(here::here(&quot;figures&quot;,&quot;Supplemental&quot;, &quot;annual_sensitivity&quot;,&quot;Figure3_annualonly.eps&quot;), height = 4, width = 6)
+ggsave(here::here(&quot;figures&quot;,&quot;Supplemental&quot;, &quot;annual_sensitivity&quot;,&quot;Figure3_annualonly.jpg&quot;), height = 4, width = 6)
 </code></pre>
 <!-- rnb-source-end -->
-<!-- rnb-output-begin eyJkYXRhIjoiRXJyb3IgaW4gaGVyZShcImZpZ3VyZXNcIiwgXCJTdXBwbGVtZW50YWxcIiwgXCJhbm51YWxfc2Vuc2l0aXZpdHlcIiwgXCJGaWd1cmUzX2FubnVhbG9ubHkuZXBzXCIpIDogXG4gIHVudXNlZCBhcmd1bWVudHMgKFwiU3VwcGxlbWVudGFsXCIsIFwiYW5udWFsX3NlbnNpdGl2aXR5XCIsIFwiRmlndXJlM19hbm51YWxvbmx5LmVwc1wiKVxuIn0= -->
-<pre><code>Error in here(&quot;figures&quot;, &quot;Supplemental&quot;, &quot;annual_sensitivity&quot;, &quot;Figure3_annualonly.eps&quot;) : 
-  unused arguments (&quot;Supplemental&quot;, &quot;annual_sensitivity&quot;, &quot;Figure3_annualonly.eps&quot;)</code></pre>
-<!-- rnb-output-end -->
 <!-- rnb-chunk-end -->
 <!-- rnb-text-begin -->
 <!-- rnb-text-end -->

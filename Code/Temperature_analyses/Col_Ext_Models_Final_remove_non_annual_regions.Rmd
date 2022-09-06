@@ -9,7 +9,7 @@ Changes
 * easier to follow
 * species and region as random effects
 * scaling temperature values
-* setting nACQ to 0, see why (not anymore as of Friday August 26, 2022, using glmmTMB instead) [here](https://stats.stackexchange.com/questions/77313/why-cant-i-match-glmer-family-binomial-output-with-manual-implementation-of-g). 
+* setting nACQ to 0, see why [here](https://stats.stackexchange.com/questions/77313/why-cant-i-match-glmmTMB-family-binomial-output-with-manual-implementation-of-g). 
 
 ```{r setup}
 library(MuMIn)
@@ -18,9 +18,10 @@ library(data.table)
 library(ggplot2)
 library(here)
 library(wesanderson) # to color plots
-library(glmmTMB)
 
 spp_master_ztemp_seus_buoy_scaled <- readRDS("~/Documents/grad school/Rutgers/Repositories/Col_Ext/Data/Spp_master/spp_master_ztemp_seus_buoy_scaled.rds")
+
+
 ```
 
 Delete all observations of regions that do not sample every year
@@ -56,10 +57,10 @@ arrival_model_comparison_annual_obs_taxonomy[, variable:=as.factor(V1)][, coef:=
 arrival_model_comparison_annual_obs_taxonomy[, V1 := NULL]
 
 for (i in 1:length(variables_scaled)){
-  mod <- glmmTMB(col ~ get(variables_scaled[i]) + (1|reg) + (1|phylum) + (1|class) + (1|order) + (1|family) + (1|genus) + (1|spp), family = binomial, data = spp_master_ztemp_seus_buoy_scaled_annual_obs)
+  mod <- glmer(col ~ get(variables_scaled[i]) + (1|reg) + (1|phylum) + (1|class) + (1|order) + (1|family) + (1|genus) + (1|spp), family = binomial, data = spp_master_ztemp_seus_buoy_scaled_annual_obs, nAGQ = 0)
   arrival_model_comparison_annual_obs_taxonomy[i,variable := variables_scaled[i]]
-  arrival_model_comparison_annual_obs_taxonomy[i,coef := coef(summary(mod))$cond[,"Estimate"][[2]]]
-  arrival_model_comparison_annual_obs_taxonomy[i,p_value := coef(summary(mod))$cond[,"Pr(>|z|)"][[2]]]
+  arrival_model_comparison_annual_obs_taxonomy[i,coef := coef(summary(mod))[,"Estimate"][2]]
+  arrival_model_comparison_annual_obs_taxonomy[i,p_value := coef(summary(mod))[,"Pr(>|z|)"][2]]
   arrival_model_comparison_annual_obs_taxonomy[i,AICc := AICc(mod)]
   
   print(paste(i, length(variables_scaled), sep = "/"))
@@ -67,9 +68,14 @@ for (i in 1:length(variables_scaled)){
 }
 
 
-saveRDS(object = arrival_model_comparison_annual_obs_taxonomy, file = here::here("Model_results","arrival_model_comparison_annual_obs_taxonomy.rds"))
+#saveRDS(object = arrival_model_comparison_annual_obs_taxonomy, file = here::here("Model_results","arrival_model_comparison_annual_obs_taxonomy.rds"))
 
-fwrite(arrival_model_comparison_annual_obs_taxonomy, file = here::here("Model_results","arrival_model_comparison_annual_obs_taxonomy.csv"))
+#fwrite(arrival_model_comparison_annual_obs_taxonomy, file = here::here("Model_results","arrival_model_comparison_annual_obs_taxonomy.csv"))
+
+saveRDS(object = arrival_model_comparison_annual_obs_taxonomy, file ="arrival_model_comparison_annual_obs_taxonomy.rds")
+
+fwrite(arrival_model_comparison_annual_obs_taxonomy, file ="arrival_model_comparison_annual_obs_taxonomy.csv")
+
 
 arrival_model_comparison_annual_obs_taxonomy <- readRDS(here::here("Model_results","arrival_model_comparison_annual_obs_taxonomy.rds"))
 
@@ -83,10 +89,10 @@ departure_model_comparison_annual_obs_taxonomy[, variable:=as.factor(V1)][, coef
 departure_model_comparison_annual_obs_taxonomy[, V1 := NULL]
 
 for (i in 1:length(variables_scaled)){
-  mod <- glmmTMB(now_ext ~ get(variables_scaled[i]) + (1|reg) + (1|phylum) + (1|class) + (1|order) + (1|family) + (1|genus) + (1|spp), family = binomial, data = spp_master_ztemp_seus_buoy_scaled_annual_obs)
+  mod <- glmer(now_ext ~ get(variables_scaled[i]) + (1|reg) + (1|phylum) + (1|class) + (1|order) + (1|family) + (1|genus) + (1|spp), family = binomial, data = spp_master_ztemp_seus_buoy_scaled_annual_obs, nAGQ = 0)
   departure_model_comparison_annual_obs_taxonomy[i,variable := variables_scaled[i]]
-  departure_model_comparison_annual_obs_taxonomy[i,coef := coef(summary(mod))$cond[,"Estimate"][[2]]]
-  departure_model_comparison_annual_obs_taxonomy[i,p_value := coef(summary(mod))$cond[,"Pr(>|z|)"][[2]]]
+  departure_model_comparison_annual_obs_taxonomy[i,coef := coef(summary(mod))[,"Estimate"][2]]
+  departure_model_comparison_annual_obs_taxonomy[i,p_value := coef(summary(mod))[,"Pr(>|z|)"][2]]
   departure_model_comparison_annual_obs_taxonomy[i,AICc := AICc(mod)]
   
   print(paste(i, length(variables_scaled), sep = "/"))
@@ -94,9 +100,10 @@ for (i in 1:length(variables_scaled)){
 }
 
 saveRDS(object = departure_model_comparison_annual_obs_taxonomy, file = here::here("Model_results","departure_model_comparison_annual_obs_taxonomy.rds"))
-fwrite(departure_model_comparison_annual_obs_taxonomy, file = here::here("Model_results","departure_model_comparison_annual_obs_taxonomy.rds"))
+fwrite(departure_model_comparison_annual_obs_taxonomy, file = here::here("Model_results","departure_model_comparison_annual_obs_taxonomy.csv"))
 
-departure_model_comparison_annual_obs_taxonomy <- readRDS(here::here("Model_results","departure_model_comparison_annual_obs_taxonomy.rds"))
+departure_model_comparison_annual_obs_taxonomy <-#best readRDS(here::here("Model_results","departure_model_comparison_annual_obs_taxonomy.rds"))
+
 
 ```
 
@@ -113,14 +120,45 @@ departure_model_comparison_annual_obs_nomean <- departure_model_comparison_annua
 
 How does the null model with only random effects perform?
 ```{r null models}
-#add null to tables
-intercept_arrival_mod_scaled <- glmmTMB(col ~ (1|reg) + (1|phylum) + (1|class) + (1|order) + (1|family) + (1|genus) + (1|spp), family = binomial, data = spp_master_ztemp_seus_buoy_scaled_annual_obs)
+#best models
+arrival_mod_scaled_1 <- glmer(col ~ max_sst_temp_change_abs_lag1_scaled + (1|reg) + (1|phylum) + (1|class) + (1|order) + (1|family) + (1|genus) + (1|spp), family = binomial, data = spp_master_ztemp_seus_buoy_scaled_annual_obs, nAGQ = 0)
 
-intercept_departure_mod_scaled <- glmmTMB(now_ext ~ (1|reg) + (1|phylum) + (1|class) + (1|order) + (1|family) + (1|genus) + (1|spp), family = binomial, data = spp_master_ztemp_seus_buoy_scaled_annual_obs)
+arrival_mod_scaled_2 <- glmer(col ~ seas_sst_temp_scaled+ (1|reg) + (1|phylum) + (1|class) + (1|order) + (1|family) + (1|genus) + (1|spp), family = binomial, data = spp_master_ztemp_seus_buoy_scaled_annual_obs, nAGQ = 0)
+
+departure_mod_scaled <- glmer(now_ext ~ seas_sst_temp_lag3_scaled + (1|reg) + (1|phylum) + (1|class) + (1|order) + (1|family) + (1|genus) + (1|spp), family = binomial, data = spp_master_ztemp_seus_buoy_scaled_annual_obs, nAGQ = 0)
+
+#add null to tables
+intercept_arrival_mod_scaled <- glmer(col ~ (1|reg) + (1|phylum) + (1|class) + (1|order) + (1|family) + (1|genus) + (1|spp), family = binomial, data = spp_master_ztemp_seus_buoy_scaled_annual_obs, nAGQ = 0)
+
+intercept_departure_mod_scaled <- glmer(now_ext ~ (1|reg) + (1|phylum) + (1|class) + (1|order) + (1|family) + (1|genus) + (1|spp), family = binomial, data = spp_master_ztemp_seus_buoy_scaled_annual_obs, nAGQ = 0)
 
 #best model better than null? yes
-AICc(intercept_arrival_mod_scaled)-min(arrival_model_comparison_annual_obs$AICc)
-AICc(intercept_departure_mod_scaled)-min(departure_model_comparison_annual_obs$AICc)
+AICc(intercept_arrival_mod_scaled)-min(arrival_model_comparison_annual_obs_nomean$AICc)
+AICc(intercept_departure_mod_scaled)-min(departure_model_comparison_annual_obs_nomean$AICc)
+
+#calculate pseudo R squared
+r.squaredGLMM(arrival_mod_scaled_1)
+#                    R2m       R2c
+#theoretical 0.006089580 0.4159003
+#delta       0.002429494 0.1659273
+r.squaredGLMM(arrival_mod_scaled_2)
+#                   R2m       R2c
+#theoretical 0.02973646 0.4660869
+#delta       0.01250966 0.1960755
+r.squaredGLMM(departure_mod_scaled)
+#                    R2m       R2c
+#theoretical 0.013836934 0.4562251
+#delta       0.004567733 0.1506052
+
+r.squaredGLMM(intercept_arrival_mod_scaled)
+#            R2m       R2c
+#theoretical   0 0.4175993
+#delta         0 0.1668969
+            
+r.squaredGLMM(intercept_departure_mod_scaled)
+ #           R2m       R2c
+#theoretical   0 0.4192593
+#delta         0 0.1323742
 
 
 ```
@@ -166,8 +204,7 @@ arrival_seas_temp_importance <- sum(arrival_model_comparison_annual_obs_nomean[g
 arrival_model_comparison_annual_obs_nomean_akaikeweights <- arrival_model_comparison_annual_obs_nomean
 
 saveRDS(arrival_model_comparison_annual_obs_nomean_akaikeweights, file = here::here("Model_results","arrival_model_comparison_annual_obs_nomean_akaikeweights_annual_obs.rds"))
-saveRDS(arrival_model_comparison_annual_obs_nomean_akaikeweights, file = here::here("tables","arrival_model_comparison_annual_obs_nomean_akaikeweights_annual_obs.rds"))
-arrival_model_comparison_annual_obs_nomean_akaikeweights <- readRDS(file = here::here("Model_results","arrival_model_comparison_annual_obs_nomean_akaikeweights_annual_obs.rds"))
+fwrite(arrival_model_comparison_annual_obs_nomean_akaikeweights, file = here::here("tables","arrival_model_comparison_annual_obs_nomean_akaikeweights_annual_obs.csv"))
 
 ```
 

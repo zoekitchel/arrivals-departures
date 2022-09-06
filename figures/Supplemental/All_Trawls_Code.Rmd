@@ -12,15 +12,20 @@ load(here::here("Data","InputTrawls", "trawl2.RData"))
 ```
 
 ```{r prep}
-trawl2 <- trawl2[region != "NWFSC_WCAnn" & region != "DFO_SoGulf"]
+trawl2 <- trawl2[region != "NWFSC_WCAnn" & region != "DFO_SoGulf"] #surveys not used here
 
 trawl2[,region := factor(region, labels = c("Aleutian Islands", "Eastern Bering Sea", "Gulf of Alaska", "West Coast US", "Newfoundland", "Scotian Shelf", "Northeast US","Southeast US" ,"Gulf of Mexico"))]
 
-trawl2.pivot <- data.table(table(trawl2$region, trawl2$year))
+trawl2_latlon <- unique(trawl2[,.(lat,lon,stratum,s.reg,depth,year)])
+
+trawl2_latlon_annual <- trawl2_latlon[!(s.reg %in% c("ai","goa","wctri"))]
+
+trawl2.pivot <- data.table(table(trawl2_latlon$s.reg, trawl2_latlon$year))
 
 
 #quick stats
 min(trawl2.pivot[N != 0]$N)
+max(trawl2.pivot[N != 0]$N)
 
 View(trawl2.pivot)
 

@@ -1,0 +1,176 @@
+---
+title: "Figure 4: New with Revision, temp versus likelihood of gains vs. losses ANNUAL REGIONS ONLY"
+output: html_notebook
+---
+
+This is an [R Markdown](http://rmarkdown.rstudio.com) Notebook. When you execute code within the notebook, the results appear beneath the code. 
+
+Try executing this chunk by clicking the *Run* button within the chunk or by placing your cursor inside it and pressing *Cmd+Shift+Enter*. 
+
+```{r}
+library(ggplot2)
+library(data.table)
+library(lme4)
+library(here)
+library(cowplot)
+library(DHARMa) #check model assumptions
+library(glmmTMB)
+```
+
+
+
+Pull in spp master data
+
+```{r}
+spp_master_ztemp_seus_buoy_scaled <- readRDS(here("Data","Spp_master", "spp_master_ztemp_seus_buoy_scaled.rds")) #spp master, gain loss
+spp_key <- fread(here::here("Data","Spp_master","spp_key.csv")) #key to link phylogenic info
+
+spp_master_ztemp_seus_buoy_scaled <- spp_master_ztemp_seus_buoy_scaled[spp_key, on = "spp"] #this drops three species for GMEX that should not be there (see spp_add_genus_etc.Rmd code)
+
+#instead of col or now_ext =  0.3, add col_02 and now_ext_02  column for plotting
+spp_master_ztemp_seus_buoy_scaled[,col_02 := ifelse(col == 1, 0.2, col)][,now_ext_02 := ifelse(now_ext == 1, 0.2, now_ext)]
+
+```
+
+Delete all observations of regions that do not sample every year
+```{r delete obs of regs not annually sampled}
+levels(spp_master_ztemp_seus_buoy_scaled$reg)
+
+spp_master_ztemp_seus_buoy_scaled_annual_obs <- spp_master_ztemp_seus_buoy_scaled[!(reg %in% c("ai","goa","wctri")),]
+
+```
+
+Best Temp Only Model Gains
+
+```{r}
+
+
+#let's take a look at best performing model
+mod_sppregrandom <- glmer(col ~ max_sst_temp_change_abs_lag1_scaled  + (1|reg) + (1|phylum) + (1|class) + (1|order) + (1|family) + (1|genus) + (1|spp), family = binomial, data = spp_master_ztemp_seus_buoy_scaled_annual_obs, nAGQ = 0)
+                         
+```
+
+
+Assumptions
+```{r}
+
+#confint(mod_sppregrandom)
+#exp(confint(fit)) will give you either Wald or profile likelihood (depending on pkgs loaded) confidence intervals on the parameters of the model, not the fitted values of the model.
+
+#merBoot_gain <- bootMer(mod_sppregrandom, predict, nsim = 100, re.form = NA)
+
+#predict(se.fit=TRUE, re.form=NA, allow.new.levels=TRUE, type = 'response')
+```
+
+##Plot Gains versus Max Temp
+
+Here we use this method by [Bolker](https://bbolker.github.io/mixedmodels-misc/glmmFAQ.html#predictions-andor-confidence-or-prediction-intervals-on-predictions) to calculate confidence intervals using standard error. 
+
+```{r}
+#best predictor for fish and inverts: max_sst_temp_change_abs_lag1_scaled as x axis
+temp_gains_newdata <- data.table(max_sst_temp_change_abs_lag1_scaled =  runif(500,min(spp_master_ztemp_seus_buoy_scaled_annual_obs$max_sst_temp_change_abs_lag1_scaled, na.rm = T), max(spp_master_ztemp_seus_buoy_scaled_annual_obs$max_sst_temp_change_abs_lag1_scaled, na.rm = T)))
+
+
+#I want x axis to be meaningful
+mod_gain_reverse_scaledtemp <- lm(max_sst_temp_change_abs_lag1 ~ max_sst_temp_change_abs_lag1_scaled, data = spp_master_ztemp_seus_buoy_scaled_annual_obs)
+
+temp_gains_newdata <- data.table(temp_gains_newdata)
+
+temp_gains_newdata[,max_sst_temp_change_abs_lag1 := mod_gain_reverse_scaledtemp$coefficients[2]*max_sst_temp_change_abs_lag1_scaled + mod_gain_reverse_scaledtemp$coefficients[1] ]
+
+#best predictor for fish and inverts: max_sst_temp_change_abs_lag1_scaled as x axis
+
+temp_gains_newdata$col <- predict(mod_sppregrandom,temp_gains_newdata, re.form = NA)
+
+mm <- model.matrix(terms(mod_sppregrandom),temp_gains_newdata)
+
+pvar1 <- diag(mm %*% tcrossprod(vcov(mod_sppregrandom),mm)) #vcov: variance/covariance matrix for fitted model object
+#tcrossproduct (matrix cross product)
+#diag = matrix diagonal
+
+#tvar1 <- pvar1+VarCorr(mod_sppregrandom)$Subject[1]  ## must be adapted for more complex models
+cmult <- 1.96 ## could use 1.96
+temp_gains_newdata <- data.frame(
+    temp_gains_newdata
+    , plo = temp_gains_newdata$col-cmult*sqrt(pvar1)
+    , phi = temp_gains_newdata$col+cmult*sqrt(pvar1)
+  #  , tlo = newdat$distance-cmult*sqrt(tvar1)
+  #  , thi = newdat$distance+cmult*sqrt(tvar1)
+)
+
+#plot
+(gain_preds_temp_only <- ggplot() +
+  geom_ribbon(data = temp_gains_newdata, aes(x = max_sst_temp_change_abs_lag1, ymin = exp(plo)/(1+exp(plo)), ymax = exp(phi)/(1+exp(phi))), fill = "lightgrey") +
+  geom_point(data = spp_master_ztemp_seus_buoy_scaled_annual_obs, aes(x = max_sst_temp_change_abs_lag1, y = col_02), size = 2, shape = "|") +
+  geom_line(data = temp_gains_newdata, aes(x = max_sst_temp_change_abs_lag1, y=exp(col)/(1+exp(col)))) +
+  labs(x = "Maximum Sea Surface Temperature (\u00B0C)\nLagged One Year", y = "Probability of Gain") +
+  theme_classic() +
+  theme(text=element_text(size = 10)))
+
+
+ggsave(gain_preds_temp_only, path = here::here("figures/Supplemental/annual_sensitivity"), file = "Figure4_gains_CI_annual_only.jpg")
+ggsave(gain_preds_temp_only, path = here::here("figures/Supplemental/annual_sensitivity"), file = "Figure4_gains_CI_annual_only.eps")
+
+```
+
+Best Temp Only Model Losses
+
+```{r}
+#let's take a look at best performing model
+mod_sppregrandom_losses <- glmer(now_ext ~ seas_sst_temp_lag3_scaled + (1|reg) + (1|phylum) + (1|class) + (1|order) + (1|family) + (1|genus) + (1|spp), family = binomial, data = spp_master_ztemp_seus_buoy_scaled_annual_obs, nAGQ = 0)
+```
+
+Plot Losses versus Seasonality 
+* seas_sst_temp_lag3_scaled
+```{r}
+#best predictor for fish and inverts: seas_sst_temp_lag3_scaled as x axis
+temp_losses_newdata <- data.table(seas_sst_temp_lag3_scaled = runif(500,min(spp_master_ztemp_seus_buoy_scaled_annual_obs$seas_sst_temp_lag3_scaled, na.rm =  T), max(spp_master_ztemp_seus_buoy_scaled_annual_obs$seas_sst_temp_lag3_scaled, na.rm =  T)))
+
+temp_losses_newdata$now_ext <- predict(mod_sppregrandom_losses,temp_losses_newdata, re.form = NA)
+
+mm_loss <- model.matrix(terms(mod_sppregrandom_losses),temp_losses_newdata)
+
+pvar1_loss <- diag(mm_loss %*% tcrossprod(vcov(mod_sppregrandom_losses),mm_loss)) #vcov: variance/covariance matrix for fitted model object
+#tcrossproduct (matrix cross product)
+#diag = matrix diagonal
+
+#tvar1 <- pvar1+VarCorr(mod_sppregrandom)$Subject[1]  ## must be adapted for more complex models
+cmult <- 1.96 ## could use 1.96
+temp_losses_newdata <- data.frame(
+    temp_losses_newdata
+    , plo = temp_losses_newdata$now_ext-cmult*sqrt(pvar1_loss)
+    , phi = temp_losses_newdata$now_ext+cmult*sqrt(pvar1_loss)
+  #  , tlo = newdat$distance-cmult*sqrt(tvar1)
+  #  , thi = newdat$distance+cmult*sqrt(tvar1)
+)
+
+#I want x axis to be meaningful
+mod_loss_reverse_scaledtemp <- lm(seas_sst_temp_lag3 ~ seas_sst_temp_lag3_scaled, data = spp_master_ztemp_seus_buoy_scaled_annual_obs)
+
+temp_losses_newdata <- data.table(temp_losses_newdata)
+
+temp_losses_newdata[,seas_sst_temp_lag3 := mod_loss_reverse_scaledtemp$coefficients[2]*seas_sst_temp_lag3_scaled + mod_loss_reverse_scaledtemp$coefficients[1] ]
+
+
+
+#1.96 * standard error is 95% confidence interval 
+(loss_preds_temp_only <- ggplot() +
+  geom_ribbon(data = temp_losses_newdata, aes(x = seas_sst_temp_lag3, ymin = exp(plo)/(1+exp(plo)), ymax = exp(phi)/(1+exp(phi))), fill = "lightgrey") +
+  geom_point(data = spp_master_ztemp_seus_buoy_scaled_annual_obs, aes(x = seas_sst_temp_lag3, y = now_ext_02), size = 2, shape = "|") +
+  geom_line(data = temp_losses_newdata, aes(x = seas_sst_temp_lag3, y=exp(now_ext)/(1+exp(now_ext)))) +
+  labs(x = "Seasonality of Sea Surface Temperature (\u00B0C)\nLagged Three Years", y = "Probability of Loss") +
+  theme_classic() +
+  theme(text=element_text(size = 10)))
+
+ggsave(loss_preds_temp_only, path = here::here("figures/Supplemental/annual_sensitivity"), file = "Figure4_losses_CI_annual_only.jpg")
+ggsave(loss_preds_temp_only, path = here::here("figures/Supplemental/annual_sensitivity"), file = "Figure4_losses_CI_annual_only.eps")
+```
+
+Merge these two together
+```{r}
+gains_losses_preds_CI <- plot_grid(gain_preds_temp_only, loss_preds_temp_only, ncol = 2, align = "hv", labels = c("a","b"))
+
+ggsave(gains_losses_preds_CI, path = here::here("figures/Supplemental/annual_sensitivity"), file = "Figure4_gain_loss_merge_annual_only.jpg", height = 4, width = 7, units = "in")
+ggsave(gains_losses_preds_CI, path = here::here("figures/Supplemental/annual_sensitivity"), file = "Figure4_gain_loss_merge_annual_only.eps", height = 4, width = 7, units = "in")
+```
+
