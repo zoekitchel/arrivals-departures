@@ -157,7 +157,7 @@ for (i in 1:nrow(full_var_set.r2)){
           ifelse(temp != 0 & trait == 0,
            paste("col ~", temp, "+ (1|reg)  + (1|class) + (1|order) + (1|family) + (1|genus) + (1|spp)"),
               ifelse(temp == 0 & trait == 0,
-              paste("col ~", "(1|reg) + (1|spp)"),
+              paste("col ~", "+ (1|reg)  + (1|class) + (1|order) + (1|family) + (1|genus) + (1|spp)"),
                 paste("col ~",temp,sign,trait, "+ (1|reg)  + (1|class) + (1|order) + (1|family) + (1|genus) + (1|spp)"))))
 
   formula <- as.formula(raw_form)
@@ -220,7 +220,7 @@ for (i in 1:nrow(full_var_set.r2)){
           ifelse(temp != 0 & trait == 0,
            paste("now_ext ~", temp, "+ (1|reg)  + (1|class) + (1|order) + (1|family) + (1|genus) + (1|spp)"),
               ifelse(temp == 0 & trait == 0,
-              paste("now_ext ~", "(1|reg) + (1|spp)"),
+              paste("now_ext ~", "+ (1|reg)  + (1|class) + (1|order) + (1|family) + (1|genus) + (1|spp)"),
                 paste("now_ext ~",temp,sign,trait, "+ (1|reg)  + (1|class) + (1|order) + (1|family) + (1|genus) + (1|spp)"))))
 
   formula <- as.formula(raw_form)
@@ -326,7 +326,7 @@ arrival_interaction_temp_trait_importance <- sum(arrival_model_comparisons_trait
 
 
 #save this table
-saveRDS(arrival_model_comparisons_traits.lag9max_annual_obs,file = "/Users/zoekitchel/Documents/grad school/Rutgers/Repositories/Col_Ext/Model_results/Traits/arrival_model_comparison_traits_annual_obs.rds")
+saveRDS(arrival_model_comparisons_traits.lag9max_annual_obs,file = here::here( "Model_results/Traits/arrival_model_comparison_traits_annual_obs.rds"))
 
 ```
 
@@ -344,7 +344,7 @@ Departure
 
 ```{r RVI departure traits}
 #only raw temp has lag of 10 years, which means variable importance comparisons are unbalanced so I will get rid of these rows
-departure_model_comparisons_traits.lag9max <- departure_model_comparison_traits_annual_obs[!grepl("lag10", temp_variable), ]
+departure_model_comparisons_traits.lag9max <- departure_model_comparison_traits_annual_only[!grepl("lag10", temp_variable), ]
 
 
 #add ∆AIC to tables
@@ -408,7 +408,7 @@ departure_interaction_temp_trait_importance <- sum(departure_model_comparisons_t
 
 
 #save this table
-saveRDS(departure_model_comparisons_traits.lag9max, "/Users/zoekitchel/Documents/grad school/Rutgers/Repositories/Col_Ext/Model_results/Traits/departure_model_comparison_traits_annual_obs.rds")
+saveRDS(departure_model_comparisons_traits.lag9max, here::here( "Model_results/Traits/departure_model_comparison_traits_annual_obs.rds"))
 ```
 
 ```{r put RVIs for extinction into data table}
@@ -525,25 +525,42 @@ dev.off()
 Comparisons of coefficients of top models
 
 Top arrival models
-```{r top arrival models}
-mod1_arrival <- glmer(col ~ max_sst_temp_change_abs_lag1_scaled * age.max_ocean_scaled + (1|reg) + (1|spp), family = "binomial", data = arrival.reduced_annual_obs, nAGQ = 0)
-mod2_arrival <- glmer(col ~ max_sst_temp_change_abs_lag1_scaled * age.max_ocean_scaled + length.max_ocean_scaled + (1|reg) + (1|spp), family = "binomial", data = arrival.reduced_annual_obs, nAGQ = 0)
-mod3_arrival <- glmer(col ~ max_sst_temp_change_abs_lag1_scaled * age.max_ocean_scaled + tl_ocean_scaled + (1|reg) + (1|spp), family = "binomial", data = arrival.reduced_annual_obs, nAGQ = 0)
-mod4_arrival <- glmer(col ~ max_sst_temp_change_abs_lag1_scaled * age.max_ocean_scaled + age.maturity_ocean_scaled + (1|reg) + (1|spp), family = "binomial", data = arrival.reduced_annual_obs, nAGQ = 0)
 
-mod_traitonly_arrival <- glmer(col ~ age.max_ocean_scaled + (1|reg) + (1|spp), family = "binomial", data = arrival.reduced_annual_obs, nAGQ = 0)
-mod_temponly_arrival <- glmer(col ~ max_sst_temp_change_abs_lag1_scaled + (1|reg) + (1|spp), family = "binomial", data = arrival.reduced_annual_obs, nAGQ = 0)
-mod_null_arrival <- glmer(col ~ (1|reg) + (1|spp), family = "binomial", data = arrival.reduced_annual_obs, nAGQ = 0)
+```{r top arrival models}
+
+arrival.reduced_annual_obs.r <- readRDS(file = here::here("figures","Supplemental","annual_sensitivity","arrival.reduced_annual_obs.r.rds"))
+
+
+mod1_arrival <- glmer(col ~ max_sst_temp_change_abs_lag1_scaled * age.max_ocean_scaled + (1|reg)  + (1|class) + (1|order) + (1|family) + (1|genus) + (1|spp), family = "binomial", data = arrival.reduced_annual_obs.r, nAGQ = 0)
+
+mod2_arrival <- glmer(col ~ max_sst_temp_change_abs_lag1_scaled * age.max_ocean_scaled + tl_ocean_scaled + (1|reg)  + (1|class) + (1|order) + (1|family) + (1|genus) + (1|spp), family = "binomial", data = arrival.reduced_annual_obs.r, nAGQ = 0)
+
+mod3_arrival <- glmer(col ~ max_sst_temp_change_abs_lag1_scaled * age.max_ocean_scaled + age.maturity_ocean_scaled + (1|reg)  + (1|class) + (1|order) + (1|family) + (1|genus) + (1|spp), family = "binomial", data = arrival.reduced_annual_obs.r, nAGQ = 0)
+
+mod4_arrival <- glmer(col ~ max_sst_temp_change_abs_lag1_scaled * age.max_ocean_scaled + length.max_ocean_scaled + (1|reg)  + (1|class) + (1|order) + (1|family) + (1|genus) + (1|spp), family = "binomial", data = arrival.reduced_annual_obs.r, nAGQ = 0)
+
+mod_traitonly_arrival <- glmer(col ~ age.max_ocean_scaled + (1|reg)  + (1|class) + (1|order) + (1|family) + (1|genus) + (1|spp), family = "binomial", data = arrival.reduced_annual_obs.r, nAGQ = 0)
+
+mod_temponly_arrival <- glmer(col ~ max_sst_temp_change_abs_lag1_scaled + (1|reg)  + (1|class) + (1|order) + (1|family) + (1|genus) + (1|spp), family = "binomial", data = arrival.reduced_annual_obs.r, nAGQ = 0)
+
+mod_null_arrival <- glmer(col ~ (1|reg)  + (1|class) + (1|order) + (1|family) + (1|genus) + (1|spp), family = "binomial", data = arrival.reduced_annual_obs.r, nAGQ = 0)
 
 
 summary(mod1_arrival)[[10]]
+r.squaredGLMM(mod1_arrival)
 summary(mod2_arrival)[[10]]
+r.squaredGLMM(mod2_arrival)
 summary(mod3_arrival)[[10]]
+r.squaredGLMM(mod3_arrival)
 summary(mod4_arrival)[[10]]
+r.squaredGLMM(mod4_arrival)
 
 summary(mod_traitonly_arrival)[[10]]
+r.squaredGLMM(mod_traitonly_arrival)
 summary(mod_temponly_arrival)[[10]]
+r.squaredGLMM(mod_temponly_arrival)
 summary(mod_null_arrival)[[10]]
+r.squaredGLMM(mod_null_arrival)
 
 AICc(mod1_arrival)-AICc(mod1_arrival)
 AICc(mod2_arrival)-AICc(mod1_arrival)
@@ -558,37 +575,59 @@ AICc(mod_null_arrival)-AICc(mod1_arrival) #24.025178
 ```
 Top departure models
 ```{r top departure models}
-mod1_departure <- glmer(now_ext ~ max_sst_temp_lag1_scaled * age.max_ocean_scaled + (1|reg) + (1|spp), family = "binomial", data = departure.reduced_annual_obs.r, nAGQ = 0)
 
-mod2_departure <- glmer(now_ext ~ max_sst_temp_scaled * age.max_ocean_scaled + (1|reg) + (1|spp), family = "binomial", data = departure.reduced_annual_obs.r, nAGQ = 0)
-mod3_departure <- glmer(now_ext ~ max_sst_temp_lag1_scaled * age.max_ocean_scaled + length.max_ocean_scaled + (1|reg) + (1|spp), family = "binomial", data = departure.reduced_annual_obs.r, nAGQ = 0)
-mod4_departure <- glmer(now_ext ~ max_sst_temp_lag1_scaled * age.max_ocean_scaled + age.maturity_ocean_scaled + (1|reg) + (1|spp), family = "binomial", data = departure.reduced_annual_obs.r, nAGQ = 0)
-mod5_departure <- glmer(now_ext ~ max_sst_temp_lag1_scaled * age.max_ocean_scaled + tl_ocean_scaled + (1|reg) + (1|spp), family = "binomial", data = departure.reduced_annual_obs.r, nAGQ = 0)
+departure.reduced_annual_obs.r <- readRDS(file = here::here("figures","Supplemental","annual_sensitivity","departure.reduced_annual_obs.r.rds"))
 
-mod_traitonly_departure <- glmer(now_ext ~ age.max_ocean_scaled + (1|reg) + (1|spp), family = "binomial", data = departure.reduced_annual_obs.r, nAGQ = 0)
-mod_temponly_departure <- glmer(now_ext ~ max_sst_temp_scaled + (1|reg) + (1|spp), family = "binomial", data = departure.reduced_annual_obs.r, nAGQ = 0)
+mod1_departure <- glmer(now_ext ~ 	
+max_sst_temp_lag1_scaled * age.max_ocean_scaled+ (1|reg)  + (1|class) + (1|order) + (1|family) + (1|genus) + (1|spp), family = "binomial", data = departure.reduced_annual_obs.r, nAGQ = 0)
+
+mod2_departure <- glmer(now_ext ~ max_sst_temp_scaled * age.max_ocean_scaled+ (1|reg)  + (1|class) + (1|order) + (1|family) + (1|genus) + (1|spp), family = "binomial", data = departure.reduced_annual_obs.r, nAGQ = 0)
+
+mod3_departure <- glmer(now_ext ~ max_sst_temp_lag1_scaled * age.max_ocean_scaled + age.maturity_ocean_scaled+ (1|reg)  + (1|class) + (1|order) + (1|family) + (1|genus) + (1|spp), family = "binomial", data = departure.reduced_annual_obs.r, nAGQ = 0)
+
+mod4_departure <- glmer(now_ext ~ max_sst_temp_lag1_scaled * age.max_ocean_scaled + tl_ocean_scaled+ (1|reg)  + (1|class) + (1|order) + (1|family) + (1|genus) + (1|spp), family = "binomial", data = departure.reduced_annual_obs.r, nAGQ = 0)
+
+mod5_departure <- glmer(now_ext ~ max_sst_temp_lag1_scaled * age.max_ocean_scaled + length.max_ocean_scaled + (1|reg)  + (1|class) + (1|order) + (1|family) + (1|genus) + (1|spp), family = "binomial", data = departure.reduced_annual_obs.r, nAGQ = 0)
+
+mod6_departure <- glmer(now_ext ~ max_sst_temp_scaled * age.max_ocean_scaled + age.maturity_ocean_scaled+ (1|reg)  + (1|class) + (1|order) + (1|family) + (1|genus) + (1|spp), family = "binomial", data = departure.reduced_annual_obs.r, nAGQ = 0)
+
+mod_traitonly_departure <- glmer(now_ext ~ age.max_ocean_scaled + (1|reg)  + (1|class) + (1|order) + (1|family) + (1|genus) + (1|spp), family = "binomial", data = departure.reduced_annual_obs.r, nAGQ = 0)
+
+mod_temponly_departure <- glmer(now_ext ~ max_sst_temp_scaled + (1|reg)  + (1|class) + (1|order) + (1|family) + (1|genus) + (1|spp), family = "binomial", data = departure.reduced_annual_obs.r, nAGQ = 0)
+
 mod_null_departure <- glmer(now_ext ~ (1|reg) + (1|spp), family = "binomial", data = departure.reduced_annual_obs.r, nAGQ = 0)
 
 
 summary(mod1_departure)[[10]]
+r.squaredGLMM(mod1_departure)[4]
 summary(mod2_departure)[[10]]
+r.squaredGLMM(mod2_departure)[4]
 summary(mod3_departure)[[10]]
+r.squaredGLMM(mod3_departure)[4]
 summary(mod4_departure)[[10]]
+r.squaredGLMM(mod4_departure)[4]
 summary(mod5_departure)[[10]]
+r.squaredGLMM(mod5_departure)[4]
+summary(mod6_departure)[[10]]
+r.squaredGLMM(mod6_departure)[4]
 
 summary(mod_traitonly_departure)[[10]]
+r.squaredGLMM(mod_traitonly_departure)[4]
 summary(mod_temponly_departure)[[10]]
+r.squaredGLMM(mod_temponly_departure)[4]
 summary(mod_null_departure)[[10]]
+r.squaredGLMM(mod_null_departure)[4]
 
 AICc(mod1_departure)-AICc(mod1_departure)
 AICc(mod2_departure)-AICc(mod1_departure)
 AICc(mod3_departure)-AICc(mod1_departure)
 AICc(mod4_departure)-AICc(mod1_departure)
 AICc(mod5_departure)-AICc(mod1_departure)
+AICc(mod6_departure)-AICc(mod1_departure)
 
-AICc(mod_traitonly_departure)-AICc(mod1_departure) #18.46734
-AICc(mod_temponly_departure)-AICc(mod1_departure) #8.211203
-AICc(mod_null_departure)-AICc(mod1_departure) #24.025178
+AICc(mod_traitonly_departure)-AICc(mod1_departure) 
+AICc(mod_temponly_departure)-AICc(mod1_departure) 
+AICc(mod_null_departure)-AICc(mod1_departure) 
 
 
 ```
@@ -605,14 +644,14 @@ library(wesanderson)
 pal <- c("#F9BC77","#AD6D51","#7E7976","#62B3BE","#174A4A")
 
 #best model with fish only 
-mod_arrival_trait <- glmer(col ~ max_sst_temp_change_abs_lag1_scaled * age.max_ocean_scaled + (1|reg) + (1|spp), family = "binomial", data = arrival.reduced_annual_obs.r, nAGQ = 0)
+mod_arrival_trait <- glmer(col ~ max_sst_temp_change_abs_lag1_scaled * age.max_ocean_scaled + (1|reg)  + (1|class) + (1|order) + (1|family) + (1|genus) + (1|spp), family = "binomial", data = arrival.reduced_annual_obs.r, nAGQ = 0)
 
 #temp only arrival trait model seas_sst_temp_scaled
-mod_arrival_trait_notraits <- glmer(col ~ max_sst_temp_change_abs_lag1_scaled + (1|reg) + (1|spp), family = "binomial", data = arrival.reduced_annual_obs.r, nAGQ = 0)
+mod_arrival_trait_notraits <- glmer(col ~ max_sst_temp_change_abs_lag1_scaled + (1|reg)  + (1|class) + (1|order) + (1|family) + (1|genus) + (1|spp), family = "binomial", data = arrival.reduced_annual_obs.r, nAGQ = 0)
 summary(mod_arrival_trait_notraits)
 
 #trait only arrival trait model
-mod_arrival_trait_notemp <- glmer(col ~ age.max_ocean_scaled + (1|reg) + (1|spp), family = "binomial", data = arrival.reduced_annual_obs.r, nAGQ = 0)
+mod_arrival_trait_notemp <- glmer(col ~ age.max_ocean_scaled + (1|reg)  + (1|class) + (1|order) + (1|family) + (1|genus) + (1|spp), family = "binomial", data = arrival.reduced_annual_obs.r, nAGQ = 0)
 summary(mod_arrival_trait_notemp)
 
 #reverse to get age max unscaled
@@ -667,7 +706,7 @@ Best model: max_sst_temp_lag1_scaled * age.max_ocean_scaled
 
 ```{r predicted values departure}
 #best model with fish only 
-mod_departure_trait <- glmer(now_ext ~ max_sst_temp_lag1_scaled * age.max_ocean_scaled + (1|reg) + (1|spp), family = "binomial", data = departure.reduced_annual_obs.r, nAGQ = 0)
+mod_departure_trait <- glmer(now_ext ~ max_sst_temp_lag1_scaled * age.max_ocean_scaled + (1|reg)  + (1|class) + (1|order) + (1|family) + (1|genus) + (1|spp), family = "binomial", data = departure.reduced_annual_obs.r, nAGQ = 0)
 
 #reverse to agemax unscaled
 mod_departure_reverse_scaled_agemax <- lm(age.max_ocean ~ age.max_ocean_scaled, data = spp_master_ztemp_seus_buoy.traits_scaled.6regions) 
