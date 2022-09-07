@@ -79,6 +79,7 @@ Cleaning Code from Juliano
 #Gymothorax igromargiatus (species of Moray eel, shouldn't live in GMEX)
 #Pericoptus punctatus    (sand scarab beetle that is endemic to New Zealand, exclude)
 #Raioides louisiaesis   (cannot find record of this species anywhere, exclude)
+#Caretta caretta (loggerhead sea turtle, exclude)
 
 newrow1 <- c("Cheiraster (Luidiaster) dawsoni",380798,"Animalia","Echinodermata","Asteroidea", "Notomyotida","Benthopectinidae","Cheiraster",1,"Species","Cheiraster dawsoni")
 
@@ -94,6 +95,13 @@ spp_key <- rbind(worms_db.r, newrow1, newrow2)
 
 setnames(spp_key, "query", "spp")
 
+#missing class for Hemitripterus americanus
+spp_key[taxa == "Hemitripterus americanus", class := "Actinopteri"]
+
+#Missing class for Hemitripterus bolini
+spp_key[taxa == "Hemitripterus bolini", class := "Actinopteri"]
+
+#save
 write_csv(spp_key, file = here::here("Data","Spp_master","spp_key.csv"))
 
 ```
