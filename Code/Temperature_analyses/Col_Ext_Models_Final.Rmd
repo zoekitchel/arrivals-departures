@@ -23,6 +23,7 @@ library(here)
 library(wesanderson) # to color plots
 library(taxize) #to obtain order, genus, family
 library(dplyr)
+library(DHARMa)
 
 spp_master_ztemp_seus_buoy_scaled <- readRDS(here("Data","Spp_master", "spp_master_ztemp_seus_buoy_scaled.rds"))
 ```
@@ -70,9 +71,14 @@ saveRDS(object = arrival_model_comparison_taxonomy, file = here("Model_results",
 fwrite(arrival_model_comparison_taxonomy, file = here("Model_results","arrival_model_results_taxonomy.csv"))
 arrival_model_comparison_taxonomy <- readRDS(here::here("Model_results","arrival_model_results_taxonomy.rds"))
 
+```
+
+Model performance and assumptions.
+```{r}
 #let's take a look at best performing model, and check assumptions
 mod_extrarandom_gain <- glmer(col ~ seas_sst_temp_scaled  + (1|reg) + (1|phylum) + (1|class) + (1|order) + (1|family) + (1|genus) + (1|spp), family = binomial, data = spp_master_ztemp_seus_buoy_scaled, nAGQ = 0)
 
+#Performance
 #R-Squared
 r.squaredGLMM(mod_extrarandom_gain)
 
@@ -86,11 +92,29 @@ r.squaredGLMM(mod_extrarandom_gain)
 
 #coef =  -0.49
 #how much the probability changes with a given change in temperature
+spp_master_ztemp_seus_buoy_scaled.r <- spp_master_ztemp_seus_buoy_scaled[complete.cases(spp_master_ztemp_seus_buoy_scaled[ , .(seas_sst_temp_scaled, col, reg, phylum, class, order, family, genus, spp)]),]
+
+#Model assumptions using DHARMa package
+#Test for overdispersion
+#grouping basically transforms 0/1 response (bernoulli) in a k/n response (true binomial)
+#https://cran.r-project.org/web/packages/DHARMa/vignettes/DHARMa.html#binomial-data
+#group by region
+simulationOutput <- simulateResiduals(fittedModel = mod_extrarandom_gain)
+simulationOutput.groupedbyreg <- recalculateResiduals(simulationOutput, group = spp_master_ztemp_seus_buoy_scaled.r$reg)
+testDispersion(simulationOutput)
+testDispersion(simulationOutput.groupedbyreg)
+plot(simulationOutput.groupedbyreg)
+
+#group by spp
+simulationOutput.groupedbyspp <- recalculateResiduals(simulationOutput, group = spp_master_ztemp_seus_buoy_scaled.r$spp)
+testDispersion(simulationOutput)
+testDispersion(simulationOutput.groupedbyspp)
+plot(simulationOutput.groupedbyspp)
 
 ```
 "The estimate for seasonality of -0.49 means that a 1 degree increase in seasonality is associated with a 0.49 decrease in the log-odds of a Gain occuring, compared to no Gain occuring. If we exponentiate this number then we obtain the odds ratio of 0.6108308, which means that for a 1 degree increase in Seasonality we expect to see (approximately) a 39% decrease in the odds of a Gain Occurring." From this [Stack Exchange post](https://stats.stackexchange.com/questions/444797/interpreting-a-generalised-linear-mixed-model-with-binomial-data). 
 
-###Departure Models without Traits, but with random effects for phylogeny
+###Departure Models without Traits but with random effects for phylogeny
 ```{r departure models without traits with random effect phylogeny}
 
 departure_model_comparison_taxonomy <- as.data.table(matrix(nrow = length(variables_scaled)))
@@ -117,6 +141,9 @@ departure_model_comparison_taxonomy <- readRDS(here::here("Model_results","depar
 #let's take a look at best performing model, and check assumptions
 mod_extrarandom_loss <- glmer(now_ext ~ seas_sst_temp_lag3_scaled  + (1|reg) + (1|phylum) + (1|class) + (1|order) + (1|family) + (1|genus) + (1|spp), family = binomial, data = spp_master_ztemp_seus_buoy_scaled, nAGQ = 0)
 
+#let's look at best performing model without random effects
+mod_extrarandom_loss_noRE <- glm(now_ext ~ seas_sst_temp_lag3_scaled, family = binomial, data = spp_master_ztemp_seus_buoy_scaled)
+
 #R-Squared
 r.squaredGLMM(mod_extrarandom_loss)
 
@@ -130,6 +157,38 @@ r.squaredGLMM(mod_extrarandom_loss)
 
 #coef =  -0.3242
 #how much the probability changes with a given change in temperature
+
+#Model assumptions using DHARMa package
+#Test for overdispersion
+#grouping basically transforms 0/1 response (bernoulli) in a k/n response (true binomial)
+#https://cran.r-project.org/web/packages/DHARMa/vignettes/DHARMa.html#binomial-data
+#group by region
+simulationOutput_loss <- simulateResiduals(fittedModel = mod_extrarandom_loss)
+simulationOutput.groupedbyreg_loss <- recalculateResiduals(simulationOutput_loss, group = spp_master_ztemp_seus_buoy_scaled.r$reg)
+testDispersion(simulationOutput_loss)
+testDispersion(simulationOutput.groupedbyreg_loss)
+plot(simulationOutput.groupedbyreg_loss)
+
+#no random effects
+simulationOutput_loss_noRE <- simulateResiduals(fittedModel = mod_extrarandom_loss_noRE)
+simulationOutput.groupedbyreg_loss_noRE <- recalculateResiduals(simulationOutput_loss_noRE, group = spp_master_ztemp_seus_buoy_scaled.r$reg)
+testDispersion(simulationOutput_loss_noRE)
+testDispersion(simulationOutput.groupedbyreg_loss_noRE)
+plot(simulationOutput.groupedbyreg_loss_noRE)
+
+
+
+#group by spp
+simulationOutput.groupedbyspp_loss <- recalculateResiduals(simulationOutput_loss, group = spp_master_ztemp_seus_buoy_scaled.r$spp)
+testDispersion(simulationOutput_loss)
+testDispersion(simulationOutput.groupedbyspp_loss)
+plot(simulationOutput.groupedbyspp_loss)
+
+#with no random effects
+simulationOutput.groupedbyspp_loss_noRE <- recalculateResiduals(simulationOutput_loss_noRE, group = spp_master_ztemp_seus_buoy_scaled.r$spp)
+testDispersion(simulationOutput_loss_noRE)
+testDispersion(simulationOutput.groupedbyspp_loss_noRE)
+plot(simulationOutput.groupedbyspp_loss_noRE)
 
 ```
 "The estimate for seasonality of -0.3242 means that a 1 degree increase in seasonality is associated with a 0.3242 decrease in the log-odds of a Loss occuring, compared to no Loss occuring. If we exponentiate this number then we obtain the odds ratio of 0.7231, which means that for a 1 degree increase in Seasonality we expect to see (approximately) a 18% decrease in the odds of a Loss Occurring." From this [Stack Exchange post](https://stats.stackexchange.com/questions/444797/interpreting-a-generalised-linear-mixed-model-with-binomial-data). 
