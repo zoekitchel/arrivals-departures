@@ -19,7 +19,7 @@ library(ggplot2)
 library(here)
 library(wesanderson) # to color plots
 
-spp_master_ztemp_seus_buoy_scaled <- readRDS("~/Documents/grad school/Rutgers/Repositories/Col_Ext/Data/Spp_master/spp_master_ztemp_seus_buoy_scaled.rds")
+spp_master_ztemp_seus_buoy_scaled <- readRDS(here::here("Data","Spp_master","spp_master_ztemp_seus_buoy_scaled.rds"))
 
 
 ```
@@ -36,9 +36,13 @@ Link up with spp key to add phylum, order, family, etc.
 ```{r pull in spp, order, family, etc.}
 spp_key <- fread(here::here("Data","Spp_master","spp_key.csv"))
 
-spp_master_ztemp_seus_buoy_scaled_annual_obs <- spp_master_ztemp_seus_buoy_scaled_annual_obs[spp_key, on = "spp"]
+spp_master_ztemp_seus_buoy_scaled_annual_obs <- spp_key[spp_master_ztemp_seus_buoy_scaled_annual_obs, on = "spp", nomatch = NULL]
 
-#(1|reg) + (1|phylum) + (1|class) + (1|order) + (1|family) + (1|genus) + (1|spp)
+#delete first year each region is sampled (because gains and losses are based on transitions between years, so we need 2 years of observations)
+
+spp_master_ztemp_seus_buoy_scaled_annual_obs[,min_year := min(year),.(reg)]
+
+spp_master_ztemp_seus_buoy_scaled_annual_obs <- spp_master_ztemp_seus_buoy_scaled_annual_obs[year != min_year]
     
 ```
 
@@ -49,6 +53,9 @@ Running, and ranking arrival models without traits
 ```{r arrival models without traits}
 #names of scaled columns
 variables_scaled <- grep("*_scaled", names(spp_master_ztemp_seus_buoy_scaled_annual_obs), value = T)
+
+#we don't end up looking at mean, delete here
+variables_scaled <- variables_scaled[-grep('mean',variables_scaled)]
 
 #going to make loop to make all models I need to look at with a single temperature variable
 
@@ -68,13 +75,13 @@ for (i in 1:length(variables_scaled)){
 }
 
 
-#saveRDS(object = arrival_model_comparison_annual_obs_taxonomy, file = here::here("Model_results","arrival_model_comparison_annual_obs_taxonomy.rds"))
+saveRDS(object = arrival_model_comparison_annual_obs_taxonomy, file = here::here("Model_results","arrival_model_comparison_annual_obs_taxonomy.rds"))
 
-#fwrite(arrival_model_comparison_annual_obs_taxonomy, file = here::here("Model_results","arrival_model_comparison_annual_obs_taxonomy.csv"))
+fwrite(arrival_model_comparison_annual_obs_taxonomy, file = here::here("Model_results","arrival_model_comparison_annual_obs_taxonomy.csv"))
 
-saveRDS(object = arrival_model_comparison_annual_obs_taxonomy, file ="arrival_model_comparison_annual_obs_taxonomy.rds")
+#saveRDS(object = arrival_model_comparison_annual_obs_taxonomy, file ="arrival_model_comparison_annual_obs_taxonomy.rds")
 
-fwrite(arrival_model_comparison_annual_obs_taxonomy, file ="arrival_model_comparison_annual_obs_taxonomy.csv")
+#fwrite(arrival_model_comparison_annual_obs_taxonomy, file ="arrival_model_comparison_annual_obs_taxonomy.csv")
 
 
 arrival_model_comparison_annual_obs_taxonomy <- readRDS(here::here("Model_results","arrival_model_comparison_annual_obs_taxonomy.rds"))
@@ -102,21 +109,13 @@ for (i in 1:length(variables_scaled)){
 saveRDS(object = departure_model_comparison_annual_obs_taxonomy, file = here::here("Model_results","departure_model_comparison_annual_obs_taxonomy.rds"))
 fwrite(departure_model_comparison_annual_obs_taxonomy, file = here::here("Model_results","departure_model_comparison_annual_obs_taxonomy.csv"))
 
-departure_model_comparison_annual_obs_taxonomy <-#best readRDS(here::here("Model_results","departure_model_comparison_annual_obs_taxonomy.rds"))
+departure_model_comparison_annual_obs_taxonomy <- readRDS(here::here("Model_results","departure_model_comparison_annual_obs_taxonomy.rds"))
 
 
 ```
 
 Relative Variable Importance
 
-NB: I didn't end up using mean as a predictor variable (patterns captured in min and max, less relevant to thermal niche)
-```{r get rid of any models using mean}
-arrival_model_comparison_annual_obs_nomean <- arrival_model_comparison_annual_obs_taxonomy[!grepl("mean",variable),]
-
-departure_model_comparison_annual_obs_nomean <- departure_model_comparison_annual_obs_taxonomy[!grepl("mean",variable),]
-
-
-```
 
 How does the null model with only random effects perform?
 ```{r null models}
@@ -133,8 +132,8 @@ intercept_arrival_mod_scaled <- glmer(col ~ (1|reg) + (1|phylum) + (1|class) + (
 intercept_departure_mod_scaled <- glmer(now_ext ~ (1|reg) + (1|phylum) + (1|class) + (1|order) + (1|family) + (1|genus) + (1|spp), family = binomial, data = spp_master_ztemp_seus_buoy_scaled_annual_obs, nAGQ = 0)
 
 #best model better than null? yes
-AICc(intercept_arrival_mod_scaled)-min(arrival_model_comparison_annual_obs_nomean$AICc)
-AICc(intercept_departure_mod_scaled)-min(departure_model_comparison_annual_obs_nomean$AICc)
+AICc(intercept_arrival_mod_scaled)-min(arrival_model_comparison_annual_obs_taxonomy$AICc)
+AICc(intercept_departure_mod_scaled)-min(departure_model_comparison_annual_obs_taxonomy$AICc)
 
 #calculate pseudo R squared
 r.squaredGLMM(arrival_mod_scaled_1)
@@ -167,44 +166,44 @@ r.squaredGLMM(intercept_departure_mod_scaled)
 Relative Variable Importance for Arrival Models
 ```{r RVI arrivals}
 #add ∆AIC to tables
-min_arrival_AICc <- min(arrival_model_comparison_annual_obs_nomean[, AICc])
-arrival_model_comparison_annual_obs_nomean[,"deltaAICc" := (AICc - min_arrival_AICc)]
+min_arrival_AICc <- min(arrival_model_comparison_annual_obs_taxonomy[, AICc])
+arrival_model_comparison_annual_obs_taxonomy[,"deltaAICc" := (AICc - min_arrival_AICc)]
 
 #add relative likelihood exp( -0.5 * ∆AIC score for that model)
-arrival_model_comparison_annual_obs_nomean[,"rel_likelihood" := exp((-0.5 * deltaAICc))]
+arrival_model_comparison_annual_obs_taxonomy[,"rel_likelihood" := exp((-0.5 * deltaAICc))]
 #sum relative likelihoods across all models
-arrival_model_comparison_annual_obs_nomean.likelihoodsum <- sum(arrival_model_comparison_annual_obs_nomean[, rel_likelihood])
+arrival_model_comparison_annual_obs_taxonomy.likelihoodsum <- sum(arrival_model_comparison_annual_obs_taxonomy[, rel_likelihood])
 #Akaike weight for a model is this rel_likelihood divided by the sum of these values across all models
-arrival_model_comparison_annual_obs_nomean[,"akaike_weight" := rel_likelihood/arrival_model_comparison_annual_obs_nomean.likelihoodsum]
+arrival_model_comparison_annual_obs_taxonomy[,"akaike_weight" := rel_likelihood/arrival_model_comparison_annual_obs_taxonomy.likelihoodsum]
 
 #I want to look at relative importance FOR:
 
 #bottom/surface (bottom = includes sbt, grepl("sbt", variable))
-arrival_bottom_importance <- sum(arrival_model_comparison_annual_obs_nomean[grep("sbt", variable), ]$akaike_weight)
-arrival_surface_importance <- sum(arrival_model_comparison_annual_obs_nomean[grep("sst", variable), ]$akaike_weight)
+arrival_bottom_importance <- sum(arrival_model_comparison_annual_obs_taxonomy[grep("sbt", variable), ]$akaike_weight)
+arrival_surface_importance <- sum(arrival_model_comparison_annual_obs_taxonomy[grep("sst", variable), ]$akaike_weight)
 
 #lag/not lagged (grepl("lag", variable))
-arrival_lag_importance <- sum(arrival_model_comparison_annual_obs_nomean[grep("lag", variable), ]$akaike_weight)
-arrival_nolag_importance <- sum(arrival_model_comparison_annual_obs_nomean[!grep("lag", variable), ]$akaike_weight)
+arrival_lag_importance <- sum(arrival_model_comparison_annual_obs_taxonomy[grep("lag", variable), ]$akaike_weight)
+arrival_nolag_importance <- sum(arrival_model_comparison_annual_obs_taxonomy[!grep("lag", variable), ]$akaike_weight)
 
 #absolute (grepl("abs", variable))
-arrival_abs_importance <- sum(arrival_model_comparison_annual_obs_nomean[grep("abs", variable), ]$akaike_weight)
+arrival_abs_importance <- sum(arrival_model_comparison_annual_obs_taxonomy[grep("abs", variable), ]$akaike_weight)
 
 #raw (!grepl("change"))
-arrival_raw_importance <- sum(arrival_model_comparison_annual_obs_nomean[!grep("change", variable), ]$akaike_weight)
+arrival_raw_importance <- sum(arrival_model_comparison_annual_obs_taxonomy[!grep("change", variable), ]$akaike_weight)
 
 #change (grepl("change", variable), (!grepl("abs")))
-arrival_change_importance <- sum(arrival_model_comparison_annual_obs_nomean[grep("change", variable), ][!grep("abs", variable),]$akaike_weight)
+arrival_change_importance <- sum(arrival_model_comparison_annual_obs_taxonomy[grep("change", variable), ][!grep("abs", variable),]$akaike_weight)
 
 #type of temp variable (max, min, seas)
-arrival_max_temp_importance <- sum(arrival_model_comparison_annual_obs_nomean[grep("max", variable), ]$akaike_weight)
-arrival_min_temp_importance <- sum(arrival_model_comparison_annual_obs_nomean[grep("min", variable), ]$akaike_weight)
-arrival_seas_temp_importance <- sum(arrival_model_comparison_annual_obs_nomean[grep("seas", variable), ]$akaike_weight)
+arrival_max_temp_importance <- sum(arrival_model_comparison_annual_obs_taxonomy[grep("max", variable), ]$akaike_weight)
+arrival_min_temp_importance <- sum(arrival_model_comparison_annual_obs_taxonomy[grep("min", variable), ]$akaike_weight)
+arrival_seas_temp_importance <- sum(arrival_model_comparison_annual_obs_taxonomy[grep("seas", variable), ]$akaike_weight)
 
-arrival_model_comparison_annual_obs_nomean_akaikeweights <- arrival_model_comparison_annual_obs_nomean
+arrival_model_comparison_annual_obs_taxonomy_akaikeweights <- arrival_model_comparison_annual_obs_taxonomy
 
-saveRDS(arrival_model_comparison_annual_obs_nomean_akaikeweights, file = here::here("Model_results","arrival_model_comparison_annual_obs_nomean_akaikeweights_annual_obs.rds"))
-fwrite(arrival_model_comparison_annual_obs_nomean_akaikeweights, file = here::here("tables","arrival_model_comparison_annual_obs_nomean_akaikeweights_annual_obs.csv"))
+saveRDS(arrival_model_comparison_annual_obs_taxonomy_akaikeweights, file = here::here("Model_results","arrival_model_comparison_annual_obs_taxonomy_akaikeweights_annual_obs.rds"))
+fwrite(arrival_model_comparison_annual_obs_taxonomy_akaikeweights, file = here::here("tables","arrival_model_comparison_annual_obs_taxonomy_akaikeweights_annual_obs.csv"))
 
 ```
 
@@ -213,32 +212,32 @@ Relative Variable Importance for different Pairs of Transformation and Metric
 
 #I want to look at relative importance FOR 
 #models with raw and min
-arrival_raw_min_importance <- sum(arrival_model_comparison_annual_obs_nomean[grep("min", variable), ][!grep("change", variable)]$akaike_weight)
+arrival_raw_min_importance <- sum(arrival_model_comparison_annual_obs_taxonomy[grep("min", variable), ][!grep("change", variable)]$akaike_weight)
 
 #models with raw and max
-arrival_raw_max_importance <- sum(arrival_model_comparison_annual_obs_nomean[grep("max", variable), ][!grep("change", variable)]$akaike_weight)
+arrival_raw_max_importance <- sum(arrival_model_comparison_annual_obs_taxonomy[grep("max", variable), ][!grep("change", variable)]$akaike_weight)
 
 #models with raw and seas
-arrival_raw_seas_importance <- sum(arrival_model_comparison_annual_obs_nomean[grep("seas", variable), ][!grep("change", variable)]$akaike_weight)
+arrival_raw_seas_importance <- sum(arrival_model_comparison_annual_obs_taxonomy[grep("seas", variable), ][!grep("change", variable)]$akaike_weight)
 
 
 #models with change and min
-arrival_change_min_importance <- sum(arrival_model_comparison_annual_obs_nomean[grep("min_s.t_temp_change", variable), ][!grep("abs", variable)]$akaike_weight)
+arrival_change_min_importance <- sum(arrival_model_comparison_annual_obs_taxonomy[grep("min_s.t_temp_change", variable), ][!grep("abs", variable)]$akaike_weight)
 
 #models with change and max
-arrival_change_max_importance <- sum(arrival_model_comparison_annual_obs_nomean[grep("max_s.t_temp_change", variable), ][!grep("abs", variable)]$akaike_weight)
+arrival_change_max_importance <- sum(arrival_model_comparison_annual_obs_taxonomy[grep("max_s.t_temp_change", variable), ][!grep("abs", variable)]$akaike_weight)
 
 #models with change and seas
-arrival_change_seas_importance <- sum(arrival_model_comparison_annual_obs_nomean[grep("seas_s.t_temp_change", variable), ][!grep("abs", variable)]$akaike_weight)
+arrival_change_seas_importance <- sum(arrival_model_comparison_annual_obs_taxonomy[grep("seas_s.t_temp_change", variable), ][!grep("abs", variable)]$akaike_weight)
 
 #models with abs change and min
-arrival_abs_change_min_importance <- sum(arrival_model_comparison_annual_obs_nomean[grep("min_s.t_temp_change_abs", variable), ]$akaike_weight)
+arrival_abs_change_min_importance <- sum(arrival_model_comparison_annual_obs_taxonomy[grep("min_s.t_temp_change_abs", variable), ]$akaike_weight)
 
 #models with abs change and max
-arrival_abs_change_max_importance <- sum(arrival_model_comparison_annual_obs_nomean[grep("max_s.t_temp_change_abs", variable), ]$akaike_weight)
+arrival_abs_change_max_importance <- sum(arrival_model_comparison_annual_obs_taxonomy[grep("max_s.t_temp_change_abs", variable), ]$akaike_weight)
 
 #models with abs change and seas
-arrival_abs_change_seas_importance <- sum(arrival_model_comparison_annual_obs_nomean[grep("seas_s.t_temp_change_abs", variable), ]$akaike_weight)
+arrival_abs_change_seas_importance <- sum(arrival_model_comparison_annual_obs_taxonomy[grep("seas_s.t_temp_change_abs", variable), ]$akaike_weight)
 
 arrival_transform_metric_comparison <- data.table(Transformation =
                                                 c("raw", "raw", "raw", "change", "change", "change", "abs_change", "abs_change", "abs_change"), 
@@ -258,44 +257,44 @@ arrival_transform_metric_comparison <- data.table(Transformation =
 Relative Variable Importance Departure Models
 ```{r RVI departure}
 #add ∆AIC to tables
-min_departure_AICc <- min(departure_model_comparison_annual_obs_nomean[, AICc])
-departure_model_comparison_annual_obs_nomean[,"deltaAICc" := (AICc - min_departure_AICc)]
+min_departure_AICc <- min(departure_model_comparison_annual_obs_taxonomy[, AICc])
+departure_model_comparison_annual_obs_taxonomy[,"deltaAICc" := (AICc - min_departure_AICc)]
 
 #add relative likelihood exp( -0.5 * ∆AIC score for that model)
-departure_model_comparison_annual_obs_nomean[,"rel_likelihood" := exp((-0.5 * deltaAICc))]
+departure_model_comparison_annual_obs_taxonomy[,"rel_likelihood" := exp((-0.5 * deltaAICc))]
 #sum relative likelihoods across all models
-departure_model_comparison_annual_obs_nomean.likelihoodsum <- sum(departure_model_comparison_annual_obs_nomean[, rel_likelihood])
+departure_model_comparison_annual_obs_taxonomy.likelihoodsum <- sum(departure_model_comparison_annual_obs_taxonomy[, rel_likelihood])
 #Akaike weight for a model is this rel_likelihood devided by the sum of these values across all models
-departure_model_comparison_annual_obs_nomean[,"akaike_weight" := rel_likelihood/departure_model_comparison_annual_obs_nomean.likelihoodsum]
+departure_model_comparison_annual_obs_taxonomy[,"akaike_weight" := rel_likelihood/departure_model_comparison_annual_obs_taxonomy.likelihoodsum]
 
 #I want to look at relative importance FOR 
 #bottom/surface (bottom = includes sbt, grepl("sbt", variable))
-departure_bottom_importance <- sum(departure_model_comparison_annual_obs_nomean[grep("sbt", variable), ]$akaike_weight)
-departure_surface_importance <- sum(departure_model_comparison_annual_obs_nomean[grep("sst", variable), ]$akaike_weight)
+departure_bottom_importance <- sum(departure_model_comparison_annual_obs_taxonomy[grep("sbt", variable), ]$akaike_weight)
+departure_surface_importance <- sum(departure_model_comparison_annual_obs_taxonomy[grep("sst", variable), ]$akaike_weight)
 
 #lag/not lagged (grepl("lag", variable))
-departure_lag_importance <- sum(departure_model_comparison_annual_obs_nomean[grep("lag", variable), ]$akaike_weight)
-departure_nolag_importance <- sum(departure_model_comparison_annual_obs_nomean[!grep("lag", variable), ]$akaike_weight)
+departure_lag_importance <- sum(departure_model_comparison_annual_obs_taxonomy[grep("lag", variable), ]$akaike_weight)
+departure_nolag_importance <- sum(departure_model_comparison_annual_obs_taxonomy[!grep("lag", variable), ]$akaike_weight)
 
 #absolute (grepl("abs", variable))
-departure_abs_importance <- sum(departure_model_comparison_annual_obs_nomean[grep("abs", variable), ]$akaike_weight)
+departure_abs_importance <- sum(departure_model_comparison_annual_obs_taxonomy[grep("abs", variable), ]$akaike_weight)
 
 #raw (!grepl("change"))
-departure_raw_importance <- sum(departure_model_comparison_annual_obs_nomean[!grep("change", variable), ]$akaike_weight)
+departure_raw_importance <- sum(departure_model_comparison_annual_obs_taxonomy[!grep("change", variable), ]$akaike_weight)
 
 #change (grepl("change", variable), (!grepl("abs")))
-departure_change_importance <- sum(departure_model_comparison_annual_obs_nomean[grep("change", variable), ][!grep("abs", variable),]$akaike_weight)
+departure_change_importance <- sum(departure_model_comparison_annual_obs_taxonomy[grep("change", variable), ][!grep("abs", variable),]$akaike_weight)
 
 #type of temp variable (max, min, seas)
-departure_max_temp_importance <- sum(departure_model_comparison_annual_obs_nomean[grep("max", variable), ]$akaike_weight)
-departure_min_temp_importance <- sum(departure_model_comparison_annual_obs_nomean[grep("min", variable), ]$akaike_weight)
-departure_seas_temp_importance <- sum(departure_model_comparison_annual_obs_nomean[grep("seas", variable), ]$akaike_weight)
+departure_max_temp_importance <- sum(departure_model_comparison_annual_obs_taxonomy[grep("max", variable), ]$akaike_weight)
+departure_min_temp_importance <- sum(departure_model_comparison_annual_obs_taxonomy[grep("min", variable), ]$akaike_weight)
+departure_seas_temp_importance <- sum(departure_model_comparison_annual_obs_taxonomy[grep("seas", variable), ]$akaike_weight)
 
-departure_model_comparison_annual_obs_nomean_akaikeweights <- departure_model_comparison_annual_obs_nomean
+departure_model_comparison_annual_obs_taxonomy_akaikeweights <- departure_model_comparison_annual_obs_taxonomy
 
-saveRDS(departure_model_comparison_annual_obs_nomean_akaikeweights, file = here::here("Model_results","departure_model_comparison_annual_obs_nomean_akaikeweights_annual_obs.rds"))
-saveRDS(departure_model_comparison_annual_obs_nomean_akaikeweights, file = here::here("tables","departure_model_comparison_annual_obs_nomean_akaikeweights_annual_obs.rds"))
-departure_model_comparison_annual_obs_nomean_akaikeweights <- readRDS(file = here::here("Model_results","departure_model_comparison_annual_obs_nomean_akaikeweights_annual_obs.rds"))
+saveRDS(departure_model_comparison_annual_obs_taxonomy_akaikeweights, file = here::here("Model_results","departure_model_comparison_annual_obs_taxonomy_akaikeweights_annual_obs.rds"))
+saveRDS(departure_model_comparison_annual_obs_taxonomy_akaikeweights, file = here::here("tables","departure_model_comparison_annual_obs_taxonomy_akaikeweights_annual_obs.rds"))
+departure_model_comparison_annual_obs_taxonomy_akaikeweights <- readRDS(file = here::here("Model_results","departure_model_comparison_annual_obs_taxonomy_akaikeweights_annual_obs.rds"))
 
 ```
 
@@ -304,32 +303,32 @@ Relative Variable Importance for Pairs of Transformation and Metric Predicting d
 
 #I want to look at relative importance FOR 
 #models with raw and min
-departure_raw_min_importance <- sum(departure_model_comparison_annual_obs_nomean[grep("min", variable), ][!grep("change", variable)]$akaike_weight)
+departure_raw_min_importance <- sum(departure_model_comparison_annual_obs_taxonomy[grep("min", variable), ][!grep("change", variable)]$akaike_weight)
 
 #models with raw and max
-departure_raw_max_importance <- sum(departure_model_comparison_annual_obs_nomean[grep("max", variable), ][!grep("change", variable)]$akaike_weight)
+departure_raw_max_importance <- sum(departure_model_comparison_annual_obs_taxonomy[grep("max", variable), ][!grep("change", variable)]$akaike_weight)
 
 #models with raw and seas
-departure_raw_seas_importance <- sum(departure_model_comparison_annual_obs_nomean[grep("seas", variable), ][!grep("change", variable)]$akaike_weight)
+departure_raw_seas_importance <- sum(departure_model_comparison_annual_obs_taxonomy[grep("seas", variable), ][!grep("change", variable)]$akaike_weight)
 
 
 #models with change and min
-departure_change_min_importance <- sum(departure_model_comparison_annual_obs_nomean[grep("min_s.t_temp_change", variable), ][!grep("abs", variable)]$akaike_weight)
+departure_change_min_importance <- sum(departure_model_comparison_annual_obs_taxonomy[grep("min_s.t_temp_change", variable), ][!grep("abs", variable)]$akaike_weight)
 
 #models with change and max
-departure_change_max_importance <- sum(departure_model_comparison_annual_obs_nomean[grep("max_s.t_temp_change", variable), ][!grep("abs", variable)]$akaike_weight)
+departure_change_max_importance <- sum(departure_model_comparison_annual_obs_taxonomy[grep("max_s.t_temp_change", variable), ][!grep("abs", variable)]$akaike_weight)
 
 #models with change and seas
-departure_change_seas_importance <- sum(departure_model_comparison_annual_obs_nomean[grep("seas_s.t_temp_change", variable), ][!grep("abs", variable)]$akaike_weight)
+departure_change_seas_importance <- sum(departure_model_comparison_annual_obs_taxonomy[grep("seas_s.t_temp_change", variable), ][!grep("abs", variable)]$akaike_weight)
 
 #models with abs change and min
-departure_abs_change_min_importance <- sum(departure_model_comparison_annual_obs_nomean[grep("min_s.t_temp_change_abs", variable), ]$akaike_weight)
+departure_abs_change_min_importance <- sum(departure_model_comparison_annual_obs_taxonomy[grep("min_s.t_temp_change_abs", variable), ]$akaike_weight)
 
 #models with abs change and max
-departure_abs_change_max_importance <- sum(departure_model_comparison_annual_obs_nomean[grep("max_s.t_temp_change_abs", variable), ]$akaike_weight)
+departure_abs_change_max_importance <- sum(departure_model_comparison_annual_obs_taxonomy[grep("max_s.t_temp_change_abs", variable), ]$akaike_weight)
 
 #models with abs change and seas
-departure_abs_change_seas_importance <- sum(departure_model_comparison_annual_obs_nomean[grep("seas_s.t_temp_change_abs", variable), ]$akaike_weight)
+departure_abs_change_seas_importance <- sum(departure_model_comparison_annual_obs_taxonomy[grep("seas_s.t_temp_change_abs", variable), ]$akaike_weight)
 
 departure_transform_metric_comparison <- data.table(Transformation =
                                                 c("raw", "raw", "raw", "change", "change", "change", "abs_change", "abs_change", "abs_change"), 
@@ -352,28 +351,28 @@ Let's see how the RVI importance varies by looking at specific lag values
 lags_RVI_scaled <- data.table(arrival_lag = c(0:9), arrival_RVI = 0, departure_RVI = 0)
 
 #arrivals
-lags_RVI_scaled[1,2] <- 1-sum(arrival_model_comparison_annual_obs_nomean[grep("lag", variable), ]$akaike_weight)
-lags_RVI_scaled[2,2] <- sum(arrival_model_comparison_annual_obs_nomean[grep("lag1", variable), ]$akaike_weight)
-lags_RVI_scaled[3,2] <- sum(arrival_model_comparison_annual_obs_nomean[grep("lag2", variable), ]$akaike_weight)
-lags_RVI_scaled[4,2] <- sum(arrival_model_comparison_annual_obs_nomean[grep("lag3", variable), ]$akaike_weight)
-lags_RVI_scaled[5,2] <- sum(arrival_model_comparison_annual_obs_nomean[grep("lag4", variable), ]$akaike_weight)
-lags_RVI_scaled[6,2] <- sum(arrival_model_comparison_annual_obs_nomean[grep("lag5", variable), ]$akaike_weight)
-lags_RVI_scaled[7,2] <- sum(arrival_model_comparison_annual_obs_nomean[grep("lag6", variable), ]$akaike_weight)
-lags_RVI_scaled[8,2] <- sum(arrival_model_comparison_annual_obs_nomean[grep("lag7", variable), ]$akaike_weight)
-lags_RVI_scaled[9,2] <- sum(arrival_model_comparison_annual_obs_nomean[grep("lag8", variable), ]$akaike_weight)
-lags_RVI_scaled[10,2] <- sum(arrival_model_comparison_annual_obs_nomean[grep("lag9", variable), ]$akaike_weight)
+lags_RVI_scaled[1,2] <- 1-sum(arrival_model_comparison_annual_obs_taxonomy[grep("lag", variable), ]$akaike_weight)
+lags_RVI_scaled[2,2] <- sum(arrival_model_comparison_annual_obs_taxonomy[grep("lag1", variable), ]$akaike_weight)
+lags_RVI_scaled[3,2] <- sum(arrival_model_comparison_annual_obs_taxonomy[grep("lag2", variable), ]$akaike_weight)
+lags_RVI_scaled[4,2] <- sum(arrival_model_comparison_annual_obs_taxonomy[grep("lag3", variable), ]$akaike_weight)
+lags_RVI_scaled[5,2] <- sum(arrival_model_comparison_annual_obs_taxonomy[grep("lag4", variable), ]$akaike_weight)
+lags_RVI_scaled[6,2] <- sum(arrival_model_comparison_annual_obs_taxonomy[grep("lag5", variable), ]$akaike_weight)
+lags_RVI_scaled[7,2] <- sum(arrival_model_comparison_annual_obs_taxonomy[grep("lag6", variable), ]$akaike_weight)
+lags_RVI_scaled[8,2] <- sum(arrival_model_comparison_annual_obs_taxonomy[grep("lag7", variable), ]$akaike_weight)
+lags_RVI_scaled[9,2] <- sum(arrival_model_comparison_annual_obs_taxonomy[grep("lag8", variable), ]$akaike_weight)
+lags_RVI_scaled[10,2] <- sum(arrival_model_comparison_annual_obs_taxonomy[grep("lag9", variable), ]$akaike_weight)
 
 #departures
-lags_RVI_scaled[1,3] <- 1-sum(departure_model_comparison_annual_obs_nomean[grep("lag", variable), ]$akaike_weight)
-lags_RVI_scaled[2,3] <- sum(departure_model_comparison_annual_obs_nomean[grep("lag1", variable), ]$akaike_weight)
-lags_RVI_scaled[3,3] <- sum(departure_model_comparison_annual_obs_nomean[grep("lag2", variable), ]$akaike_weight)
-lags_RVI_scaled[4,3] <- sum(departure_model_comparison_annual_obs_nomean[grep("lag3", variable), ]$akaike_weight)
-lags_RVI_scaled[5,3] <- sum(departure_model_comparison_annual_obs_nomean[grep("lag4", variable), ]$akaike_weight)
-lags_RVI_scaled[6,3] <- sum(departure_model_comparison_annual_obs_nomean[grep("lag5", variable), ]$akaike_weight)
-lags_RVI_scaled[7,3] <- sum(departure_model_comparison_annual_obs_nomean[grep("lag6", variable), ]$akaike_weight)
-lags_RVI_scaled[8,3] <- sum(departure_model_comparison_annual_obs_nomean[grep("lag7", variable), ]$akaike_weight)
-lags_RVI_scaled[9,3] <- sum(departure_model_comparison_annual_obs_nomean[grep("lag8", variable), ]$akaike_weight)
-lags_RVI_scaled[10,3] <- sum(departure_model_comparison_annual_obs_nomean[grep("lag9", variable), ]$akaike_weight)
+lags_RVI_scaled[1,3] <- 1-sum(departure_model_comparison_annual_obs_taxonomy[grep("lag", variable), ]$akaike_weight)
+lags_RVI_scaled[2,3] <- sum(departure_model_comparison_annual_obs_taxonomy[grep("lag1", variable), ]$akaike_weight)
+lags_RVI_scaled[3,3] <- sum(departure_model_comparison_annual_obs_taxonomy[grep("lag2", variable), ]$akaike_weight)
+lags_RVI_scaled[4,3] <- sum(departure_model_comparison_annual_obs_taxonomy[grep("lag3", variable), ]$akaike_weight)
+lags_RVI_scaled[5,3] <- sum(departure_model_comparison_annual_obs_taxonomy[grep("lag4", variable), ]$akaike_weight)
+lags_RVI_scaled[6,3] <- sum(departure_model_comparison_annual_obs_taxonomy[grep("lag5", variable), ]$akaike_weight)
+lags_RVI_scaled[7,3] <- sum(departure_model_comparison_annual_obs_taxonomy[grep("lag6", variable), ]$akaike_weight)
+lags_RVI_scaled[8,3] <- sum(departure_model_comparison_annual_obs_taxonomy[grep("lag7", variable), ]$akaike_weight)
+lags_RVI_scaled[9,3] <- sum(departure_model_comparison_annual_obs_taxonomy[grep("lag8", variable), ]$akaike_weight)
+lags_RVI_scaled[10,3] <- sum(departure_model_comparison_annual_obs_taxonomy[grep("lag9", variable), ]$akaike_weight)
 
 saveRDS(lags_RVI_scaled, here::here("Model_results","lags_RVI_scaled_annual_obs.rds"))
 lags_RVI_scaled <- readRDS(here::here("Model_results","lags_RVI_scaled_annual_obs.rds"))
@@ -503,52 +502,52 @@ RVI_arrival_plot
 RVI_departure_plot
 ```
 
-Next step is to add the coefficients on to the bar chart. To do this, I will need to sum (aikake weight of model including variable x coefficient). I think this will be easy enough Using arrival_model_comparison_annual_obs_nomean data frame. I will add new column to data frame of aikaike weight x coefficient
+Next step is to add the coefficients on to the bar chart. To do this, I will need to sum (aikake weight of model including variable x coefficient). I think this will be easy enough Using arrival_model_comparison_annual_obs_taxonomy data frame. I will add new column to data frame of aikaike weight x coefficient
 
 ```{r avg coefficients for arrival models}
 #for some reason the coefficient is a factor
-arrival_model_comparison_annual_obs_nomean[,coef_num := as.numeric(as.character(coef))]
-arrival_model_comparison_annual_obs_nomean[,aw_coef := akaike_weight * coef_num]
+arrival_model_comparison_annual_obs_taxonomy[,coef_num := as.numeric(as.character(coef))]
+arrival_model_comparison_annual_obs_taxonomy[,aw_coef := akaike_weight * coef_num]
 
 #bottom temperature avg coefficient
-arrival_bottom_temp_avg_coef <- sum(arrival_model_comparison_annual_obs_nomean[grep("sbt", variable)]$coef_num)
+arrival_bottom_temp_avg_coef <- sum(arrival_model_comparison_annual_obs_taxonomy[grep("sbt", variable)]$coef_num)
 
 #surface temperature avg coefficient
-arrival_surface_temp_avg_coef <- sum(arrival_model_comparison_annual_obs_nomean[grep("sst", variable)]$coef_num)
+arrival_surface_temp_avg_coef <- sum(arrival_model_comparison_annual_obs_taxonomy[grep("sst", variable)]$coef_num)
 
 #raw seasonality avg coefficient
 arrival_seas_raw_avg_coef <- 
-  sum(arrival_model_comparison_annual_obs_nomean[grep("seas", variable), ][!grep("change", variable)]$coef_num)
+  sum(arrival_model_comparison_annual_obs_taxonomy[grep("seas", variable), ][!grep("change", variable)]$coef_num)
 
 #max abs change avg coefficient
 arrival_max_abs_change_avg_coef <- 
-  sum(arrival_model_comparison_annual_obs_nomean[grep("max_s.t_temp_change_abs", variable), ]$coef_num)
+  sum(arrival_model_comparison_annual_obs_taxonomy[grep("max_s.t_temp_change_abs", variable), ]$coef_num)
 
 
 ```
 
 ```{r avg coefficients for departure models}
 #for some reason the coefficient is a factor
-departure_model_comparison_annual_obs_nomean[,coef_num := as.numeric(as.character(coef))]
-departure_model_comparison_annual_obs_nomean[,aw_coef := akaike_weight * coef_num]
+departure_model_comparison_annual_obs_taxonomy[,coef_num := as.numeric(as.character(coef))]
+departure_model_comparison_annual_obs_taxonomy[,aw_coef := akaike_weight * coef_num]
 
 #bottom temperature avg coefficient
-departure_bottom_temp_avg_coef <- sum(departure_model_comparison_annual_obs_nomean[grep("sbt", variable)]$coef_num)
+departure_bottom_temp_avg_coef <- sum(departure_model_comparison_annual_obs_taxonomy[grep("sbt", variable)]$coef_num)
 
 #surface temperature avg coefficient
-departure_surface_temp_avg_coef <- sum(departure_model_comparison_annual_obs_nomean[grep("sst", variable)]$coef_num)
+departure_surface_temp_avg_coef <- sum(departure_model_comparison_annual_obs_taxonomy[grep("sst", variable)]$coef_num)
 
 #raw seasonality avg coefficient
 departure_seas_raw_avg_coef <- 
-  sum(departure_model_comparison_annual_obs_nomean[grep("seas", variable), ][!grep("change", variable)]$coef_num)
+  sum(departure_model_comparison_annual_obs_taxonomy[grep("seas", variable), ][!grep("change", variable)]$coef_num)
 
 #min change avg coefficient
 departure_min_abs_change_avg_coef <- 
-  sum(departure_model_comparison_annual_obs_nomean[grep("min_s.t_temp_change", variable), ][!grep("abs", variable)]$coef_num)
+  sum(departure_model_comparison_annual_obs_taxonomy[grep("min_s.t_temp_change", variable), ][!grep("abs", variable)]$coef_num)
 
 #seas change avg coefficient
 departure_seas_change_avg_coef <- 
-  sum(departure_model_comparison_annual_obs_nomean[grep("seas_s.t_temp_change", variable), ][!grep("abs", variable)]$coef_num)
+  sum(departure_model_comparison_annual_obs_taxonomy[grep("seas_s.t_temp_change", variable), ][!grep("abs", variable)]$coef_num)
 
 
 ```

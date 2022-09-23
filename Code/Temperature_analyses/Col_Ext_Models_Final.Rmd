@@ -1,5 +1,5 @@
 ---
-title: "Arrival and Departure Final Models"
+title: "Gain and Loss Final Models"
 output: html_notebook
 ---
 
@@ -25,74 +25,99 @@ library(taxize) #to obtain order, genus, family
 library(dplyr)
 library(DHARMa)
 
-spp_master_ztemp_seus_buoy_scaled <- readRDS(here("Data","Spp_master", "spp_master_ztemp_seus_buoy_scaled.rds"))
+spp_master_ztemp_seus_buoy_scaled <- readRDS(here::here("Data","Spp_master", "spp_master_ztemp_seus_buoy_scaled.rds"))
+
 ```
 
 Link up with spp key to add phylum, order, family, etc.
+*Be careful not to run this more than once, or it will keep deleting more years
 ```{r pull in spp, order, family, etc.}
-spp_key <- fread(here::here("Data","Spp_master","spp_key.csv"))
+spp_key <- fread(here::here("Data","Spp_master","spp_key.csv")) #bring in list of species with phylogenetic classifications
 
-spp_master_ztemp_seus_buoy_scaled <- spp_master_ztemp_seus_buoy_scaled[spp_key, on = "spp"]
+#merge with spp_master
+spp_master_ztemp_seus_buoy_scaled <- spp_key[spp_master_ztemp_seus_buoy_scaled, on = "spp", nomatch = NULL]
 
-    
+#delete first year each region is sampled (because gains and losses are based on transitions between years, so we need 2 years of observations)
+
+spp_master_ztemp_seus_buoy_scaled[,min_year := min(year),.(reg)]
+
+spp_master_ztemp_seus_buoy_scaled <- spp_master_ztemp_seus_buoy_scaled[year != min_year]
+
+nrow(spp_master_ztemp_seus_buoy_scaled) == 17997    
+```
+*^check, is spp_master 17997 rows?
+
+Edit column names for understanding
+```{r}
+spp_master_ztemp_seus_buoy_scaled[,gain :=col][,loss := now_ext]
 ```
 
 
-Running, and ranking arrival models without traits
+Running, and ranking gain models without traits
 
 ##Here, I scaled all temperature values across all regions, and included species as a random effect. In order to do this, I had to change the algorithm slightly--nAGQ = 0.
 
-Gain/Arrival Models with Additional random effects
+Gain Models with Additional random effects
 
-```{r arrival models without traits additional random effects for phylogeny }
+```{r gain models without traits additional random effects for phylogeny }
 #names of scaled columns
 variables_scaled <- grep("*_scaled", names(spp_master_ztemp_seus_buoy_scaled), value = T)
 #going to make loop to make all models I need to look at with a single temperature variable
 
-arrival_model_comparison_taxonomy <- as.data.table(matrix(nrow = length(variables_scaled)))
-arrival_model_comparison_taxonomy[, variable:=as.factor(V1)][, coef:=as.numeric(V1)][, p_value:=as.numeric(V1)][, AICc:=as.numeric(V1)]
-arrival_model_comparison_taxonomy[, V1 := NULL]
+#we don't end up looking at mean, delete here
+variables_scaled <- variables_scaled[-grep('mean',variables_scaled)]
+
+gain_model_comparison_taxonomy <- as.data.table(matrix(nrow = length(variables_scaled)))
+gain_model_comparison_taxonomy[, variable:=as.factor(V1)][, coef:=as.numeric(V1)][, p_value:=as.numeric(V1)][, AICc:=as.numeric(V1)]
+gain_model_comparison_taxonomy[, V1 := NULL]
 
 for (i in 1:length(variables_scaled)){
-  mod <- glmer(col ~ get(variables_scaled[i]) + (1|reg) + (1|phylum) + (1|class) + (1|order) + (1|family) + (1|genus) + (1|spp),
+  mod <- glmer(gain ~ get(variables_scaled[i]) + (1|reg) + (1|phylum) + (1|class) + (1|order) + (1|family) + (1|genus) + (1|spp),
                family = binomial, data = spp_master_ztemp_seus_buoy_scaled, nAGQ = 0)
-  arrival_model_comparison_taxonomy[i,variable := variables_scaled[i]]
-  arrival_model_comparison_taxonomy[i,coef := coef(summary(mod))[,"Estimate"][2]]
-  arrival_model_comparison_taxonomy[i,p_value := coef(summary(mod))[,"Pr(>|z|)"][2]]
-  arrival_model_comparison_taxonomy[i,AICc := AICc(mod)]
+  gain_model_comparison_taxonomy[i,variable := variables_scaled[i]]
+  gain_model_comparison_taxonomy[i,coef := coef(summary(mod))[,"Estimate"][2]]
+  gain_model_comparison_taxonomy[i,p_value := coef(summary(mod))[,"Pr(>|z|)"][2]]
+  gain_model_comparison_taxonomy[i,AICc := AICc(mod)]
   
   print(paste(i, length(variables_scaled), sep = "/"))
     
 }
+saveRDS(object = gain_model_comparison_taxonomy, file = "gain_model_comparison_taxonomy.rds")
+
 
 #by setting nACQ to 0, all models converged
 
-saveRDS(object = arrival_model_comparison_taxonomy, file = here("Model_results","arrival_model_results_taxonomy.rds"))
-fwrite(arrival_model_comparison_taxonomy, file = here("Model_results","arrival_model_results_taxonomy.csv"))
-arrival_model_comparison_taxonomy <- readRDS(here::here("Model_results","arrival_model_results_taxonomy.rds"))
+saveRDS(object = gain_model_comparison_taxonomy, file = here("Model_results","gain_model_comparison_taxonomy.rds"))
+
+#saveRDS(object = gain_model_comparison_taxonomy, file = "gain_model_comparison_taxonomy.rds") #annotate file structure
+
+fwrite(gain_model_comparison_taxonomy, file = here("Model_results","gain_model_comparison_taxonomy.csv"))
+
+gain_model_comparison_taxonomy <- readRDS(here::here("Model_results","gain_model_comparison_taxonomy.rds"))
 
 ```
 
-Model performance and assumptions.
+Model performance and assumptions and temporal autocorrelation. 
 ```{r}
 #let's take a look at best performing model, and check assumptions
-mod_extrarandom_gain <- glmer(col ~ seas_sst_temp_scaled  + (1|reg) + (1|phylum) + (1|class) + (1|order) + (1|family) + (1|genus) + (1|spp), family = binomial, data = spp_master_ztemp_seus_buoy_scaled, nAGQ = 0)
+mod_extrarandom_gain <- glmer(gain ~ seas_sst_temp_scaled  + (1|reg) + (1|phylum) + (1|class) + (1|order) + (1|family) + (1|genus) + (1|spp), family = binomial, data = spp_master_ztemp_seus_buoy_scaled, nAGQ = 0)
 
 #Performance
 #R-Squared
 r.squaredGLMM(mod_extrarandom_gain)
+summary(mod_extrarandom_gain)
 
 #theoretical variance:
-  #the variance explained by the fixed effects: 0.04
-  #a variance explained by the entire model, including both fixed and random effects: 0.44
+  #the variance explained by the fixed effects: 0.04386344
+  #a variance explained by the entire model, including both fixed and random effects: 0.4576593
 
 #delta (observational) variance:
-  #the variance explained by the fixed effects: 0.015
-  #a variance explained by the entire model, including both fixed and random effects: 0.16
+  #the variance explained by the fixed effects: 0.01999300
+  #a variance explained by the entire model, including both fixed and random effects: 0.2086015
 
-#coef =  -0.49
+#coef =  -0.52
 #how much the probability changes with a given change in temperature
-spp_master_ztemp_seus_buoy_scaled.r <- spp_master_ztemp_seus_buoy_scaled[complete.cases(spp_master_ztemp_seus_buoy_scaled[ , .(seas_sst_temp_scaled, col, reg, phylum, class, order, family, genus, spp)]),]
+spp_master_ztemp_seus_buoy_scaled.r <- spp_master_ztemp_seus_buoy_scaled[complete.cases(spp_master_ztemp_seus_buoy_scaled[ , .(seas_sst_temp_scaled, gain, loss, reg, phylum, class, order, family, genus, spp)]),]
 
 #Model assumptions using DHARMa package
 #Test for overdispersion
@@ -111,55 +136,65 @@ testDispersion(simulationOutput)
 testDispersion(simulationOutput.groupedbyspp)
 plot(simulationOutput.groupedbyspp)
 
+#group by time
+simulationOutput.groupedbyyear <- recalculateResiduals(simulationOutput, group = spp_master_ztemp_seus_buoy_scaled.r$year)
+testDispersion(simulationOutput)
+testDispersion(simulationOutput.groupedbyyear)
+plot(simulationOutput.groupedbyyear)
+
+#temporal autocorrelation
+testTemporalAutocorrelation(simulationOutput.groupedbyyear, unique(spp_master_ztemp_seus_buoy_scaled.r$year))
+
+
 ```
 "The estimate for seasonality of -0.49 means that a 1 degree increase in seasonality is associated with a 0.49 decrease in the log-odds of a Gain occuring, compared to no Gain occuring. If we exponentiate this number then we obtain the odds ratio of 0.6108308, which means that for a 1 degree increase in Seasonality we expect to see (approximately) a 39% decrease in the odds of a Gain Occurring." From this [Stack Exchange post](https://stats.stackexchange.com/questions/444797/interpreting-a-generalised-linear-mixed-model-with-binomial-data). 
 
-###Departure Models without Traits but with random effects for phylogeny
-```{r departure models without traits with random effect phylogeny}
+###Loss Models without Traits but with random effects for phylogeny
+```{r loss models without traits with random effect phylogeny}
 
-departure_model_comparison_taxonomy <- as.data.table(matrix(nrow = length(variables_scaled)))
-departure_model_comparison_taxonomy[, variable:=as.factor(V1)][, coef:=as.numeric(V1)][, p_value:=as.numeric(V1)][, AICc:=as.numeric(V1)]
-departure_model_comparison_taxonomy[, V1 := NULL]
+loss_model_comparison_taxonomy <- as.data.table(matrix(nrow = length(variables_scaled)))
+loss_model_comparison_taxonomy[, variable:=as.factor(V1)][, coef:=as.numeric(V1)][, p_value:=as.numeric(V1)][, AICc:=as.numeric(V1)]
+loss_model_comparison_taxonomy[, V1 := NULL]
 
 for (i in 1:length(variables_scaled)){
-  mod <- glmer(now_ext ~ get(variables_scaled[i]) + (1|reg) + (1|phylum) + (1|class) + (1|order) + (1|family) + (1|genus) + (1|spp), family = binomial, data = spp_master_ztemp_seus_buoy_scaled, nAGQ = 0)
-  departure_model_comparison_taxonomy[i,variable := variables_scaled[i]]
-  departure_model_comparison_taxonomy[i,coef := coef(summary(mod))[,"Estimate"][2]]
-  departure_model_comparison_taxonomy[i,p_value := coef(summary(mod))[,"Pr(>|z|)"][2]]
-  departure_model_comparison_taxonomy[i,AICc := AICc(mod)]
+  mod <- glmer(loss ~ get(variables_scaled[i]) + (1|reg) + (1|phylum) + (1|class) + (1|order) + (1|family) + (1|genus) + (1|spp), family = binomial, data = spp_master_ztemp_seus_buoy_scaled, nAGQ = 0)
+  loss_model_comparison_taxonomy[i,variable := variables_scaled[i]]
+  loss_model_comparison_taxonomy[i,coef := coef(summary(mod))[,"Estimate"][2]]
+  loss_model_comparison_taxonomy[i,p_value := coef(summary(mod))[,"Pr(>|z|)"][2]]
+  loss_model_comparison_taxonomy[i,AICc := AICc(mod)]
   
   print(paste(i, length(variables_scaled), sep = "/"))
     
 }
 
 
-saveRDS(object = departure_model_comparison_taxonomy, file = here("Model_results","departure_model_results_taxonomy.rds"))
-fwrite(departure_model_comparison_taxonomy, file = here("Model_results","departure_model_results_taxonomy.csv"))
+saveRDS(object = loss_model_comparison_taxonomy, file = here("Model_results","loss_model_results_taxonomy.rds"))
+fwrite(loss_model_comparison_taxonomy, file = here("Model_results","loss_model_results_taxonomy.csv"))
 
-departure_model_comparison_taxonomy <- readRDS(here::here("Model_results","departure_model_results_taxonomy.rds"))
+loss_model_comparison_taxonomy <- readRDS(here::here("Model_results","loss_model_results_taxonomy.rds"))
 
 #let's take a look at best performing model, and check assumptions
-mod_extrarandom_loss <- glmer(now_ext ~ seas_sst_temp_lag3_scaled  + (1|reg) + (1|phylum) + (1|class) + (1|order) + (1|family) + (1|genus) + (1|spp), family = binomial, data = spp_master_ztemp_seus_buoy_scaled, nAGQ = 0)
+mod_extrarandom_loss <- glmer(loss ~ seas_sst_temp_lag3_scaled  + (1|reg) + (1|phylum) + (1|class) + (1|order) + (1|family) + (1|genus) + (1|spp), family = binomial, data = spp_master_ztemp_seus_buoy_scaled, nAGQ = 0)
 
-#let's look at best performing model without random effects
-mod_extrarandom_loss_noRE <- glm(now_ext ~ seas_sst_temp_lag3_scaled, family = binomial, data = spp_master_ztemp_seus_buoy_scaled)
+#let's also look at best performing model without random effects
+mod_extrarandom_loss_noRE <- glm(loss ~ seas_sst_temp_lag3_scaled, family = binomial, data = spp_master_ztemp_seus_buoy_scaled)
 
 #R-Squared
 r.squaredGLMM(mod_extrarandom_loss)
 
 #theoretical variance:
-  #the variance explained by the fixed effects: 0.018739262
-  #a variance explained by the entire model, including both fixed and random effects: 0.4534810
+  #the variance explained by the fixed effects: 0.04446483
+  #a variance explained by the entire model, including both fixed and random effects: 0.5042519
 
 #delta (observational) variance:
-  #the variance explained by the fixed effects: 0.005761609
-  #a variance explained by the entire model, including both fixed and random effects: 0.1394281
+  #the variance explained by the fixed effects: 0.01527950
+  #a variance explained by the entire model, including both fixed and random effects: 0.1732767
 
-#coef =  -0.3242
+#coef =  -0.545
 #how much the probability changes with a given change in temperature
 
 #Model assumptions using DHARMa package
-#Test for overdispersion
+#Test for overdispersionx
 #grouping basically transforms 0/1 response (bernoulli) in a k/n response (true binomial)
 #https://cran.r-project.org/web/packages/DHARMa/vignettes/DHARMa.html#binomial-data
 #group by region
@@ -190,6 +225,15 @@ testDispersion(simulationOutput_loss_noRE)
 testDispersion(simulationOutput.groupedbyspp_loss_noRE)
 plot(simulationOutput.groupedbyspp_loss_noRE)
 
+#group by time
+simulationOutput.groupedbyyear_loss <- recalculateResiduals(simulationOutput_loss, group = spp_master_ztemp_seus_buoy_scaled.r$year)
+testDispersion(simulationOutput_loss)
+testDispersion(simulationOutput.groupedbyyear_loss)
+plot(simulationOutput.groupedbyyear_loss)
+
+#temporal autocorrelation
+testTemporalAutocorrelation(simulationOutput.groupedbyyear_loss, unique(spp_master_ztemp_seus_buoy_scaled.r$year))
+
 ```
 "The estimate for seasonality of -0.3242 means that a 1 degree increase in seasonality is associated with a 0.3242 decrease in the log-odds of a Loss occuring, compared to no Loss occuring. If we exponentiate this number then we obtain the odds ratio of 0.7231, which means that for a 1 degree increase in Seasonality we expect to see (approximately) a 18% decrease in the odds of a Loss Occurring." From this [Stack Exchange post](https://stats.stackexchange.com/questions/444797/interpreting-a-generalised-linear-mixed-model-with-binomial-data). 
 
@@ -197,221 +241,202 @@ plot(simulationOutput.groupedbyspp_loss_noRE)
 
 ##Relative Variable Importance
 
-NB: I didn't end up using mean as a predictor variable (patterns captured in min and max, less relevant to thermal niche)
-```{r get rid of any models using mean}
-arrival_model_comparison_nomean <- arrival_model_comparison_taxonomy[!grepl("mean",variable),]
-
-departure_model_comparison_nomean <- departure_model_comparison_taxonomy[!grepl("mean",variable),]
-
-
-```
-
 How does the null model with only random effects perform?
 ```{r null models}
 #add null to tables
-intercept_arrival_mod_scaled <- glmer(col ~ + (1|reg) + (1|phylum) + (1|class) + (1|order) + (1|family) + (1|genus) + (1|spp), family = binomial, data = spp_master_ztemp_seus_buoy_scaled, nAGQ = 0)
+intercept_gain_mod_scaled <- glmer(gain ~ (1|reg) + (1|phylum) + (1|class) + (1|order) + (1|family) + (1|genus) + (1|spp), family = binomial, data = spp_master_ztemp_seus_buoy_scaled, nAGQ = 0)
 
-r.squaredGLMM(intercept_arrival_mod_scaled)
+r.squaredGLMM(intercept_gain_mod_scaled)
 
-intercept_departure_mod_scaled <- glmer(now_ext ~ + (1|reg) + (1|phylum) + (1|class) + (1|order) + (1|family) + (1|genus) + (1|spp), family = binomial, data = spp_master_ztemp_seus_buoy_scaled, nAGQ = 0)
+intercept_loss_mod_scaled <- glmer(loss ~ (1|reg) + (1|phylum) + (1|class) + (1|order) + (1|family) + (1|genus) + (1|spp), family = binomial, data = spp_master_ztemp_seus_buoy_scaled, nAGQ = 0)
 
-r.squaredGLMM(intercept_departure_mod_scaled)
+r.squaredGLMM(intercept_loss_mod_scaled)
 
 #best model better than null? yes
-AICc(intercept_arrival_mod_scaled)-AICc(mod_extrarandom_gain)
-AICc(intercept_departure_mod_scaled)-AICc(mod_extrarandom_loss)
+AICc(intercept_gain_mod_scaled)-AICc(mod_extrarandom_gain)
+AICc(intercept_loss_mod_scaled)-AICc(mod_extrarandom_loss)
 
 
 ```
-How do other loss models perform with AICc less than 0.05?
-```{r}
 
-mod_extrarandom_loss_2 <- glmer(now_ext ~ seas_sst_temp_change_lag2_scaled  + (1|reg) + (1|phylum) + (1|class) + (1|order) + (1|family) + (1|genus) + (1|spp), family = binomial, data = spp_master_ztemp_seus_buoy_scaled, nAGQ = 0)
-r.squaredGLMM(mod_extrarandom_loss_2)
-
-mod_extrarandom_loss_3 <- glmer(now_ext ~ min_sst_temp_change_lag2_scaled  + (1|reg) + (1|phylum) + (1|class) + (1|order) + (1|family) + (1|genus) + (1|spp), family = binomial, data = spp_master_ztemp_seus_buoy_scaled, nAGQ = 0)
-r.squaredGLMM(mod_extrarandom_loss_3)
-```
-
-
-Relative Variable Importance for Arrival Models
-```{r RVI arrivals}
+Relative Variable Importance for Gain Models
+```{r RVI gains}
 #add ∆AIC to tables
-min_arrival_AICc <- min(arrival_model_comparison_nomean[, AICc])
-arrival_model_comparison_nomean[,"deltaAICc" := (AICc - min_arrival_AICc)]
+min_gain_AICc <- min(gain_model_comparison_taxonomy[, AICc])
+gain_model_comparison_taxonomy[,"deltaAICc" := (AICc - min_gain_AICc)]
 
 #add relative likelihood exp( -0.5 * ∆AIC score for that model)
-arrival_model_comparison_nomean[,"rel_likelihood" := exp((-0.5 * deltaAICc))]
+gain_model_comparison_taxonomy[,"rel_likelihood" := exp((-0.5 * deltaAICc))]
 #sum relative likelihoods across all models
-arrival_model_comparison_nomean.likelihoodsum <- sum(arrival_model_comparison_nomean[, rel_likelihood])
+gain_model_comparison_taxonomy.likelihoodsum <- sum(gain_model_comparison_taxonomy[, rel_likelihood])
 #Akaike weight for a model is this rel_likelihood divided by the sum of these values across all models
-arrival_model_comparison_nomean[,"akaike_weight" := rel_likelihood/arrival_model_comparison_nomean.likelihoodsum]
+gain_model_comparison_taxonomy[,"akaike_weight" := rel_likelihood/gain_model_comparison_taxonomy.likelihoodsum]
 
 #I want to look at relative importance FOR:
 
 #bottom/surface (bottom = includes sbt, grepl("sbt", variable))
-arrival_bottom_importance <- sum(arrival_model_comparison_nomean[grep("sbt", variable), ]$akaike_weight)
-arrival_surface_importance <- sum(arrival_model_comparison_nomean[grep("sst", variable), ]$akaike_weight)
+gain_bottom_importance <- sum(gain_model_comparison_taxonomy[grep("sbt", variable), ]$akaike_weight)
+gain_surface_importance <- sum(gain_model_comparison_taxonomy[grep("sst", variable), ]$akaike_weight)
 
 #lag/not lagged (grepl("lag", variable))
-arrival_lag_importance <- sum(arrival_model_comparison_nomean[grep("lag", variable), ]$akaike_weight)
-arrival_nolag_importance <- sum(arrival_model_comparison_nomean[!grep("lag", variable), ]$akaike_weight)
+gain_lag_importance <- sum(gain_model_comparison_taxonomy[grep("lag", variable), ]$akaike_weight)
+gain_nolag_importance <- sum(gain_model_comparison_taxonomy[!grep("lag", variable), ]$akaike_weight)
 
 #absolute (grepl("abs", variable))
-arrival_abs_importance <- sum(arrival_model_comparison_nomean[grep("abs", variable), ]$akaike_weight)
+gain_abs_importance <- sum(gain_model_comparison_taxonomy[grep("abs", variable), ]$akaike_weight)
 
 #raw (!grepl("change"))
-arrival_raw_importance <- sum(arrival_model_comparison_nomean[!grep("change", variable), ]$akaike_weight)
+gain_raw_importance <- sum(gain_model_comparison_taxonomy[!grep("change", variable), ]$akaike_weight)
 
 #change (grepl("change", variable), (!grepl("abs")))
-arrival_change_importance <- sum(arrival_model_comparison_nomean[grep("change", variable), ][!grep("abs", variable),]$akaike_weight)
+gain_change_importance <- sum(gain_model_comparison_taxonomy[grep("change", variable), ][!grep("abs", variable),]$akaike_weight)
 
 #type of temp variable (max, min, seas)
-arrival_max_temp_importance <- sum(arrival_model_comparison_nomean[grep("max", variable), ]$akaike_weight)
-arrival_min_temp_importance <- sum(arrival_model_comparison_nomean[grep("min", variable), ]$akaike_weight)
-arrival_seas_temp_importance <- sum(arrival_model_comparison_nomean[grep("seas", variable), ]$akaike_weight)
+gain_max_temp_importance <- sum(gain_model_comparison_taxonomy[grep("max", variable), ]$akaike_weight)
+gain_min_temp_importance <- sum(gain_model_comparison_taxonomy[grep("min", variable), ]$akaike_weight)
+gain_seas_temp_importance <- sum(gain_model_comparison_taxonomy[grep("seas", variable), ]$akaike_weight)
 
-arrival_model_comparison_nomean_akaikeweights <- arrival_model_comparison_nomean
+gain_model_comparison_taxonomy_akaikeweights <- gain_model_comparison_taxonomy
 
-saveRDS(arrival_model_comparison_nomean_akaikeweights, file = here("Model_results","arrival_model_comparison_nomean_akaikeweights.rds"))
-saveRDS(arrival_model_comparison_nomean_akaikeweights, file = here("tables","arrival_model_comparison_nomean_akaikeweights.rds"))
-arrival_model_comparison_nomean_akaikeweights <- readRDS(file = here("Model_results","arrival_model_comparison_nomean_akaikeweights.rds"))
+saveRDS(gain_model_comparison_taxonomy_akaikeweights, file = here("Model_results","gain_model_comparison_taxonomy_akaikeweights.rds"))
+saveRDS(gain_model_comparison_taxonomy_akaikeweights, file = here("tables","gain_model_comparison_taxonomy_akaikeweights.rds"))
+gain_model_comparison_taxonomy_akaikeweights <- readRDS(file = here("Model_results","gain_model_comparison_taxonomy_akaikeweights.rds"))
 
 ```
 
 Relative Variable Importance for different Pairs of Transformation and Metric
-```{r RVI arrival Pairs Transformation and Metric}
+```{r RVI gain Pairs Transformation and Metric}
 
 #I want to look at relative importance FOR 
 #models with raw and min
-arrival_raw_min_importance <- sum(arrival_model_comparison_nomean[grep("min", variable), ][!grep("change", variable)]$akaike_weight)
+gain_raw_min_importance <- sum(gain_model_comparison_taxonomy[grep("min", variable), ][!grep("change", variable)]$akaike_weight)
 
 #models with raw and max
-arrival_raw_max_importance <- sum(arrival_model_comparison_nomean[grep("max", variable), ][!grep("change", variable)]$akaike_weight)
+gain_raw_max_importance <- sum(gain_model_comparison_taxonomy[grep("max", variable), ][!grep("change", variable)]$akaike_weight)
 
 #models with raw and seas
-arrival_raw_seas_importance <- sum(arrival_model_comparison_nomean[grep("seas", variable), ][!grep("change", variable)]$akaike_weight)
+gain_raw_seas_importance <- sum(gain_model_comparison_taxonomy[grep("seas", variable), ][!grep("change", variable)]$akaike_weight)
 
 
 #models with change and min
-arrival_change_min_importance <- sum(arrival_model_comparison_nomean[grep("min_s.t_temp_change", variable), ][!grep("abs", variable)]$akaike_weight)
+gain_change_min_importance <- sum(gain_model_comparison_taxonomy[grep("min_s.t_temp_change", variable), ][!grep("abs", variable)]$akaike_weight)
 
 #models with change and max
-arrival_change_max_importance <- sum(arrival_model_comparison_nomean[grep("max_s.t_temp_change", variable), ][!grep("abs", variable)]$akaike_weight)
+gain_change_max_importance <- sum(gain_model_comparison_taxonomy[grep("max_s.t_temp_change", variable), ][!grep("abs", variable)]$akaike_weight)
 
 #models with change and seas
-arrival_change_seas_importance <- sum(arrival_model_comparison_nomean[grep("seas_s.t_temp_change", variable), ][!grep("abs", variable)]$akaike_weight)
+gain_change_seas_importance <- sum(gain_model_comparison_taxonomy[grep("seas_s.t_temp_change", variable), ][!grep("abs", variable)]$akaike_weight)
 
 #models with abs change and min
-arrival_abs_change_min_importance <- sum(arrival_model_comparison_nomean[grep("min_s.t_temp_change_abs", variable), ]$akaike_weight)
+gain_abs_change_min_importance <- sum(gain_model_comparison_taxonomy[grep("min_s.t_temp_change_abs", variable), ]$akaike_weight)
 
 #models with abs change and max
-arrival_abs_change_max_importance <- sum(arrival_model_comparison_nomean[grep("max_s.t_temp_change_abs", variable), ]$akaike_weight)
+gain_abs_change_max_importance <- sum(gain_model_comparison_taxonomy[grep("max_s.t_temp_change_abs", variable), ]$akaike_weight)
 
 #models with abs change and seas
-arrival_abs_change_seas_importance <- sum(arrival_model_comparison_nomean[grep("seas_s.t_temp_change_abs", variable), ]$akaike_weight)
+gain_abs_change_seas_importance <- sum(gain_model_comparison_taxonomy[grep("seas_s.t_temp_change_abs", variable), ]$akaike_weight)
 
-arrival_transform_metric_comparison <- data.table(Transformation =
+gain_transform_metric_comparison <- data.table(Transformation =
                                                 c("raw", "raw", "raw", "change", "change", "change", "abs_change", "abs_change", "abs_change"), 
                                               Metric = 
                                                 rep(c("min", "max", "seas"), 3), 
                                               RVI = 
-                                                c(arrival_raw_min_importance, arrival_raw_max_importance, 
-                                                  arrival_raw_seas_importance, arrival_change_min_importance, 
-                                                  arrival_change_max_importance, arrival_change_seas_importance, 
-                                                  arrival_abs_change_min_importance, arrival_abs_change_max_importance, 
-                                                  arrival_abs_change_seas_importance))
+                                                c(gain_raw_min_importance, gain_raw_max_importance, 
+                                                  gain_raw_seas_importance, gain_change_min_importance, 
+                                                  gain_change_max_importance, gain_change_seas_importance, 
+                                                  gain_abs_change_min_importance, gain_abs_change_max_importance, 
+                                                  gain_abs_change_seas_importance))
 
 
 ```
 
 
-Relative Variable Importance Departure Models
-```{r RVI departure}
+Relative Variable Importance Loss Models
+```{r RVI loss}
 #add ∆AIC to tables
-min_departure_AICc <- min(departure_model_comparison_nomean[, AICc])
-departure_model_comparison_nomean[,"deltaAICc" := (AICc - min_departure_AICc)]
+min_loss_AICc <- min(loss_model_comparison_taxonomy[, AICc])
+loss_model_comparison_taxonomy[,"deltaAICc" := (AICc - min_loss_AICc)]
 
 #add relative likelihood exp( -0.5 * ∆AIC score for that model)
-departure_model_comparison_nomean[,"rel_likelihood" := exp((-0.5 * deltaAICc))]
+loss_model_comparison_taxonomy[,"rel_likelihood" := exp((-0.5 * deltaAICc))]
 #sum relative likelihoods across all models
-departure_model_comparison_nomean.likelihoodsum <- sum(departure_model_comparison_nomean[, rel_likelihood])
+loss_model_comparison_taxonomy.likelihoodsum <- sum(loss_model_comparison_taxonomy[, rel_likelihood])
 #Akaike weight for a model is this rel_likelihood devided by the sum of these values across all models
-departure_model_comparison_nomean[,"akaike_weight" := rel_likelihood/departure_model_comparison_nomean.likelihoodsum]
+loss_model_comparison_taxonomy[,"akaike_weight" := rel_likelihood/loss_model_comparison_taxonomy.likelihoodsum]
 
 #I want to look at relative importance FOR 
 #bottom/surface (bottom = includes sbt, grepl("sbt", variable))
-departure_bottom_importance <- sum(departure_model_comparison_nomean[grep("sbt", variable), ]$akaike_weight)
-departure_surface_importance <- sum(departure_model_comparison_nomean[grep("sst", variable), ]$akaike_weight)
+loss_bottom_importance <- sum(loss_model_comparison_taxonomy[grep("sbt", variable), ]$akaike_weight)
+loss_surface_importance <- sum(loss_model_comparison_taxonomy[grep("sst", variable), ]$akaike_weight)
 
 #lag/not lagged (grepl("lag", variable))
-departure_lag_importance <- sum(departure_model_comparison_nomean[grep("lag", variable), ]$akaike_weight)
-departure_nolag_importance <- sum(departure_model_comparison_nomean[!grep("lag", variable), ]$akaike_weight)
+loss_lag_importance <- sum(loss_model_comparison_taxonomy[grep("lag", variable), ]$akaike_weight)
+loss_nolag_importance <- sum(loss_model_comparison_taxonomy[!grep("lag", variable), ]$akaike_weight)
 
 #absolute (grepl("abs", variable))
-departure_abs_importance <- sum(departure_model_comparison_nomean[grep("abs", variable), ]$akaike_weight)
+loss_abs_importance <- sum(loss_model_comparison_taxonomy[grep("abs", variable), ]$akaike_weight)
 
 #raw (!grepl("change"))
-departure_raw_importance <- sum(departure_model_comparison_nomean[!grep("change", variable), ]$akaike_weight)
+loss_raw_importance <- sum(loss_model_comparison_taxonomy[!grep("change", variable), ]$akaike_weight)
 
 #change (grepl("change", variable), (!grepl("abs")))
-departure_change_importance <- sum(departure_model_comparison_nomean[grep("change", variable), ][!grep("abs", variable),]$akaike_weight)
+loss_change_importance <- sum(loss_model_comparison_taxonomy[grep("change", variable), ][!grep("abs", variable),]$akaike_weight)
 
 #type of temp variable (max, min, seas)
-departure_max_temp_importance <- sum(departure_model_comparison_nomean[grep("max", variable), ]$akaike_weight)
-departure_min_temp_importance <- sum(departure_model_comparison_nomean[grep("min", variable), ]$akaike_weight)
-departure_seas_temp_importance <- sum(departure_model_comparison_nomean[grep("seas", variable), ]$akaike_weight)
+loss_max_temp_importance <- sum(loss_model_comparison_taxonomy[grep("max", variable), ]$akaike_weight)
+loss_min_temp_importance <- sum(loss_model_comparison_taxonomy[grep("min", variable), ]$akaike_weight)
+loss_seas_temp_importance <- sum(loss_model_comparison_taxonomy[grep("seas", variable), ]$akaike_weight)
 
-departure_model_comparison_nomean_akaikeweights <- departure_model_comparison_nomean
+loss_model_comparison_taxonomy_akaikeweights <- loss_model_comparison_taxonomy
 
-saveRDS(departure_model_comparison_nomean_akaikeweights, file = here("Model_results","departure_model_comparison_nomean_akaikeweights.rds"))
-saveRDS(departure_model_comparison_nomean_akaikeweights, file = here("tables","departure_model_comparison_nomean_akaikeweights.rds"))
-departure_model_comparison_nomean_akaikeweights <- readRDS(file = here("Model_results","departure_model_comparison_nomean_akaikeweights.rds"))
+saveRDS(loss_model_comparison_taxonomy_akaikeweights, file = here("Model_results","loss_model_comparison_taxonomy_akaikeweights.rds"))
+saveRDS(loss_model_comparison_taxonomy_akaikeweights, file = here("tables","loss_model_comparison_taxonomy_akaikeweights.rds"))
+loss_model_comparison_taxonomy_akaikeweights <- readRDS(file = here("Model_results","loss_model_comparison_taxonomy_akaikeweights.rds"))
 
 ```
 
-Relative Variable Importance for Pairs of Transformation and Metric Predicting departures
-```{r RVI departure Pairs Transformation and Metric}
+Relative Variable Importance for Pairs of Transformation and Metric Predicting loss
+```{r RVI loss Pairs Transformation and Metric}
 
 #I want to look at relative importance FOR 
 #models with raw and min
-departure_raw_min_importance <- sum(departure_model_comparison_nomean[grep("min", variable), ][!grep("change", variable)]$akaike_weight)
+loss_raw_min_importance <- sum(loss_model_comparison_taxonomy[grep("min", variable), ][!grep("change", variable)]$akaike_weight)
 
 #models with raw and max
-departure_raw_max_importance <- sum(departure_model_comparison_nomean[grep("max", variable), ][!grep("change", variable)]$akaike_weight)
+loss_raw_max_importance <- sum(loss_model_comparison_taxonomy[grep("max", variable), ][!grep("change", variable)]$akaike_weight)
 
 #models with raw and seas
-departure_raw_seas_importance <- sum(departure_model_comparison_nomean[grep("seas", variable), ][!grep("change", variable)]$akaike_weight)
+loss_raw_seas_importance <- sum(loss_model_comparison_taxonomy[grep("seas", variable), ][!grep("change", variable)]$akaike_weight)
 
 
 #models with change and min
-departure_change_min_importance <- sum(departure_model_comparison_nomean[grep("min_s.t_temp_change", variable), ][!grep("abs", variable)]$akaike_weight)
+loss_change_min_importance <- sum(loss_model_comparison_taxonomy[grep("min_s.t_temp_change", variable), ][!grep("abs", variable)]$akaike_weight)
 
 #models with change and max
-departure_change_max_importance <- sum(departure_model_comparison_nomean[grep("max_s.t_temp_change", variable), ][!grep("abs", variable)]$akaike_weight)
+loss_change_max_importance <- sum(loss_model_comparison_taxonomy[grep("max_s.t_temp_change", variable), ][!grep("abs", variable)]$akaike_weight)
 
 #models with change and seas
-departure_change_seas_importance <- sum(departure_model_comparison_nomean[grep("seas_s.t_temp_change", variable), ][!grep("abs", variable)]$akaike_weight)
+loss_change_seas_importance <- sum(loss_model_comparison_taxonomy[grep("seas_s.t_temp_change", variable), ][!grep("abs", variable)]$akaike_weight)
 
 #models with abs change and min
-departure_abs_change_min_importance <- sum(departure_model_comparison_nomean[grep("min_s.t_temp_change_abs", variable), ]$akaike_weight)
+loss_abs_change_min_importance <- sum(loss_model_comparison_taxonomy[grep("min_s.t_temp_change_abs", variable), ]$akaike_weight)
 
 #models with abs change and max
-departure_abs_change_max_importance <- sum(departure_model_comparison_nomean[grep("max_s.t_temp_change_abs", variable), ]$akaike_weight)
+loss_abs_change_max_importance <- sum(loss_model_comparison_taxonomy[grep("max_s.t_temp_change_abs", variable), ]$akaike_weight)
 
 #models with abs change and seas
-departure_abs_change_seas_importance <- sum(departure_model_comparison_nomean[grep("seas_s.t_temp_change_abs", variable), ]$akaike_weight)
+loss_abs_change_seas_importance <- sum(loss_model_comparison_taxonomy[grep("seas_s.t_temp_change_abs", variable), ]$akaike_weight)
 
-departure_transform_metric_comparison <- data.table(Transformation =
+loss_transform_metric_comparison <- data.table(Transformation =
                                                 c("raw", "raw", "raw", "change", "change", "change", "abs_change", "abs_change", "abs_change"), 
                                               Metric = 
                                                 rep(c("min", "max", "seas"), 3), 
                                               RVI = 
-                                                c(departure_raw_min_importance, departure_raw_max_importance, 
-                                                  departure_raw_seas_importance, departure_change_min_importance, 
-                                                  departure_change_max_importance, departure_change_seas_importance, 
-                                                  departure_abs_change_min_importance, departure_abs_change_max_importance, 
-                                                  departure_abs_change_seas_importance))
+                                                c(loss_raw_min_importance, loss_raw_max_importance, 
+                                                  loss_raw_seas_importance, loss_change_min_importance, 
+                                                  loss_change_max_importance, loss_change_seas_importance, 
+                                                  loss_abs_change_min_importance, loss_abs_change_max_importance, 
+                                                  loss_abs_change_seas_importance))
 
 ```
 
@@ -420,38 +445,38 @@ Let's see how the RVI importance varies by looking at specific lag values
 ```{r make a plot here for variability across lag values}
 
 #first, table for lags
-lags_RVI_scaled <- data.table(arrival_lag = c(0:9), arrival_RVI = 0, departure_RVI = 0)
+lags_RVI_scaled <- data.table(gain_lag = c(0:9), gain_RVI = 0, loss_RVI = 0)
 
-#arrivals
-lags_RVI_scaled[1,2] <- 1-sum(arrival_model_comparison_nomean[grep("lag", variable), ]$akaike_weight)
-lags_RVI_scaled[2,2] <- sum(arrival_model_comparison_nomean[grep("lag1", variable), ]$akaike_weight)
-lags_RVI_scaled[3,2] <- sum(arrival_model_comparison_nomean[grep("lag2", variable), ]$akaike_weight)
-lags_RVI_scaled[4,2] <- sum(arrival_model_comparison_nomean[grep("lag3", variable), ]$akaike_weight)
-lags_RVI_scaled[5,2] <- sum(arrival_model_comparison_nomean[grep("lag4", variable), ]$akaike_weight)
-lags_RVI_scaled[6,2] <- sum(arrival_model_comparison_nomean[grep("lag5", variable), ]$akaike_weight)
-lags_RVI_scaled[7,2] <- sum(arrival_model_comparison_nomean[grep("lag6", variable), ]$akaike_weight)
-lags_RVI_scaled[8,2] <- sum(arrival_model_comparison_nomean[grep("lag7", variable), ]$akaike_weight)
-lags_RVI_scaled[9,2] <- sum(arrival_model_comparison_nomean[grep("lag8", variable), ]$akaike_weight)
-lags_RVI_scaled[10,2] <- sum(arrival_model_comparison_nomean[grep("lag9", variable), ]$akaike_weight)
+#gains
+lags_RVI_scaled[1,2] <- 1-sum(gain_model_comparison_taxonomy[grep("lag", variable), ]$akaike_weight)
+lags_RVI_scaled[2,2] <- sum(gain_model_comparison_taxonomy[grep("lag1", variable), ]$akaike_weight)
+lags_RVI_scaled[3,2] <- sum(gain_model_comparison_taxonomy[grep("lag2", variable), ]$akaike_weight)
+lags_RVI_scaled[4,2] <- sum(gain_model_comparison_taxonomy[grep("lag3", variable), ]$akaike_weight)
+lags_RVI_scaled[5,2] <- sum(gain_model_comparison_taxonomy[grep("lag4", variable), ]$akaike_weight)
+lags_RVI_scaled[6,2] <- sum(gain_model_comparison_taxonomy[grep("lag5", variable), ]$akaike_weight)
+lags_RVI_scaled[7,2] <- sum(gain_model_comparison_taxonomy[grep("lag6", variable), ]$akaike_weight)
+lags_RVI_scaled[8,2] <- sum(gain_model_comparison_taxonomy[grep("lag7", variable), ]$akaike_weight)
+lags_RVI_scaled[9,2] <- sum(gain_model_comparison_taxonomy[grep("lag8", variable), ]$akaike_weight)
+lags_RVI_scaled[10,2] <- sum(gain_model_comparison_taxonomy[grep("lag9", variable), ]$akaike_weight)
 
-#departures
-lags_RVI_scaled[1,3] <- 1-sum(departure_model_comparison_nomean[grep("lag", variable), ]$akaike_weight)
-lags_RVI_scaled[2,3] <- sum(departure_model_comparison_nomean[grep("lag1", variable), ]$akaike_weight)
-lags_RVI_scaled[3,3] <- sum(departure_model_comparison_nomean[grep("lag2", variable), ]$akaike_weight)
-lags_RVI_scaled[4,3] <- sum(departure_model_comparison_nomean[grep("lag3", variable), ]$akaike_weight)
-lags_RVI_scaled[5,3] <- sum(departure_model_comparison_nomean[grep("lag4", variable), ]$akaike_weight)
-lags_RVI_scaled[6,3] <- sum(departure_model_comparison_nomean[grep("lag5", variable), ]$akaike_weight)
-lags_RVI_scaled[7,3] <- sum(departure_model_comparison_nomean[grep("lag6", variable), ]$akaike_weight)
-lags_RVI_scaled[8,3] <- sum(departure_model_comparison_nomean[grep("lag7", variable), ]$akaike_weight)
-lags_RVI_scaled[9,3] <- sum(departure_model_comparison_nomean[grep("lag8", variable), ]$akaike_weight)
-lags_RVI_scaled[10,3] <- sum(departure_model_comparison_nomean[grep("lag9", variable), ]$akaike_weight)
+#losss
+lags_RVI_scaled[1,3] <- 1-sum(loss_model_comparison_taxonomy[grep("lag", variable), ]$akaike_weight)
+lags_RVI_scaled[2,3] <- sum(loss_model_comparison_taxonomy[grep("lag1", variable), ]$akaike_weight)
+lags_RVI_scaled[3,3] <- sum(loss_model_comparison_taxonomy[grep("lag2", variable), ]$akaike_weight)
+lags_RVI_scaled[4,3] <- sum(loss_model_comparison_taxonomy[grep("lag3", variable), ]$akaike_weight)
+lags_RVI_scaled[5,3] <- sum(loss_model_comparison_taxonomy[grep("lag4", variable), ]$akaike_weight)
+lags_RVI_scaled[6,3] <- sum(loss_model_comparison_taxonomy[grep("lag5", variable), ]$akaike_weight)
+lags_RVI_scaled[7,3] <- sum(loss_model_comparison_taxonomy[grep("lag6", variable), ]$akaike_weight)
+lags_RVI_scaled[8,3] <- sum(loss_model_comparison_taxonomy[grep("lag7", variable), ]$akaike_weight)
+lags_RVI_scaled[9,3] <- sum(loss_model_comparison_taxonomy[grep("lag8", variable), ]$akaike_weight)
+lags_RVI_scaled[10,3] <- sum(loss_model_comparison_taxonomy[grep("lag9", variable), ]$akaike_weight)
 
 saveRDS(lags_RVI_scaled, here("Model_results","lags_RVI_scaled.rds"))
 
 #visualize lags through time
-ggplot(data = lags_RVI_scaled, aes(x = arrival_lag)) +
-  geom_line(aes(y = arrival_RVI), ) +
-  geom_line(aes(y = departure_RVI), linetype = "dashed") +
+ggplot(data = lags_RVI_scaled, aes(x = gain_lag)) +
+  geom_line(aes(y = gain_RVI), ) +
+  geom_line(aes(y = loss_RVI), linetype = "dashed") +
   labs(x = "Lag (years)", y = "Relative Variable Importance") +
   scale_color_discrete() + #how to make a legend
   theme_classic() +
@@ -460,31 +485,31 @@ ggplot(data = lags_RVI_scaled, aes(x = arrival_lag)) +
 
 ```
 
-Table for RVI data for arrival
-```{r put RVIs for arrival into data table}
-arrival_departure <- c("arrival","arrival","arrival","arrival","arrival", "arrival","arrival", "arrival", "arrival","arrival","arrival","arrival","arrival","arrival", "arrival","arrival", "arrival", "arrival","arrival")
+Table for RVI data for gain
+```{r put RVIs for gain into data table}
+gain_loss <- c("gain","gain","gain","gain","gain", "gain","gain", "gain", "gain","gain","gain","gain","gain","gain", "gain","gain", "gain", "gain","gain")
 type <- c("Depth", "Depth", "lag", "lag", "Transformation", "Transformation", "Transformation", "Metric", "Metric", "Metric", "Transformation x Metric", "Transformation x Metric", "Transformation x Metric", "Transformation x Metric", "Transformation x Metric", "Transformation x Metric", "Transformation x Metric", "Transformation x Metric", "Transformation x Metric")
 variable <- c("Bottom", "Surface", "no_lag", "lagged", "|Change|", "Change", "Raw", "Min", "Max", "Seas", "Raw x Min", "Raw x Max", "Raw x Seas", "Change x Min", "Change x Max", "Change x Seas", "|Change| x Min", "|Change| x Max", "|Change| x Seas")
 
 
-value <- c(arrival_bottom_importance, arrival_surface_importance, arrival_nolag_importance, arrival_lag_importance, arrival_abs_importance, arrival_change_importance, arrival_raw_importance, arrival_min_temp_importance, arrival_max_temp_importance, arrival_seas_temp_importance, arrival_raw_min_importance, arrival_raw_max_importance, arrival_raw_seas_importance, arrival_change_min_importance, arrival_change_max_importance, arrival_change_seas_importance, arrival_abs_change_min_importance, arrival_abs_change_max_importance, arrival_abs_change_seas_importance)
+value <- c(gain_bottom_importance, gain_surface_importance, gain_nolag_importance, gain_lag_importance, gain_abs_importance, gain_change_importance, gain_raw_importance, gain_min_temp_importance, gain_max_temp_importance, gain_seas_temp_importance, gain_raw_min_importance, gain_raw_max_importance, gain_raw_seas_importance, gain_change_min_importance, gain_change_max_importance, gain_change_seas_importance, gain_abs_change_min_importance, gain_abs_change_max_importance, gain_abs_change_seas_importance)
 
-RVI_arrival <- data.table(arrival_departure, type, variable, value)
+RVI_gain <- data.table(gain_loss, type, variable, value)
 ```
 
-Table for RVI data for departure
-```{r put RVIs for departure into data table}
-arrival_departure <- c("departure","departure","departure","departure","departure", "departure","departure", "departure", "departure","departure","departure","departure","departure","departure", "departure","departure", "departure", "departure","departure")
+Table for RVI data for loss
+```{r put RVIs for loss into data table}
+gain_loss <- c("loss","loss","loss","loss","loss", "loss","loss", "loss", "loss","loss","loss","loss","loss","loss", "loss","loss", "loss", "loss","loss")
 type <- c("Depth", "Depth", "lag", "lag", "Transformation", "Transformation", "Transformation", "Metric", "Metric", "Metric", "Transformation x Metric", "Transformation x Metric", "Transformation x Metric", "Transformation x Metric", "Transformation x Metric", "Transformation x Metric", "Transformation x Metric", "Transformation x Metric", "Transformation x Metric")
 variable <- c("Bottom", "Surface", "no_lag", "lagged", "|Change|", "Change", "Raw", "Min", "Max", "Seas", "Raw x Min", "Raw x Max", "Raw x Seas", "Change x Min", "Change x Max", "Change x Seas", "|Change| x Min", "|Change| x Max", "|Change| x Seas")
-value <- c(departure_bottom_importance, departure_surface_importance, departure_nolag_importance, departure_lag_importance, departure_abs_importance, departure_change_importance, departure_raw_importance, departure_min_temp_importance, departure_max_temp_importance, departure_seas_temp_importance, departure_raw_min_importance, departure_raw_max_importance, departure_raw_seas_importance, departure_change_min_importance, departure_change_max_importance, departure_change_seas_importance, departure_abs_change_min_importance, departure_abs_change_max_importance, departure_abs_change_seas_importance)
+value <- c(loss_bottom_importance, loss_surface_importance, loss_nolag_importance, loss_lag_importance, loss_abs_importance, loss_change_importance, loss_raw_importance, loss_min_temp_importance, loss_max_temp_importance, loss_seas_temp_importance, loss_raw_min_importance, loss_raw_max_importance, loss_raw_seas_importance, loss_change_min_importance, loss_change_max_importance, loss_change_seas_importance, loss_abs_change_min_importance, loss_abs_change_max_importance, loss_abs_change_seas_importance)
 
-RVI_departure <- data.table(arrival_departure, type, variable, value)
+RVI_loss <- data.table(gain_loss, type, variable, value)
 ```
 
-Merge RVI tables for arrival and departure, and then graph
+Merge RVI tables for gain and loss, and then graph
 ```{r merge RVI tables and plot}
-RVI_table <- as.data.table(rbind(RVI_arrival, RVI_departure)) #bind RVI for arrivals and departures
+RVI_table <- as.data.table(rbind(RVI_gain, RVI_loss)) #bind RVI for gains and losss
 
 RVI_table.r <- RVI_table[!grep("Surface", variable)][!grep("lagged", variable)]
 
@@ -493,7 +518,7 @@ RVI_table.r[, variable := factor(variable, levels = c("Bottom", "no_lag", "Raw",
 
 saveRDS(RVI_table, file = here("Model_results", "RVI_table.rds"))
 
-ggplot(data = RVI_table.r, aes(x=variable, y = value, fill = arrival_departure)) +
+ggplot(data = RVI_table.r, aes(x=variable, y = value, fill = gain_loss)) +
   geom_bar(stat = "identity", position = "dodge") +
   scale_x_discrete(breaks = c("Bottom", "no_lag", "Raw", "Change", "|Change|", "Min", "Max", "Seas"), 
                    labels = c("Bottom Temp", "No Lag", "Raw Temp", "Change in \nTemp", "| Change in\n Temp |", "Min Temp", "Max Temp", "Seas")) +
@@ -506,30 +531,30 @@ Another way to visualize is stacked bar plot.
 
 ```{r RVI stacked plot}
 #put levels into correct order for viewing, and add dummy level for legend
-RVI_arrival[, variable := factor(variable, levels = c("Bottom", "Surface","  ", "Raw", "Change", "|Change|","", "no_lag", "lagged", "Min", "Max", "Seas"))]
-RVI_arrival[, type := factor(type, levels = c("Depth", "Transformation", "Metric", "lag"))]
+RVI_gain[, variable := factor(variable, levels = c("Bottom", "Surface","  ", "Raw", "Change", "|Change|","", "no_lag", "lagged", "Min", "Max", "Seas"))]
+RVI_gain[, type := factor(type, levels = c("Depth", "Transformation", "Metric", "lag"))]
 
-RVI_arrival_nolag <- RVI_arrival[type != "lag",]
-RVI_arrival_nolag[, type := factor(type, levels = c("Depth", "Transformation", "Metric"))][, variable := factor(variable, levels = c("Bottom", "Surface","  ", "Raw", "Change", "|Change|","", "Min", "Max", "Seas"))]
+RVI_gain_nolag <- RVI_gain[type != "lag",]
+RVI_gain_nolag[, type := factor(type, levels = c("Depth", "Transformation", "Metric"))][, variable := factor(variable, levels = c("Bottom", "Surface","  ", "Raw", "Change", "|Change|","", "Min", "Max", "Seas"))]
 
-saveRDS(RVI_arrival_nolag, here("Model_results", "RVI_arrival_nolag.rds"))
+saveRDS(RVI_gain_nolag, here("Model_results", "RVI_gain_nolag.rds"))
 
-#and again for departure
-RVI_departure[, variable := factor(variable, levels = c("Bottom", "Surface","  ", "Raw", "Change", "|Change|","", "no_lag", "lagged", "Min", "Max", "Seas"))]
-RVI_departure[, type := factor(type, levels = c("Depth", "Transformation", "Metric", "lag"))]
+#and again for loss
+RVI_loss[, variable := factor(variable, levels = c("Bottom", "Surface","  ", "Raw", "Change", "|Change|","", "no_lag", "lagged", "Min", "Max", "Seas"))]
+RVI_loss[, type := factor(type, levels = c("Depth", "Transformation", "Metric", "lag"))]
 
-RVI_departure_nolag <- RVI_departure[type != "lag",]
-RVI_departure_nolag[, type := factor(type, levels = c("Depth", "Transformation", "Metric"))][, variable := factor(variable, levels = c("Bottom", "Surface","  ", "Raw", "Change", "|Change|","", "Min", "Max", "Seas"))]
+RVI_loss_nolag <- RVI_loss[type != "lag",]
+RVI_loss_nolag[, type := factor(type, levels = c("Depth", "Transformation", "Metric"))][, variable := factor(variable, levels = c("Bottom", "Surface","  ", "Raw", "Change", "|Change|","", "Min", "Max", "Seas"))]
 
-saveRDS(RVI_departure_nolag, here("Model_results", "RVI_departure_nolag.rds"))
+saveRDS(RVI_loss_nolag, here("Model_results", "RVI_loss_nolag.rds"))
 
 
 #plotting
 pal <- wes_palette("GrandBudapest1", 8, type = "continuous")
 colors <- c(pal[1], pal[2], "#FFFFFF", pal[3], pal[4], pal[5],"#FFFFFF", pal[6], pal[7], pal[8])
 
-#arrivals
-RVI_arrival_plot <- ggplot(data = RVI_arrival_nolag, aes(x=type, y = value, fill = variable)) +
+#gains
+RVI_gain_plot <- ggplot(data = RVI_gain_nolag, aes(x=type, y = value, fill = variable)) +
   geom_bar(stat="identity", color = "black", size = 0, width = 0.8) +
   scale_x_discrete(breaks = c("Depth", "Transformation", "Metric"), labels = c("Depth", "Transformation", "Metric")) +
   labs(x = "Temperature Variables", y = "Relative Variable Importance") +
@@ -546,8 +571,8 @@ RVI_arrival_plot <- ggplot(data = RVI_arrival_nolag, aes(x=type, y = value, fill
   scale_fill_manual(values = colors,
                     drop = F)
 
-#departure
-RVI_departure_plot <- ggplot(data = RVI_departure_nolag, aes(x=type, y = value, fill = variable)) +
+#loss
+RVI_loss_plot <- ggplot(data = RVI_loss_nolag, aes(x=type, y = value, fill = variable)) +
   geom_bar(stat="identity", color = "black", size = 0, width = 0.8) +
   scale_x_discrete(breaks = c("Depth", "Transformation", "Metric"), labels = c("Depth", "Transformation", "Metric")) +
   labs(x = "Temperature Variables", y = "Relative Variable Importance") +
@@ -565,55 +590,55 @@ RVI_departure_plot <- ggplot(data = RVI_departure_nolag, aes(x=type, y = value, 
                     drop = F)
 
 RVI_table
-RVI_arrival_plot
-RVI_departure_plot
+RVI_gain_plot
+RVI_loss_plot
 ```
-Next step is to add the coefficients on to the bar chart. To do this, I will need to sum (aikake weight of model including variable x coefficient). I think this will be easy enough Using arrival_model_comparison_nomean data frame. I will add new column to data frame of aikaike weight x coefficient
+Next step is to add the coefficients on to the bar chart. To do this, I will need to sum (aikake weight of model including variable x coefficient). I think this will be easy enough Using gain_model_comparison_taxonomy data frame. I will add new column to data frame of aikaike weight x coefficient
 
-```{r avg coefficients for arrival models}
+```{r avg coefficients for gain models}
 #for some reason the coefficient is a factor
-arrival_model_comparison_nomean[,coef_num := as.numeric(as.character(coef))]
-arrival_model_comparison_nomean[,aw_coef := akaike_weight * coef_num]
+gain_model_comparison_taxonomy[,coef_num := as.numeric(as.character(coef))]
+gain_model_comparison_taxonomy[,aw_coef := akaike_weight * coef_num]
 
 #bottom temperature avg coefficient
-arrival_bottom_temp_avg_coef <- sum(arrival_model_comparison_nomean[grep("sbt", variable)]$coef_num)
+gain_bottom_temp_avg_coef <- sum(gain_model_comparison_taxonomy[grep("sbt", variable)]$coef_num)
 
 #surface temperature avg coefficient
-arrival_surface_temp_avg_coef <- sum(arrival_model_comparison_nomean[grep("sst", variable)]$coef_num)
+gain_surface_temp_avg_coef <- sum(gain_model_comparison_taxonomy[grep("sst", variable)]$coef_num)
 
 #raw seasonality avg coefficient
-arrival_seas_raw_avg_coef <- 
-  sum(arrival_model_comparison_nomean[grep("seas", variable), ][!grep("change", variable)]$coef_num)
+gain_seas_raw_avg_coef <- 
+  sum(gain_model_comparison_taxonomy[grep("seas", variable), ][!grep("change", variable)]$coef_num)
 
 #max abs change avg coefficient
-arrival_max_abs_change_avg_coef <- 
-  sum(arrival_model_comparison_nomean[grep("max_s.t_temp_change_abs", variable), ]$coef_num)
+gain_max_abs_change_avg_coef <- 
+  sum(gain_model_comparison_taxonomy[grep("max_s.t_temp_change_abs", variable), ]$coef_num)
 
 
 ```
 
-```{r avg coefficients for departure models}
+```{r avg coefficients for loss models}
 #for some reason the coefficient is a factor
-departure_model_comparison_nomean[,coef_num := as.numeric(as.character(coef))]
-departure_model_comparison_nomean[,aw_coef := akaike_weight * coef_num]
+loss_model_comparison_taxonomy[,coef_num := as.numeric(as.character(coef))]
+loss_model_comparison_taxonomy[,aw_coef := akaike_weight * coef_num]
 
 #bottom temperature avg coefficient
-departure_bottom_temp_avg_coef <- sum(departure_model_comparison_nomean[grep("sbt", variable)]$coef_num)
+loss_bottom_temp_avg_coef <- sum(loss_model_comparison_taxonomy[grep("sbt", variable)]$coef_num)
 
 #surface temperature avg coefficient
-departure_surface_temp_avg_coef <- sum(departure_model_comparison_nomean[grep("sst", variable)]$coef_num)
+loss_surface_temp_avg_coef <- sum(loss_model_comparison_taxonomy[grep("sst", variable)]$coef_num)
 
 #raw seasonality avg coefficient
-departure_seas_raw_avg_coef <- 
-  sum(departure_model_comparison_nomean[grep("seas", variable), ][!grep("change", variable)]$coef_num)
+loss_seas_raw_avg_coef <- 
+  sum(loss_model_comparison_taxonomy[grep("seas", variable), ][!grep("change", variable)]$coef_num)
 
 #min change avg coefficient
-departure_min_abs_change_avg_coef <- 
-  sum(departure_model_comparison_nomean[grep("min_s.t_temp_change", variable), ][!grep("abs", variable)]$coef_num)
+loss_min_abs_change_avg_coef <- 
+  sum(loss_model_comparison_taxonomy[grep("min_s.t_temp_change", variable), ][!grep("abs", variable)]$coef_num)
 
 #seas change avg coefficient
-departure_seas_change_avg_coef <- 
-  sum(departure_model_comparison_nomean[grep("seas_s.t_temp_change", variable), ][!grep("abs", variable)]$coef_num)
+loss_seas_change_avg_coef <- 
+  sum(loss_model_comparison_taxonomy[grep("seas_s.t_temp_change", variable), ][!grep("abs", variable)]$coef_num)
 
 
 ```
@@ -643,7 +668,7 @@ spp_master_ztemp_seus_buoy_scaled_fishonly2 <- spp_master_ztemp_seus_buoy_scaled
 
 Running models for fish only
 
-```{r arrival models without traits for fish only}
+```{r gain models without traits for fish only}
 
 #names of scaled columns
 scaled_cols <- grep("*_scaled", names(spp_master_ztemp_seus_buoy_scaled_fishonly2), value = T)
@@ -651,16 +676,16 @@ scaled_cols <- grep("*_scaled", names(spp_master_ztemp_seus_buoy_scaled_fishonly
 #going to make loop to make all models I need to look at with single variables
 variables_scaled <- colnames(spp_master_ztemp_seus_buoy_scaled_fishonly2[,scaled_cols, with = FALSE])
 
-arrival_model_comparison_spprandom_scaled_seus_update_fishonly <- as.data.table(matrix(nrow = length(variables_scaled)))
-arrival_model_comparison_spprandom_scaled_seus_update_fishonly[, variable:=as.factor(V1)][, coef:=as.numeric(V1)][, p_value:=as.numeric(V1)][, AICc:=as.numeric(V1)]
-arrival_model_comparison_spprandom_scaled_seus_update_fishonly[, V1 := NULL]
+gain_model_comparison_spprandom_scaled_seus_update_fishonly <- as.data.table(matrix(nrow = length(variables_scaled)))
+gain_model_comparison_spprandom_scaled_seus_update_fishonly[, variable:=as.factor(V1)][, coef:=as.numeric(V1)][, p_value:=as.numeric(V1)][, AICc:=as.numeric(V1)]
+gain_model_comparison_spprandom_scaled_seus_update_fishonly[, V1 := NULL]
 
 for (i in 1:length(variables_scaled)){
-  mod <- glmer(col ~ get(variables_scaled[i]) + (1|reg) + (1|spp), family = binomial, data = spp_master_ztemp_seus_buoy_scaled_fishonly2, nAGQ = 0)
-  arrival_model_comparison_spprandom_scaled_seus_update_fishonly[i,variable := variables_scaled[i]]
-  arrival_model_comparison_spprandom_scaled_seus_update_fishonly[i,coef := coef(summary(mod))[,"Estimate"][2]]
-  arrival_model_comparison_spprandom_scaled_seus_update_fishonly[i,p_value := coef(summary(mod))[,"Pr(>|z|)"][2]]
-  arrival_model_comparison_spprandom_scaled_seus_update_fishonly[i,AICc := AICc(mod)]
+  mod <- glmer(gain ~ get(variables_scaled[i]) + (1|reg) + (1|spp), family = binomial, data = spp_master_ztemp_seus_buoy_scaled_fishonly2, nAGQ = 0)
+  gain_model_comparison_spprandom_scaled_seus_update_fishonly[i,variable := variables_scaled[i]]
+  gain_model_comparison_spprandom_scaled_seus_update_fishonly[i,coef := coef(summary(mod))[,"Estimate"][2]]
+  gain_model_comparison_spprandom_scaled_seus_update_fishonly[i,p_value := coef(summary(mod))[,"Pr(>|z|)"][2]]
+  gain_model_comparison_spprandom_scaled_seus_update_fishonly[i,AICc := AICc(mod)]
   
   print(paste(i, length(variables_scaled), sep = "/"))
     
@@ -671,20 +696,20 @@ for (i in 1:length(variables_scaled)){
 
 ```
 
-departure Models without Traits
-```{r departure models without traits for fish only}
+loss Models without Traits
+```{r loss models without traits for fish only}
 #see setup above
 
-departure_model_comparison_spprandom_scaled_seus_update_fishonly <- as.data.table(matrix(nrow = length(variables_scaled)))
-departure_model_comparison_spprandom_scaled_seus_update_fishonly[, variable:=as.factor(V1)][, coef:=as.numeric(V1)][, p_value:=as.numeric(V1)][, AICc:=as.numeric(V1)]
-departure_model_comparison_spprandom_scaled_seus_update_fishonly[, V1 := NULL]
+loss_model_comparison_spprandom_scaled_seus_update_fishonly <- as.data.table(matrix(nrow = length(variables_scaled)))
+loss_model_comparison_spprandom_scaled_seus_update_fishonly[, variable:=as.factor(V1)][, coef:=as.numeric(V1)][, p_value:=as.numeric(V1)][, AICc:=as.numeric(V1)]
+loss_model_comparison_spprandom_scaled_seus_update_fishonly[, V1 := NULL]
 
 for (i in 1:length(variables_scaled)){
-  mod <- glmer(now_ext ~ get(variables_scaled[i]) + (1|reg) + (1|spp), family = binomial, data = spp_master_ztemp_seus_buoy_scaled_fishonly2, nAGQ = 0)
-  departure_model_comparison_spprandom_scaled_seus_update_fishonly[i,variable := variables_scaled[i]]
-  departure_model_comparison_spprandom_scaled_seus_update_fishonly[i,coef := coef(summary(mod))[,"Estimate"][2]]
-  departure_model_comparison_spprandom_scaled_seus_update_fishonly[i,p_value := coef(summary(mod))[,"Pr(>|z|)"][2]]
-  departure_model_comparison_spprandom_scaled_seus_update_fishonly[i,AICc := AICc(mod)]
+  mod <- glmer(loss ~ get(variables_scaled[i]) + (1|reg) + (1|spp), family = binomial, data = spp_master_ztemp_seus_buoy_scaled_fishonly2, nAGQ = 0)
+  loss_model_comparison_spprandom_scaled_seus_update_fishonly[i,variable := variables_scaled[i]]
+  loss_model_comparison_spprandom_scaled_seus_update_fishonly[i,coef := coef(summary(mod))[,"Estimate"][2]]
+  loss_model_comparison_spprandom_scaled_seus_update_fishonly[i,p_value := coef(summary(mod))[,"Pr(>|z|)"][2]]
+  loss_model_comparison_spprandom_scaled_seus_update_fishonly[i,AICc := AICc(mod)]
   
   print(paste(i, length(variables_scaled), sep = "/"))
     
@@ -697,129 +722,129 @@ for (i in 1:length(variables_scaled)){
 
 Relative Variable Importance
 ```{r get rid of any models using mean for fish only}
-arrival_model_comparison_spprandom_scaled_seus_update_fishonly_nomean <- arrival_model_comparison_spprandom_scaled_seus_update_fishonly[!grepl("mean",variable),]
+gain_model_comparison_spprandom_scaled_seus_update_fishonly_nomean <- gain_model_comparison_spprandom_scaled_seus_update_fishonly[!grepl("mean",variable),]
 
-departure_model_comparison_spprandom_scaled_seus_update_fishonly_nomean <- departure_model_comparison_spprandom_scaled_seus_update_fishonly[!grepl("mean",variable),]
+loss_model_comparison_spprandom_scaled_seus_update_fishonly_nomean <- loss_model_comparison_spprandom_scaled_seus_update_fishonly[!grepl("mean",variable),]
 
 #comparison to null
-col_mod_null <- glmer(col ~ (1|reg) + (1|spp), family = binomial, data = spp_master_ztemp_seus_buoy_scaled_fishonly2, nAGQ = 0)
-AICc(col_mod_null)-min(arrival_model_comparison_spprandom_scaled_seus_update_fishonly_nomean$AICc)
+col_mod_null <- glmer(gain ~ (1|reg) + (1|spp), family = binomial, data = spp_master_ztemp_seus_buoy_scaled_fishonly2, nAGQ = 0)
+AICc(col_mod_null)-min(gain_model_comparison_spprandom_scaled_seus_update_fishonly_nomean$AICc)
 
 ext_mod_null <- glmer(ext ~ (1|reg) + (1|spp), family = binomial, data = spp_master_ztemp_seus_buoy_scaled_fishonly2, nAGQ = 0)
-AICc(ext_mod_null)-min(departure_model_comparison_spprandom_scaled_seus_update_fishonly_nomean$AICc)
+AICc(ext_mod_null)-min(loss_model_comparison_spprandom_scaled_seus_update_fishonly_nomean$AICc)
 ```
 
-Relative Variable Importance for arrival Models
-```{r RVI arrival for fish only}
+Relative Variable Importance for gain Models
+```{r RVI gain for fish only}
 #add ∆AIC to tables
-min_col_AICc_fishonly <- min(arrival_model_comparison_spprandom_scaled_seus_update_fishonly_nomean[, AICc])
-arrival_model_comparison_spprandom_scaled_seus_update_fishonly_nomean[,"deltaAICc" := (AICc - min_col_AICc_fishonly)]
+min_col_AICc_fishonly <- min(gain_model_comparison_spprandom_scaled_seus_update_fishonly_nomean[, AICc])
+gain_model_comparison_spprandom_scaled_seus_update_fishonly_nomean[,"deltaAICc" := (AICc - min_col_AICc_fishonly)]
 
 #add relative likelihood exp( -0.5 * ∆AIC score for that model)
-arrival_model_comparison_spprandom_scaled_seus_update_fishonly_nomean[,"rel_likelihood" := exp((-0.5 * deltaAICc))]
+gain_model_comparison_spprandom_scaled_seus_update_fishonly_nomean[,"rel_likelihood" := exp((-0.5 * deltaAICc))]
 #sum relative likelihoods across all models
-arrival_model_comparison_spprandom_scaled_seus_update_fishonly_nomean.likelihoodsum <- sum(arrival_model_comparison_spprandom_scaled_seus_update_fishonly_nomean[, rel_likelihood])
+gain_model_comparison_spprandom_scaled_seus_update_fishonly_nomean.likelihoodsum <- sum(gain_model_comparison_spprandom_scaled_seus_update_fishonly_nomean[, rel_likelihood])
 #Akaike weight for a model is this rel_likelihood devided by the sum of these values across all models
-arrival_model_comparison_spprandom_scaled_seus_update_fishonly_nomean[,"akaike_weight" := rel_likelihood/arrival_model_comparison_spprandom_scaled_seus_update_fishonly_nomean.likelihoodsum]
+gain_model_comparison_spprandom_scaled_seus_update_fishonly_nomean[,"akaike_weight" := rel_likelihood/gain_model_comparison_spprandom_scaled_seus_update_fishonly_nomean.likelihoodsum]
 
 #I want to look at relative importance FOR 
 #bottom/surface (bottom = includes sbt, grepl("sbt", variable))
-col_bottom_importance_fishonly <- sum(arrival_model_comparison_spprandom_scaled_seus_update_fishonly_nomean[grep("sbt", variable), ]$akaike_weight)
-col_surface_importance_fishonly <- sum(arrival_model_comparison_spprandom_scaled_seus_update_fishonly_nomean[grep("sst", variable), ]$akaike_weight)
+col_bottom_importance_fishonly <- sum(gain_model_comparison_spprandom_scaled_seus_update_fishonly_nomean[grep("sbt", variable), ]$akaike_weight)
+col_surface_importance_fishonly <- sum(gain_model_comparison_spprandom_scaled_seus_update_fishonly_nomean[grep("sst", variable), ]$akaike_weight)
 
 #lag/not lagged (grepl("lag", variable))
-col_lag_importance_fishonly <- sum(arrival_model_comparison_spprandom_scaled_seus_update_fishonly_nomean[grep("lag", variable), ]$akaike_weight)
-col_nolag_importance_fishonly <- sum(arrival_model_comparison_spprandom_scaled_seus_update_fishonly_nomean[!grep("lag", variable), ]$akaike_weight)
+col_lag_importance_fishonly <- sum(gain_model_comparison_spprandom_scaled_seus_update_fishonly_nomean[grep("lag", variable), ]$akaike_weight)
+col_nolag_importance_fishonly <- sum(gain_model_comparison_spprandom_scaled_seus_update_fishonly_nomean[!grep("lag", variable), ]$akaike_weight)
 
 #absolute (grepl("abs", variable))
-col_abs_importance_fishonly <- sum(arrival_model_comparison_spprandom_scaled_seus_update_fishonly_nomean[grep("abs", variable), ]$akaike_weight)
+col_abs_importance_fishonly <- sum(gain_model_comparison_spprandom_scaled_seus_update_fishonly_nomean[grep("abs", variable), ]$akaike_weight)
 
 #raw (!grepl("change"))
-col_raw_importance_fishonly <- sum(arrival_model_comparison_spprandom_scaled_seus_update_fishonly_nomean[!grep("change", variable), ]$akaike_weight)
+col_raw_importance_fishonly <- sum(gain_model_comparison_spprandom_scaled_seus_update_fishonly_nomean[!grep("change", variable), ]$akaike_weight)
 
 #change (grepl("change", variable), (!grepl("abs")))
-col_change_importance_fishonly <- sum(arrival_model_comparison_spprandom_scaled_seus_update_fishonly_nomean[grep("change", variable), ][!grep("abs", variable),]$akaike_weight)
+col_change_importance_fishonly <- sum(gain_model_comparison_spprandom_scaled_seus_update_fishonly_nomean[grep("change", variable), ][!grep("abs", variable),]$akaike_weight)
 
 #type of temp variable (max, min, seas)
-col_max_temp_importance_fishonly <- sum(arrival_model_comparison_spprandom_scaled_seus_update_fishonly_nomean[grep("max", variable), ]$akaike_weight)
-col_min_temp_importance_fishonly <- sum(arrival_model_comparison_spprandom_scaled_seus_update_fishonly_nomean[grep("min", variable), ]$akaike_weight)
-col_seas_temp_importance_fishonly <- sum(arrival_model_comparison_spprandom_scaled_seus_update_fishonly_nomean[grep("seas", variable), ]$akaike_weight)
+col_max_temp_importance_fishonly <- sum(gain_model_comparison_spprandom_scaled_seus_update_fishonly_nomean[grep("max", variable), ]$akaike_weight)
+col_min_temp_importance_fishonly <- sum(gain_model_comparison_spprandom_scaled_seus_update_fishonly_nomean[grep("min", variable), ]$akaike_weight)
+col_seas_temp_importance_fishonly <- sum(gain_model_comparison_spprandom_scaled_seus_update_fishonly_nomean[grep("seas", variable), ]$akaike_weight)
 ```
 
-Relative Variable Importance for departure Models
-```{r RVI departure for fish only}
+Relative Variable Importance for loss Models
+```{r RVI loss for fish only}
 #add ∆AIC to tables
-min_ext_AICc_fishonly <- min(departure_model_comparison_spprandom_scaled_seus_update_fishonly_nomean[, AICc])
-departure_model_comparison_spprandom_scaled_seus_update_fishonly_nomean[,"deltaAICc" := (AICc - min_ext_AICc_fishonly)]
+min_ext_AICc_fishonly <- min(loss_model_comparison_spprandom_scaled_seus_update_fishonly_nomean[, AICc])
+loss_model_comparison_spprandom_scaled_seus_update_fishonly_nomean[,"deltaAICc" := (AICc - min_ext_AICc_fishonly)]
 
 #add relative likelihood exp( -0.5 * ∆AIC score for that model)
-departure_model_comparison_spprandom_scaled_seus_update_fishonly_nomean[,"rel_likelihood" := exp((-0.5 * deltaAICc))]
+loss_model_comparison_spprandom_scaled_seus_update_fishonly_nomean[,"rel_likelihood" := exp((-0.5 * deltaAICc))]
 #sum relative likelihoods across all models
-departure_model_comparison_spprandom_scaled_seus_update_fishonly_nomean.likelihoodsum <- sum(departure_model_comparison_spprandom_scaled_seus_update_fishonly_nomean[, rel_likelihood])
+loss_model_comparison_spprandom_scaled_seus_update_fishonly_nomean.likelihoodsum <- sum(loss_model_comparison_spprandom_scaled_seus_update_fishonly_nomean[, rel_likelihood])
 #Akaike weight for a model is this rel_likelihood devided by the sum of these values across all models
-departure_model_comparison_spprandom_scaled_seus_update_fishonly_nomean[,"akaike_weight" := rel_likelihood/departure_model_comparison_spprandom_scaled_seus_update_fishonly_nomean.likelihoodsum]
+loss_model_comparison_spprandom_scaled_seus_update_fishonly_nomean[,"akaike_weight" := rel_likelihood/loss_model_comparison_spprandom_scaled_seus_update_fishonly_nomean.likelihoodsum]
 
 #I want to look at relative importance FOR 
 #bottom/surface (bottom = includes sbt, grepl("sbt", variable))
-ext_bottom_importance_fishonly <- sum(departure_model_comparison_spprandom_scaled_seus_update_fishonly_nomean[grep("sbt", variable), ]$akaike_weight)
-ext_surface_importance_fishonly <- sum(departure_model_comparison_spprandom_scaled_seus_update_fishonly_nomean[grep("sst", variable), ]$akaike_weight)
+ext_bottom_importance_fishonly <- sum(loss_model_comparison_spprandom_scaled_seus_update_fishonly_nomean[grep("sbt", variable), ]$akaike_weight)
+ext_surface_importance_fishonly <- sum(loss_model_comparison_spprandom_scaled_seus_update_fishonly_nomean[grep("sst", variable), ]$akaike_weight)
 
 #lag/not lagged (grepl("lag", variable))
-ext_lag_importance_fishonly <- sum(departure_model_comparison_spprandom_scaled_seus_update_fishonly_nomean[grep("lag", variable), ]$akaike_weight)
-ext_nolag_importance_fishonly <- sum(departure_model_comparison_spprandom_scaled_seus_update_fishonly_nomean[!grep("lag", variable), ]$akaike_weight)
+ext_lag_importance_fishonly <- sum(loss_model_comparison_spprandom_scaled_seus_update_fishonly_nomean[grep("lag", variable), ]$akaike_weight)
+ext_nolag_importance_fishonly <- sum(loss_model_comparison_spprandom_scaled_seus_update_fishonly_nomean[!grep("lag", variable), ]$akaike_weight)
 
 #absolute (grepl("abs", variable))
-ext_abs_importance_fishonly <- sum(departure_model_comparison_spprandom_scaled_seus_update_fishonly_nomean[grep("abs", variable), ]$akaike_weight)
+ext_abs_importance_fishonly <- sum(loss_model_comparison_spprandom_scaled_seus_update_fishonly_nomean[grep("abs", variable), ]$akaike_weight)
 
 #raw (!grepl("change"))
-ext_raw_importance_fishonly <- sum(departure_model_comparison_spprandom_scaled_seus_update_fishonly_nomean[!grep("change", variable), ]$akaike_weight)
+ext_raw_importance_fishonly <- sum(loss_model_comparison_spprandom_scaled_seus_update_fishonly_nomean[!grep("change", variable), ]$akaike_weight)
 
 #change (grepl("change", variable), (!grepl("abs")))
-ext_change_importance_fishonly <- sum(departure_model_comparison_spprandom_scaled_seus_update_fishonly_nomean[grep("change", variable), ][!grep("abs", variable),]$akaike_weight)
+ext_change_importance_fishonly <- sum(loss_model_comparison_spprandom_scaled_seus_update_fishonly_nomean[grep("change", variable), ][!grep("abs", variable),]$akaike_weight)
 
 #type of temp variable (max, min, seas)
-ext_max_temp_importance_fishonly <- sum(departure_model_comparison_spprandom_scaled_seus_update_fishonly_nomean[grep("max", variable), ]$akaike_weight)
-ext_min_temp_importance_fishonly <- sum(departure_model_comparison_spprandom_scaled_seus_update_fishonly_nomean[grep("min", variable), ]$akaike_weight)
-ext_seas_temp_importance_fishonly <- sum(departure_model_comparison_spprandom_scaled_seus_update_fishonly_nomean[grep("seas", variable), ]$akaike_weight)
+ext_max_temp_importance_fishonly <- sum(loss_model_comparison_spprandom_scaled_seus_update_fishonly_nomean[grep("max", variable), ]$akaike_weight)
+ext_min_temp_importance_fishonly <- sum(loss_model_comparison_spprandom_scaled_seus_update_fishonly_nomean[grep("min", variable), ]$akaike_weight)
+ext_seas_temp_importance_fishonly <- sum(loss_model_comparison_spprandom_scaled_seus_update_fishonly_nomean[grep("seas", variable), ]$akaike_weight)
 ```
 
 Let's see how the RVI importance varies by looking at specific lag values
 ```{r make a plot here for variability across lag values for fish only}
 #first, table for lags
-lags_v_RVI_spprandom_scaled_fishonly <- data.table(col_lag = c(0:9), col_RVI = 0, departure_RVI = 0)
-#arrival
-lags_v_RVI_spprandom_scaled_fishonly[1,2] <- 1-sum(arrival_model_comparison_spprandom_scaled_seus_update_fishonly_nomean[grep("lag", variable), ]$akaike_weight)
-lags_v_RVI_spprandom_scaled_fishonly[2,2] <- sum(arrival_model_comparison_spprandom_scaled_seus_update_fishonly_nomean[grep("lag1", variable), ]$akaike_weight)
-lags_v_RVI_spprandom_scaled_fishonly[3,2] <- sum(arrival_model_comparison_spprandom_scaled_seus_update_fishonly_nomean[grep("lag2", variable), ]$akaike_weight)
-lags_v_RVI_spprandom_scaled_fishonly[4,2] <- sum(arrival_model_comparison_spprandom_scaled_seus_update_fishonly_nomean[grep("lag3", variable), ]$akaike_weight)
-lags_v_RVI_spprandom_scaled_fishonly[5,2] <- sum(arrival_model_comparison_spprandom_scaled_seus_update_fishonly_nomean[grep("lag4", variable), ]$akaike_weight)
-lags_v_RVI_spprandom_scaled_fishonly[6,2] <- sum(arrival_model_comparison_spprandom_scaled_seus_update_fishonly_nomean[grep("lag5", variable), ]$akaike_weight)
-lags_v_RVI_spprandom_scaled_fishonly[7,2] <- sum(arrival_model_comparison_spprandom_scaled_seus_update_fishonly_nomean[grep("lag6", variable), ]$akaike_weight)
-lags_v_RVI_spprandom_scaled_fishonly[8,2] <- sum(arrival_model_comparison_spprandom_scaled_seus_update_fishonly_nomean[grep("lag7", variable), ]$akaike_weight)
-lags_v_RVI_spprandom_scaled_fishonly[9,2] <- sum(arrival_model_comparison_spprandom_scaled_seus_update_fishonly_nomean[grep("lag8", variable), ]$akaike_weight)
-lags_v_RVI_spprandom_scaled_fishonly[10,2] <- sum(arrival_model_comparison_spprandom_scaled_seus_update_fishonly_nomean[grep("lag9", variable), ]$akaike_weight)
-#departure
-lags_v_RVI_spprandom_scaled_fishonly[1,3] <- 1-sum(departure_model_comparison_spprandom_scaled_seus_update_fishonly_nomean[grep("lag", variable), ]$akaike_weight)
-lags_v_RVI_spprandom_scaled_fishonly[2,3] <- sum(departure_model_comparison_spprandom_scaled_seus_update_fishonly_nomean[grep("lag1", variable), ]$akaike_weight)
-lags_v_RVI_spprandom_scaled_fishonly[3,3] <- sum(departure_model_comparison_spprandom_scaled_seus_update_fishonly_nomean[grep("lag2", variable), ]$akaike_weight)
-lags_v_RVI_spprandom_scaled_fishonly[4,3] <- sum(departure_model_comparison_spprandom_scaled_seus_update_fishonly_nomean[grep("lag3", variable), ]$akaike_weight)
-lags_v_RVI_spprandom_scaled_fishonly[5,3] <- sum(departure_model_comparison_spprandom_scaled_seus_update_fishonly_nomean[grep("lag4", variable), ]$akaike_weight)
-lags_v_RVI_spprandom_scaled_fishonly[6,3] <- sum(departure_model_comparison_spprandom_scaled_seus_update_fishonly_nomean[grep("lag5", variable), ]$akaike_weight)
-lags_v_RVI_spprandom_scaled_fishonly[7,3] <- sum(departure_model_comparison_spprandom_scaled_seus_update_fishonly_nomean[grep("lag6", variable), ]$akaike_weight)
-lags_v_RVI_spprandom_scaled_fishonly[8,3] <- sum(departure_model_comparison_spprandom_scaled_seus_update_fishonly_nomean[grep("lag7", variable), ]$akaike_weight)
-lags_v_RVI_spprandom_scaled_fishonly[9,3] <- sum(departure_model_comparison_spprandom_scaled_seus_update_fishonly_nomean[grep("lag8", variable), ]$akaike_weight)
-lags_v_RVI_spprandom_scaled_fishonly[10,3] <- sum(departure_model_comparison_spprandom_scaled_seus_update_fishonly_nomean[grep("lag9", variable), ]$akaike_weight)
+lags_v_RVI_spprandom_scaled_fishonly <- data.table(col_lag = c(0:9), col_RVI = 0, loss_RVI = 0)
+#gain
+lags_v_RVI_spprandom_scaled_fishonly[1,2] <- 1-sum(gain_model_comparison_spprandom_scaled_seus_update_fishonly_nomean[grep("lag", variable), ]$akaike_weight)
+lags_v_RVI_spprandom_scaled_fishonly[2,2] <- sum(gain_model_comparison_spprandom_scaled_seus_update_fishonly_nomean[grep("lag1", variable), ]$akaike_weight)
+lags_v_RVI_spprandom_scaled_fishonly[3,2] <- sum(gain_model_comparison_spprandom_scaled_seus_update_fishonly_nomean[grep("lag2", variable), ]$akaike_weight)
+lags_v_RVI_spprandom_scaled_fishonly[4,2] <- sum(gain_model_comparison_spprandom_scaled_seus_update_fishonly_nomean[grep("lag3", variable), ]$akaike_weight)
+lags_v_RVI_spprandom_scaled_fishonly[5,2] <- sum(gain_model_comparison_spprandom_scaled_seus_update_fishonly_nomean[grep("lag4", variable), ]$akaike_weight)
+lags_v_RVI_spprandom_scaled_fishonly[6,2] <- sum(gain_model_comparison_spprandom_scaled_seus_update_fishonly_nomean[grep("lag5", variable), ]$akaike_weight)
+lags_v_RVI_spprandom_scaled_fishonly[7,2] <- sum(gain_model_comparison_spprandom_scaled_seus_update_fishonly_nomean[grep("lag6", variable), ]$akaike_weight)
+lags_v_RVI_spprandom_scaled_fishonly[8,2] <- sum(gain_model_comparison_spprandom_scaled_seus_update_fishonly_nomean[grep("lag7", variable), ]$akaike_weight)
+lags_v_RVI_spprandom_scaled_fishonly[9,2] <- sum(gain_model_comparison_spprandom_scaled_seus_update_fishonly_nomean[grep("lag8", variable), ]$akaike_weight)
+lags_v_RVI_spprandom_scaled_fishonly[10,2] <- sum(gain_model_comparison_spprandom_scaled_seus_update_fishonly_nomean[grep("lag9", variable), ]$akaike_weight)
+#loss
+lags_v_RVI_spprandom_scaled_fishonly[1,3] <- 1-sum(loss_model_comparison_spprandom_scaled_seus_update_fishonly_nomean[grep("lag", variable), ]$akaike_weight)
+lags_v_RVI_spprandom_scaled_fishonly[2,3] <- sum(loss_model_comparison_spprandom_scaled_seus_update_fishonly_nomean[grep("lag1", variable), ]$akaike_weight)
+lags_v_RVI_spprandom_scaled_fishonly[3,3] <- sum(loss_model_comparison_spprandom_scaled_seus_update_fishonly_nomean[grep("lag2", variable), ]$akaike_weight)
+lags_v_RVI_spprandom_scaled_fishonly[4,3] <- sum(loss_model_comparison_spprandom_scaled_seus_update_fishonly_nomean[grep("lag3", variable), ]$akaike_weight)
+lags_v_RVI_spprandom_scaled_fishonly[5,3] <- sum(loss_model_comparison_spprandom_scaled_seus_update_fishonly_nomean[grep("lag4", variable), ]$akaike_weight)
+lags_v_RVI_spprandom_scaled_fishonly[6,3] <- sum(loss_model_comparison_spprandom_scaled_seus_update_fishonly_nomean[grep("lag5", variable), ]$akaike_weight)
+lags_v_RVI_spprandom_scaled_fishonly[7,3] <- sum(loss_model_comparison_spprandom_scaled_seus_update_fishonly_nomean[grep("lag6", variable), ]$akaike_weight)
+lags_v_RVI_spprandom_scaled_fishonly[8,3] <- sum(loss_model_comparison_spprandom_scaled_seus_update_fishonly_nomean[grep("lag7", variable), ]$akaike_weight)
+lags_v_RVI_spprandom_scaled_fishonly[9,3] <- sum(loss_model_comparison_spprandom_scaled_seus_update_fishonly_nomean[grep("lag8", variable), ]$akaike_weight)
+lags_v_RVI_spprandom_scaled_fishonly[10,3] <- sum(loss_model_comparison_spprandom_scaled_seus_update_fishonly_nomean[grep("lag9", variable), ]$akaike_weight)
 
 ggplot(data = lags_v_RVI_spprandom_scaled_fishonly, aes(x = col_lag)) +
   geom_line(aes(y = col_RVI), col = "blue") +
-  geom_line(aes(y = departure_RVI), col = "red") +
+  geom_line(aes(y = loss_RVI), col = "red") +
   labs(x = "Lag", y = "Relative Variable Importance") +
   scale_color_discrete() + #how to make a legend
   theme_bw()
 ```
 
-Table for RVI data for arrival
-```{r put RVIs for arrival into data table for fish only}
+Table for RVI data for gain
+```{r put RVIs for gain into data table for fish only}
 col_ext <- c("col","col","col","col","col", "col","col", "col", "col","col")
 type <- c("depth", "depth", "lag", "lag", "Change?", "Change?", "Change?", "Temp", "Temp", "Temp")
 variable <- c("bottom", "surface", "no_lag", "lagged", "absolute_value_change", "change", "raw", "Min", "Max", "Seas")
@@ -828,8 +853,8 @@ value <- c(col_bottom_importance_fishonly, col_surface_importance_fishonly, col_
 RVI_col_fishonly <- data.table(col_ext, type, variable, value)
 ```
 
-Table for RVI data for departure
-```{r put RVIs for departure into data table for fish only}
+Table for RVI data for loss
+```{r put RVIs for loss into data table for fish only}
 col_ext <- c("ext","ext","ext","ext","ext", "ext", "ext", "ext", "ext", "ext")
 type <- c("depth", "depth", "lag", "lag", "Change?", "Change?", "Change?", "Temp", "Temp", "Temp")
 variable <- c("bottom", "surface", "no_lag", "lagged", "absolute_value_change", "change", "raw", "Min", "Max", "Seas")
@@ -838,9 +863,9 @@ value <- c(ext_bottom_importance_fishonly, ext_surface_importance_fishonly, ext_
 RVI_ext_fishonly <- data.table(col_ext, type, variable, value)
 ```
 
-Merge RVI tables for arrival and departure, and then graph
+Merge RVI tables for gain and loss, and then graph
 ```{r merge RVI tables and plot for fish only}
-RVI_table_fishonly <- as.data.table(rbind(RVI_col_fishonly, RVI_ext_fishonly)) #bind RVI for arrivals and departures
+RVI_table_fishonly <- as.data.table(rbind(RVI_col_fishonly, RVI_ext_fishonly)) #bind RVI for gains and losss
 
 RVI_table.r_fishonly <- RVI_table_fishonly[!grep("surface", variable)][!grep("lagged", variable)]
 
@@ -865,7 +890,7 @@ RVI_table_fishonly[, variable := factor(variable, levels = c("bottom", "surface"
 #make types factors as well
 RVI_table_fishonly[,type := as.factor(type)]
 
-#arrival
+#gain
 RVI_col_plot_fishonly <- ggplot(data = RVI_table_fishonly[col_ext == "col",], aes(x=type, y = value, fill = variable)) +
   geom_bar(stat="identity", color = "black") +
   scale_x_discrete(breaks = c("Change?", "depth", "lag", "Temp"), labels = c("Change in\ntemp?", "Metric\nDepth", "Lagged?", "Temp")) +
@@ -875,7 +900,7 @@ RVI_col_plot_fishonly <- ggplot(data = RVI_table_fishonly[col_ext == "col",], ae
         #, legend.position = "none"
         )
 
-#departure
+#loss
 RVI_ext_plot_fishonly <- ggplot(data = RVI_table_fishonly[col_ext == "ext",], aes(x=type, y = value, fill = variable)) +
   geom_bar(stat="identity", color = "black") +
   scale_x_discrete(breaks = c("Change?", "depth", "lag", "Temp"), labels = c("Change in\ntemp?", "Metric\nDepth", "Lagged?", "Temp")) +

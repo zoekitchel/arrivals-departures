@@ -16,6 +16,10 @@ spp_key <- fread(here::here("Data","Spp_master","spp_key.csv"))
 
 spp_master_ztemp_seus_buoy <- spp_master_ztemp_seus_buoy[spp_key, on = "spp"]
 
+#leave out Caretta caretta
+
+spp_master_ztemp_seus_buoy <- spp_master_ztemp_seus_buoy[spp != "Caretta caretta"]
+
     
 ```
 
@@ -45,3 +49,37 @@ ggsave("S3_region_presabs.eps", width = 10, height = 8, units = "in", path=here:
 ggsave("S3_region_presabs.jpg", width = 10, height = 8, units = "in", path=here::here("figures","Supplemental"))
 
 ```
+Are certain species more or less likely to be gained or lost?
+```{r}
+#how many regions are species found in? do they ever go extinct? do they ever colonize?
+spp_master_ztemp_seus_buoy.sppreg_col_ext <- spp_master_ztemp_seus_buoy[,ever_gain := sum(col),spp][,ever_loss := sum(now_ext),spp][,regions_present := length(unique(reg)),spp]
+
+spp_master_ztemp_seus_buoy.sppreg_col_ext.u <- unique(spp_master_ztemp_seus_buoy.sppreg_col_ext[,.(spp, reg, ever_gain, ever_loss, regions_present)])
+
+spp_master_ztemp_seus_buoy.sppreg_col_ext.u.u <- unique(spp_master_ztemp_seus_buoy.sppreg_col_ext[,.(spp, ever_gain, ever_loss, regions_present)])
+
+
+#Are species that span multiple regions more or less likely to be gained or lost?
+total_gains <- ggplot(data = spp_master_ztemp_seus_buoy.sppreg_col_ext.u.u) +
+  geom_boxplot(aes(x = regions_present, y = as.numeric(ever_gain), group = regions_present)) +
+geom_text(data=spp_master_ztemp_seus_buoy.sppreg_col_ext.u.u %>% 
+              group_by(regions_present) %>% 
+              summarise(top = max(ever_gain) + 1, 
+                        n=n()), 
+            aes(x=regions_present, y=top, label= paste0("n = ", n)), nudge_y=1) +
+  theme_classic() +
+  labs(x = "Number of Regions Species is Ever Observed", y = "Total Observed Gains")
+
+total_losses <- ggplot(data = spp_master_ztemp_seus_buoy.sppreg_col_ext.u.u) +
+  geom_boxplot(aes(x = regions_present, y = as.numeric(ever_loss), group = regions_present)) +
+  ylim(0,15) +
+  theme_classic() +
+  labs(x = "Number of Regions Species is Ever Observed", y = "Total Observed Losses")
+
+total_gains_losses_boxplot <- plot_grid(total_gains + theme(axis.title.x = element_blank(), axis.text.x = element_blank()), total_losses, ncol = 1, align = "hv", axis = "tblr")
+
+ggsave(total_gains_losses_boxplot, filename = "total_gains_losses_boxplot.eps",width = 6, height = 4, path=here::here("figures","Supplemental"))
+ggsave(total_gains_losses_boxplot, filename = "total_gains_losses_boxplot.jpg",width = 6, height = 4, path=here::here("figures","Supplemental"))
+
+```
+

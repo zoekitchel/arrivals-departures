@@ -32,6 +32,12 @@ View(trawl2.pivot)
 #total?
 sum(trawl2.pivot$N)
 ```
+Average tows per year per region
+```{r}
+trawl2.pivot[,region_mean_tows:=mean(N),V1]
+
+trawl2.pivot.u <- unique(trawl2.pivot[,.(V1, region_mean_tows)])
+```
 
 ```{r bubble plot}
 # Most basic bubble plot

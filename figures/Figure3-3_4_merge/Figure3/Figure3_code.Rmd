@@ -8,8 +8,9 @@ See Col_Ext_Models_Final for more context (~line 287)
 ```{r setup}
 library(ggplot2)
 library(data.table)
+library(here)
 
-lags_RVI_scaled <- readRDS(here("Model_results","lags_RVI_scaled.rds"))
+lags_RVI_scaled <- readRDS(here::here("Model_results","lags_RVI_scaled.rds"))
 ```
 
 
@@ -29,10 +30,10 @@ lag_through_time <- ggplot(data = lags_RVI_scaled.l, aes(x = arrival_lag, y = va
     legend.position = c(0.75,0.75)) +
   scale_x_continuous(breaks = c(0:9))
 
-ggsave(here("figures","Figure3-3_4_merge", "Figure3a.eps"), height = 4, width = 6)
-ggsave(here("figures","Figure3-3_4_merge", "Figure3a.jpg"), height = 4, width = 6)
+ggsave(here::here("figures","Figure3-3_4_merge", "Figure3a.eps"), height = 4, width = 6)
+ggsave(here::here("figures","Figure3-3_4_merge", "Figure3a.jpg"), height = 4, width = 6)
 
-save(lag_through_time, file = here("figures","Figure3-3_4_merge","lag_through_time.RData"))
+save(lag_through_time, file = here::here("figures","Figure3-3_4_merge","lag_through_time.RData"))
 
 ```
 

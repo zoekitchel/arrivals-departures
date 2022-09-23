@@ -19,6 +19,29 @@ spp_key <- fread(here::here("Data","Spp_master","spp_key.csv"))
 
 spp_master_ztemp_seus_buoy_scaled <- spp_master_ztemp_seus_buoy_scaled[spp_key, on = "spp"]
 
+spp_master_ztemp_seus_buoy.traits_scaled <- spp_master_ztemp_seus_buoy.traits_scaled[spp_key, on = "spp"]
+
+#leave out sea turtle
+spp_master_ztemp_seus_buoy_scaled <- spp_master_ztemp_seus_buoy_scaled[spp != "Caretta caretta",]
+
+spp_master_ztemp_seus_buoy.traits_scaled <- spp_master_ztemp_seus_buoy.traits_scaled[spp != "Caretta caretta",]
+
+#delete first year each region is sampled (because gains and losses are based on transitions between years, so we need 2 years of observations)
+
+spp_master_ztemp_seus_buoy_scaled[,min_year := min(year),.(reg)]
+
+spp_master_ztemp_seus_buoy_scaled <- spp_master_ztemp_seus_buoy_scaled[year != min_year]
+
+spp_master_ztemp_seus_buoy.traits_scaled[,min_year := min(year),.(reg)]
+
+spp_master_ztemp_seus_buoy.traits_scaled <- spp_master_ztemp_seus_buoy.traits_scaled[year != min_year]
+```
+
+Years per survey
+```{r}
+spp_master_ztemp_seus_buoy_scaled.uniqueyears <- unique(spp_master_ztemp_seus_buoy_scaled[,.(reg, year)])
+
+table(spp_master_ztemp_seus_buoy_scaled.uniqueyears$reg)+1 #add one for first year
 ```
 
 
@@ -39,12 +62,19 @@ colnames(counts) <- c("reg","counts")
 region_summaries <- cbind(counts, arrivals[,arrivals], departures[,departures])
 colnames(region_summaries) <- c("reg", "counts", "arrivals", "departures")
 
-region_summaries[,arrivals_per := round(arrivals/counts,4)][,departures_per := round(departures/counts,4)]
+region_summaries[,arrivals_per := round((arrivals/counts)*100,2)][,departures_per := round((departures/counts)*100,2)]
 
-region_summaries
+region_summaries[,reg:= factor(reg, levels = c("ai","ebs","goa","gmex","newf","neus","shelf","sa","wctri"))]
 
+region_summaries[,.(reg,counts, arrivals, arrivals_per, departures, departures_per)]
 
+sum(region_summaries$arrivals)
+sum(region_summaries$arrivals_per)
 sum(region_summaries$departures)
+sum(region_summaries$departures_per)
+sum(region_summaries$arrivals)/sum(region_summaries$counts)
+sum(region_summaries$departures)/sum(region_summaries$counts)
+sum(region_summaries$counts)
 ```
 
 Regional statistics fish only
@@ -73,10 +103,12 @@ colnames(counts_fish) <- c("reg","counts")
 region_summaries_fish <- cbind(counts_fish, arrivals_fish[,arrivals], departures_fish[,departures])
 colnames(region_summaries_fish) <- c("reg", "counts", "arrivals", "departures")
 
-region_summaries_fish[,arrivals_per := round(arrivals/counts,4)][,departures_per := round(departures/counts,4)][,reg2 := reg]
+region_summaries_fish[,arrivals_per := round((arrivals/counts)*100,2)][,departures_per := round((departures/counts)*100,2)][,reg2 := reg]
+
+region_summaries_fish
 
 sum(region_summaries_fish$counts)
-sum(region_summaries_fish$arrivals)
-sum(region_summaries_fish$departures)
+sum(region_summaries_fish$arrivals)/sum(region_summaries_fish$counts)
+sum(region_summaries_fish$departures)/sum(region_summaries_fish$counts)
 ```
 

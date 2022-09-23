@@ -217,29 +217,9 @@ pre code {
 <!-- rnb-text-begin -->
 <!-- rnb-text-end -->
 <!-- rnb-chunk-begin -->
-<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxubGlicmFyeSh0aWR5dmVyc2UpXG5gYGAifQ== -->
-<pre class="r"><code>library(tidyverse)</code></pre>
-<!-- rnb-source-end -->
-<!-- rnb-output-begin eyJkYXRhIjoiUmVnaXN0ZXJlZCBTMyBtZXRob2RzIG92ZXJ3cml0dGVuIGJ5ICdkYnBseXInOlxuICBtZXRob2QgICAgICAgICBmcm9tXG4gIHByaW50LnRibF9sYXp5ICAgICBcbiAgcHJpbnQudGJsX3NxbCAgICAgIFxu4pSA4pSAIEF0dGFjaGluZyBwYWNrYWdlcyDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIAgdGlkeXZlcnNlIDEuMy4xIOKUgOKUgFxu4pyTIGdncGxvdDIgMy4zLjUgICAgIOKckyBwdXJyciAgIDAuMy40XG7inJMgdGliYmxlICAzLjEuNSAgICAg4pyTIGRwbHlyICAgMS4wLjdcbuKckyB0aWR5ciAgIDEuMS40ICAgICDinJMgc3RyaW5nciAxLjQuMFxu4pyTIHJlYWRyICAgMi4wLjIgICAgIOKckyBmb3JjYXRzIDAuNS4xXG7ilIDilIAgQ29uZmxpY3RzIOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgCB0aWR5dmVyc2VfY29uZmxpY3RzKCkg4pSA4pSAXG54IGRwbHlyOjpiZXR3ZWVuKCkgICBtYXNrcyBkYXRhLnRhYmxlOjpiZXR3ZWVuKClcbnggZHBseXI6OmZpbHRlcigpICAgIG1hc2tzIHN0YXRzOjpmaWx0ZXIoKVxueCBkcGx5cjo6Zmlyc3QoKSAgICAgbWFza3MgZGF0YS50YWJsZTo6Zmlyc3QoKVxueCBkcGx5cjo6bGFnKCkgICAgICAgbWFza3Mgc3RhdHM6OmxhZygpXG54IGRwbHlyOjpsYXN0KCkgICAgICBtYXNrcyBkYXRhLnRhYmxlOjpsYXN0KClcbnggcHVycnI6OnRyYW5zcG9zZSgpIG1hc2tzIGRhdGEudGFibGU6OnRyYW5zcG9zZSgpXG4ifQ== -->
-<pre><code>Registered S3 methods overwritten by &#39;dbplyr&#39;:
-  method         from
-  print.tbl_lazy     
-  print.tbl_sql      
-── Attaching packages ─────────────────────────────────────────────────────────────────── tidyverse 1.3.1 ──
-✓ ggplot2 3.3.5     ✓ purrr   0.3.4
-✓ tibble  3.1.5     ✓ dplyr   1.0.7
-✓ tidyr   1.1.4     ✓ stringr 1.4.0
-✓ readr   2.0.2     ✓ forcats 0.5.1
-── Conflicts ────────────────────────────────────────────────────────────────────── tidyverse_conflicts() ──
-x dplyr::between()   masks data.table::between()
-x dplyr::filter()    masks stats::filter()
-x dplyr::first()     masks data.table::first()
-x dplyr::lag()       masks stats::lag()
-x dplyr::last()      masks data.table::last()
-x purrr::transpose() masks data.table::transpose()</code></pre>
-<!-- rnb-output-end -->
-<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxubGlicmFyeSh3b3JybXMpXG5saWJyYXJ5KHRheGl6ZSlcbmxpYnJhcnkoaGVyZSlcbmBgYCJ9 -->
-<pre class="r"><code>library(worrms)
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxubGlicmFyeSh0aWR5dmVyc2UpXG5saWJyYXJ5KHdvcnJtcylcbmxpYnJhcnkodGF4aXplKVxubGlicmFyeShoZXJlKVxuYGBgIn0= -->
+<pre class="r"><code>library(tidyverse)
+library(worrms)
 library(taxize)
 library(here)</code></pre>
 <!-- rnb-source-end -->
@@ -259,20 +239,101 @@ spp &lt;- unique(spp_master_ztemp_seus_buoy_scaled[,spp])</code></pre>
 <p>Cleaning Code from Juliano</p>
 <!-- rnb-text-end -->
 <!-- rnb-chunk-begin -->
-<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuI21pc3NpbmcgY2xhc3MgZm9yIEhlbWl0cmlwdGVydXMgYW1lcmljYW51c1xuc3BwX2tleVt0YXhhID09IFwiSGVtaXRyaXB0ZXJ1cyBhbWVyaWNhbnVzXCIsIGNsYXNzID0gXCJBY3Rpbm9wdGVyeWdpaVwiXVxuXG5gYGAifQ== -->
-<pre class="r"><code>#missing class for Hemitripterus americanus
-spp_key[taxa == &quot;Hemitripterus americanus&quot;, class = &quot;Actinopterygii&quot;]
-</code></pre>
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuI0p1bGlhbm8ncyBjb2RlIGZyb20gRmlzaEJhc2VcbiAgIyBHZXQgV29STSdzIGlkIGZvciBzb3VyY2luZ1xuICB3cm0gPC0gdGF4aXplOjpnbnJfZGF0YXNvdXJjZXMoKSAlPiUgXG4gICAgZHBseXI6OmZpbHRlcih0aXRsZSA9PSBcIldvcmxkIFJlZ2lzdGVyIG9mIE1hcmluZSBTcGVjaWVzXCIpICU+JSBcbiAgICBkcGx5cjo6cHVsbChpZClcbiAgXG4gICAjIElmIHNjaWVudGlmaWMgbmFtZXMgYXJlIHByb3ZpZGVkLCBjaGVjayBtaXNzcGVsbGluZ1xuICAgIGZpeF90YXhvbiA8LSB0YXhpemU6Omducl9yZXNvbHZlKHNwcCxcbiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICBkYXRhX3NvdXJjZV9pZHMgPSB3cm0sXG4gICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgYmVzdF9tYXRjaF9vbmx5ID0gVFJVRSxcbiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICBjYW5vbmljYWwgPSBUUlVFLFxuICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIGFzayA9IEZBTFNFKSAlPiUgXG4gICAgICBkcGx5cjo6c2VsZWN0KFxuICAgICAgICBxdWVyeSA9IHVzZXJfc3VwcGxpZWRfbmFtZSxcbiAgICAgICAgdGF4YSA9IG1hdGNoZWRfbmFtZTIpXG4gICAgXG4gICAgIyBNaXNzaW5nIGluIGZpeF90YXhvblxuICAgIG1pc3NpbmdfbWlzc3BlbGxpbmcgPC0gdGliYmxlKFxuICAgICAgcXVlcnkgPSBzcHApICU+JSBcbiAgICAgIGRwbHlyOjpmaWx0ZXIoIXF1ZXJ5ICVpbiUgZml4X3RheG9uJHF1ZXJ5KVxuICAgIFxuICAgICMgR2V0IEFscGhhaWQgb2YgdGF4b24gKFRha2VzIHNvbWUgdGltZSlcbiAgICBcbiAgICBhbHBoYWlkIDwtIHRpYmJsZTo6dGliYmxlKFxuICAgICAgZml4X3RheG9uLFxuICAgICAgd29ybXNfaWQgPSBjYmluZCh3b3Jtczo6d29ybXNieW5hbWVzKGZpeF90YXhvbiR0YXhhLFxuICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIHZlcmJvc2UgPSBGQUxTRSlcbiAgICAgICAgICAgICAgICAgICAgICAgKVxuICAgIClcbmBgYCJ9 -->
+<pre class="r"><code>#Juliano&#39;s code from FishBase
+  # Get WoRM&#39;s id for sourcing
+  wrm &lt;- taxize::gnr_datasources() %&gt;% 
+    dplyr::filter(title == &quot;World Register of Marine Species&quot;) %&gt;% 
+    dplyr::pull(id)
+  
+   # If scientific names are provided, check misspelling
+    fix_taxon &lt;- taxize::gnr_resolve(spp,
+                                     data_source_ids = wrm,
+                                     best_match_only = TRUE,
+                                     canonical = TRUE,
+                                     ask = FALSE) %&gt;% 
+      dplyr::select(
+        query = user_supplied_name,
+        taxa = matched_name2)
+    
+    # Missing in fix_taxon
+    missing_misspelling &lt;- tibble(
+      query = spp) %&gt;% 
+      dplyr::filter(!query %in% fix_taxon$query)
+    
+    # Get Alphaid of taxon (Takes some time)
+    
+    alphaid &lt;- tibble::tibble(
+      fix_taxon,
+      worms_id = cbind(worms::wormsbynames(fix_taxon$taxa,
+                                           verbose = FALSE)
+                       )
+    )</code></pre>
 <!-- rnb-source-end -->
-<!-- rnb-output-begin eyJkYXRhIjoiRXJyb3IgaW4gYFsuZGF0YS50YWJsZWAoc3BwX2tleSwgdGF4YSA9PSBcIkhlbWl0cmlwdGVydXMgYW1lcmljYW51c1wiLCBjbGFzcyA9IFwiQWN0aW5vcHRlcnlnaWlcIikgOiBcbiAgdW51c2VkIGFyZ3VtZW50IChjbGFzcyA9IFwiQWN0aW5vcHRlcnlnaWlcIilcbiJ9 -->
-<pre><code>Error in `[.data.table`(spp_key, taxa == &quot;Hemitripterus americanus&quot;, class = &quot;Actinopterygii&quot;) : 
-  unused argument (class = &quot;Actinopterygii&quot;)</code></pre>
+<!-- rnb-output-begin eyJkYXRhIjoiUkVRVUVTVElORyA1NzggSVRFTVMgQlkgTkFNRSBmcm9tIFdvcmxkIFJlZ2lzdGVyIG9mIE1hcmluZSBTcGVjaWVzICh3d3cubWFyaW5lc3BlY2llcy5vcmcpLCAxNC8wOS8yMDIyIDIxOjM5OjU2IChDQy1CWSlcbkNoZWlyYXN0ZXIgZGF3c29uaSAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgbm8gbWF0Y2ggICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICBcbkFyY3RvemVudXMgcmlzc28ga3JveWVyaSAgICAgICAgICAgICAgICAgICAgICAgICAgICAgbm8gbWF0Y2ggICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICBcbiJ9 -->
+<pre><code>REQUESTING 578 ITEMS BY NAME from World Register of Marine Species (www.marinespecies.org), 14/09/2022 21:39:56 (CC-BY)
+Cheiraster dawsoni                                   no match                                 
+Arctozenus risso kroyeri                             no match                                 </code></pre>
+<!-- rnb-output-end -->
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuICAgIFxuICAgICMgTWlzc2luZyBpbiBBcGhpYUlEc1xuICAgIG1pc3NpbmdfYWxwaGFpZCA8LSBhbHBoYWlkICU+JSBcbiAgICAgIGRwbHlyOjpmaWx0ZXIoaXMubmEod29ybXNfaWQpKSAlPiUgXG4gICAgICBkcGx5cjo6c2VsZWN0KHF1ZXJ5KVxuICAgIFxuICAgICMgR2V0IGNvcnJlY3QgbmFtZXMgYW5kIGZ1bGwgY2xhc3NpZmljYXRpb25cbiAgICB3b3Jtc19kYiA8LSAgd29ybXM6Ondvcm1zYnlpZChhcy5udW1lcmljKGFscGhhaWQkd29ybXNfaWQkQXBoaWFJRCksXG4gICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgdmVyYm9zZSA9IEYpICU+JSBcbiAgICAgIGRwbHlyOjpzZWxlY3QoXG4gICAgICAgIHRheGEgPSB2YWxpZF9uYW1lLCAjIHNlbGVjdHMgdmFsaWQgbmFtZSBpbiBjYXNlIGlzIHN5bm9ueW1cbiAgICAgICAgd29ybXNfaWQgPSB2YWxpZF9BcGhpYUlELCAjIHNlbGVjdHMgdmFsaWQgaWQgaW4gY2FzZSBpcyBzeW5vbnltXG4gICAgICAgIGtpbmdkb20scGh5bHVtLGNsYXNzLG9yZGVyLGZhbWlseSxnZW51cyxpc01hcmluZSxyYW5rXG4gICAgICApICU+JVxuICAgICAgIyBJbmNsdWRlIG9yaWdpbmFsbHkgc3VwcGxpZWQgdGF4YVxuICAgICAgZHBseXI6Om11dGF0ZShcbiAgICAgICAgcXVlcnkgPSBmaXhfdGF4b24kcXVlcnlcbiAgICAgIClcbiAgICBcbiAgICBcbiAgICAjIEdldCBNaXNzaW5nIGluZm9ybWF0aW9uXG4gICAgbWlzc2luZ19kYXRhIDwtIGRwbHlyOjpiaW5kX3Jvd3MobWlzc2luZ19hbHBoYWlkLG1pc3NpbmdfbWlzc3BlbGxpbmcpXG4gICAgXG4jQWRkIG1hbnVhbGx5XG4gICAgXHRcbiNDaGVpcmFzdGVyIGRhd3NvbmkgKGtlZXApXG4jQXJjdG96ZW51cyByaXNzbyBrcm95ZXJpIChrZWVwKVxuI0d5bW90aG9yYXggaWdyb21hcmdpYXR1cyAoc3BlY2llcyBvZiBNb3JheSBlZWwsIHNob3VsZG4ndCBsaXZlIGluIEdNRVgpXG4jUGVyaWNvcHR1cyBwdW5jdGF0dXMgICAgKHNhbmQgc2NhcmFiIGJlZXRsZSB0aGF0IGlzIGVuZGVtaWMgdG8gTmV3IFplYWxhbmQsIGV4Y2x1ZGUpXG4jUmFpb2lkZXMgbG91aXNpYWVzaXMgICAoY2Fubm90IGZpbmQgcmVjb3JkIG9mIHRoaXMgc3BlY2llcyBhbnl3aGVyZSwgZXhjbHVkZSlcbiNDYXJldHRhIGNhcmV0dGEgKGxvZ2dlcmhlYWQgc2VhIHR1cnRsZSwgZXhjbHVkZSlcblxubmV3cm93MSA8LSBjKFwiQ2hlaXJhc3RlciAoTHVpZGlhc3RlcikgZGF3c29uaVwiLDM4MDc5OCxcIkFuaW1hbGlhXCIsXCJFY2hpbm9kZXJtYXRhXCIsXCJBc3Rlcm9pZGVhXCIsIFwiTm90b215b3RpZGFcIixcIkJlbnRob3BlY3RpbmlkYWVcIixcIkNoZWlyYXN0ZXJcIiwxLFwiU3BlY2llc1wiLFwiQ2hlaXJhc3RlciBkYXdzb25pXCIpXG5cbm5ld3JvdzIgPC0gYyhcIkFyY3RvemVudXMgcmlzc28ga3JveWVyaVwiLDEyNjM1MixcIkFuaW1hbGlhXCIsXCJDaG9yZGF0YVwiLFwiVGVsZW9zdGVpXCIsXG5cIkF1bG9waWZvcm1lc1wiLCBcIlBhcmFsZXBpZGlkYWVcIiwgXCJBcmN0b3plbnVzXCIsIDEsIFwiU3BlY2llc1wiLCBcIkFyY3RvemVudXMgcmlzc28ga3JveWVyaVwiKVxuXG5cbiNkZWxldGUgcm93IHdpdGggTkFzXG53b3Jtc19kYi5yIDwtIHdvcm1zX2RiICU+JVxuICAgZmlsdGVyKCFpcy5uYSh3b3Jtc19pZCkpXG5cbnNwcF9rZXkgPC0gcmJpbmQod29ybXNfZGIuciwgbmV3cm93MSwgbmV3cm93Milcblxuc2V0bmFtZXMoc3BwX2tleSwgXCJxdWVyeVwiLCBcInNwcFwiKVxuXG4jbWlzc2luZyBjbGFzcyBmb3IgSGVtaXRyaXB0ZXJ1cyBhbWVyaWNhbnVzXG5zcHBfa2V5W3RheGEgPT0gXCJIZW1pdHJpcHRlcnVzIGFtZXJpY2FudXNcIiwgY2xhc3MgOj0gXCJBY3Rpbm9wdGVyaVwiXVxuYGBgIn0= -->
+<pre class="r"><code>    
+    # Missing in AphiaIDs
+    missing_alphaid &lt;- alphaid %&gt;% 
+      dplyr::filter(is.na(worms_id)) %&gt;% 
+      dplyr::select(query)
+    
+    # Get correct names and full classification
+    worms_db &lt;-  worms::wormsbyid(as.numeric(alphaid$worms_id$AphiaID),
+                                  verbose = F) %&gt;% 
+      dplyr::select(
+        taxa = valid_name, # selects valid name in case is synonym
+        worms_id = valid_AphiaID, # selects valid id in case is synonym
+        kingdom,phylum,class,order,family,genus,isMarine,rank
+      ) %&gt;%
+      # Include originally supplied taxa
+      dplyr::mutate(
+        query = fix_taxon$query
+      )
+    
+    
+    # Get Missing information
+    missing_data &lt;- dplyr::bind_rows(missing_alphaid,missing_misspelling)
+    
+#Add manually
+        
+#Cheiraster dawsoni (keep)
+#Arctozenus risso kroyeri (keep)
+#Gymothorax igromargiatus (species of Moray eel, shouldn&#39;t live in GMEX)
+#Pericoptus punctatus    (sand scarab beetle that is endemic to New Zealand, exclude)
+#Raioides louisiaesis   (cannot find record of this species anywhere, exclude)
+#Caretta caretta (loggerhead sea turtle, exclude)
+
+newrow1 &lt;- c(&quot;Cheiraster (Luidiaster) dawsoni&quot;,380798,&quot;Animalia&quot;,&quot;Echinodermata&quot;,&quot;Asteroidea&quot;, &quot;Notomyotida&quot;,&quot;Benthopectinidae&quot;,&quot;Cheiraster&quot;,1,&quot;Species&quot;,&quot;Cheiraster dawsoni&quot;)
+
+newrow2 &lt;- c(&quot;Arctozenus risso kroyeri&quot;,126352,&quot;Animalia&quot;,&quot;Chordata&quot;,&quot;Teleostei&quot;,
+&quot;Aulopiformes&quot;, &quot;Paralepididae&quot;, &quot;Arctozenus&quot;, 1, &quot;Species&quot;, &quot;Arctozenus risso kroyeri&quot;)
+
+
+#delete row with NAs
+worms_db.r &lt;- worms_db %&gt;%
+   filter(!is.na(worms_id))
+
+spp_key &lt;- rbind(worms_db.r, newrow1, newrow2)
+
+setnames(spp_key, &quot;query&quot;, &quot;spp&quot;)
+
+#missing class for Hemitripterus americanus
+spp_key[taxa == &quot;Hemitripterus americanus&quot;, class := &quot;Actinopteri&quot;]</code></pre>
+<!-- rnb-source-end -->
+<!-- rnb-output-begin eyJkYXRhIjoiRXJyb3IgaW4gYDo9YChjbGFzcywgXCJBY3Rpbm9wdGVyaVwiKSA6IFxuICBDaGVjayB0aGF0IGlzLmRhdGEudGFibGUoRFQpID09IFRSVUUuIE90aGVyd2lzZSwgOj0gYW5kIGA6PWAoLi4uKSBhcmUgZGVmaW5lZCBmb3IgdXNlIGluIGosIG9uY2Ugb25seSBhbmQgaW4gcGFydGljdWxhciB3YXlzLiBTZWUgaGVscChcIjo9XCIpLlxuIn0= -->
+<pre><code>Error in `:=`(class, &quot;Actinopteri&quot;) : 
+  Check that is.data.table(DT) == TRUE. Otherwise, := and `:=`(...) are defined for use in j, once only and in particular ways. See help(&quot;:=&quot;).</code></pre>
 <!-- rnb-output-end -->
 <!-- rnb-chunk-end -->
 <!-- rnb-text-begin -->
 <!-- rnb-text-end -->
 
-<div id="rmd-source-code">LS0tCnRpdGxlOiAiQWRkIFNwcCBUYXhvbm9teSBJbmZvIgpvdXRwdXQ6IGh0bWxfbm90ZWJvb2sKLS0tCgpgYGB7ciBzZXR1cH0KbGlicmFyeSh0aWR5dmVyc2UpCmxpYnJhcnkod29ycm1zKQpsaWJyYXJ5KHRheGl6ZSkKbGlicmFyeShoZXJlKQpgYGAKCkxvYWQgRGF0YSwgUmVkdWNlIHRvIFNwZWNpZXMKYGBge3J9CnNwcF9tYXN0ZXJfenRlbXBfc2V1c19idW95X3NjYWxlZCA8LSByZWFkUkRTKGhlcmUoIkRhdGEiLCJTcHBfbWFzdGVyIiwgInNwcF9tYXN0ZXJfenRlbXBfc2V1c19idW95X3NjYWxlZC5yZHMiKSkKCiNsaXN0IG9mIHNwZWNpZXMKc3BwIDwtIHVuaXF1ZShzcHBfbWFzdGVyX3p0ZW1wX3NldXNfYnVveV9zY2FsZWRbLHNwcF0pCmBgYAoKQ2xlYW5pbmcgQ29kZSBmcm9tIEp1bGlhbm8KYGBge3J9CiNKdWxpYW5vJ3MgY29kZSBmcm9tIEZpc2hCYXNlCiAgIyBHZXQgV29STSdzIGlkIGZvciBzb3VyY2luZwogIHdybSA8LSB0YXhpemU6Omducl9kYXRhc291cmNlcygpICU+JSAKICAgIGRwbHlyOjpmaWx0ZXIodGl0bGUgPT0gIldvcmxkIFJlZ2lzdGVyIG9mIE1hcmluZSBTcGVjaWVzIikgJT4lIAogICAgZHBseXI6OnB1bGwoaWQpCiAgCiAgICMgSWYgc2NpZW50aWZpYyBuYW1lcyBhcmUgcHJvdmlkZWQsIGNoZWNrIG1pc3NwZWxsaW5nCiAgICBmaXhfdGF4b24gPC0gdGF4aXplOjpnbnJfcmVzb2x2ZShzcHAsCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICBkYXRhX3NvdXJjZV9pZHMgPSB3cm0sCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICBiZXN0X21hdGNoX29ubHkgPSBUUlVFLAogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgY2Fub25pY2FsID0gVFJVRSwKICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIGFzayA9IEZBTFNFKSAlPiUgCiAgICAgIGRwbHlyOjpzZWxlY3QoCiAgICAgICAgcXVlcnkgPSB1c2VyX3N1cHBsaWVkX25hbWUsCiAgICAgICAgdGF4YSA9IG1hdGNoZWRfbmFtZTIpCiAgICAKICAgICMgTWlzc2luZyBpbiBmaXhfdGF4b24KICAgIG1pc3NpbmdfbWlzc3BlbGxpbmcgPC0gdGliYmxlKAogICAgICBxdWVyeSA9IHNwcCkgJT4lIAogICAgICBkcGx5cjo6ZmlsdGVyKCFxdWVyeSAlaW4lIGZpeF90YXhvbiRxdWVyeSkKICAgIAogICAgIyBHZXQgQWxwaGFpZCBvZiB0YXhvbiAoVGFrZXMgc29tZSB0aW1lKQogICAgCiAgICBhbHBoYWlkIDwtIHRpYmJsZTo6dGliYmxlKAogICAgICBmaXhfdGF4b24sCiAgICAgIHdvcm1zX2lkID0gY2JpbmQod29ybXM6Ondvcm1zYnluYW1lcyhmaXhfdGF4b24kdGF4YSwKICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIHZlcmJvc2UgPSBGQUxTRSkKICAgICAgICAgICAgICAgICAgICAgICApCiAgICApCiAgICAKICAgICMgTWlzc2luZyBpbiBBcGhpYUlEcwogICAgbWlzc2luZ19hbHBoYWlkIDwtIGFscGhhaWQgJT4lIAogICAgICBkcGx5cjo6ZmlsdGVyKGlzLm5hKHdvcm1zX2lkKSkgJT4lIAogICAgICBkcGx5cjo6c2VsZWN0KHF1ZXJ5KQogICAgCiAgICAjIEdldCBjb3JyZWN0IG5hbWVzIGFuZCBmdWxsIGNsYXNzaWZpY2F0aW9uCiAgICB3b3Jtc19kYiA8LSAgd29ybXM6Ondvcm1zYnlpZChhcy5udW1lcmljKGFscGhhaWQkd29ybXNfaWQkQXBoaWFJRCksCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICB2ZXJib3NlID0gRikgJT4lIAogICAgICBkcGx5cjo6c2VsZWN0KAogICAgICAgIHRheGEgPSB2YWxpZF9uYW1lLCAjIHNlbGVjdHMgdmFsaWQgbmFtZSBpbiBjYXNlIGlzIHN5bm9ueW0KICAgICAgICB3b3Jtc19pZCA9IHZhbGlkX0FwaGlhSUQsICMgc2VsZWN0cyB2YWxpZCBpZCBpbiBjYXNlIGlzIHN5bm9ueW0KICAgICAgICBraW5nZG9tLHBoeWx1bSxjbGFzcyxvcmRlcixmYW1pbHksZ2VudXMsaXNNYXJpbmUscmFuawogICAgICApICU+JQogICAgICAjIEluY2x1ZGUgb3JpZ2luYWxseSBzdXBwbGllZCB0YXhhCiAgICAgIGRwbHlyOjptdXRhdGUoCiAgICAgICAgcXVlcnkgPSBmaXhfdGF4b24kcXVlcnkKICAgICAgKQogICAgCiAgICAKICAgICMgR2V0IE1pc3NpbmcgaW5mb3JtYXRpb24KICAgIG1pc3NpbmdfZGF0YSA8LSBkcGx5cjo6YmluZF9yb3dzKG1pc3NpbmdfYWxwaGFpZCxtaXNzaW5nX21pc3NwZWxsaW5nKQogICAgCiNBZGQgbWFudWFsbHkKICAgIAkKI0NoZWlyYXN0ZXIgZGF3c29uaSAoa2VlcCkKI0FyY3RvemVudXMgcmlzc28ga3JveWVyaSAoa2VlcCkKI0d5bW90aG9yYXggaWdyb21hcmdpYXR1cyAoc3BlY2llcyBvZiBNb3JheSBlZWwsIHNob3VsZG4ndCBsaXZlIGluIEdNRVgpCiNQZXJpY29wdHVzIHB1bmN0YXR1cyAgICAoc2FuZCBzY2FyYWIgYmVldGxlIHRoYXQgaXMgZW5kZW1pYyB0byBOZXcgWmVhbGFuZCwgZXhjbHVkZSkKI1JhaW9pZGVzIGxvdWlzaWFlc2lzICAgKGNhbm5vdCBmaW5kIHJlY29yZCBvZiB0aGlzIHNwZWNpZXMgYW55d2hlcmUsIGV4Y2x1ZGUpCiNDYXJldHRhIGNhcmV0dGEgKGxvZ2dlcmhlYWQgc2VhIHR1cnRsZSwgZXhjbHVkZSkKCm5ld3JvdzEgPC0gYygiQ2hlaXJhc3RlciAoTHVpZGlhc3RlcikgZGF3c29uaSIsMzgwNzk4LCJBbmltYWxpYSIsIkVjaGlub2Rlcm1hdGEiLCJBc3Rlcm9pZGVhIiwgIk5vdG9teW90aWRhIiwiQmVudGhvcGVjdGluaWRhZSIsIkNoZWlyYXN0ZXIiLDEsIlNwZWNpZXMiLCJDaGVpcmFzdGVyIGRhd3NvbmkiKQoKbmV3cm93MiA8LSBjKCJBcmN0b3plbnVzIHJpc3NvIGtyb3llcmkiLDEyNjM1MiwiQW5pbWFsaWEiLCJDaG9yZGF0YSIsIlRlbGVvc3RlaSIsCiJBdWxvcGlmb3JtZXMiLCAiUGFyYWxlcGlkaWRhZSIsICJBcmN0b3plbnVzIiwgMSwgIlNwZWNpZXMiLCAiQXJjdG96ZW51cyByaXNzbyBrcm95ZXJpIikKCgojZGVsZXRlIHJvdyB3aXRoIE5Bcwp3b3Jtc19kYi5yIDwtIHdvcm1zX2RiICU+JQogICBmaWx0ZXIoIWlzLm5hKHdvcm1zX2lkKSkKCnNwcF9rZXkgPC0gcmJpbmQod29ybXNfZGIuciwgbmV3cm93MSwgbmV3cm93MikKCnNldG5hbWVzKHNwcF9rZXksICJxdWVyeSIsICJzcHAiKQoKI21pc3NpbmcgY2xhc3MgZm9yIEhlbWl0cmlwdGVydXMgYW1lcmljYW51cwpzcHBfa2V5W3RheGEgPT0gIkhlbWl0cmlwdGVydXMgYW1lcmljYW51cyIsIGNsYXNzIDo9ICJBY3Rpbm9wdGVyaSJdCgojTWlzc2luZyBjbGFzcyBmb3IgSGVtaXRyaXB0ZXJ1cyBib2xpbmkKc3BwX2tleVt0YXhhID09ICJIZW1pdHJpcHRlcnVzIGJvbGluaSIsIGNsYXNzIDo9ICJBY3Rpbm9wdGVyaSJdCgojc2F2ZQp3cml0ZV9jc3Yoc3BwX2tleSwgZmlsZSA9IGhlcmU6OmhlcmUoIkRhdGEiLCJTcHBfbWFzdGVyIiwic3BwX2tleS5jc3YiKSkKCmBgYAoK</div>
+<div id="rmd-source-code">LS0tCnRpdGxlOiAiQWRkIFNwcCBUYXhvbm9teSBJbmZvIgpvdXRwdXQ6IGh0bWxfbm90ZWJvb2sKLS0tCgpgYGB7ciBzZXR1cH0KbGlicmFyeSh0aWR5dmVyc2UpCmxpYnJhcnkod29ycm1zKQpsaWJyYXJ5KHRheGl6ZSkKbGlicmFyeShoZXJlKQpgYGAKCkxvYWQgRGF0YSwgUmVkdWNlIHRvIFNwZWNpZXMKYGBge3J9CnNwcF9tYXN0ZXJfenRlbXBfc2V1c19idW95X3NjYWxlZCA8LSByZWFkUkRTKGhlcmUoIkRhdGEiLCJTcHBfbWFzdGVyIiwgInNwcF9tYXN0ZXJfenRlbXBfc2V1c19idW95X3NjYWxlZC5yZHMiKSkKCiNsaXN0IG9mIHNwZWNpZXMKc3BwIDwtIHVuaXF1ZShzcHBfbWFzdGVyX3p0ZW1wX3NldXNfYnVveV9zY2FsZWRbLHNwcF0pCmBgYAoKQ2xlYW5pbmcgQ29kZSBmcm9tIEp1bGlhbm8KYGBge3J9CiNKdWxpYW5vJ3MgY29kZSBmcm9tIEZpc2hCYXNlCiAgIyBHZXQgV29STSdzIGlkIGZvciBzb3VyY2luZwogIHdybSA8LSB0YXhpemU6Omducl9kYXRhc291cmNlcygpICU+JSAKICAgIGRwbHlyOjpmaWx0ZXIodGl0bGUgPT0gIldvcmxkIFJlZ2lzdGVyIG9mIE1hcmluZSBTcGVjaWVzIikgJT4lIAogICAgZHBseXI6OnB1bGwoaWQpCiAgCiAgICMgSWYgc2NpZW50aWZpYyBuYW1lcyBhcmUgcHJvdmlkZWQsIGNoZWNrIG1pc3NwZWxsaW5nCiAgICBmaXhfdGF4b24gPC0gdGF4aXplOjpnbnJfcmVzb2x2ZShzcHAsCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICBkYXRhX3NvdXJjZV9pZHMgPSB3cm0sCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICBiZXN0X21hdGNoX29ubHkgPSBUUlVFLAogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgY2Fub25pY2FsID0gVFJVRSwKICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIGFzayA9IEZBTFNFKSAlPiUgCiAgICAgIGRwbHlyOjpzZWxlY3QoCiAgICAgICAgcXVlcnkgPSB1c2VyX3N1cHBsaWVkX25hbWUsCiAgICAgICAgdGF4YSA9IG1hdGNoZWRfbmFtZTIpCiAgICAKICAgICMgTWlzc2luZyBpbiBmaXhfdGF4b24KICAgIG1pc3NpbmdfbWlzc3BlbGxpbmcgPC0gdGliYmxlKAogICAgICBxdWVyeSA9IHNwcCkgJT4lIAogICAgICBkcGx5cjo6ZmlsdGVyKCFxdWVyeSAlaW4lIGZpeF90YXhvbiRxdWVyeSkKICAgIAogICAgIyBHZXQgQWxwaGFpZCBvZiB0YXhvbiAoVGFrZXMgc29tZSB0aW1lKQogICAgCiAgICBhbHBoYWlkIDwtIHRpYmJsZTo6dGliYmxlKAogICAgICBmaXhfdGF4b24sCiAgICAgIHdvcm1zX2lkID0gY2JpbmQod29ybXM6Ondvcm1zYnluYW1lcyhmaXhfdGF4b24kdGF4YSwKICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIHZlcmJvc2UgPSBGQUxTRSkKICAgICAgICAgICAgICAgICAgICAgICApCiAgICApCiAgICAKICAgICMgTWlzc2luZyBpbiBBcGhpYUlEcwogICAgbWlzc2luZ19hbHBoYWlkIDwtIGFscGhhaWQgJT4lIAogICAgICBkcGx5cjo6ZmlsdGVyKGlzLm5hKHdvcm1zX2lkKSkgJT4lIAogICAgICBkcGx5cjo6c2VsZWN0KHF1ZXJ5KQogICAgCiAgICAjIEdldCBjb3JyZWN0IG5hbWVzIGFuZCBmdWxsIGNsYXNzaWZpY2F0aW9uCiAgICB3b3Jtc19kYiA8LSAgd29ybXM6Ondvcm1zYnlpZChhcy5udW1lcmljKGFscGhhaWQkd29ybXNfaWQkQXBoaWFJRCksCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICB2ZXJib3NlID0gRikgJT4lIAogICAgICBkcGx5cjo6c2VsZWN0KAogICAgICAgIHRheGEgPSB2YWxpZF9uYW1lLCAjIHNlbGVjdHMgdmFsaWQgbmFtZSBpbiBjYXNlIGlzIHN5bm9ueW0KICAgICAgICB3b3Jtc19pZCA9IHZhbGlkX0FwaGlhSUQsICMgc2VsZWN0cyB2YWxpZCBpZCBpbiBjYXNlIGlzIHN5bm9ueW0KICAgICAgICBraW5nZG9tLHBoeWx1bSxjbGFzcyxvcmRlcixmYW1pbHksZ2VudXMsaXNNYXJpbmUscmFuawogICAgICApICU+JQogICAgICAjIEluY2x1ZGUgb3JpZ2luYWxseSBzdXBwbGllZCB0YXhhCiAgICAgIGRwbHlyOjptdXRhdGUoCiAgICAgICAgcXVlcnkgPSBmaXhfdGF4b24kcXVlcnkKICAgICAgKQogICAgCiAgICAKICAgICMgR2V0IE1pc3NpbmcgaW5mb3JtYXRpb24KICAgIG1pc3NpbmdfZGF0YSA8LSBkcGx5cjo6YmluZF9yb3dzKG1pc3NpbmdfYWxwaGFpZCxtaXNzaW5nX21pc3NwZWxsaW5nKQogICAgCiNBZGQgbWFudWFsbHkKICAgIAkKI0NoZWlyYXN0ZXIgZGF3c29uaSAoa2VlcCkKI0FyY3RvemVudXMgcmlzc28ga3JveWVyaSAoa2VlcCkKI0d5bW90aG9yYXggaWdyb21hcmdpYXR1cyAoc3BlY2llcyBvZiBNb3JheSBlZWwsIHNob3VsZG4ndCBsaXZlIGluIEdNRVgpCiNQZXJpY29wdHVzIHB1bmN0YXR1cyAgICAoc2FuZCBzY2FyYWIgYmVldGxlIHRoYXQgaXMgZW5kZW1pYyB0byBOZXcgWmVhbGFuZCwgZXhjbHVkZSkKI1JhaW9pZGVzIGxvdWlzaWFlc2lzICAgKGNhbm5vdCBmaW5kIHJlY29yZCBvZiB0aGlzIHNwZWNpZXMgYW55d2hlcmUsIGV4Y2x1ZGUpCiNDYXJldHRhIGNhcmV0dGEgKGxvZ2dlcmhlYWQgc2VhIHR1cnRsZSwgZXhjbHVkZSkKCm5ld3JvdzEgPC0gYygiQ2hlaXJhc3RlciAoTHVpZGlhc3RlcikgZGF3c29uaSIsMzgwNzk4LCJBbmltYWxpYSIsIkVjaGlub2Rlcm1hdGEiLCJBc3Rlcm9pZGVhIiwgIk5vdG9teW90aWRhIiwiQmVudGhvcGVjdGluaWRhZSIsIkNoZWlyYXN0ZXIiLDEsIlNwZWNpZXMiLCJDaGVpcmFzdGVyIGRhd3NvbmkiKQoKbmV3cm93MiA8LSBjKCJBcmN0b3plbnVzIHJpc3NvIGtyb3llcmkiLDEyNjM1MiwiQW5pbWFsaWEiLCJDaG9yZGF0YSIsIlRlbGVvc3RlaSIsCiJBdWxvcGlmb3JtZXMiLCAiUGFyYWxlcGlkaWRhZSIsICJBcmN0b3plbnVzIiwgMSwgIlNwZWNpZXMiLCAiQXJjdG96ZW51cyByaXNzbyBrcm95ZXJpIikKCgojZGVsZXRlIHJvdyB3aXRoIE5Bcwp3b3Jtc19kYi5yIDwtIHdvcm1zX2RiICU+JQogICBmaWx0ZXIoIWlzLm5hKHdvcm1zX2lkKSkKCnNwcF9rZXkgPC0gcmJpbmQod29ybXNfZGIuciwgbmV3cm93MSwgbmV3cm93MikKCnNldG5hbWVzKHNwcF9rZXksICJxdWVyeSIsICJzcHAiKQoKc3BwX2tleSA8LSBkYXRhLnRhYmxlKHNwcF9rZXkpCgojbWlzc2luZyBjbGFzcyBmb3IgSGVtaXRyaXB0ZXJ1cyBhbWVyaWNhbnVzCnNwcF9rZXlbdGF4YSA9PSAiSGVtaXRyaXB0ZXJ1cyBhbWVyaWNhbnVzIiwgY2xhc3MgOj0gIkFjdGlub3B0ZXJpIl0KCiNNaXNzaW5nIGNsYXNzIGZvciBIZW1pdHJpcHRlcnVzIGJvbGluaQpzcHBfa2V5W3RheGEgPT0gIkhlbWl0cmlwdGVydXMgYm9saW5pIiwgY2xhc3MgOj0gIkFjdGlub3B0ZXJpIl0KCiNsZWF2ZSBvdXQgc2VhIHR1cnRsZQpzcHBfa2V5IDwtIHNwcF9rZXlbc3BwICE9ICJDYXJldHRhIGNhcmV0dGEiLF0KCiNzYXZlCndyaXRlX2NzdihzcHBfa2V5LCBmaWxlID0gaGVyZTo6aGVyZSgiRGF0YSIsIlNwcF9tYXN0ZXIiLCJzcHBfa2V5LmNzdiIpKQoKYGBgCgo=</div>
 
 
 

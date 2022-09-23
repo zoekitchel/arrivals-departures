@@ -10,9 +10,10 @@ library(ggplot2)
 library(data.table)
 library(wesanderson)
 library(cowplot)
+library(here)
 
-RVI_arrival_nolag <- readRDS(here("Model_results", "RVI_arrival_nolag.rds"))
-RVI_departure_nolag <- readRDS(here("Model_results", "RVI_departure_nolag.rds"))
+RVI_arrival_nolag <- readRDS(here::here("Model_results", "RVI_arrival_nolag.rds"))
+RVI_departure_nolag <- readRDS(here::here("Model_results", "RVI_departure_nolag.rds"))
 ```
 
 Plot
@@ -39,7 +40,7 @@ RVI_arrival_plot <- ggplot(data = RVI_arrival_nolag, aes(x=type, y = value, fill
   scale_fill_manual(values = colors,
                     drop = F)
 
-ggsave(here("figures","Figure3-3_4_merge","figure4","Figure4a.eps" ))
+ggsave(here::here("figures","Figure3-3_4_merge","figure4","Figure4a.eps" ))
 
 #departure
 RVI_departure_plot <- ggplot(data = RVI_departure_nolag, aes(x=type, y = value, fill = variable)) +
@@ -59,7 +60,7 @@ RVI_departure_plot <- ggplot(data = RVI_departure_nolag, aes(x=type, y = value, 
   scale_fill_manual(values = colors,
                     drop = F)
 
-ggsave(here("figures","Figure3-3_4_merge","figure4","Figure4b.eps" ))
+ggsave(here::here("figures","Figure3-3_4_merge","figure4","Figure4b.eps" ))
 
 
 
@@ -75,16 +76,17 @@ legend <- get_legend(RVI_arrival_plot)
 #add legend
 figure4_wlegend <- plot_grid(figure4, legend, nrow = 1, rel_widths = c(8,1))
 
-ggsave(here("figures","Figure3-3_4_merge","figure4","Figure4.eps"), height = 4, width = 8)
-ggsave(here("figures","Figure3-3_4_merge","figure4","Figure4.jpg"), height = 4, width = 8)
+ggsave(here::here("figures","Figure3-3_4_merge","figure4","Figure4.eps"), height = 4, width = 8)
+ggsave(here::here("figures","Figure3-3_4_merge","figure4","Figure4.jpg"), height = 4, width = 8)
 ```
 
 Add in old figure 3
 ```{r adding in figure 3}
-load(file = here("figures","Figure3-3_4_merge","lag_through_time.RData"))
+load(file = here::here("figures","Figure3-3_4_merge","lag_through_time.RData"))
 
 figure3_new <- plot_grid(lag_through_time, figure4_wlegend, ncol = 1, nrow = 2, labels = c("a.","",""))
 
-ggsave(figure3_new, path = here("figures","Figure3-3_4_merge"), filename = "figure3_new.eps", height = 6, width = 7.5, units = "in")
+ggsave(figure3_new, path = here::here("figures","Figure3-3_4_merge"), filename = "figure3_new.eps", height = 6, width = 7.5, units = "in")
+ggsave(figure3_new, path = here::here("figures","Figure3-3_4_merge"), filename = "figure3_new.jpg", height = 6, width = 7.5, units = "in")
 ```
 

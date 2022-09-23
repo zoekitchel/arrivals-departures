@@ -20,10 +20,18 @@ library(glmmTMB)
 Pull in spp master data
 
 ```{r}
-spp_master_ztemp_seus_buoy_scaled <- readRDS(here("Data","Spp_master", "spp_master_ztemp_seus_buoy_scaled.rds")) #spp master, gain loss
+spp_master_ztemp_seus_buoy_scaled <- readRDS(here::here("Data","Spp_master", "spp_master_ztemp_seus_buoy_scaled.rds")) #spp master, gain loss
 spp_key <- fread(here::here("Data","Spp_master","spp_key.csv")) #key to link phylogenic info
 
-spp_master_ztemp_seus_buoy_scaled <- spp_master_ztemp_seus_buoy_scaled[spp_key, on = "spp"] #this drops three species for GMEX that should not be there (see spp_add_genus_etc.Rmd code)
+spp_master_ztemp_seus_buoy_scaled <- spp_master_ztemp_seus_buoy_scaled[spp_key, on = "spp", nomatch = NULL] #this drops three species for GMEX that should not be there (see spp_add_genus_etc.Rmd code)
+
+#delete first year each region is sampled (because gains and losses are based on transitions between years, so we need 2 years of observations)
+
+spp_master_ztemp_seus_buoy_scaled[,min_year := min(year),.(reg)]
+
+spp_master_ztemp_seus_buoy_scaled <- spp_master_ztemp_seus_buoy_scaled[year != min_year]
+
+nrow(spp_master_ztemp_seus_buoy_scaled) == 17997    
 
 #instead of col or now_ext =  0.3, add col_03 and now_ext_03  column for plotting
 spp_master_ztemp_seus_buoy_scaled[,col_03 := ifelse(col == 1, 0.3, col)][,now_ext_03 := ifelse(now_ext == 1, 0.3, now_ext)]
@@ -40,18 +48,6 @@ Best Temp Only Model Gains
 #let's take a look at best performing model
 mod_sppregrandom <- glmer(col ~ seas_sst_temp_scaled  + (1|reg) + (1|phylum) + (1|class) + (1|order) + (1|family) + (1|genus) + (1|spp), family = binomial, data = spp_master_ztemp_seus_buoy_scaled, nAGQ = 0)
                        
-```
-
-
-Assumptions
-```{r}
-
-#confint(mod_sppregrandom)
-#exp(confint(fit)) will give you either Wald or profile likelihood (depending on pkgs loaded) confidence intervals on the parameters of the model, not the fitted values of the model.
-
-#merBoot_gain <- bootMer(mod_sppregrandom, predict, nsim = 100, re.form = NA)
-
-#predict(se.fit=TRUE, re.form=NA, allow.new.levels=TRUE, type = 'response')
 ```
 
 ##Plot Gains versus Seasonality

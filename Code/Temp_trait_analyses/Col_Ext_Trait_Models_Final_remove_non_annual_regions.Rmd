@@ -66,7 +66,14 @@ Link up with spp key to add phylum, order, family, etc.
 ```{r pull in spp, order, family, etc.}
 spp_key <- fread(here::here("Data","Spp_master","spp_key.csv"))
 
-spp_master_ztemp_seus_buoy.traits_scaled <- spp_master_ztemp_seus_buoy.traits_scaled[spp_key, on = "spp"]
+spp_master_ztemp_seus_buoy.traits_scaled <- spp_key[spp_master_ztemp_seus_buoy.traits_scaled, on = "spp", nomatch = NULL]
+
+
+#delete first year each region is sampled (because gains and losses are based on transitions between years, so we need 2 years of observations)
+
+spp_master_ztemp_seus_buoy.traits_scaled[,min_year := min(year),.(reg)]
+
+spp_master_ztemp_seus_buoy.traits_scaled <- spp_master_ztemp_seus_buoy.traits_scaled[year != min_year]
     
 ```
 

@@ -95,11 +95,16 @@ spp_key <- rbind(worms_db.r, newrow1, newrow2)
 
 setnames(spp_key, "query", "spp")
 
+spp_key <- data.table(spp_key)
+
 #missing class for Hemitripterus americanus
 spp_key[taxa == "Hemitripterus americanus", class := "Actinopteri"]
 
 #Missing class for Hemitripterus bolini
 spp_key[taxa == "Hemitripterus bolini", class := "Actinopteri"]
+
+#leave out sea turtle
+spp_key <- spp_key[spp != "Caretta caretta",]
 
 #save
 write_csv(spp_key, file = here::here("Data","Spp_master","spp_key.csv"))
