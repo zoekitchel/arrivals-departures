@@ -11,8 +11,8 @@ library(data.table)
 library(wesanderson)
 library(cowplot)
 
-RVI_arrival_nolag <- readRDS(here::here("Model_results", "RVI_arrival_nolag_annual_obs.rds"))
-RVI_departure_nolag <- readRDS(here::here("Model_results", "RVI_departure_nolag_annual_obs.rds"))
+RVI_gain_nolag <- readRDS(here::here("Model_results", "RVI_gain_nolag_annual_obs.rds"))
+RVI_loss_nolag <- readRDS(here::here("Model_results", "RVI_loss_nolag_annual_obs.rds"))
 ```
 
 Plot
@@ -21,8 +21,8 @@ Plot
 pal <- wes_palette("GrandBudapest1", 8, type = "continuous")
 colors <- c(pal[1], pal[2], "#FFFFFF", pal[3], pal[4], pal[5],"#FFFFFF", pal[6], pal[7], pal[8])
 
-#arrivals
-RVI_arrival_plot <- ggplot(data = RVI_arrival_nolag, aes(x=type, y = value, fill = variable)) +
+#gains
+RVI_gain_plot <- ggplot(data = RVI_gain_nolag, aes(x=type, y = value, fill = variable)) +
   geom_bar(stat="identity", color = NA, size = 0, width = 0.8) +
   scale_x_discrete(breaks = c("Depth", "Transformation", "Metric"), labels = c("Depth", "Transformation", "Metric")) +
   labs(x = "Temperature Variables", y = "Relative Variable Importance") +
@@ -41,8 +41,8 @@ RVI_arrival_plot <- ggplot(data = RVI_arrival_nolag, aes(x=type, y = value, fill
 
 ggsave(here::here("figures","Supplemental","annual_sensitivity","Figure4a_annual.eps" ))
 
-#departure
-RVI_departure_plot <- ggplot(data = RVI_departure_nolag, aes(x=type, y = value, fill = variable)) +
+#loss
+RVI_loss_plot <- ggplot(data = RVI_loss_nolag, aes(x=type, y = value, fill = variable)) +
   geom_bar(stat="identity", color = NA, size = 0, width = 0.8) +
   scale_x_discrete(breaks = c("Depth", "Transformation", "Metric"), labels = c("Depth", "Transformation", "Metric")) +
   labs(x = "Temperature Variables", y = "Relative Variable Importance") +
@@ -67,10 +67,10 @@ ggsave(here::here("figures","Supplemental","annual_sensitivity","Figure4b_annual
 
 Arrange side by side
 ```{r arrange}
-figure4 <- plot_grid(RVI_arrival_plot + theme(legend.position = "none"), RVI_departure_plot + theme(legend.position = "none") + ylab(NULL), labels = c("b.", "c."), label_size = 12, align = "hv", axis = "bottom")
+figure4 <- plot_grid(RVI_gain_plot + theme(legend.position = "none"), RVI_loss_plot + theme(legend.position = "none") + ylab(NULL), labels = c("b.", "c."), label_size = 12, align = "hv", axis = "bottom")
 
 #pull legend
-legend <- get_legend(RVI_arrival_plot)
+legend <- get_legend(RVI_gain_plot)
 
 #add legend
 figure4_wlegend <- plot_grid(figure4, legend, nrow = 1, rel_widths = c(8,1))

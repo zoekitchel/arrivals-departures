@@ -18,7 +18,6 @@ trawl2[,region := factor(region, labels = c("Aleutian Islands", "Eastern Bering 
 
 trawl2_latlon <- unique(trawl2[,.(lat,lon,stratum,s.reg,depth,year)])
 
-trawl2_latlon_annual <- trawl2_latlon[!(s.reg %in% c("ai","goa","wctri"))]
 
 trawl2.pivot <- data.table(table(trawl2_latlon$s.reg, trawl2_latlon$year))
 
@@ -32,6 +31,17 @@ View(trawl2.pivot)
 #total?
 sum(trawl2.pivot$N)
 ```
+
+What about for only 6 annually sampled regions?
+```{r}
+trawl2_latlon_annual <- trawl2_latlon[!(s.reg %in% c("ai","goa","wctri"))]
+
+trawl2.pivot.annual <- data.table(table(trawl2_latlon_annual$s.reg,trawl2_latlon_annual$year))
+
+sum(trawl2.pivot.annual$N)
+```
+
+
 Average tows per year per region
 ```{r}
 trawl2.pivot[,region_mean_tows:=mean(N),V1]

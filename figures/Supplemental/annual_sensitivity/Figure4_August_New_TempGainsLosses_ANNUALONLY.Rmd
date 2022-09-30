@@ -3,9 +3,6 @@ title: "Figure 4: New with Revision, temp versus likelihood of gains vs. losses 
 output: html_notebook
 ---
 
-This is an [R Markdown](http://rmarkdown.rstudio.com) Notebook. When you execute code within the notebook, the results appear beneath the code. 
-
-Try executing this chunk by clicking the *Run* button within the chunk or by placing your cursor inside it and pressing *Cmd+Shift+Enter*. 
 
 ```{r}
 library(ggplot2)
@@ -97,9 +94,9 @@ temp_gains_newdata <- data.frame(
 
 #plot
 (gain_preds_temp_only <- ggplot() +
-  geom_ribbon(data = temp_gains_newdata, aes(x = seas_sst_temp_scaled, ymin = exp(plo)/(1+exp(plo)), ymax = exp(phi)/(1+exp(phi))), fill = "lightgrey") +
-  geom_point(data = spp_master_ztemp_seus_buoy_scaled_annual_obs, aes(x = seas_sst_temp_scaled, y = col_03), size = 2, shape = "|") +
-  geom_line(data = temp_gains_newdata, aes(x = seas_sst_temp_scaled, y=exp(col)/(1+exp(col)))) +
+  geom_ribbon(data = temp_gains_newdata, aes(x = seas_sst_temp, ymin = exp(plo)/(1+exp(plo)), ymax = exp(phi)/(1+exp(phi))), fill = "lightgrey") +
+  geom_point(data = spp_master_ztemp_seus_buoy_scaled_annual_obs, aes(x = seas_sst_temp, y = col_03), size = 2, shape = "|") +
+  geom_line(data = temp_gains_newdata, aes(x = seas_sst_temp, y=exp(col)/(1+exp(col)))) +
   labs(x = "Seasonality of Sea Surface Temperature (\u00B0C)", y = "Probability of Gain") +
   theme_classic() +
   theme(text=element_text(size = 10)))

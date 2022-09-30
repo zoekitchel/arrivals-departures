@@ -17,12 +17,12 @@ lags_RVI_scaled <- readRDS(here::here("Model_results","lags_RVI_scaled_annual_ob
 ```{r plot}
 #melt wide to long
 lags_RVI_scaled.l <- melt(lags_RVI_scaled,
-                measure.vars = c("arrival_RVI", "departure_RVI"))
+                measure.vars = c("gain_RVI", "loss_RVI"))
 
 levels(lags_RVI_scaled.l$variable) <- c("Gain","Loss")
 
 #visualize lags through time
-lags_over_time_annual_reg <- ggplot(data = lags_RVI_scaled.l, aes(x = arrival_lag, y = value)) +
+lags_over_time_annual_reg <- ggplot(data = lags_RVI_scaled.l, aes(x = gain_lag, y = value)) +
   geom_line(aes(linetype = variable)) +
   labs(x = "Lag (years)", y = "Relative Variable Importance") +
   theme_classic() +
