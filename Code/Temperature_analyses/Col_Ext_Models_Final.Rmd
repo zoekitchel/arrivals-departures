@@ -68,21 +68,25 @@ variables_scaled <- grep("*_scaled", names(spp_master_ztemp_seus_buoy_scaled), v
 variables_scaled <- variables_scaled[-grep('mean',variables_scaled)]
 
 gain_model_comparison_taxonomy <- as.data.table(matrix(nrow = length(variables_scaled)))
-gain_model_comparison_taxonomy[, variable:=as.factor(V1)][, coef:=as.numeric(V1)][, p_value:=as.numeric(V1)][, AICc:=as.numeric(V1)]
+gain_model_comparison_taxonomy[, variable:=as.factor(V1)][, coef:=as.numeric(V1)][, p_value:=as.numeric(V1)][, conditional_R2 := as.numeric(V1)][,marginal_R2 := as.numeric(V1)][, AICc:=as.numeric(V1)]
 gain_model_comparison_taxonomy[, V1 := NULL]
 
 for (i in 1:length(variables_scaled)){
   mod <- glmer(gain ~ get(variables_scaled[i]) + (1|reg) + (1|phylum) + (1|class) + (1|order) + (1|family) + (1|genus) + (1|spp),
                family = binomial, data = spp_master_ztemp_seus_buoy_scaled, nAGQ = 0)
+  
+  rsquared <- r.squaredGLMM(mod)
+  
   gain_model_comparison_taxonomy[i,variable := variables_scaled[i]]
   gain_model_comparison_taxonomy[i,coef := coef(summary(mod))[,"Estimate"][2]]
   gain_model_comparison_taxonomy[i,p_value := coef(summary(mod))[,"Pr(>|z|)"][2]]
+  gain_model_comparison_taxonomy[i,conditional_R2 := rsquared[2,2]]
+  gain_model_comparison_taxonomy[i,marginal_R2 := rsquared[2,1]]
   gain_model_comparison_taxonomy[i,AICc := AICc(mod)]
   
   print(paste(i, length(variables_scaled), sep = "/"))
     
 }
-saveRDS(object = gain_model_comparison_taxonomy, file = "gain_model_comparison_taxonomy.rds")
 
 
 #by setting nACQ to 0, all models converged
@@ -101,6 +105,15 @@ Model performance and assumptions and temporal autocorrelation.
 ```{r}
 #let's take a look at best performing model, and check assumptions
 mod_extrarandom_gain <- glmer(gain ~ seas_sst_temp_scaled  + (1|reg) + (1|phylum) + (1|class) + (1|order) + (1|family) + (1|genus) + (1|spp), family = binomial, data = spp_master_ztemp_seus_buoy_scaled, nAGQ = 0)
+
+#2nd best
+mod_extrarandom_gain_2 <- glmer(gain ~ max_sst_temp_lag10_scaled  + (1|reg) + (1|phylum) + (1|class) + (1|order) + (1|family) + (1|genus) + (1|spp), family = binomial, data = spp_master_ztemp_seus_buoy_scaled, nAGQ = 0)
+#3rd best
+mod_extrarandom_gain_3 <- glmer(gain ~ seas_sst_temp_lag5_scaled  + (1|reg) + (1|phylum) + (1|class) + (1|order) + (1|family) + (1|genus) + (1|spp), family = binomial, data = spp_master_ztemp_seus_buoy_scaled, nAGQ = 0)
+
+#4th best
+mod_extrarandom_gain_4 <- glmer(gain ~ max_sst_temp_lag8_scaled  + (1|reg) + (1|phylum) + (1|class) + (1|order) + (1|family) + (1|genus) + (1|spp), family = binomial, data = spp_master_ztemp_seus_buoy_scaled, nAGQ = 0)
+
 
 #Performance
 #R-Squared
@@ -147,21 +160,44 @@ testTemporalAutocorrelation(simulationOutput.groupedbyyear, unique(spp_master_zt
 
 
 ```
+
+Confidence intervals
+```{r gain confidence intervals}
+gain_confint_1 <- confint.merMod(mod_extrarandom_gain, method = "Wald")
+gain_confint_2 <- confint.merMod(mod_extrarandom_gain_2, method = "Wald")
+gain_confint_3 <- confint.merMod(mod_extrarandom_gain_3, method = "Wald")
+gain_confint_4 <- confint.merMod(mod_extrarandom_gain_4, method = "Wald")
+
+fixef(mod_extrarandom_gain)[2]-gain_confint[9,1]
+fixef(mod_extrarandom_gain_2)[2]-gain_confint_2[9,1]
+fixef(mod_extrarandom_gain_3)[2]-gain_confint_3[9,1]
+fixef(mod_extrarandom_gain_4)[2]-gain_confint_4[9,1]
+
+
+```
+
 "The estimate for seasonality of -0.52 means that a 1 degree increase in seasonality is associated with a 0.52 decrease in the log-odds of a Gain occuring, compared to no Gain occuring. If we exponentiate this number then we obtain the odds ratio of 0.59, which means that for a 1 degree increase in Seasonality we expect to see (approximately) a 41% decrease in the odds of a Gain Occurring." From this [Stack Exchange post](https://stats.stackexchange.com/questions/444797/interpreting-a-generalised-linear-mixed-model-with-binomial-data). 
 
 ###Loss Models without Traits but with random effects for phylogeny
 ```{r loss models without traits with random effect phylogeny}
 
 loss_model_comparison_taxonomy <- as.data.table(matrix(nrow = length(variables_scaled)))
-loss_model_comparison_taxonomy[, variable:=as.factor(V1)][, coef:=as.numeric(V1)][, p_value:=as.numeric(V1)][, AICc:=as.numeric(V1)]
+loss_model_comparison_taxonomy[, variable:=as.factor(V1)][, coef:=as.numeric(V1)][, p_value:=as.numeric(V1)][, conditional_R2 := as.numeric(V1)][,marginal_R2 := as.numeric(V1)][, AICc:=as.numeric(V1)]
 loss_model_comparison_taxonomy[, V1 := NULL]
 
 for (i in 1:length(variables_scaled)){
-  mod <- glmer(loss ~ get(variables_scaled[i]) + (1|reg) + (1|phylum) + (1|class) + (1|order) + (1|family) + (1|genus) + (1|spp), family = binomial, data = spp_master_ztemp_seus_buoy_scaled, nAGQ = 0)
+  mod <- glmer(loss ~ get(variables_scaled[i]) + (1|reg) + (1|phylum) + (1|class) + (1|order) + (1|family) + (1|genus) + (1|spp),
+               family = binomial, data = spp_master_ztemp_seus_buoy_scaled, nAGQ = 0)
+  
+  rsquared <- r.squaredGLMM(mod)
+  
   loss_model_comparison_taxonomy[i,variable := variables_scaled[i]]
   loss_model_comparison_taxonomy[i,coef := coef(summary(mod))[,"Estimate"][2]]
   loss_model_comparison_taxonomy[i,p_value := coef(summary(mod))[,"Pr(>|z|)"][2]]
+  loss_model_comparison_taxonomy[i,conditional_R2 := rsquared[2,2]]
+  loss_model_comparison_taxonomy[i,marginal_R2 := rsquared[2,1]]
   loss_model_comparison_taxonomy[i,AICc := AICc(mod)]
+  
   
   print(paste(i, length(variables_scaled), sep = "/"))
     
@@ -175,6 +211,13 @@ loss_model_comparison_taxonomy <- readRDS(here::here("Model_results","loss_model
 
 #let's take a look at best performing model, and check assumptions
 mod_extrarandom_loss <- glmer(loss ~ seas_sst_temp_lag3_scaled  + (1|reg) + (1|phylum) + (1|class) + (1|order) + (1|family) + (1|genus) + (1|spp), family = binomial, data = spp_master_ztemp_seus_buoy_scaled, nAGQ = 0)
+
+mod_extrarandom_loss_2 <- glmer(loss ~ max_sst_temp_change_abs_lag1_scaled  + (1|reg) + (1|phylum) + (1|class) + (1|order) + (1|family) + (1|genus) + (1|spp), family = binomial, data = spp_master_ztemp_seus_buoy_scaled, nAGQ = 0)
+
+mod_extrarandom_loss_3 <- glmer(loss ~ 	
+seas_sst_temp_change_lag2_scaled + (1|reg) + (1|phylum) + (1|class) + (1|order) + (1|family) + (1|genus) + (1|spp), family = binomial, data = spp_master_ztemp_seus_buoy_scaled, nAGQ = 0)
+
+mod_extrarandom_loss_4 <- glmer(loss ~ max_sst_temp_lag7_scaled  + (1|reg) + (1|phylum) + (1|class) + (1|order) + (1|family) + (1|genus) + (1|spp), family = binomial, data = spp_master_ztemp_seus_buoy_scaled, nAGQ = 0)
 
 #let's also look at best performing model without random effects
 mod_extrarandom_loss_noRE <- glm(loss ~ seas_sst_temp_lag3_scaled, family = binomial, data = spp_master_ztemp_seus_buoy_scaled)
@@ -235,6 +278,22 @@ plot(simulationOutput.groupedbyyear_loss)
 testTemporalAutocorrelation(simulationOutput.groupedbyyear_loss, unique(spp_master_ztemp_seus_buoy_scaled.r$year))
 
 ```
+
+Confidence intervals
+```{r loss confidence intervals}
+loss_confint_1 <- confint.merMod(mod_extrarandom_loss, method = "Wald")
+loss_confint_2 <- confint.merMod(mod_extrarandom_loss_2, method = "Wald")
+loss_confint_3 <- confint.merMod(mod_extrarandom_loss_3, method = "Wald")
+loss_confint_4 <- confint.merMod(mod_extrarandom_loss_4, method = "Wald")
+
+fixef(mod_extrarandom_loss)[2]-loss_confint_1[9,1]
+fixef(mod_extrarandom_loss_2)[2]-loss_confint_2[9,1]
+fixef(mod_extrarandom_loss_3)[2]-loss_confint_3[9,1]
+fixef(mod_extrarandom_loss_4)[2]-loss_confint_4[9,1]
+
+
+```
+
 "The estimate for seasonality of -0.3242 means that a 1 degree increase in seasonality is associated with a 0.3242 decrease in the log-odds of a Loss occuring, compared to no Loss occuring. If we exponentiate this number then we obtain the odds ratio of 0.7231, which means that for a 1 degree increase in Seasonality we expect to see (approximately) a 18% decrease in the odds of a Loss Occurring." From this [Stack Exchange post](https://stats.stackexchange.com/questions/444797/interpreting-a-generalised-linear-mixed-model-with-binomial-data). 
 
 
@@ -242,7 +301,7 @@ testTemporalAutocorrelation(simulationOutput.groupedbyyear_loss, unique(spp_mast
 ##Relative Variable Importance
 
 How does the null model with only random effects perform?
-```{r null models}
+```{r add null models}
 #add null to tables
 intercept_gain_mod_scaled <- glmer(gain ~ (1|reg) + (1|phylum) + (1|class) + (1|order) + (1|family) + (1|genus) + (1|spp), family = binomial, data = spp_master_ztemp_seus_buoy_scaled, nAGQ = 0)
 
@@ -252,13 +311,20 @@ intercept_loss_mod_scaled <- glmer(loss ~ (1|reg) + (1|phylum) + (1|class) + (1|
 
 r.squaredGLMM(intercept_loss_mod_scaled)
 
-#            R2m       R2c
-#theoretical   0 0.4233395
-#delta         0 0.1370641
 
 #best model better than null? yes
 AICc(intercept_gain_mod_scaled)-AICc(mod_extrarandom_gain)
 AICc(intercept_loss_mod_scaled)-AICc(mod_extrarandom_loss)
+
+#add to model summary tables
+gain_null_row <- data.table(matrix(c(NA,NA,NA,r.squaredGLMM(intercept_gain_mod_scaled)[2,2],
+                   r.squaredGLMM(intercept_gain_mod_scaled)[2,1],AICc(intercept_gain_mod_scaled)),nrow = 1))
+
+loss_null_row <- data.table(matrix(c(NA,NA,NA,r.squaredGLMM(intercept_loss_mod_scaled)[2,2],
+                   r.squaredGLMM(intercept_loss_mod_scaled)[2,1],AICc(intercept_loss_mod_scaled)),nrow = 1))
+
+gain_model_comparison_taxonomy <- rbind(gain_model_comparison_taxonomy, gain_null_row, use.names = F)
+loss_model_comparison_taxonomy <- rbind(loss_model_comparison_taxonomy, loss_null_row, use.names = F)
 
 
 ```

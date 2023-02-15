@@ -1,2 +1,4 @@
 load("/Users/zoekitchel/Documents/grad_school/Rutgers/Repositories/Col_Ext/Model_results/departure_model_comparison_annual_obs_taxonomy.rds")
 load("/Users/zoekitchel/Documents/grad_school/Rutgers/Repositories/Col_Ext/Model_results/departure_model_comparison_nomean_akaikeweights.rds")
+load("/Users/zoekitchel/Documents/grad_school/Rutgers/Repositories/Col_Ext/Model_results/gain_model_comparison_taxonomy_akaikeweights.rds")
+load("/Users/zoekitchel/Documents/grad_school/Rutgers/Repositories/Col_Ext/Model_results/loss_model_comparison_taxonomy_akaikeweights.rds")

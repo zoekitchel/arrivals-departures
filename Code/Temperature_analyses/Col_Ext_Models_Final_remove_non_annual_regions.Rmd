@@ -130,6 +130,12 @@ How does the null model with only random effects perform?
 #best models
 gain_mod_scaled_1 <- glmer(col ~ seas_sst_temp_scaled+ (1|reg) + (1|phylum) + (1|class) + (1|order) + (1|family) + (1|genus) + (1|spp), family = binomial, data = spp_master_ztemp_seus_buoy_scaled_annual_obs, nAGQ = 0)
 
+gain_mod_scaled_1 <- glmer(col ~ seas_sst_temp_scaled+ (1|reg) + (1|phylum) + (1|class) + (1|order) + (1|family) + (1|genus) + (1|spp), family = binomial, data = spp_master_ztemp_seus_buoy_scaled_annual_obs, nAGQ = 0)
+
+gain_mod_scaled_1 <- glmer(col ~ seas_sst_temp_scaled+ (1|reg) + (1|phylum) + (1|class) + (1|order) + (1|family) + (1|genus) + (1|spp), family = binomial, data = spp_master_ztemp_seus_buoy_scaled_annual_obs, nAGQ = 0)
+
+gain_mod_scaled_1 <- glmer(col ~ seas_sst_temp_scaled+ (1|reg) + (1|phylum) + (1|class) + (1|order) + (1|family) + (1|genus) + (1|spp), family = binomial, data = spp_master_ztemp_seus_buoy_scaled_annual_obs, nAGQ = 0)
+
 loss_mod_scaled <- glmer(now_ext ~ seas_sst_temp_lag3_scaled + (1|reg) + (1|phylum) + (1|class) + (1|order) + (1|family) + (1|genus) + (1|spp), family = binomial, data = spp_master_ztemp_seus_buoy_scaled_annual_obs, nAGQ = 0)
 
 #add null to tables
@@ -206,6 +212,8 @@ gain_model_comparison_annual_obs_taxonomy_akaikeweights <- gain_model_comparison
 
 saveRDS(gain_model_comparison_annual_obs_taxonomy_akaikeweights, file = here::here("Model_results","gain_model_comparison_annual_obs_taxonomy_akaikeweights_annual_obs.rds"))
 fwrite(gain_model_comparison_annual_obs_taxonomy_akaikeweights, file = here::here("tables","gain_model_comparison_annual_obs_taxonomy_akaikeweights_annual_obs.csv"))
+
+gain_model_comparison_annual_obs_taxonomy_akaikeweights <- readRDS(here::here("Model_results","gain_model_comparison_annual_obs_taxonomy_akaikeweights_annual_obs.rds"))
 
 ```
 
