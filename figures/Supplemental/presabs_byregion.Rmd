@@ -7,6 +7,7 @@ output: html_notebook
 library(data.table)
 library(ggplot2)
 library(here)
+library(dplyr)
 spp_master_ztemp_seus_buoy <- readRDS(here::here("Data","Spp_master", "spp_master_ztemp_seus_buoy.rds")) #load in processed presence/absence data
 ```
 
@@ -68,13 +69,13 @@ geom_text(data=spp_master_ztemp_seus_buoy.sppreg_col_ext.u.u %>%
                         n=n()), 
             aes(x=regions_present, y=top, label= paste0("n = ", n)), nudge_y=1) +
   theme_classic() +
-  labs(x = "Number of Regions Species is Ever Observed", y = "Total Observed Gains")
+  labs(x = "Number of Regions in Which a Species is Ever Observed", y = "Total Observed Gains")
 
 total_losses <- ggplot(data = spp_master_ztemp_seus_buoy.sppreg_col_ext.u.u) +
   geom_boxplot(aes(x = regions_present, y = as.numeric(ever_loss), group = regions_present)) +
   ylim(0,15) +
   theme_classic() +
-  labs(x = "Number of Regions Species is Ever Observed", y = "Total Observed Losses")
+  labs(x = "Number of Regions in Which a Species is Ever Observed", y = "Total Observed Losses")
 
 total_gains_losses_boxplot <- plot_grid(total_gains + theme(axis.title.x = element_blank(), axis.text.x = element_blank()), total_losses, ncol = 1, align = "hv", axis = "tblr")
 

@@ -3,22 +3,20 @@ title: "Temp Through Time Gains Losses"
 output: html_notebook
 ---
 
-This is an [R Markdown](http://rmarkdown.rstudio.com) Notebook. When you execute code within the notebook, the results appear beneath the code. 
-
-Try executing this chunk by clicking the *Run* button within the chunk or by placing your cursor inside it and pressing *Ctrl+Shift+Enter*. 
+Temperature trends through time
 
 ```{r}
 library(data.table)
 library(nlme)
 
-spp_master_ztemp_seus_buoy_scaled <- readRDS("~/SODA_temp_prep/spp_master_ztemp_seus_buoy_scaled.rds")
+spp_master_ztemp_seus_buoy <- readRDS(here::here("Data","Spp_master","spp_master_ztemp_seus_buoy.rds"))
 ```
 
 Unique year temp values
 ```{r}
-spp_master_ztemp_seus_buoy_scaled.u <- unique(spp_master_ztemp_seus_buoy_scaled[,.(year, reg, min_sbt_temp, max_sbt_temp, seas_sbt_temp, min_sst_temp, max_sst_temp, seas_sst_temp)])
+spp_master_ztemp_seus_buoy.u <- unique(spp_master_ztemp_seus_buoy[,.(year, reg, min_sbt_temp, max_sbt_temp, seas_sbt_temp, min_sst_temp, max_sst_temp, seas_sst_temp)])
 
-regions <- unique(spp_master_ztemp_seus_buoy_scaled.u[,reg])
+regions <- unique(spp_master_ztemp_seus_buoy.u[,reg])
 ```
 
 Make GLS for each region and temp var to see which are significant, include in supplement and main text
@@ -33,7 +31,7 @@ for (i in 1:length(regions)) {
   
   
   #subset full data table to single region
-  subset <- spp_master_ztemp_seus_buoy_scaled.u[reg == regions[i],]
+  subset <- spp_master_ztemp_seus_buoy.u[reg == regions[i],]
   
   #assign region column 
   temp_change_time[,region := regions[i]]

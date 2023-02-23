@@ -3,11 +3,8 @@ title: "Figure 4: New with Revision, temp versus likelihood of gains vs. losses"
 output: html_notebook
 ---
 
-This is an [R Markdown](http://rmarkdown.rstudio.com) Notebook. When you execute code within the notebook, the results appear beneath the code. 
 
-Try executing this chunk by clicking the *Run* button within the chunk or by placing your cursor inside it and pressing *Cmd+Shift+Enter*. 
-
-```{r}
+```{r setup}
 library(ggplot2)
 library(data.table)
 library(lme4)
@@ -19,7 +16,7 @@ library(glmmTMB)
 
 Pull in spp master data
 
-```{r}
+```{r pull in data}
 spp_master_ztemp_seus_buoy_scaled <- readRDS(here::here("Data","Spp_master", "spp_master_ztemp_seus_buoy_scaled.rds")) #spp master, gain loss
 spp_key <- fread(here::here("Data","Spp_master","spp_key.csv")) #key to link phylogenic info
 
@@ -54,42 +51,64 @@ mod_sppregrandom <- glmer(col ~ seas_sst_temp_scaled  + (1|reg) + (1|phylum) + (
 
 Here we use this method by [Bolker](https://bbolker.github.io/mixedmodels-misc/glmmFAQ.html#predictions-andor-confidence-or-prediction-intervals-on-predictions) to calculate confidence intervals using standard error. 
 
+Steps:
+figure out the model matrix X corresponding to the new data;
+matrix-multiply X by the parameter vector β to get the predictions (or linear predictor in the case of GLM(M)s);
+extract the variance-covariance matrix of the parameters V
+compute XVX′
+ to get the variance-covariance matrix of the predictions;
+extract the diagonal of this matrix to get variances of predictions;
+if computing prediction rather than confidence intervals, add the residual variance; (I don't do)
+take the square-root of the variances to get the standard deviations (errors) of the predictions;
+compute confidence intervals based on a Normal approximation;
+for GL(M)Ms, run the confidence interval boundaries (not the standard errors) through the inverse-link function.
+
 ```{r}
 #best predictor for fish and inverts: seas_sst_temp_scaled as x axis
+
+#create data table of new data with 500 values of seas sst temp scaled in the range we see in the actual data
 temp_gains_newdata <- data.table(seas_sst_temp_scaled =  runif(500,min(spp_master_ztemp_seus_buoy_scaled$seas_sst_temp_scaled, na.rm = T), max(spp_master_ztemp_seus_buoy_scaled$seas_sst_temp_scaled, na.rm = T)))
 
 
-#I want x axis to be meaningful
+#I want x axis to be meaningful (unscaled)
 mod_gain_reverse_scaledtemp <- lm(seas_sst_temp ~ seas_sst_temp_scaled, data = spp_master_ztemp_seus_buoy_scaled)
 
-
+#add column with unscaled seasonality
 temp_gains_newdata[,seas_sst_temp := mod_gain_reverse_scaledtemp$coefficients[2]*seas_sst_temp_scaled + mod_gain_reverse_scaledtemp$coefficients[1] ]
 
 #best predictor for fish and inverts: seas_sst_temp_scaled as x axis
 
-temp_gains_newdata$col <- predict(mod_sppregrandom,temp_gains_newdata, re.form = NA)
+temp_gains_newdata$col <- predict(mod_sppregrandom,temp_gains_newdata, re.form = NA) #includes no random effects
 
-mm <- model.matrix(terms(mod_sppregrandom),temp_gains_newdata)
+mm <- model.matrix(terms(mod_sppregrandom),temp_gains_newdata) #"figure out the model matrix corresponding to the new data"
 
+#"matrix-multiply X by the parameter vector β to get the predictions" &
+#"extract the variance-covariance matrix of the parameters V" &
+#"extract the diagonal of this matrix to get variances of predictions"
 pvar1 <- diag(mm %*% tcrossprod(vcov(mod_sppregrandom),mm)) #vcov: variance/covariance matrix for fitted model object
 #tcrossproduct (matrix cross product)
 #diag = matrix diagonal
 
 #tvar1 <- pvar1+VarCorr(mod_sppregrandom)$Subject[1]  ## must be adapted for more complex models
 cmult <- 1.96 ## could use 1.96
-temp_gains_newdata <- data.frame(
+temp_gains_newdata <- data.table(
     temp_gains_newdata
-    , plo = temp_gains_newdata$col-cmult*sqrt(pvar1)
+    , plo = temp_gains_newdata$col-cmult*sqrt(pvar1) #"take the square-root of the variances to get the standard deviations (errors) of the predictions & compute confidence intervals based on a Normal approximation"
     , phi = temp_gains_newdata$col+cmult*sqrt(pvar1)
   #  , tlo = newdat$distance-cmult*sqrt(tvar1)
   #  , thi = newdat$distance+cmult*sqrt(tvar1)
 )
 
+#inverse link plo and phi and col 
+temp_gains_newdata[,plo_inv_log := exp(plo)/(1+exp(plo))][,phi_inv_log := exp(phi)/(1+exp(phi))][,col_inv_log := exp(col)/(1+exp(col))]
+
+
 #plot
+#NB: note that plo and phi are exp() because "run the confidence interval boundaries (not the standard errors) through the inverse-link function"
 (gain_preds_temp_only <- ggplot() +
-  geom_ribbon(data = temp_gains_newdata, aes(x = seas_sst_temp, ymin = exp(plo)/(1+exp(plo)), ymax = exp(phi)/(1+exp(phi))), fill = "lightgrey") +
+  geom_ribbon(data = temp_gains_newdata, aes(x = seas_sst_temp, ymin = plo_inv_log, ymax = phi_inv_log), fill = "lightgrey") +
   geom_point(data = spp_master_ztemp_seus_buoy_scaled, aes(x = seas_sst_temp, y = col_03), size = 2, shape = "|") +
-  geom_line(data = temp_gains_newdata, aes(x = seas_sst_temp, y=exp(col)/(1+exp(col)))) +
+  geom_line(data = temp_gains_newdata, aes(x = seas_sst_temp, y= col_inv_log)) +
   labs(x = "Seasonality of Sea Surface Temperature (\u00B0C)", y = "Probability of Gain") +
   theme_classic() +
   theme(text=element_text(size = 10)))
@@ -131,6 +150,9 @@ temp_losses_newdata <- data.frame(
   #  , thi = newdat$distance+cmult*sqrt(tvar1)
 )
 
+#inverse link plo and phi
+temp_losses_newdata[,plo_inv_log := exp(plo)/(1+exp(plo))][,phi_inv_log := exp(phi)/(1+exp(phi))][,col_inv_log := exp(col)/(1+exp(col))]
+
 #I want x axis to be meaningful
 mod_loss_reverse_scaledtemp <- lm(seas_sst_temp_lag3 ~ seas_sst_temp_lag3_scaled, data = spp_master_ztemp_seus_buoy_scaled)
 
@@ -142,9 +164,9 @@ temp_losses_newdata[,seas_sst_temp_lag3 := mod_loss_reverse_scaledtemp$coefficie
 
 #1.96 * standard error is 95% confidence interval 
 (loss_preds_temp_only <- ggplot() +
-  geom_ribbon(data = temp_losses_newdata, aes(x = seas_sst_temp_lag3, ymin = exp(plo)/(1+exp(plo)), ymax = exp(phi)/(1+exp(phi))), fill = "lightgrey") +
+  geom_ribbon(data = temp_losses_newdata, aes(x = seas_sst_temp_lag3, ymin = plo_inv_log, ymax = phi_inv_log), fill = "lightgrey") +
   geom_point(data = spp_master_ztemp_seus_buoy_scaled, aes(x = seas_sst_temp_lag3, y = now_ext_03), size = 2, shape = "|") +
-  geom_line(data = temp_losses_newdata, aes(x = seas_sst_temp_lag3, y=exp(now_ext)/(1+exp(now_ext)))) +
+  geom_line(data = temp_losses_newdata, aes(x = seas_sst_temp_lag3, y=col_inv_log)) +
   labs(x = "Seasonality of Sea Surface Temperature (\u00B0C)\nLagged Three Years", y = "Probability of Loss") +
   theme_classic() +
   theme(text=element_text(size = 10)))

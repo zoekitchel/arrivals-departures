@@ -68,14 +68,19 @@ variables_scaled <- variables_scaled[-grep('mean',variables_scaled)]
 #going to make loop to make all models I need to look at with a single temperature variable
 
 gain_model_comparison_annual_obs_taxonomy <- as.data.table(matrix(nrow = length(variables_scaled)))
-gain_model_comparison_annual_obs_taxonomy[, variable:=as.factor(V1)][, coef:=as.numeric(V1)][, p_value:=as.numeric(V1)][, AICc:=as.numeric(V1)]
+gain_model_comparison_annual_obs_taxonomy[, variable:=as.factor(V1)][, coef:=as.numeric(V1)][, p_value:=as.numeric(V1)][, conditional_R2 := as.numeric(V1)][,marginal_R2 := as.numeric(V1)][, AICc:=as.numeric(V1)]
 gain_model_comparison_annual_obs_taxonomy[, V1 := NULL]
 
 for (i in 1:length(variables_scaled)){
   mod <- glmer(col ~ get(variables_scaled[i]) + (1|reg) + (1|phylum) + (1|class) + (1|order) + (1|family) + (1|genus) + (1|spp), family = binomial, data = spp_master_ztemp_seus_buoy_scaled_annual_obs, nAGQ = 0)
+  
+    rsquared <- r.squaredGLMM(mod)
+
   gain_model_comparison_annual_obs_taxonomy[i,variable := variables_scaled[i]]
   gain_model_comparison_annual_obs_taxonomy[i,coef := coef(summary(mod))[,"Estimate"][2]]
   gain_model_comparison_annual_obs_taxonomy[i,p_value := coef(summary(mod))[,"Pr(>|z|)"][2]]
+  gain_model_comparison_annual_obs_taxonomy[i,conditional_R2 := rsquared[2,2]]
+  gain_model_comparison_annual_obs_taxonomy[i,marginal_R2 := rsquared[2,1]]
   gain_model_comparison_annual_obs_taxonomy[i,AICc := AICc(mod)]
   
   print(paste(i, length(variables_scaled), sep = "/"))
@@ -100,14 +105,19 @@ Loss Models without Traits
 ```{r loss models without traits}
 
 loss_model_comparison_annual_obs_taxonomy <- as.data.table(matrix(nrow = length(variables_scaled)))
-loss_model_comparison_annual_obs_taxonomy[, variable:=as.factor(V1)][, coef:=as.numeric(V1)][, p_value:=as.numeric(V1)][, AICc:=as.numeric(V1)]
+loss_model_comparison_annual_obs_taxonomy[, variable:=as.factor(V1)][, coef:=as.numeric(V1)][, p_value:=as.numeric(V1)][, conditional_R2 := as.numeric(V1)][,marginal_R2 := as.numeric(V1)][, AICc:=as.numeric(V1)]
 loss_model_comparison_annual_obs_taxonomy[, V1 := NULL]
 
 for (i in 1:length(variables_scaled)){
   mod <- glmer(now_ext ~ get(variables_scaled[i]) + (1|reg) + (1|phylum) + (1|class) + (1|order) + (1|family) + (1|genus) + (1|spp), family = binomial, data = spp_master_ztemp_seus_buoy_scaled_annual_obs, nAGQ = 0)
+  
+    rsquared <- r.squaredGLMM(mod)
+  
   loss_model_comparison_annual_obs_taxonomy[i,variable := variables_scaled[i]]
   loss_model_comparison_annual_obs_taxonomy[i,coef := coef(summary(mod))[,"Estimate"][2]]
   loss_model_comparison_annual_obs_taxonomy[i,p_value := coef(summary(mod))[,"Pr(>|z|)"][2]]
+  loss_model_comparison_annual_obs_taxonomy[i,conditional_R2 := rsquared[2,2]]
+  loss_model_comparison_annual_obs_taxonomy[i,marginal_R2 := rsquared[2,1]]
   loss_model_comparison_annual_obs_taxonomy[i,AICc := AICc(mod)]
   
   print(paste(i, length(variables_scaled), sep = "/"))
@@ -126,49 +136,90 @@ Relative Variable Importance
 
 
 How does the null model with only random effects perform?
-```{r null models}
+```{r null gain models}
 #best models
-gain_mod_scaled_1 <- glmer(col ~ seas_sst_temp_scaled+ (1|reg) + (1|phylum) + (1|class) + (1|order) + (1|family) + (1|genus) + (1|spp), family = binomial, data = spp_master_ztemp_seus_buoy_scaled_annual_obs, nAGQ = 0)
+gain_mod_scaled_1 <- glmer(col ~ seas_sst_temp_scaled + (1|reg) + (1|phylum) + (1|class) + (1|order) + (1|family) + (1|genus) + (1|spp), family = binomial, data = spp_master_ztemp_seus_buoy_scaled_annual_obs, nAGQ = 0)
 
-gain_mod_scaled_1 <- glmer(col ~ seas_sst_temp_scaled+ (1|reg) + (1|phylum) + (1|class) + (1|order) + (1|family) + (1|genus) + (1|spp), family = binomial, data = spp_master_ztemp_seus_buoy_scaled_annual_obs, nAGQ = 0)
+gain_mod_scaled_2 <- glmer(col ~ max_sbt_temp_change_abs_lag7_scaled + (1|reg) + (1|phylum) + (1|class) + (1|order) + (1|family) + (1|genus) + (1|spp), family = binomial, data = spp_master_ztemp_seus_buoy_scaled_annual_obs, nAGQ = 0)
 
-gain_mod_scaled_1 <- glmer(col ~ seas_sst_temp_scaled+ (1|reg) + (1|phylum) + (1|class) + (1|order) + (1|family) + (1|genus) + (1|spp), family = binomial, data = spp_master_ztemp_seus_buoy_scaled_annual_obs, nAGQ = 0)
+gain_mod_scaled_3 <- glmer(col ~ seas_sst_temp_lag5_scaled + (1|reg) + (1|phylum) + (1|class) + (1|order) + (1|family) + (1|genus) + (1|spp), family = binomial, data = spp_master_ztemp_seus_buoy_scaled_annual_obs, nAGQ = 0)
 
-gain_mod_scaled_1 <- glmer(col ~ seas_sst_temp_scaled+ (1|reg) + (1|phylum) + (1|class) + (1|order) + (1|family) + (1|genus) + (1|spp), family = binomial, data = spp_master_ztemp_seus_buoy_scaled_annual_obs, nAGQ = 0)
-
-loss_mod_scaled <- glmer(now_ext ~ seas_sst_temp_lag3_scaled + (1|reg) + (1|phylum) + (1|class) + (1|order) + (1|family) + (1|genus) + (1|spp), family = binomial, data = spp_master_ztemp_seus_buoy_scaled_annual_obs, nAGQ = 0)
+gain_mod_scaled_4 <- glmer(col ~ max_sst_temp_change_abs_scaled + (1|reg) + (1|phylum) + (1|class) + (1|order) + (1|family) + (1|genus) + (1|spp), family = binomial, data = spp_master_ztemp_seus_buoy_scaled_annual_obs, nAGQ = 0)
 
 #add null to tables
 intercept_gain_mod_scaled <- glmer(col ~ (1|reg) + (1|phylum) + (1|class) + (1|order) + (1|family) + (1|genus) + (1|spp), family = binomial, data = spp_master_ztemp_seus_buoy_scaled_annual_obs, nAGQ = 0)
 
 intercept_loss_mod_scaled <- glmer(now_ext ~ (1|reg) + (1|phylum) + (1|class) + (1|order) + (1|family) + (1|genus) + (1|spp), family = binomial, data = spp_master_ztemp_seus_buoy_scaled_annual_obs, nAGQ = 0)
 
-#best model better than null? yes
-AICc(intercept_gain_mod_scaled)-min(gain_model_comparison_annual_obs_taxonomy$AICc)
-AICc(intercept_loss_mod_scaled)-min(loss_model_comparison_annual_obs_taxonomy$AICc)
+```
+Confidence intervals
+```{r gain confidence intervals}
+gain_confint_1 <- confint.merMod(gain_mod_scaled_1, method = "Wald")
+gain_confint_2 <- confint.merMod(gain_mod_scaled_2, method = "Wald")
+gain_confint_3 <- confint.merMod(gain_mod_scaled_3, method = "Wald")
+gain_confint_4 <- confint.merMod(gain_mod_scaled_4, method = "Wald")
 
-#calculate pseudo R squared
-r.squaredGLMM(gain_mod_scaled_1)
-#                    R2m       R2c
-#theoretical 0.006089580 0.4159003
-#delta       0.002429494 0.1659273
-r.squaredGLMM(loss_mod_scaled)
-#                    R2m       R2c
-#theoretical 0.013836934 0.4562251
-#delta       0.004567733 0.1506052
+fixef(gain_mod_scaled_1)[2]-gain_confint_1[9,1]
+fixef(gain_mod_scaled_2)[2]-gain_confint_2[9,1]
+fixef(gain_mod_scaled_3)[2]-gain_confint_3[9,1]
+fixef(gain_mod_scaled_4)[2]-gain_confint_4[9,1]
+
+```
+
+Compare top models
+```{r compare top models}
+#best models
+loss_mod_scaled_1 <- glmer(now_ext ~ seas_sst_temp_lag3_scaled + (1|reg) + (1|phylum) + (1|class) + (1|order) + (1|family) + (1|genus) + (1|spp), family = binomial, data = spp_master_ztemp_seus_buoy_scaled_annual_obs, nAGQ = 0)
+
+loss_mod_scaled_2 <- glmer(now_ext ~ max_sst_temp_scaled + (1|reg) + (1|phylum) + (1|class) + (1|order) + (1|family) + (1|genus) + (1|spp), family = binomial, data = spp_master_ztemp_seus_buoy_scaled_annual_obs, nAGQ = 0)
+
+loss_mod_scaled_3 <- glmer(now_ext ~ max_sst_temp_lag7_scaled + (1|reg) + (1|phylum) + (1|class) + (1|order) + (1|family) + (1|genus) + (1|spp), family = binomial, data = spp_master_ztemp_seus_buoy_scaled_annual_obs, nAGQ = 0)
+
+loss_mod_scaled_4 <- glmer(now_ext ~ 	
+max_sst_temp_lag5_scaled + (1|reg) + (1|phylum) + (1|class) + (1|order) + (1|family) + (1|genus) + (1|spp), family = binomial, data = spp_master_ztemp_seus_buoy_scaled_annual_obs, nAGQ = 0)
+
+```
+
+Confidence intervals for best loss models
+```{r loss confidence intervals}
+loss_confint_1 <- confint.merMod(loss_mod_scaled_1, method = "Wald")
+loss_confint_2 <- confint.merMod(loss_mod_scaled_2, method = "Wald")
+loss_confint_3 <- confint.merMod(loss_mod_scaled_3, method = "Wald")
+loss_confint_4 <- confint.merMod(loss_mod_scaled_4, method = "Wald")
+
+fixef(loss_mod_scaled_1)[2]-loss_confint_1[9,1]
+fixef(loss_mod_scaled_2)[2]-loss_confint_2[9,1]
+fixef(loss_mod_scaled_3)[2]-loss_confint_3[9,1]
+fixef(loss_mod_scaled_4)[2]-loss_confint_4[9,1]
+
+```
+
+
+Add intercept null to summary tables
+```{r add null}
+#add null to tables
+intercept_gain_mod_scaled <- glmer(col ~ (1|reg) + (1|phylum) + (1|class) + (1|order) + (1|family) + (1|genus) + (1|spp), family = binomial, data = spp_master_ztemp_seus_buoy_scaled_annual_obs, nAGQ = 0)
 
 r.squaredGLMM(intercept_gain_mod_scaled)
-#            R2m       R2c
-#theoretical   0 0.4175993
-#delta         0 0.1668969
-            
+
+intercept_loss_mod_scaled <- glmer(now_ext ~ (1|reg) + (1|phylum) + (1|class) + (1|order) + (1|family) + (1|genus) + (1|spp), family = binomial, data = spp_master_ztemp_seus_buoy_scaled_annual_obs, nAGQ = 0)
+
 r.squaredGLMM(intercept_loss_mod_scaled)
- #           R2m       R2c
-#theoretical   0 0.4192593
-#delta         0 0.1323742
+
+
+#add to model summary tables
+gain_null_row <- data.table(matrix(c(NA,NA,NA,r.squaredGLMM(intercept_gain_mod_scaled)[2,2],
+                   r.squaredGLMM(intercept_gain_mod_scaled)[2,1],AICc(intercept_gain_mod_scaled)),nrow = 1))
+
+loss_null_row <- data.table(matrix(c(NA,NA,NA,r.squaredGLMM(intercept_loss_mod_scaled)[2,2],
+                   r.squaredGLMM(intercept_loss_mod_scaled)[2,1],AICc(intercept_loss_mod_scaled)),nrow = 1))
+
+gain_model_comparison_annual_obs_taxonomy <- rbind(gain_model_comparison_annual_obs_taxonomy, gain_null_row, use.names = F)
+loss_model_comparison_annual_obs_taxonomy <- rbind(loss_model_comparison_annual_obs_taxonomy, loss_null_row, use.names = F)
 
 
 ```
+
 
 
 Relative Variable Importance for Gain Models

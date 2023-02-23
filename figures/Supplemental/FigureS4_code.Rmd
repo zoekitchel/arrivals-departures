@@ -66,3 +66,4 @@ ggsave(final_temp_region_plot, height = 8, width = 9.7, units = "in", path = her
 ggsave(final_temp_region_plot, height = 8, width = 9.7, units = "in", path = here::here("figures","Supplemental"), filename = "S4_regional_temp_over_time.jpg")
 ```
 
+See `Temp_trends_through_time_GLS.Rmd` for how trends were marked significant in final figures by *.
