@@ -3,6 +3,8 @@ title: "Temp Patterns"
 output: html_notebook
 ---
 
+For GLS, see Temp_trends_through_time_GLS.Rmd
+
 ```{r setup}
 library(ggplot2)
 library(data.table)
@@ -35,7 +37,9 @@ regional_surface_temp <- ggplot(data = spp_master_ztemp_seus_buoy_surface.r, aes
   facet_wrap(~reg, scales = "free") +
   scale_color_manual(name =  "Temperature Metric", values = c("red","slategrey","blue"), labels = c("Maximum Temperature", "Temperature Seasonality", "Minimum Temperature")) +
   labs(y =  paste0("Surface Temperature (", "\u00B0C)"), x = "Year") +
-  theme_bw()
+  scale_y_continuous(breaks = seq(-4,40,2)) +
+  theme_bw() +
+  theme(axis.text = element_text(size = 7))
 
 ggsave(file = "temp_over_time_surface_seusbuoy.jpg")
 ggsave(file = "temp_over_time_surface_seusbuoy.eps")
@@ -45,7 +49,9 @@ regional_bottom_temp <- ggplot(data = spp_master_ztemp_seus_buoy_bottom.r, aes(x
   facet_wrap(~reg, scales = "free") +
   scale_color_manual(name =  "Temperature Metric", values = c("red","slategrey","blue"), labels = c("Maximum Temperature", "Temperature Seasonality", "Minimum Temperature")) +
   labs(y = paste0("Bottom Temperature (", "\u00B0C)"), x = "Year") +
-  theme_bw()
+  scale_y_continuous(breaks = seq(-4,40,2)) +
+  theme_bw() +
+  theme(axis.text = element_text(size = 7))
 
 ggsave(file = "temp_over_time_bottom_seusbuoy.jpg")
 ggsave(file = "temp_over_time_bottom_seusbuoy.eps")
@@ -58,7 +64,7 @@ library(cowplot)
 #legend
 legend <- get_legend(regional_surface_temp)
 
-step1 <- plot_grid(regional_surface_temp + theme(legend.position = "none"), regional_bottom_temp + theme(legend.position = "none"), ncol = 1, nrow = 2)
+step1 <- plot_grid(regional_surface_temp + theme(legend.position = "none"), regional_bottom_temp + theme(legend.position = "none"), ncol = 1, nrow = 2, align = "hv")
 
 final_temp_region_plot <- plot_grid(step1, legend, nrow = 1, ncol = 2, rel_widths = c(4,1))
 
