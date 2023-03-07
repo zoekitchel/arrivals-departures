@@ -32,8 +32,8 @@ Road Map
 
 Figures
 
-- [Figure 1](https://github.com/zoekitchel/colonization-extinction/blob/master/figures/Figure1/theoretical_1.pdf).
-- [Figure 2](https://github.com/zoekitchel/colonization-extinction/blob/master/figures/Figure2/region_examples_2.pdf).
-- Figure 3: [figures/Figure3/Figure3_code.Rmd](https://github.com/zoekitchel/colonization-extinction/blob/master/figures/Figure3/Figure3_code.Rmd).
-- Figure 4: [figures/Figure4/Figure4_code.Rmd](https://github.com/zoekitchel/colonization-extinction/blob/master/figures/Figure4/Figure4_code.Rmd).
+- [Figure 1](https://github.com/zoekitchel/trawl_gains_losses/tree/master/figures/Figure1)
+- Figure 2: [Map](https://github.com/zoekitchel/trawl_gains_losses/blob/master/figures/Figure2/map_sites.Rmd) & [Species Presence/Absence](https://github.com/zoekitchel/trawl_gains_losses/tree/master/figures/Figure2/Figure2_spp_presabs.Rmd)
+- Figure 3: [a](https://github.com/zoekitchel/trawl_gains_losses/tree/master/figures/Figure3-3_4_merge/Figure3/Figure3a_code.Rmd),[b/c](https://github.com/zoekitchel/trawl_gains_losses/tree/master/figures/Figure3-3_4_merge/Figure4/Figure4_code.Rmd)
+- Figure 4: [https://github.com/zoekitchel/trawl_gains_losses/tree/master/figures/Figure4_new/Figure4_August_New_TempGainLoss.Rmd)
 
