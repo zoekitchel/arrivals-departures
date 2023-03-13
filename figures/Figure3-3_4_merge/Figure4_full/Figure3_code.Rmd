@@ -1,9 +1,9 @@
 ---
-title: "Figure 4 Code"
+title: "Figure 3 Code"
 output: html_notebook
 ---
 
-Code to make Figure 4. 
+Code to make Figure 3. 
 
 ```{r setup}
 library(ggplot2)
