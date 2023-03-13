@@ -3,6 +3,8 @@ title: "Link SODA Temp to Spp_Master"
 output: html_notebook
 ---
 
+
+
 ```{r setup}
 library(data.table)
 load(here::here("Data","Temperature","SODA","hauls_fulltempdata.Rdata"))
@@ -23,7 +25,7 @@ hauls[, reg := as.factor(reg)] #make region a factor in hauls
 
 ```
 
-I currently have data from 12 months before each trawl event. This isn't appropriate, as my observations of arrivals and departures is per year, not per season or trawl. FOR NOW (before I speak with Malin, update spoke to Malin he agreed that this worked), I will just use earliest month in each year. 
+I currently have data from 12 months before each trawl event, I will just use earliest month of sampling for each survey. 
 
 ```{r only keep earlier year temp data}
 #keep one line of data for each year/region combo, and pick it based on smaller month value

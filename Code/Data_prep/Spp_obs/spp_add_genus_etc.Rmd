@@ -3,6 +3,8 @@ title: "Add Spp Taxonomy Info"
 output: html_notebook
 ---
 
+Link spp_master to full taxonomy of each species. 
+
 ```{r setup}
 library(tidyverse)
 library(worrms)
@@ -18,7 +20,7 @@ spp_master_ztemp_seus_buoy_scaled <- readRDS(here("Data","Spp_master", "spp_mast
 spp <- unique(spp_master_ztemp_seus_buoy_scaled[,spp])
 ```
 
-Cleaning Code from Juliano
+Cleaning Code from Juliano Palacio Abrantes
 ```{r}
 #Juliano's code from FishBase
   # Get WoRM's id for sourcing
